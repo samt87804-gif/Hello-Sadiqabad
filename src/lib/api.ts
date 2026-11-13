@@ -224,15 +224,25 @@ function todayDateStr(): string {
 }
 
 function enrichBusiness(b: BusinessRow, db: DemoDbState): BusinessPublicView {
-  const category = db.categories.find((c) => c.id === b.category_id) ?? null;
-  const area = b.area_id ? db.areas.find((a) => a.id === b.area_id) ?? null : null;
+  const joined = b as BusinessRow & {
+    categories?: CategoryRow | null;
+    areas?: AreaRow | null;
+    plans?: PlanRow | null;
+    category?: CategoryRow | null;
+    area?: AreaRow | null;
+    plan?: PlanRow | null;
+    active_offers?: OfferRow[];
+    approved_reviews?: ReviewRow[];
+  };
+  const category = joined.category ?? joined.categories ?? db.categories.find((c) => c.id === b.category_id) ?? null;
+  const area = joined.area ?? joined.areas ?? (b.area_id ? db.areas.find((a) => a.id === b.area_id) ?? null : null);
   const effCode = effectivePlanCode(b.plan_code, b.plan_expires_at);
-  const plan = db.plans.find((p) => p.code === effCode) ?? db.plans[0] ?? null;
+  const plan = joined.plan ?? joined.plans ?? db.plans.find((p) => p.code === effCode) ?? db.plans[0] ?? null;
   const today = todayDateStr();
-  const active_offers = db.offers.filter(
+  const active_offers = joined.active_offers ?? db.offers.filter(
     (o) => o.business_id === b.id && isOfferCurrentlyValid(o, today)
   );
-  const approved_reviews = db.reviews.filter(
+  const approved_reviews = joined.approved_reviews ?? db.reviews.filter(
     (r) => r.business_id === b.id && r.status === 'approved'
   );
   return {
@@ -723,17 +733,13 @@ export async function fetchBusinessesByIds(ids: string[]): Promise<BusinessPubli
   if (client) {
     const { data, error } = await client
       .from('businesses')
-      .select('*, categories(*), areas(*)')
+      .select('*, categories(*), areas(*), plans(*)')
       .in('id', ids)
       .eq('status', 'published');
     if (!error && data) {
       return (
-        data as Array<BusinessRow & { categories?: CategoryRow | null; areas?: AreaRow | null }>
-      ).map((row) => ({
-        ...row,
-        category: row.categories ?? null,
-        area: row.areas ?? null,
-      }));
+        data as Array<BusinessRow & { categories?: CategoryRow | null; areas?: AreaRow | null; plans?: PlanRow | null }>
+      ).map((row) => enrichBusiness(row, loadDemoDb()));
     }
   }
   const db = loadDemoDb();
@@ -966,7 +972,7 @@ export async function fetchOwnerListings(ownerId: string): Promise<BusinessPubli
   if (client) {
     const { data, error } = await client
       .from('businesses')
-      .select('*')
+      .select('*, categories(*), areas(*), plans(*)')
       .eq('owner_id', ownerId)
       .order('updated_at', { ascending: false });
     if (!error && data) {
@@ -1383,7 +1389,7 @@ export async function fetchAdminBusinesses(): Promise<BusinessPublicView[]> {
   if (client) {
     const { data, error } = await client
       .from('businesses')
-      .select('*')
+      .select('*, categories(*), areas(*), plans(*)')
       .order('updated_at', { ascending: false });
     if (!error && data) {
       const db = loadDemoDb();
