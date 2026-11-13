@@ -1,11 +1,18 @@
--- Consolidated baseline snapshot of the live Hello Sadiqabad Supabase schema.
--- This migration is intended for a fresh Supabase project; existing projects have already
--- received the same schema through the ordered migrations recorded in supabase/README.md.
+-- Consolidated baseline schema snapshot for Hello Sadiqabad.
+-- This is the reproducible baseline for a fresh Supabase project.
 create schema if not exists extensions;
 create schema if not exists private;
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 create extension if not exists pg_trgm with schema extensions;
 create extension if not exists unaccent with schema extensions;
+
+-- URL validators are required by table CHECK constraints below.
+create or replace function public.is_valid_https_url(p text)
+returns boolean language sql immutable set search_path=''
+as $$ select p is null or (char_length(p)<=500 and p ~ '^https://[^[:space:]]+$') $$;
+create or replace function public.are_valid_https_urls(items text[])
+returns boolean language sql immutable set search_path=''
+as $$ select coalesce(bool_and(public.is_valid_https_url(x)),true) from unnest(coalesce(items,'{}'::text[])) x $$;
 
 create table if not exists public."ads" (
   "id" uuid default gen_random_uuid() not null,
@@ -23,17 +30,7 @@ create table if not exists public."ads" (
   "created_by" uuid,
   "reviewed_by" uuid,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "ads_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
-  constraint "ads_check" CHECK ((end_date >= start_date)),
-  constraint "ads_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "ads_image_https" CHECK (is_valid_https_url(image_url)),
-  constraint "ads_pkey" PRIMARY KEY (id),
-  constraint "ads_placement_check" CHECK ((placement = ANY (ARRAY['homepage_top'::text, 'search_sidebar'::text, 'category_banner'::text, 'popup'::text]))),
-  constraint "ads_reviewed_by_fkey" FOREIGN KEY (reviewed_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "ads_status_check" CHECK ((status = ANY (ARRAY['pending'::text, 'active'::text, 'paused'::text, 'expired'::text, 'rejected'::text]))),
-  constraint "ads_target_https" CHECK (is_valid_https_url(target_url)),
-  constraint "ads_title_check" CHECK (((char_length(title) >= 2) AND (char_length(title) <= 120)))
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."announcements" (
@@ -48,11 +45,7 @@ create table if not exists public."announcements" (
   "is_active" boolean default true not null,
   "created_by" uuid,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "announcements_check" CHECK ((end_date >= start_date)),
-  constraint "announcements_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "announcements_link_https" CHECK (is_valid_https_url(link_url)),
-  constraint "announcements_pkey" PRIMARY KEY (id)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."areas" (
@@ -63,10 +56,7 @@ create table if not exists public."areas" (
   "slug" text not null,
   "is_active" boolean default true not null,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "areas_city_id_fkey" FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE,
-  constraint "areas_city_id_slug_key" UNIQUE (city_id, slug),
-  constraint "areas_pkey" PRIMARY KEY (id)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."audit_logs" (
@@ -76,9 +66,7 @@ create table if not exists public."audit_logs" (
   "entity" text not null,
   "entity_id" text,
   "details" jsonb default '{}'::jsonb not null,
-  "created_at" timestamp with time zone default now() not null,
-  constraint "audit_logs_actor_id_fkey" FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "audit_logs_pkey" PRIMARY KEY (id)
+  "created_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."business_events" (
@@ -87,10 +75,7 @@ create table if not exists public."business_events" (
   "event_type" text not null,
   "ad_id" uuid,
   "session_id" text not null,
-  "created_at" timestamp with time zone default now() not null,
-  constraint "business_events_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
-  constraint "business_events_event_type_check" CHECK ((event_type = ANY (ARRAY['view'::text, 'call'::text, 'whatsapp'::text, 'directions'::text, 'share'::text, 'search_appearance'::text]))),
-  constraint "business_events_pkey" PRIMARY KEY (id)
+  "created_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."business_notes" (
@@ -98,11 +83,7 @@ create table if not exists public."business_notes" (
   "business_id" uuid not null,
   "author_id" uuid not null,
   "note" text not null,
-  "created_at" timestamp with time zone default now() not null,
-  constraint "business_notes_author_id_fkey" FOREIGN KEY (author_id) REFERENCES profiles(id) ON DELETE CASCADE,
-  constraint "business_notes_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
-  constraint "business_notes_note_check" CHECK (((char_length(note) >= 1) AND (char_length(note) <= 2000))),
-  constraint "business_notes_pkey" PRIMARY KEY (id)
+  "created_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."businesses" (
@@ -164,27 +145,7 @@ create table if not exists public."businesses" (
   "published_at" timestamp with time zone,
   "claimed_at" timestamp with time zone,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "businesses_area_id_fkey" FOREIGN KEY (area_id) REFERENCES areas(id) ON DELETE SET NULL,
-  constraint "businesses_assigned_to_fkey" FOREIGN KEY (assigned_to) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "businesses_category_id_fkey" FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT,
-  constraint "businesses_city_id_fkey" FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE RESTRICT,
-  constraint "businesses_city_id_slug_key" UNIQUE (city_id, slug),
-  constraint "businesses_cover_https" CHECK (is_valid_https_url(cover_url)),
-  constraint "businesses_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "businesses_facebook_https" CHECK (is_valid_https_url(facebook_url)),
-  constraint "businesses_gallery_https" CHECK (are_valid_https_urls(gallery_urls)),
-  constraint "businesses_instagram_https" CHECK (is_valid_https_url(instagram_url)),
-  constraint "businesses_logo_https" CHECK (is_valid_https_url(logo_url)),
-  constraint "businesses_owner_id_fkey" FOREIGN KEY (owner_id) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "businesses_owner_photo_https" CHECK (is_valid_https_url(owner_photo_url)),
-  constraint "businesses_pkey" PRIMARY KEY (id),
-  constraint "businesses_plan_code_fkey" FOREIGN KEY (plan_code) REFERENCES plans(code),
-  constraint "businesses_status_check" CHECK ((status = ANY (ARRAY['draft'::text, 'pending_approval'::text, 'published'::text, 'rejected'::text, 'suspended'::text, 'archived'::text]))),
-  constraint "businesses_tiktok_https" CHECK (is_valid_https_url(tiktok_url)),
-  constraint "businesses_videos_https" CHECK (are_valid_https_urls(video_urls)),
-  constraint "businesses_website_https" CHECK (is_valid_https_url(website_url)),
-  constraint "businesses_youtube_https" CHECK (is_valid_https_url(youtube_url))
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."categories" (
@@ -199,10 +160,7 @@ create table if not exists public."categories" (
   "synonyms" text[] default '{}'::text[] not null,
   "is_active" boolean default true not null,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "categories_parent_id_fkey" FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE CASCADE,
-  constraint "categories_pkey" PRIMARY KEY (id),
-  constraint "categories_slug_key" UNIQUE (slug)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."cities" (
@@ -214,9 +172,7 @@ create table if not exists public."cities" (
   "center_lng" numeric(9,6),
   "is_active" boolean default true not null,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "cities_pkey" PRIMARY KEY (id),
-  constraint "cities_slug_key" UNIQUE (slug)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."daily_business_stats" (
@@ -226,9 +182,7 @@ create table if not exists public."daily_business_stats" (
   "calls" integer default 0 not null,
   "whatsapp" integer default 0 not null,
   "directions" integer default 0 not null,
-  "shares" integer default 0 not null,
-  constraint "daily_business_stats_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
-  constraint "daily_business_stats_pkey" PRIMARY KEY (business_id, stat_date)
+  "shares" integer default 0 not null
 );
 
 create table if not exists public."emergency_contacts" (
@@ -245,11 +199,7 @@ create table if not exists public."emergency_contacts" (
   "description_ur" text,
   "whatsapp" text,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "emergency_contacts_category_check" CHECK ((category = ANY (ARRAY['rescue'::text, 'police'::text, 'fire'::text, 'ambulance'::text, 'hospital'::text, 'utility'::text, 'general'::text]))),
-  constraint "emergency_contacts_city_id_fkey" FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE,
-  constraint "emergency_contacts_name_en_phone_key" UNIQUE (name_en, phone),
-  constraint "emergency_contacts_pkey" PRIMARY KEY (id)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."import_batches" (
@@ -260,9 +210,7 @@ create table if not exists public."import_batches" (
   "failed_count" integer default 0 not null,
   "errors" jsonb default '[]'::jsonb not null,
   "created_by" uuid,
-  "created_at" timestamp with time zone default now() not null,
-  constraint "import_batches_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "import_batches_pkey" PRIMARY KEY (id)
+  "created_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."inquiries" (
@@ -274,13 +222,7 @@ create table if not exists public."inquiries" (
   "status" text default 'new'::text not null,
   "handled_by" uuid,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "inquiries_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
-  constraint "inquiries_handled_by_fkey" FOREIGN KEY (handled_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "inquiries_message_check" CHECK (((char_length(message) >= 5) AND (char_length(message) <= 1000))),
-  constraint "inquiries_name_check" CHECK (((char_length(name) >= 2) AND (char_length(name) <= 100))),
-  constraint "inquiries_pkey" PRIMARY KEY (id),
-  constraint "inquiries_status_check" CHECK ((status = ANY (ARRAY['new'::text, 'read'::text, 'handled'::text])))
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."leads" (
@@ -297,14 +239,7 @@ create table if not exists public."leads" (
   "created_by" uuid,
   "converted_business_id" uuid,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "leads_assigned_to_fkey" FOREIGN KEY (assigned_to) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "leads_converted_business_id_fkey" FOREIGN KEY (converted_business_id) REFERENCES businesses(id) ON DELETE SET NULL,
-  constraint "leads_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "leads_name_check" CHECK (((char_length(name) >= 2) AND (char_length(name) <= 100))),
-  constraint "leads_notes_check" CHECK (((notes IS NULL) OR (char_length(notes) <= 2000))),
-  constraint "leads_pkey" PRIMARY KEY (id),
-  constraint "leads_status_check" CHECK ((status = ANY (ARRAY['new'::text, 'contacted'::text, 'interested'::text, 'paid'::text, 'converted'::text, 'dropped'::text, 'not_interested'::text])))
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."notifications" (
@@ -317,10 +252,7 @@ create table if not exists public."notifications" (
   "body_ur" text not null,
   "link_path" text,
   "is_read" boolean default false not null,
-  "created_at" timestamp with time zone default now() not null,
-  constraint "notifications_pkey" PRIMARY KEY (id),
-  constraint "notifications_type_check" CHECK ((type = ANY (ARRAY['inquiry'::text, 'review'::text, 'listing_status'::text, 'plan_expiring'::text, 'claim'::text, 'general'::text]))),
-  constraint "notifications_user_id_fkey" FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE
+  "created_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."offers" (
@@ -333,12 +265,7 @@ create table if not exists public."offers" (
   "valid_to" date not null,
   "status" text default 'active'::text not null,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "offers_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
-  constraint "offers_check" CHECK ((valid_to >= valid_from)),
-  constraint "offers_image_https" CHECK (is_valid_https_url(image_url)),
-  constraint "offers_pkey" PRIMARY KEY (id),
-  constraint "offers_status_check" CHECK ((status = ANY (ARRAY['active'::text, 'paused'::text, 'expired'::text])))
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."pages" (
@@ -351,10 +278,7 @@ create table if not exists public."pages" (
   "is_published" boolean default false not null,
   "updated_by" uuid,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "pages_pkey" PRIMARY KEY (id),
-  constraint "pages_slug_key" UNIQUE (slug),
-  constraint "pages_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES profiles(id) ON DELETE SET NULL
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."plans" (
@@ -368,10 +292,7 @@ create table if not exists public."plans" (
   "is_active" boolean default true not null,
   "sort_order" integer default 0 not null,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "plans_code_check" CHECK ((code = ANY (ARRAY['free'::text, 'basic'::text, 'premium'::text]))),
-  constraint "plans_code_key" UNIQUE (code),
-  constraint "plans_pkey" PRIMARY KEY (id)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."profiles" (
@@ -383,18 +304,13 @@ create table if not exists public."profiles" (
   "must_change_password" boolean default false not null,
   "created_at" timestamp with time zone default now() not null,
   "updated_at" timestamp with time zone default now() not null,
-  "is_active" boolean default true not null,
-  constraint "profiles_avatar_https" CHECK (is_valid_https_url(avatar_url)),
-  constraint "profiles_id_fkey" FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE,
-  constraint "profiles_pkey" PRIMARY KEY (id),
-  constraint "profiles_role_check" CHECK ((role = ANY (ARRAY['super_admin'::text, 'staff'::text, 'owner'::text])))
+  "is_active" boolean default true not null
 );
 
 create table if not exists public."rate_limits" (
   "key" text not null,
   "window_start" timestamp with time zone not null,
-  "count" integer default 0 not null,
-  constraint "rate_limits_pkey" PRIMARY KEY (key)
+  "count" integer default 0 not null
 );
 
 create table if not exists public."reviews" (
@@ -407,14 +323,7 @@ create table if not exists public."reviews" (
   "owner_reply" text,
   "owner_reply_at" timestamp with time zone,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "reviews_author_name_check" CHECK (((char_length(author_name) >= 2) AND (char_length(author_name) <= 60))),
-  constraint "reviews_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
-  constraint "reviews_comment_check" CHECK ((char_length(comment) <= 500)),
-  constraint "reviews_owner_reply_check" CHECK (((owner_reply IS NULL) OR (char_length(owner_reply) <= 500))),
-  constraint "reviews_pkey" PRIMARY KEY (id),
-  constraint "reviews_rating_check" CHECK (((rating >= 1) AND (rating <= 5))),
-  constraint "reviews_status_check" CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])))
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."search_logs" (
@@ -422,8 +331,7 @@ create table if not exists public."search_logs" (
   "query" text not null,
   "filters" jsonb default '{}'::jsonb not null,
   "results_count" integer default 0 not null,
-  "created_at" timestamp with time zone default now() not null,
-  constraint "search_logs_pkey" PRIMARY KEY (id)
+  "created_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."site_settings" (
@@ -431,8 +339,7 @@ create table if not exists public."site_settings" (
   "value" jsonb not null,
   "description" text,
   "is_public" boolean default false not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "site_settings_pkey" PRIMARY KEY (key)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."staff_members" (
@@ -442,10 +349,7 @@ create table if not exists public."staff_members" (
   "permissions" jsonb default '{}'::jsonb not null,
   "is_active" boolean default true not null,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "staff_members_pkey" PRIMARY KEY (id),
-  constraint "staff_members_user_id_fkey" FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
-  constraint "staff_members_user_id_key" UNIQUE (user_id)
+  "updated_at" timestamp with time zone default now() not null
 );
 
 create table if not exists public."submissions" (
@@ -459,14 +363,118 @@ create table if not exists public."submissions" (
   "assigned_to" uuid,
   "admin_note" text,
   "created_at" timestamp with time zone default now() not null,
-  "updated_at" timestamp with time zone default now() not null,
-  constraint "submissions_assigned_to_fkey" FOREIGN KEY (assigned_to) REFERENCES profiles(id) ON DELETE SET NULL,
-  constraint "submissions_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL,
-  constraint "submissions_payload_check" CHECK ((pg_column_size(payload) <= 8192)),
-  constraint "submissions_pkey" PRIMARY KEY (id),
-  constraint "submissions_status_check" CHECK ((status = ANY (ARRAY['new'::text, 'in_review'::text, 'done'::text, 'rejected'::text]))),
-  constraint "submissions_type_check" CHECK ((type = ANY (ARRAY['new_business'::text, 'correction'::text, 'claim'::text, 'phone_suggestion'::text, 'report'::text, 'broken_image'::text, 'plan_upgrade'::text])))
+  "updated_at" timestamp with time zone default now() not null
 );
+
+alter table public."ads" add constraint "ads_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+alter table public."ads" add constraint "ads_check" CHECK ((end_date >= start_date));
+alter table public."ads" add constraint "ads_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."ads" add constraint "ads_image_https" CHECK (is_valid_https_url(image_url));
+alter table public."ads" add constraint "ads_pkey" PRIMARY KEY (id);
+alter table public."ads" add constraint "ads_placement_check" CHECK ((placement = ANY (ARRAY['homepage_top'::text, 'search_sidebar'::text, 'category_banner'::text, 'popup'::text])));
+alter table public."ads" add constraint "ads_reviewed_by_fkey" FOREIGN KEY (reviewed_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."ads" add constraint "ads_status_check" CHECK ((status = ANY (ARRAY['pending'::text, 'active'::text, 'paused'::text, 'expired'::text, 'rejected'::text])));
+alter table public."ads" add constraint "ads_target_https" CHECK (is_valid_https_url(target_url));
+alter table public."ads" add constraint "ads_title_check" CHECK (((char_length(title) >= 2) AND (char_length(title) <= 120)));
+alter table public."announcements" add constraint "announcements_check" CHECK ((end_date >= start_date));
+alter table public."announcements" add constraint "announcements_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."announcements" add constraint "announcements_link_https" CHECK (is_valid_https_url(link_url));
+alter table public."announcements" add constraint "announcements_pkey" PRIMARY KEY (id);
+alter table public."areas" add constraint "areas_city_id_fkey" FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE;
+alter table public."areas" add constraint "areas_city_id_slug_key" UNIQUE (city_id, slug);
+alter table public."areas" add constraint "areas_pkey" PRIMARY KEY (id);
+alter table public."audit_logs" add constraint "audit_logs_actor_id_fkey" FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."audit_logs" add constraint "audit_logs_pkey" PRIMARY KEY (id);
+alter table public."business_events" add constraint "business_events_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+alter table public."business_events" add constraint "business_events_event_type_check" CHECK ((event_type = ANY (ARRAY['view'::text, 'call'::text, 'whatsapp'::text, 'directions'::text, 'share'::text, 'search_appearance'::text])));
+alter table public."business_events" add constraint "business_events_pkey" PRIMARY KEY (id);
+alter table public."business_notes" add constraint "business_notes_author_id_fkey" FOREIGN KEY (author_id) REFERENCES profiles(id) ON DELETE CASCADE;
+alter table public."business_notes" add constraint "business_notes_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+alter table public."business_notes" add constraint "business_notes_note_check" CHECK (((char_length(note) >= 1) AND (char_length(note) <= 2000)));
+alter table public."business_notes" add constraint "business_notes_pkey" PRIMARY KEY (id);
+alter table public."businesses" add constraint "businesses_area_id_fkey" FOREIGN KEY (area_id) REFERENCES areas(id) ON DELETE SET NULL;
+alter table public."businesses" add constraint "businesses_assigned_to_fkey" FOREIGN KEY (assigned_to) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."businesses" add constraint "businesses_category_id_fkey" FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT;
+alter table public."businesses" add constraint "businesses_city_id_fkey" FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE RESTRICT;
+alter table public."businesses" add constraint "businesses_city_id_slug_key" UNIQUE (city_id, slug);
+alter table public."businesses" add constraint "businesses_cover_https" CHECK (is_valid_https_url(cover_url));
+alter table public."businesses" add constraint "businesses_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."businesses" add constraint "businesses_facebook_https" CHECK (is_valid_https_url(facebook_url));
+alter table public."businesses" add constraint "businesses_gallery_https" CHECK (are_valid_https_urls(gallery_urls));
+alter table public."businesses" add constraint "businesses_instagram_https" CHECK (is_valid_https_url(instagram_url));
+alter table public."businesses" add constraint "businesses_logo_https" CHECK (is_valid_https_url(logo_url));
+alter table public."businesses" add constraint "businesses_owner_id_fkey" FOREIGN KEY (owner_id) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."businesses" add constraint "businesses_owner_photo_https" CHECK (is_valid_https_url(owner_photo_url));
+alter table public."businesses" add constraint "businesses_pkey" PRIMARY KEY (id);
+alter table public."businesses" add constraint "businesses_plan_code_fkey" FOREIGN KEY (plan_code) REFERENCES plans(code);
+alter table public."businesses" add constraint "businesses_status_check" CHECK ((status = ANY (ARRAY['draft'::text, 'pending_approval'::text, 'published'::text, 'rejected'::text, 'suspended'::text, 'archived'::text])));
+alter table public."businesses" add constraint "businesses_tiktok_https" CHECK (is_valid_https_url(tiktok_url));
+alter table public."businesses" add constraint "businesses_videos_https" CHECK (are_valid_https_urls(video_urls));
+alter table public."businesses" add constraint "businesses_website_https" CHECK (is_valid_https_url(website_url));
+alter table public."businesses" add constraint "businesses_youtube_https" CHECK (is_valid_https_url(youtube_url));
+alter table public."categories" add constraint "categories_parent_id_fkey" FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE CASCADE;
+alter table public."categories" add constraint "categories_pkey" PRIMARY KEY (id);
+alter table public."categories" add constraint "categories_slug_key" UNIQUE (slug);
+alter table public."cities" add constraint "cities_pkey" PRIMARY KEY (id);
+alter table public."cities" add constraint "cities_slug_key" UNIQUE (slug);
+alter table public."daily_business_stats" add constraint "daily_business_stats_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+alter table public."daily_business_stats" add constraint "daily_business_stats_pkey" PRIMARY KEY (business_id, stat_date);
+alter table public."emergency_contacts" add constraint "emergency_contacts_category_check" CHECK ((category = ANY (ARRAY['rescue'::text, 'police'::text, 'fire'::text, 'ambulance'::text, 'hospital'::text, 'utility'::text, 'general'::text])));
+alter table public."emergency_contacts" add constraint "emergency_contacts_city_id_fkey" FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE;
+alter table public."emergency_contacts" add constraint "emergency_contacts_name_en_phone_key" UNIQUE (name_en, phone);
+alter table public."emergency_contacts" add constraint "emergency_contacts_pkey" PRIMARY KEY (id);
+alter table public."import_batches" add constraint "import_batches_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."import_batches" add constraint "import_batches_pkey" PRIMARY KEY (id);
+alter table public."inquiries" add constraint "inquiries_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+alter table public."inquiries" add constraint "inquiries_handled_by_fkey" FOREIGN KEY (handled_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."inquiries" add constraint "inquiries_message_check" CHECK (((char_length(message) >= 5) AND (char_length(message) <= 1000)));
+alter table public."inquiries" add constraint "inquiries_name_check" CHECK (((char_length(name) >= 2) AND (char_length(name) <= 100)));
+alter table public."inquiries" add constraint "inquiries_pkey" PRIMARY KEY (id);
+alter table public."inquiries" add constraint "inquiries_status_check" CHECK ((status = ANY (ARRAY['new'::text, 'read'::text, 'handled'::text])));
+alter table public."leads" add constraint "leads_assigned_to_fkey" FOREIGN KEY (assigned_to) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."leads" add constraint "leads_converted_business_id_fkey" FOREIGN KEY (converted_business_id) REFERENCES businesses(id) ON DELETE SET NULL;
+alter table public."leads" add constraint "leads_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."leads" add constraint "leads_name_check" CHECK (((char_length(name) >= 2) AND (char_length(name) <= 100)));
+alter table public."leads" add constraint "leads_notes_check" CHECK (((notes IS NULL) OR (char_length(notes) <= 2000)));
+alter table public."leads" add constraint "leads_pkey" PRIMARY KEY (id);
+alter table public."leads" add constraint "leads_status_check" CHECK ((status = ANY (ARRAY['new'::text, 'contacted'::text, 'interested'::text, 'paid'::text, 'converted'::text, 'dropped'::text, 'not_interested'::text])));
+alter table public."notifications" add constraint "notifications_pkey" PRIMARY KEY (id);
+alter table public."notifications" add constraint "notifications_type_check" CHECK ((type = ANY (ARRAY['inquiry'::text, 'review'::text, 'listing_status'::text, 'plan_expiring'::text, 'claim'::text, 'general'::text])));
+alter table public."notifications" add constraint "notifications_user_id_fkey" FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+alter table public."offers" add constraint "offers_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+alter table public."offers" add constraint "offers_check" CHECK ((valid_to >= valid_from));
+alter table public."offers" add constraint "offers_image_https" CHECK (is_valid_https_url(image_url));
+alter table public."offers" add constraint "offers_pkey" PRIMARY KEY (id);
+alter table public."offers" add constraint "offers_status_check" CHECK ((status = ANY (ARRAY['active'::text, 'paused'::text, 'expired'::text])));
+alter table public."pages" add constraint "pages_pkey" PRIMARY KEY (id);
+alter table public."pages" add constraint "pages_slug_key" UNIQUE (slug);
+alter table public."pages" add constraint "pages_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."plans" add constraint "plans_code_check" CHECK ((code = ANY (ARRAY['free'::text, 'basic'::text, 'premium'::text])));
+alter table public."plans" add constraint "plans_code_key" UNIQUE (code);
+alter table public."plans" add constraint "plans_pkey" PRIMARY KEY (id);
+alter table public."profiles" add constraint "profiles_avatar_https" CHECK (is_valid_https_url(avatar_url));
+alter table public."profiles" add constraint "profiles_id_fkey" FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public."profiles" add constraint "profiles_pkey" PRIMARY KEY (id);
+alter table public."profiles" add constraint "profiles_role_check" CHECK ((role = ANY (ARRAY['super_admin'::text, 'staff'::text, 'owner'::text])));
+alter table public."rate_limits" add constraint "rate_limits_pkey" PRIMARY KEY (key);
+alter table public."reviews" add constraint "reviews_author_name_check" CHECK (((char_length(author_name) >= 2) AND (char_length(author_name) <= 60)));
+alter table public."reviews" add constraint "reviews_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+alter table public."reviews" add constraint "reviews_comment_check" CHECK ((char_length(comment) <= 500));
+alter table public."reviews" add constraint "reviews_owner_reply_check" CHECK (((owner_reply IS NULL) OR (char_length(owner_reply) <= 500)));
+alter table public."reviews" add constraint "reviews_pkey" PRIMARY KEY (id);
+alter table public."reviews" add constraint "reviews_rating_check" CHECK (((rating >= 1) AND (rating <= 5)));
+alter table public."reviews" add constraint "reviews_status_check" CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])));
+alter table public."search_logs" add constraint "search_logs_pkey" PRIMARY KEY (id);
+alter table public."site_settings" add constraint "site_settings_pkey" PRIMARY KEY (key);
+alter table public."staff_members" add constraint "staff_members_pkey" PRIMARY KEY (id);
+alter table public."staff_members" add constraint "staff_members_user_id_fkey" FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+alter table public."staff_members" add constraint "staff_members_user_id_key" UNIQUE (user_id);
+alter table public."submissions" add constraint "submissions_assigned_to_fkey" FOREIGN KEY (assigned_to) REFERENCES profiles(id) ON DELETE SET NULL;
+alter table public."submissions" add constraint "submissions_business_id_fkey" FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL;
+alter table public."submissions" add constraint "submissions_payload_check" CHECK ((pg_column_size(payload) <= 8192));
+alter table public."submissions" add constraint "submissions_pkey" PRIMARY KEY (id);
+alter table public."submissions" add constraint "submissions_status_check" CHECK ((status = ANY (ARRAY['new'::text, 'in_review'::text, 'done'::text, 'rejected'::text])));
+alter table public."submissions" add constraint "submissions_type_check" CHECK ((type = ANY (ARRAY['new_business'::text, 'correction'::text, 'claim'::text, 'phone_suggestion'::text, 'report'::text, 'broken_image'::text, 'plan_upgrade'::text])));
 
 CREATE INDEX IF NOT EXISTS idx_ads_business_id ON public.ads USING btree (business_id)
 CREATE INDEX IF NOT EXISTS idx_ads_created_by ON public.ads USING btree (created_by)
@@ -1399,4 +1407,3 @@ grant execute on function public."trg_normalize_business_phone"() to "service_ro
 grant execute on function public."trg_normalize_lead_phone"() to "anon";
 grant execute on function public."trg_normalize_lead_phone"() to "authenticated";
 grant execute on function public."trg_normalize_lead_phone"() to "service_role";
-
