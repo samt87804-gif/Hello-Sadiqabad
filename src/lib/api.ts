@@ -150,7 +150,7 @@ function createInitialDemoDb(): DemoDbState {
 let memoryDbCache: DemoDbState | null = null;
 
 export function loadDemoDb(): DemoDbState {
-  if (supabaseConfig.isConfigured) {
+  if (supabaseConfig.isConfigured || supabaseConfig.isProductionBuild) {
     if (memoryDbCache) return memoryDbCache;
     const empty = createInitialDemoDb();
     empty.categories = [];
