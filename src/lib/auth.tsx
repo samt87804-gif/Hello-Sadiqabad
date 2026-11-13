@@ -358,7 +358,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) return { ok: false, error: error.message };
       return { ok: true, simulated: false };
     }
-    return { ok: true, simulated: true };
+    return isDemoMode ? { ok: true, simulated: true } : { ok: false, error: 'Supabase is not configured for this production deployment.' };
   };
 
   return (
