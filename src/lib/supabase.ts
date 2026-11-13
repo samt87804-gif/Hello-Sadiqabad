@@ -15,6 +15,7 @@ export const supabaseConfig = {
   defaultCitySlug: (env.VITE_DEFAULT_CITY as string | undefined)?.trim() || 'sadiqabad',
   siteUrl: (env.VITE_SITE_URL as string | undefined)?.trim() || 'https://hellosadiqabad.com',
   isConfigured: Boolean(supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('https://')),
+  isProductionBuild: Boolean((env.PROD as boolean | undefined) ?? (env.MODE === 'production')),
 };
 
 let client: SupabaseClient | null = null;
