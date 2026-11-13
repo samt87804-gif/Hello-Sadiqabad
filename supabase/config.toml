@@ -1,0 +1,22 @@
+project_id = "efwohfzqitevkuybnyif"
+
+[functions.submit-review]
+verify_jwt = false
+
+[functions.submit-inquiry]
+verify_jwt = false
+
+[functions.submit-suggestion]
+verify_jwt = false
+
+[functions.track-event]
+verify_jwt = false
+
+[functions.admin-create-user]
+verify_jwt = true
+
+[functions.admin-reset-password]
+verify_jwt = true
+
+[functions.admin-set-user-active]
+verify_jwt = true
