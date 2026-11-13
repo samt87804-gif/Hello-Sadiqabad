@@ -25,7 +25,7 @@ Database: PostgreSQL 17
 | `admin-reset-password` | On | Super-admin password reset; requires password change |
 | `admin-set-user-active` | On | Super-admin account activation/deactivation |
 
-Public function source is under `functions/<name>/index.ts`. The admin endpoints are deployed in the connected Supabase project; keep their source mirrored here before changing them.
+Public function source is under `supabase/functions/<name>/index.ts`. The admin endpoints are deployed in the connected Supabase project; keep their source mirrored here before changing them.
 
 ## Scheduled maintenance
 
