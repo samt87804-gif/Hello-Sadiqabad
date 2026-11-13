@@ -115,6 +115,7 @@ export interface ProfileRow {
   phone: string | null;
   avatar_url: string | null;
   must_change_password: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
