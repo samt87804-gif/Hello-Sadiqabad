@@ -13,7 +13,7 @@ export const supabaseConfig = {
   url: supabaseUrl,
   anonKey: supabaseAnonKey,
   defaultCitySlug: (env.VITE_DEFAULT_CITY as string | undefined)?.trim() || 'sadiqabad',
-  siteUrl: (env.VITE_SITE_URL as string | undefined)?.trim() || 'https://hellosadiqabad.com',
+  siteUrl: (env.VITE_SITE_URL as string | undefined)?.trim() || 'https://hello-sadiqabad-2bs.pages.dev',
   isConfigured: Boolean(supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('https://')),
   isProductionBuild: Boolean((env.PROD as boolean | undefined) ?? (env.MODE === 'production')),
 };
