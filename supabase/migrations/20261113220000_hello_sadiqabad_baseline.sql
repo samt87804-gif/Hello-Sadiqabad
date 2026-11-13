@@ -1247,6 +1247,7 @@ CREATE TRIGGER trg_updated_at BEFORE UPDATE ON staff_members FOR EACH ROW EXECUT
 CREATE TRIGGER trg_updated_at BEFORE UPDATE ON submissions FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
 grant usage on schema public to anon, authenticated, service_role;
+grant execute on function public.is_business_open_now(jsonb, boolean) to anon, authenticated;
 grant usage on schema private to authenticated, service_role;
 revoke execute on all functions in schema public from public;
 revoke execute on all functions in schema private from public;
@@ -1407,3 +1408,13 @@ grant execute on function public."trg_normalize_business_phone"() to "service_ro
 grant execute on function public."trg_normalize_lead_phone"() to "anon";
 grant execute on function public."trg_normalize_lead_phone"() to "authenticated";
 grant execute on function public."trg_normalize_lead_phone"() to "service_role";
+
+-- Scheduled maintenance: 02:00 and 02:30 Pakistan time (UTC+5).
+create extension if not exists pg_cron with schema pg_catalog;
+select cron.unschedule(jobid) from cron.job where jobname in('hello-sadiqabad-expire-plans','hello-sadiqabad-data-retention');
+select cron.schedule('hello-sadiqabad-expire-plans','0 21 * * *','select public.expire_plans_and_offers();');
+select cron.schedule('hello-sadiqabad-data-retention','30 21 * * 0',$job$
+ delete from public.rate_limits where window_start < now()-interval '1 day';
+ delete from public.search_logs where created_at < now()-interval '180 days';
+ delete from public.business_events where created_at < now()-interval '400 days';
+$job$);
