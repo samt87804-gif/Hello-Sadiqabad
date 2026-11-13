@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isActiveUser, setIsActiveUser] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const isDemoMode = !supabaseConfig.isConfigured;
+  const isDemoMode = !supabaseConfig.isConfigured && !supabaseConfig.isProductionBuild;
 
   const hydrateUser = useCallback(async (authUser: AuthUser | null) => {
     if (!authUser) {
@@ -84,6 +84,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (!isDemoMode) {
+      setUser(null);
+      setProfile(null);
+      setRole(null);
+      setStaffTypes([]);
+      setPermissions([]);
+      setIsActiveUser(false);
+      return;
+    }
     const db = loadDemoDb();
     const prof = db.profiles.find((p) => p.id === authUser.id) ?? null;
     const permsRes = await fetchMyPermissions(authUser.id);
@@ -126,7 +135,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    // Demo mode session restore
+    if (!isDemoMode) {
+      void hydrateUser(null).finally(() => { if (active) setLoading(false); });
+      return () => { active = false; };
+    }
+
+    // Local development demo session restore only
     const initDemo = async () => {
       try {
         const savedId = localStorage.getItem(DEMO_SESSION_KEY);
@@ -189,7 +203,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    // Demo login: match existing user email (or default demo accounts)
+    if (!isDemoMode) {
+      return { ok: false, error: 'Supabase is not configured for this production deployment. Add the required Cloudflare environment variables.' };
+    }
+
+    // Local development demo login only
     const db = loadDemoDb();
     const matchedId = Object.entries(db.user_emails).find(
       ([, em]) => em.toLowerCase() === cleanEmail
@@ -228,6 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isDemoMode) {
       return { ok: false, redirectPath: '/login' };
     }
+    if (!isDemoMode) return { ok: false, redirectPath: '/login' };
     const db = loadDemoDb();
     const prof =
       db.profiles.find((p) => p.role === targetRole) ??
@@ -277,6 +296,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (!isDemoMode) throw new Error('Supabase is not configured for this production deployment.');
     const db = loadDemoDb();
     const prof = db.profiles.find((p) => p.id === user.id);
     if (prof) {
@@ -308,6 +328,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { ok: true, simulated: false };
     }
 
+    if (!isDemoMode) return { ok: false, error: 'Supabase is not configured for this production deployment.' };
     if (user) {
       const db = loadDemoDb();
       const prof = db.profiles.find((p) => p.id === user.id);
@@ -318,7 +339,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await refreshProfile();
       }
     }
-    return { ok: true, simulated: true };
+    return isDemoMode ? { ok: true, simulated: true } : { ok: false, error: 'Supabase is not configured for this production deployment.' };
   };
 
   const requestPasswordReset = async (
