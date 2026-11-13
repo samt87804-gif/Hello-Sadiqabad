@@ -1970,6 +1970,7 @@ export async function adminCreateUser(
     phone: input.phone ?? null,
     avatar_url: null,
     must_change_password: true,
+    is_active: true,
     created_at: nowIso(),
     updated_at: nowIso(),
   });
