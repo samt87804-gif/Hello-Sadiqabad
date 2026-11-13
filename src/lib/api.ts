@@ -439,6 +439,27 @@ export async function searchBusinesses(
     if (!error && Array.isArray(data)) {
       const rows = data as BusinessPublicView[];
       const total = rows[0]?.total_count ?? rows.length;
+      if (options.logSearch !== false) {
+        const searchTerm = filters.q?.trim() || (filters.category ? `category:${filters.category}` : filters.area ? `area:${filters.area}` : 'browse');
+        void client.functions.invoke('track-event', {
+          body: {
+            event_type: 'search',
+            query: searchTerm.slice(0, 120),
+            filters: {
+              category: filters.category ?? null,
+              area: filters.area ?? null,
+              open: Boolean(filters.open),
+              verified: Boolean(filters.verified),
+              offer: Boolean(filters.offer),
+              rating: filters.rating ?? null,
+              delivery: Boolean(filters.delivery),
+              sort: filters.sort ?? 'relevance',
+            },
+            results_count: total,
+            session_id: getOrCreateSessionId(),
+          },
+        });
+      }
       return { items: rows, total };
     }
   }
