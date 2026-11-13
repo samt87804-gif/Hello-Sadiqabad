@@ -1,0 +1,8 @@
+{
+  "name": "Hello Sadiqabad",
+  "description": "Official bilingual local business directory, city phone book, and 24/7 emergency helpline guide for Sadiqabad, District Rahim Yar Khan, Punjab.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}

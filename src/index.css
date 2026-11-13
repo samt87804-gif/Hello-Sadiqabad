@@ -1,0 +1,251 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Stitch Sadiqabad Civic Directory Tokens (Light Default) */
+  --color-surface: var(--hs-surface);
+  --color-surface-dim: var(--hs-surface-dim);
+  --color-surface-bright: var(--hs-surface-bright);
+  --color-surface-container-lowest: var(--hs-surface-container-lowest);
+  --color-surface-container-low: var(--hs-surface-container-low);
+  --color-surface-container: var(--hs-surface-container);
+  --color-surface-container-high: var(--hs-surface-container-high);
+  --color-surface-container-highest: var(--hs-surface-container-highest);
+  --color-surface-variant: var(--hs-surface-variant);
+  --color-surface-tint: var(--hs-surface-tint);
+  --color-background: var(--hs-background);
+  --color-on-background: var(--hs-on-background);
+  --color-on-surface: var(--hs-on-surface);
+  --color-on-surface-variant: var(--hs-on-surface-variant);
+  --color-inverse-surface: var(--hs-inverse-surface);
+  --color-inverse-on-surface: var(--hs-inverse-on-surface);
+  --color-outline: var(--hs-outline);
+  --color-outline-variant: var(--hs-outline-variant);
+
+  --color-primary: var(--hs-primary);
+  --color-on-primary: var(--hs-on-primary);
+  --color-primary-container: var(--hs-primary-container);
+  --color-on-primary-container: var(--hs-on-primary-container);
+  --color-primary-fixed: var(--hs-primary-fixed);
+  --color-primary-fixed-dim: var(--hs-primary-fixed-dim);
+  --color-on-primary-fixed: var(--hs-on-primary-fixed);
+  --color-on-primary-fixed-variant: var(--hs-on-primary-fixed-variant);
+  --color-inverse-primary: var(--hs-inverse-primary);
+
+  --color-secondary: var(--hs-secondary);
+  --color-on-secondary: var(--hs-on-secondary);
+  --color-secondary-container: var(--hs-secondary-container);
+  --color-on-secondary-container: var(--hs-on-secondary-container);
+  --color-secondary-fixed: var(--hs-secondary-fixed);
+  --color-secondary-fixed-dim: var(--hs-secondary-fixed-dim);
+  --color-on-secondary-fixed: var(--hs-on-secondary-fixed);
+  --color-on-secondary-fixed-variant: var(--hs-on-secondary-fixed-variant);
+
+  --color-tertiary: var(--hs-tertiary);
+  --color-on-tertiary: var(--hs-on-tertiary);
+  --color-tertiary-container: var(--hs-tertiary-container);
+  --color-on-tertiary-container: var(--hs-on-tertiary-container);
+  --color-tertiary-fixed: var(--hs-tertiary-fixed);
+  --color-tertiary-fixed-dim: var(--hs-tertiary-fixed-dim);
+  --color-on-tertiary-fixed: var(--hs-on-tertiary-fixed);
+  --color-on-tertiary-fixed-variant: var(--hs-on-tertiary-fixed-variant);
+
+  --color-error: var(--hs-error);
+  --color-on-error: var(--hs-on-error);
+  --color-error-container: var(--hs-error-container);
+  --color-on-error-container: var(--hs-on-error-container);
+
+  --color-whatsapp: #25D366;
+
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", "Noto Naskh Arabic", serif;
+}
+
+:root {
+  /* Design Brief + Stitch Civic Directory Tokens */
+  --brand-900: #064e3b;
+  --brand-600: #059669;
+  --brand-500: #10b981;
+  --accent: #d97706;
+  --bg: #f8f9ff;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #0b1c30;
+  --muted: #64748b;
+  --danger: #ba1a1a;
+  --success: #16a34a;
+  --whatsapp: #25D366;
+
+  --hs-surface: #f8f9ff;
+  --hs-surface-dim: #cbdbf5;
+  --hs-surface-bright: #f8f9ff;
+  --hs-surface-container-lowest: #ffffff;
+  --hs-surface-container-low: #eff4ff;
+  --hs-surface-container: #e5eeff;
+  --hs-surface-container-high: #dce9ff;
+  --hs-surface-container-highest: #d3e4fe;
+  --hs-surface-variant: #d3e4fe;
+  --hs-surface-tint: #006c4a;
+  --hs-background: #f8f9ff;
+  --hs-on-background: #0b1c30;
+  --hs-on-surface: #0b1c30;
+  --hs-on-surface-variant: #3d4a42;
+  --hs-inverse-surface: #213145;
+  --hs-inverse-on-surface: #eaf1ff;
+  --hs-outline: #6d7a72;
+  --hs-outline-variant: #bccac0;
+
+  --hs-primary: #006948;
+  --hs-on-primary: #ffffff;
+  --hs-primary-container: #00855d;
+  --hs-on-primary-container: #f5fff7;
+  --hs-primary-fixed: #85f8c4;
+  --hs-primary-fixed-dim: #68dba9;
+  --hs-on-primary-fixed: #002114;
+  --hs-on-primary-fixed-variant: #005137;
+  --hs-inverse-primary: #68dba9;
+
+  --hs-secondary: #904d00;
+  --hs-on-secondary: #ffffff;
+  --hs-secondary-container: #fe932c;
+  --hs-on-secondary-container: #2f1500;
+  --hs-secondary-fixed: #ffdcc3;
+  --hs-secondary-fixed-dim: #ffb77d;
+  --hs-on-secondary-fixed: #2f1500;
+  --hs-on-secondary-fixed-variant: #6e3900;
+
+  --hs-tertiary: #006b2e;
+  --hs-on-tertiary: #ffffff;
+  --hs-tertiary-container: #00873c;
+  --hs-on-tertiary-container: #f7fff3;
+  --hs-tertiary-fixed: #66ff8e;
+  --hs-tertiary-fixed-dim: #3de273;
+  --hs-on-tertiary-fixed: #002109;
+  --hs-on-tertiary-fixed-variant: #005322;
+
+  --hs-error: #ba1a1a;
+  --hs-on-error: #ffffff;
+  --hs-error-container: #ffdad6;
+  --hs-on-error-container: #93000a;
+}
+
+.dark {
+  --brand-900: #d1fae5;
+  --brand-600: #34d399;
+  --brand-500: #10b981;
+  --accent: #f59e0b;
+  --bg: #0b1210;
+  --surface: #131c19;
+  --border: #24312c;
+  --text: #e7efe9;
+  --muted: #94a3a0;
+  --danger: #f87171;
+  --success: #4ade80;
+
+  --hs-surface: #0b1210;
+  --hs-surface-dim: #080d0b;
+  --hs-surface-bright: #18231f;
+  --hs-surface-container-lowest: #131c19;
+  --hs-surface-container-low: #18231f;
+  --hs-surface-container: #1d2a25;
+  --hs-surface-container-high: #24332d;
+  --hs-surface-container-highest: #2c3d36;
+  --hs-surface-variant: #24312c;
+  --hs-surface-tint: #34d399;
+  --hs-background: #0b1210;
+  --hs-on-background: #e7efe9;
+  --hs-on-surface: #e7efe9;
+  --hs-on-surface-variant: #b3c2bc;
+  --hs-inverse-surface: #e7efe9;
+  --hs-inverse-on-surface: #0b1210;
+  --hs-outline: #94a3a0;
+  --hs-outline-variant: #2d3d37;
+
+  --hs-primary: #10b981;
+  --hs-on-primary: #032016;
+  --hs-primary-container: #059669;
+  --hs-on-primary-container: #ecfdf5;
+  --hs-primary-fixed: #064e3b;
+  --hs-primary-fixed-dim: #047857;
+  --hs-on-primary-fixed: #d1fae5;
+  --hs-on-primary-fixed-variant: #a7f3d0;
+  --hs-inverse-primary: #006948;
+
+  --hs-secondary: #f59e0b;
+  --hs-on-secondary: #261600;
+  --hs-secondary-container: #d97706;
+  --hs-on-secondary-container: #fffbeb;
+  --hs-secondary-fixed: #452700;
+  --hs-secondary-fixed-dim: #78350f;
+  --hs-on-secondary-fixed: #fde68a;
+  --hs-on-secondary-fixed-variant: #fcd34d;
+
+  --hs-tertiary: #34d399;
+  --hs-on-tertiary: #022c1b;
+  --hs-tertiary-container: #059669;
+  --hs-on-tertiary-container: #ecfdf5;
+  --hs-tertiary-fixed: #064e3b;
+  --hs-tertiary-fixed-dim: #047857;
+  --hs-on-tertiary-fixed: #d1fae5;
+  --hs-on-tertiary-fixed-variant: #a7f3d0;
+
+  --hs-error: #f87171;
+  --hs-on-error: #450a0a;
+  --hs-error-container: #7f1d1d;
+  --hs-on-error-container: #fee2e2;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--hs-surface);
+    color: var(--hs-on-surface);
+    overscroll-behavior-y: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand-600);
+    outline-offset: 2px;
+  }
+}
+
+.font-urdu {
+  font-family: var(--font-urdu);
+  line-height: 2.1;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline — Hello Sadiqabad Emergency Helplines</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        background: #f8f9ff;
+        color: #0b1c30;
+        padding: 20px;
+      }
+      .wrap {
+        max-width: 560px;
+        margin: 24px auto;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 24px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 22px;
+        color: #006948;
+      }
+      p {
+        margin: 0 0 16px;
+        color: #3d4a42;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .call {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: #ba1a1a;
+        color: #ffffff;
+        padding: 14px 12px;
+        border-radius: 12px;
+        font-weight: 700;
+      }
+      .call span {
+        font-size: 20px;
+      }
+      .call small {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-top: 2px;
+      }
+      .retry {
+        display: inline-block;
+        padding: 12px 18px;
+        border-radius: 10px;
+        background: #006948;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>You are currently offline</h1>
+      <p>
+        Internet connection is unavailable. Sadiqabad emergency helplines work without data—tap any button below to dial directly.
+      </p>
+      <p dir="rtl" style="text-align:right;font-family:'Noto Nastaliq Urdu',serif;line-height:2.1;">
+        انٹرنیٹ دستیاب نہیں ہے۔ صادق آباد کے ہنگامی نمبرز پر براہِ راست کال کریں۔
+      </p>
+      <div class="grid">
+        <a class="call" href="tel:1122"><span>1122</span><small>Rescue / ریسکیو</small></a>
+        <a class="call" href="tel:15"><span>15</span><small>Police / پولیس</small></a>
+        <a class="call" href="tel:16"><span>16</span><small>Fire Brigade / فائر</small></a>
+        <a class="call" href="tel:115"><span>115</span><small>Edhi / ایدھی</small></a>
+      </div>
+      <a class="retry" href="/">Try Reconnecting</a>
+    </div>
+  </body>
+</html>
