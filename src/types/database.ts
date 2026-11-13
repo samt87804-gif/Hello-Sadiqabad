@@ -103,7 +103,7 @@ export interface CityRow {
   slug: string;
   center_lat: number;
   center_lng: number;
-  is_active: boolean;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
