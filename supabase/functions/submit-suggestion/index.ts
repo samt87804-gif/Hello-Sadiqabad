@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const url=Deno.env.get("SUPABASE_URL")!;
 const secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const db=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
-const allowed=(Deno.env.get("ALLOWED_ORIGINS")??"https://hellosadiqabad.com,http://localhost:3000").split(",").map(x=>x.trim()).filter(Boolean);
+const allowed=(Deno.env.get("ALLOWED_ORIGINS")??"https://hello-sadiqabad-2bs.pages.dev,https://hellosadiqabad.com,https://www.hellosadiqabad.com,http://localhost:3000").split(",").map(x=>x.trim()).filter(Boolean);
 function cors(req:Request){const origin=req.headers.get("origin")??"";if(origin&&!allowed.includes(origin))return null;return {"Access-Control-Allow-Origin":origin||allowed[0]||"https://hellosadiqabad.com","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};}
 function reply(req:Request,data:unknown,status=200){const h=cors(req);if(!h)return new Response(JSON.stringify({ok:false,error:"Origin not allowed"}),{status:403,headers:{"Content-Type":"application/json"}});return new Response(JSON.stringify(data),{status,headers:{...h,"Content-Type":"application/json"}});}
 async function limited(key:string,limit=5,seconds=3600){const {data,error}=await db.rpc("check_rate_limit",{p_key:key,p_limit:limit,p_window_seconds:seconds});return !error&&data===true;}
