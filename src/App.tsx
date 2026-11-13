@@ -6,6 +6,7 @@ import { AuthProvider } from './lib/auth';
 import { RequireAuth, RequireRole } from './lib/permissions';
 import { ToastProvider } from './components/ui/Toast';
 import { ErrorBoundary, Skeleton } from './components/ui/Feedback';
+import { supabaseConfig } from './lib/supabase';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const Search = lazy(() => import('./pages/Search').then((m) => ({ default: m.Search })));
@@ -86,6 +87,16 @@ function PageLoader() {
 }
 
 export default function App() {
+  if (supabaseConfig.isProductionBuild && !supabaseConfig.isConfigured) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background px-6 py-12 text-foreground">
+        <section className="max-w-md text-center">
+          <h1 className="text-3xl font-bold">Hello Sadiqabad</h1>
+          <p className="mt-4 text-muted-foreground">We are completing the production configuration. Please check back shortly.</p>
+        </section>
+      </main>
+    );
+  }
   return (
     <ErrorBoundary>
       <ThemeProvider>
