@@ -215,6 +215,20 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+async function getDefaultCityId(): Promise<string> {
+  const client = getSupabaseClient();
+  if (!client) return SEED_CITY.id;
+  const { data, error } = await client
+    .from('cities')
+    .select('id')
+    .eq('slug', supabaseConfig.defaultCitySlug)
+    .single();
+  if (error || !data?.id) {
+    throw new Error('The configured default city is missing from Supabase.');
+  }
+  return data.id;
+}
+
 function uid(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
@@ -1412,7 +1426,7 @@ export async function adminUpsertBusiness(
     const payload = {
       ...input,
       slug,
-      city_id: input.city_id ?? SEED_CITY.id,
+      city_id: input.city_id ?? (await getDefaultCityId()),
       phone_normalized: normalized,
       updated_at: nowIso(),
     };
@@ -2193,7 +2207,7 @@ export async function upsertArea(
   if (client) {
     const { data, error } = await client
       .from('areas')
-      .upsert({ ...area, city_id: area.city_id ?? SEED_CITY.id, updated_at: nowIso() })
+      .upsert({ ...area, city_id: area.city_id ?? (await getDefaultCityId()), updated_at: nowIso() })
       .select()
       .single();
     if (error) throw error;
@@ -2232,7 +2246,7 @@ export async function upsertEmergencyContact(
   if (client) {
     const { data, error } = await client
       .from('emergency_contacts')
-      .upsert({ ...item, city_id: item.city_id ?? SEED_CITY.id, updated_at: nowIso() })
+      .upsert({ ...item, city_id: item.city_id ?? (await getDefaultCityId()), updated_at: nowIso() })
       .select()
       .single();
     if (error) throw error;
