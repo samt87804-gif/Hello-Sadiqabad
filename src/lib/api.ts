@@ -150,6 +150,35 @@ function createInitialDemoDb(): DemoDbState {
 let memoryDbCache: DemoDbState | null = null;
 
 export function loadDemoDb(): DemoDbState {
+  if (supabaseConfig.isConfigured) {
+    if (memoryDbCache) return memoryDbCache;
+    const empty = createInitialDemoDb();
+    empty.categories = [];
+    empty.areas = [];
+    empty.plans = [];
+    empty.businesses = [];
+    empty.offers = [];
+    empty.reviews = [];
+    empty.announcements = [];
+    empty.ads = [];
+    empty.pages = [];
+    empty.site_settings = [];
+    empty.inquiries = [];
+    empty.submissions = [];
+    empty.leads = [];
+    empty.notifications = [];
+    empty.profiles = [];
+    empty.staff_members = [];
+    empty.daily_stats = [];
+    empty.search_logs = [];
+    empty.import_batches = [];
+    empty.audit_logs = [];
+    empty.business_notes = [];
+    empty.user_emails = {};
+    empty.user_active = {};
+    memoryDbCache = empty;
+    return memoryDbCache;
+  }
   if (memoryDbCache) return memoryDbCache;
   try {
     const raw = localStorage.getItem(DEMO_DB_KEY);
@@ -1258,7 +1287,11 @@ export async function fetchMyPermissions(userId: string): Promise<MyPermissionsR
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.rpc('my_permissions');
-    if (!error && data) return data as MyPermissionsRpcResult;
+    if (!error && data && typeof data === 'object' && 'role' in data) {
+      return data as MyPermissionsRpcResult;
+    }
+    // Never grant a default owner role when the profile/RPC is missing in production.
+    return { role: 'owner', is_active: false, staff_types: [], permissions: [] };
   }
   const db = loadDemoDb();
   const profile = db.profiles.find((p) => p.id === userId);
