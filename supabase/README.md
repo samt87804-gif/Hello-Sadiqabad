@@ -25,7 +25,7 @@ Database: PostgreSQL 17
 | `admin-reset-password` | On | Super-admin password reset; requires password change |
 | `admin-set-user-active` | On | Super-admin account activation/deactivation |
 
-Public function source is under `supabase/functions/<name>/index.ts`. The admin endpoints are deployed in the connected Supabase project; keep their source mirrored here before changing them.
+Public function source is under `supabase/functions/<name>/index.ts`. All seven deployed Edge Functions are mirrored in this repository under their matching function directories. Keep the GitHub source and deployed function versions in sync.
 
 ## Scheduled maintenance
 
@@ -39,7 +39,7 @@ Public function source is under `supabase/functions/<name>/index.ts`. The admin 
 - Set Auth Site URL to `https://hello-sadiqabad-2bs.pages.dev` (no custom domain is attached yet).
 - Add redirect URLs for `https://hello-sadiqabad-2bs.pages.dev`, Cloudflare preview domains and `http://localhost:3000/reset-password`. Add any custom domain later.
 - Disable public sign-ups. Accounts are provisioned by the admin Edge Function.
-- Set the Edge Function secret `ALLOWED_ORIGINS` to the exact production/preview origins.
+- The current Edge Function CORS allowlist includes the Pages production hostname, the listed future custom domains and localhost. If you attach a different custom domain or preview hostname, update the `ALLOWED_ORIGINS` Edge Function secret to the exact allowed origins.
 - Do not expose `SUPABASE_SERVICE_ROLE_KEY` or any secret key in Vite variables or GitHub.
 
 ## Cloudflare frontend variables
