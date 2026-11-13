@@ -36,8 +36,8 @@ Public function source is under `supabase/functions/<name>/index.ts`. The admin 
 ## Security follow-ups in Dashboard
 
 - Enable Auth leaked-password protection.
-- Set Auth Site URL to `https://hellosadiqabad.com`.
-- Add redirect URLs for the production domain, Cloudflare preview domain and `http://localhost:3000/reset-password`.
+- Set Auth Site URL to `https://hello-sadiqabad-2bs.pages.dev` (no custom domain is attached yet).
+- Add redirect URLs for `https://hello-sadiqabad-2bs.pages.dev`, Cloudflare preview domains and `http://localhost:3000/reset-password`. Add any custom domain later.
 - Disable public sign-ups. Accounts are provisioned by the admin Edge Function.
 - Set the Edge Function secret `ALLOWED_ORIGINS` to the exact production/preview origins.
 - Do not expose `SUPABASE_SERVICE_ROLE_KEY` or any secret key in Vite variables or GitHub.
