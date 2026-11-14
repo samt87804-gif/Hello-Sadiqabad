@@ -85,36 +85,36 @@ export function Categories() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((cat) => (
-              <Card key={cat.id} className="p-5 space-y-3">
+              <Card key={cat.id} padding={0} gap={0} className="overflow-hidden">
                 <Link
                   to={`/category/${cat.slug}`}
-                  className="flex items-center justify-between gap-3 group"
+                  className="min-h-[116px] flex items-stretch group"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-2xl bg-primary-fixed/60 flex items-center justify-center shrink-0"
-                      style={{ color: cat.color }}
-                    >
-                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-14 h-14 sm:w-16 sm:h-16" />
-                    </div>
+                  <div
+                    className="w-[30%] min-w-[92px] sm:min-w-[112px] bg-primary-fixed/70 flex items-center justify-center shrink-0"
+                    style={{ color: cat.color }}
+                  >
+                    <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
+                  </div>
+                  <div className="flex-1 min-w-0 p-3 sm:p-4 flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <h2 className="text-base font-bold text-on-surface group-hover:text-primary transition-colors truncate">
+                      <h2 className="text-sm sm:text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
                         {bilingualText(lang, cat.name_en, cat.name_ur)}
                       </h2>
                       {lang === 'en' && urduHints && (
-                        <p className="font-urdu text-xs text-outline" dir="rtl">
+                        <p className="font-urdu text-xs text-outline mt-1" dir="rtl">
                           {cat.name_ur}
                         </p>
                       )}
+                      <p className="text-[11px] text-on-surface-variant mt-1">
+                        {cat.listing_count ?? 0} {lang === 'ur' ? 'کاروبار' : 'listings'}
+                      </p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-outline group-hover:text-primary shrink-0 rtl:rotate-180" />
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-surface-container text-xs font-bold tabular-nums text-primary shrink-0">
-                    {cat.listing_count ?? 0}
-                  </span>
                 </Link>
-
                 {cat.children.length > 0 && (
-                  <div className="pt-2 border-t border-outline-variant/25 flex flex-wrap gap-2">
+                  <div className="px-3 pb-3 pt-2 border-t border-outline-variant/25 flex flex-wrap gap-2">
                     {cat.children.map((ch) => (
                       <Link
                         key={ch.id}
