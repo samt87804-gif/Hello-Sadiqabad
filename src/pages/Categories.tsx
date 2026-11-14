@@ -85,7 +85,7 @@ export function Categories() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((cat) => (
-              <Card key={cat.id} padding={0} gap={0} className="overflow-hidden">
+              <Card key={cat.id} className="p-0 gap-0 overflow-hidden">
                 <Link
                   to={`/category/${cat.slug}`}
                   className="min-h-[116px] flex items-stretch group"
