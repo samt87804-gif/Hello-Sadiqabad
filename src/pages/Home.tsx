@@ -457,10 +457,10 @@ export function Home() {
                 >
                   <div className="flex items-start justify-between">
                     <div
-                      className="w-11 h-11 rounded-xl bg-primary-fixed/60 text-primary flex items-center justify-center"
+                      className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-2xl bg-primary-fixed/60 text-primary flex items-center justify-center"
                       style={{ color: cat.color }}
                     >
-                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-8 h-8" />
+                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-14 h-14 sm:w-16 sm:h-16" />
                     </div>
                     <span className="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold tabular-nums">
                       {cat.listing_count ?? 0}
