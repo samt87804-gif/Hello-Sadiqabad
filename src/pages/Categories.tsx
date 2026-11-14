@@ -95,7 +95,7 @@ export function Categories() {
                       className="w-12 h-12 rounded-2xl bg-primary-fixed/60 flex items-center justify-center shrink-0"
                       style={{ color: cat.color }}
                     >
-                      <CategoryIcon name={cat.icon} className="w-6 h-6" />
+                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-8 h-8" />
                     </div>
                     <div className="min-w-0">
                       <h2 className="text-base font-bold text-on-surface group-hover:text-primary transition-colors truncate">
