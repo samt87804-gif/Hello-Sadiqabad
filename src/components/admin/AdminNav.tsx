@@ -87,6 +87,13 @@ export function AdminNav({ counts }: { counts?: AdminDashboardCounts | null }) {
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Public
         </Link>
+        <button
+          type="button"
+          onClick={() => signOut()}
+          className="px-3 py-2 rounded-xl bg-error-container/50 text-error text-xs font-bold inline-flex items-center gap-1.5 shrink-0 cursor-pointer"
+        >
+          <LogOut className="w-3.5 h-3.5" /> Sign Out
+        </button>
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const badgeVal = resolveBadgeValue(counts, item.badgeKey);
