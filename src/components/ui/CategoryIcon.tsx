@@ -12,7 +12,7 @@ export function CategoryIcon({
   name,
   categoryKey,
   categoryLabel,
-  className = 'w-7 h-7',
+  className = 'w-12 h-12',
 }: {
   name?: string | null;
   categoryKey?: string | null;
@@ -126,7 +126,7 @@ export function CategoryChip({
       }`}
     >
       <span style={!active && color ? { color } : undefined} className="shrink-0">
-        <CategoryIcon name={icon} categoryKey={categoryKey} categoryLabel={labelEn} className="w-8 h-8" />
+        <CategoryIcon name={icon} categoryKey={categoryKey} categoryLabel={labelEn} className="w-10 h-10 sm:w-11 sm:h-11" />
       </span>
       <span className="flex flex-col items-start leading-tight">
         <span
