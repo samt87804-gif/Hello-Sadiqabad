@@ -20,6 +20,9 @@ export function CategoryIcon({
   className?: string;
 }) {
   const key = [name, categoryKey, categoryLabel].filter(Boolean).join(' ').toLowerCase();
+  if (/pharmacy|chemist|medication|medicine|drugstore/.test(key)) {
+    return <img src="/icons/pharmacy.svg" alt="" aria-hidden="true" className={className} />;
+  }
   if (/health|medical|clinic|doctor|hospital|heartpulse/.test(key)) {
     return <img src="/icons/healthcare.svg" alt="" aria-hidden="true" className={className} />;
   }
