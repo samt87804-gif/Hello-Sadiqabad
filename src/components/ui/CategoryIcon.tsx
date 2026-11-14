@@ -17,8 +17,8 @@ export function CategoryIcon({
 }) {
   const key = name || 'Store';
   const art = (() => {
-    switch (key) {
-      case 'HeartPulse':
+    switch (true) {
+      case /heartpulse|health|medical|clinic|lab|doctor/.test(key):
         return <g><path d="M24 39S7 29 7 17a9 9 0 0 1 17-4 9 9 0 0 1 17 4c0 12-17 22-17 22Z" fill="#F28B78"/><path d="M10 23h8l3-6 5 13 4-7h8" fill="none" stroke="#FFF9EF" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></g>;
       case 'Hospital':
       case 'local_hospital':
@@ -37,7 +37,7 @@ export function CategoryIcon({
         return <g><path d="M24 40V20" stroke="#167F55" strokeWidth="3" strokeLinecap="round"/><path d="M24 25C9 25 7 14 9 9c10-1 16 4 15 16Z" fill="#76B96B"/><path d="M24 20c0-11 8-15 16-13 1 9-5 15-16 16Z" fill="#159B91"/><path d="M13 40h22l-3 5H16z" fill="#B97A4B"/><path d="M18 35h12" stroke="#F2B45F" strokeWidth="2" strokeLinecap="round"/></g>;
       case /wrench|hardware|sanitary|plumb|repair|workshop|mechanic/.test(key):
         return <g><path d="M29 8a11 11 0 0 0 1 13L16 35a4 4 0 0 1-6-6l14-14a11 11 0 0 0 13-1l-7 7-6-6Z" fill="#159B91"/><path d="m29 30 5-5 7 7-5 5z" fill="#F2B45F"/><circle cx="13" cy="32" r="2" fill="#FFF4DE"/></g>;
-      case /(^|\\s)car|auto|vehicle|bike|tyre/.test(key):
+      case /car|auto|vehicle|bike|tyre/.test(key):
         return <g><path d="m10 27 4-11a4 4 0 0 1 4-3h13a4 4 0 0 1 4 3l4 11 2 3v8h-4v-4H11v4H7v-8z" fill="#159B91"/><path d="m17 16-3 9h20l-3-9z" fill="#DDF0EA"/><path d="M9 28h30v5H9z" fill="#F2B45F"/><circle cx="15" cy="36" r="4" fill="#35545A"/><circle cx="33" cy="36" r="4" fill="#35545A"/></g>;
       case /graduationcap|school|education|academy|college|tuition/.test(key):
         return <g><path d="m5 19 19-10 19 10-19 10z" fill="#167F79"/><path d="M13 24v9c7 6 15 6 22 0v-9l-11 6z" fill="#F2B45F"/><path d="M42 20v12" stroke="#F2B45F" strokeWidth="2.5" strokeLinecap="round"/><circle cx="42" cy="34" r="2.5" fill="#159B91"/></g>;
@@ -51,7 +51,7 @@ export function CategoryIcon({
         return <g><path d="M24 5 40 11v12c0 10-7 17-16 21C15 40 8 33 8 23V11z" fill="#159B91"/><path d="M24 10 35 14v9c0 7-4 12-11 16-7-4-11-9-11-16v-9z" fill="#DDF0EA"/><path d="M24 16v11" stroke="#167F79" strokeWidth="3" strokeLinecap="round"/><circle cx="24" cy="32" r="2" fill="#F2B45F"/></g>;
       case /flame|fuel|gas|petrol|oil/.test(key):
         return <g><path d="M26 5c3 10-5 11-2 19 2-3 6-5 8-9 8 9 9 17 3 24-7 7-22 5-25-5-3-9 4-16 10-23 0 7 3 9 6 10-2-7 1-11 0-16Z" fill="#F2B45F"/><path d="M25 26c5 5 6 9 3 13-3 4-10 2-10-3 0-4 4-7 7-10Z" fill="#E87957"/></g>;
-      case /(^|\\s)phone|call|telecom/.test(key):
+      case /phone|call|telecom/.test(key):
         return <g><path d="M14 7c-3 1-5 5-4 9 3 11 11 19 22 22 4 1 8-1 9-5l-8-6-5 5c-5-2-9-6-11-11l5-5z" fill="#159B91"/><path d="m14 12 5 5m13 13 5 4" stroke="#DDF0EA" strokeWidth="2" strokeLinecap="round"/></g>;
       case /building2|building|real.?estate|property|office/.test(key):
         return <g><rect x="8" y="8" width="32" height="34" rx="3" fill="#D7EEE8"/><path d="M15 14h5v6h-5zm13 0h5v6h-5zM15 25h5v6h-5zm13 0h5v6h-5z" fill="#159B91"/><path d="M21 33h7v9h-7z" fill="#F2B45F"/><path d="M5 42h38" stroke="#167F79" strokeWidth="2.5" strokeLinecap="round"/></g>;
