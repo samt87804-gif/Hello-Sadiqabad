@@ -348,15 +348,6 @@ export const SEED_CATEGORIES: CategoryRow[] = [
   },
 ];
 
-const STANDARD_WEEK_HOURS = {
-  mon: [{ open: '09:00', close: '21:00' }],
-  tue: [{ open: '09:00', close: '21:00' }],
-  wed: [{ open: '09:00', close: '21:00' }],
-  thu: [{ open: '09:00', close: '21:00' }],
-  fri: [{ open: '09:00', close: '21:00' }],
-  sat: [{ open: '09:00', close: '21:00' }],
-  sun: [],
-};
 
 const LEGACY_SEED_AREAS: AreaRow[] = [
   {
