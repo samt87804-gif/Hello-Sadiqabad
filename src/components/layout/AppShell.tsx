@@ -38,11 +38,9 @@ export function PwaUpdateToast() {
 export function AppShell({
   children,
   hideFooter = false,
-  hideBottomNav = false,
 }: {
   children: React.ReactNode;
   hideFooter?: boolean;
-  hideBottomNav?: boolean;
 }) {
   const isOnline = useOnlineStatus();
   const { t } = useI18n();
@@ -63,7 +61,8 @@ export function AppShell({
   }, []);
 
   const showFooter = !hideFooter;
-  const showBottomNav = !hideBottomNav;
+  // Keep the visitor bottom navigation visible on every AppShell page.
+  const showBottomNav = true;
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-on-surface overflow-x-clip">
