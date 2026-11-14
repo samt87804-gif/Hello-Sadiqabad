@@ -10,12 +10,19 @@ import { useI18n } from '../../lib/i18n';
  */
 export function CategoryIcon({
   name,
+  categoryKey,
+  categoryLabel,
   className = 'w-7 h-7',
 }: {
   name?: string | null;
+  categoryKey?: string | null;
+  categoryLabel?: string | null;
   className?: string;
 }) {
-  const key = name || 'Store';
+  const key = [name, categoryKey, categoryLabel].filter(Boolean).join(' ').toLowerCase();
+  if (/health|medical|clinic|doctor|hospital|heartpulse/.test(key)) {
+    return <img src="/icons/healthcare.svg" alt="" aria-hidden="true" className={className} />;
+  }
   const art = (() => {
     switch (true) {
       case /heartpulse|health|medical|clinic|lab|doctor/.test(key):
@@ -77,6 +84,7 @@ export function CategoryChip({
   to,
   onClick,
   icon,
+  categoryKey,
   labelEn,
   labelUr,
   active = false,
@@ -85,6 +93,7 @@ export function CategoryChip({
   to?: string;
   onClick?: () => void;
   icon?: string;
+  categoryKey?: string;
   labelEn: string;
   labelUr?: string;
   active?: boolean;
