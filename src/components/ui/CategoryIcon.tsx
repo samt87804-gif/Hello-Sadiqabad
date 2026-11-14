@@ -20,6 +20,9 @@ export function CategoryIcon({
   className?: string;
 }) {
   const key = [name, categoryKey, categoryLabel].filter(Boolean).join(' ').toLowerCase();
+  if (/grocery|groceries|grocer|super.?mart|kiryana|market|shoppingcart/.test(key)) {
+    return <img src="/icons/groceries.svg" alt="" aria-hidden="true" className={className} />;
+  }
   if (/restaurant|food|baker|hotel|sweet|cafe|pizza|fast.?food|chicken|biryani/.test(key)) {
     return <img src="/icons/restaurant.svg" alt="" aria-hidden="true" className={className} />;
   }
