@@ -448,33 +448,34 @@ export function Home() {
               }
             />
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {categories.slice(0, 8).map((cat) => (
                 <Link
                   key={cat.id}
                   to={`/category/${cat.slug}`}
-                  className="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/35 shadow-sm hover:shadow-md hover:border-primary/40 transition-all flex flex-col justify-between gap-3 group"
+                  className="min-h-[112px] rounded-2xl overflow-hidden bg-surface-container-lowest border border-outline-variant/35 shadow-sm hover:shadow-md hover:border-primary/50 transition-all flex items-stretch group"
                 >
-                  <div className="flex items-start justify-between">
-                    <div
-                      className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-2xl bg-primary-fixed/60 text-primary flex items-center justify-center"
-                      style={{ color: cat.color }}
-                    >
-                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-14 h-14 sm:w-16 sm:h-16" />
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold tabular-nums">
-                      {cat.listing_count ?? 0}
-                    </span>
+                  <div
+                    className="w-[30%] min-w-[88px] sm:min-w-[104px] bg-primary-fixed/70 flex items-center justify-center shrink-0"
+                    style={{ color: cat.color }}
+                  >
+                    <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
                   </div>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-bold text-on-surface group-hover:text-primary transition-colors">
-                      {bilingualText(lang, cat.name_en, cat.name_ur)}
-                    </h3>
-                    {lang === 'en' && urduHints && (
-                      <p className="font-urdu text-xs text-outline leading-[1.8]" dir="rtl">
-                        {cat.name_ur}
+                  <div className="flex-1 min-w-0 p-3 sm:p-4 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
+                        {bilingualText(lang, cat.name_en, cat.name_ur)}
+                      </h3>
+                      {lang === 'en' && urduHints && (
+                        <p className="font-urdu text-xs text-outline leading-[1.8] mt-1" dir="rtl">
+                          {cat.name_ur}
+                        </p>
+                      )}
+                      <p className="text-[11px] text-on-surface-variant mt-1">
+                        {cat.listing_count ?? 0} {lang === 'ur' ? 'کاروبار' : 'listings'}
                       </p>
-                    )}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-outline group-hover:text-primary shrink-0 rtl:rotate-180" />
                   </div>
                 </Link>
               ))}
