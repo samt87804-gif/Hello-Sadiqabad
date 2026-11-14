@@ -20,16 +20,13 @@ export function CategoryIcon({
     switch (true) {
       case /heartpulse|health|medical|clinic|lab|doctor/.test(key):
         return <g><path d="M24 39S7 29 7 17a9 9 0 0 1 17-4 9 9 0 0 1 17 4c0 12-17 22-17 22Z" fill="#F28B78"/><path d="M10 23h8l3-6 5 13 4-7h8" fill="none" stroke="#FFF9EF" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></g>;
-      case 'Hospital':
-      case 'local_hospital':
+      case /hospital|local_hospital/.test(key):
         return <g><rect x="8" y="14" width="32" height="25" rx="4" fill="#D7EEE8"/><path d="M14 39V20h20v19" fill="#F8F2E7"/><path d="M21 39V29h6v10" fill="#F2B45F"/><path d="M21 9h6v5h5v6h-5v5h-6v-5h-5v-6h5z" fill="#159B91"/><path d="M12 24h4m16 0h4" stroke="#74BFB2" strokeWidth="2" strokeLinecap="round"/></g>;
-      case 'Pill':
-      case 'medication':
+      case /pill|medication|pharmacy|medico|chemist/.test(key):
         return <g><rect x="9" y="16" width="18" height="25" rx="6" fill="#F2B45F"/><path d="M9 22h18v13H9z" fill="#FFF4DE"/><g transform="rotate(-38 31 19)"><rect x="25" y="8" width="12" height="25" rx="6" fill="#159B91"/><path d="M25 20h12v7a6 6 0 0 1-12 0z" fill="#EAF5EF"/></g></g>;
       case /shoppingcart|grocery|grocer|super.?mart|kiryana|market/.test(key):
         return <g><path d="M8 12h5l4 19h19l5-14H16" fill="none" stroke="#159B91" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M18 21h19l-3 8H20z" fill="#F2B45F"/><circle cx="21" cy="37" r="3.2" fill="#167F79"/><circle cx="34" cy="37" r="3.2" fill="#167F79"/><path d="M22 16v7m7-7v7" stroke="#FFF4DE" strokeWidth="2" strokeLinecap="round"/></g>;
-      case 'Utensils':
-      case 'restaurant':
+      case /utensils|restaurant|food|baker|hotel|sweet|cafe/.test(key):
         return <g><circle cx="24" cy="25" r="15" fill="#FFF8EA" stroke="#159B91" strokeWidth="3"/><circle cx="24" cy="25" r="9" fill="#F2B45F"/><path d="M8 8v12m-3-12v7m6-7v7m-3 5v19M40 8c-4 5-4 11 0 14v15m0-29v14" fill="none" stroke="#159B91" strokeWidth="2.5" strokeLinecap="round"/></g>;
       case /smartphone|electronic|mobile|phone|computer/.test(key):
         return <g><rect x="13" y="5" width="22" height="38" rx="5" fill="#167F79"/><rect x="16" y="10" width="16" height="25" rx="2" fill="#D9F0EA"/><path d="M19 14h10v3H19zM19 20h7v2h-7z" fill="#F2B45F"/><circle cx="24" cy="39" r="1.5" fill="#FFF4DE"/></g>;
