@@ -348,6 +348,16 @@ export const SEED_CATEGORIES: CategoryRow[] = [
   },
 ];
 
+const STANDARD_WEEK_HOURS = {
+  mon: [{ open: '09:00', close: '21:00' }],
+  tue: [{ open: '09:00', close: '21:00' }],
+  wed: [{ open: '09:00', close: '21:00' }],
+  thu: [{ open: '09:00', close: '21:00' }],
+  fri: [{ open: '09:00', close: '21:00' }],
+  sat: [{ open: '09:00', close: '21:00' }],
+  sun: [],
+};
+
 export const SEED_AREAS: AreaRow[] = SADIQABAD_SOURCE_AREAS;
 
 export const SEED_BUSINESSES: BusinessRow[] = [
