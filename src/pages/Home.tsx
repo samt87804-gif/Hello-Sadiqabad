@@ -407,6 +407,7 @@ export function Home() {
                   key={cat.id}
                   to={`/category/${cat.slug}`}
                   icon={cat.icon}
+                  categoryKey={cat.slug}
                   color={cat.color}
                   labelEn={cat.name_en}
                   labelUr={cat.name_ur}
@@ -459,7 +460,7 @@ export function Home() {
                       className="w-11 h-11 rounded-xl bg-primary-fixed/60 text-primary flex items-center justify-center"
                       style={{ color: cat.color }}
                     >
-                      <CategoryIcon name={cat.icon} className="w-5 h-5" />
+                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-8 h-8" />
                     </div>
                     <span className="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold tabular-nums">
                       {cat.listing_count ?? 0}
