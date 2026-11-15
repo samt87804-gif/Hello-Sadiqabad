@@ -22,7 +22,8 @@ export function AppHeader() {
     { to: '/', label: t('nav.home', 'Home') },
     { to: '/search', label: t('nav.search', 'Search') },
     { to: '/categories', label: t('nav.categories', 'Categories') },
-    { to: '/offers', label: t('nav.offers', 'Offers') },\n    { to: '/news', label: 'News' },
+    { to: '/offers', label: t('nav.offers', 'Offers') },
+    { to: '/news', label: 'News' },
     { to: '/map', label: t('nav.map', 'Map') },
     { to: '/emergency', label: t('nav.emergency', 'Emergency') },
   ];
