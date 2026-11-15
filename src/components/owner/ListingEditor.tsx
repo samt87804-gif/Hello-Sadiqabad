@@ -166,9 +166,14 @@ export function ListingEditor({
   };
 
   const toggleAmenity = (nameEn: string) => {
-    setServicesList((prev) =>
-      prev.includes(nameEn) ? prev.filter((s) => s !== nameEn) : [...prev, nameEn]
-    );
+    setServicesList((prev) => {
+      if (prev.includes(nameEn)) return prev.filter((service) => service !== nameEn);
+      if (prev.length >= 2) {
+        showToast('A business can have a maximum of 2 services. Remove an existing service first.', 'error');
+        return prev;
+      }
+      return [...prev, nameEn];
+    });
   };
 
   const addTag = (text: string) => {
@@ -223,6 +228,18 @@ export function ListingEditor({
         goStep('contact');
         return false;
       }
+    }
+
+    const originalServicesEn = business.services_en ?? [];
+    const originalServicesUr = business.services_ur ?? [];
+    const currentServicesUr = servicesUrText.split(/[,،]/).map((item) => item.trim()).filter(Boolean);
+    if (servicesList.length > 2 && JSON.stringify(servicesList) !== JSON.stringify(originalServicesEn)) {
+      showToast('Please reduce English services to 2 before saving. Existing legacy entries are preserved until you review them.', 'error');
+      return false;
+    }
+    if (currentServicesUr.length > 2 && JSON.stringify(currentServicesUr) !== JSON.stringify(originalServicesUr)) {
+      showToast('Please reduce Urdu services to 2 before saving.', 'error');
+      return false;
     }
 
     if (form.opening_hours && !form.is_open_24h) {
@@ -793,10 +810,11 @@ export function ListingEditor({
           <Card className="p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-outline-variant/25 pb-3">
               <div>
-                <h2 className="text-base font-bold text-on-surface">Amenities &amp; Delivery</h2>
+                <h2 className="text-base font-bold text-on-surface">Services, Amenities &amp; Delivery</h2>
+                <p className="text-xs text-on-surface-variant">Maximum 2 services per business. Existing entries above the limit remain unchanged until you remove them.</p>
                 <p className="font-urdu text-xs text-on-surface-variant">دستیاب سہولیات اور ہوم ڈلیوری</p>
               </div>
-              <Badge variant="primary">{servicesList.length} Selected</Badge>
+              <Badge variant={servicesList.length > 2 ? 'warning' : 'primary'}>{servicesList.length} / 2 Services</Badge>
             </div>
 
             <label className="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low text-sm font-bold cursor-pointer border border-outline-variant/30">
@@ -834,7 +852,8 @@ export function ListingEditor({
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleAmenity(item.en)}
-                      className="w-4 h-4 accent-primary cursor-pointer"
+                      disabled={!checked && servicesList.length >= 2}
+                      className="w-4 h-4 accent-primary cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     />
                   </label>
                 );
@@ -852,7 +871,12 @@ export function ListingEditor({
                   .split(',')
                   .map((s) => s.trim())
                   .filter(Boolean);
-                setServicesList([...quickSelected, ...extras]);
+                const nextServices = [...quickSelected, ...extras];
+                if (nextServices.length > 2 && nextServices.length >= servicesList.length) {
+                  showToast('Maximum 2 services allowed. Remove an existing entry first.', 'error');
+                  return;
+                }
+                setServicesList(nextServices);
               }}
               placeholder="e.g. Meat Section, Frozen Foods, Urgent Stitching"
             />
@@ -863,7 +887,16 @@ export function ListingEditor({
               dir="rtl"
               className="font-urdu"
               value={servicesUrText}
-              onChange={(e) => setServicesUrText(e.target.value)}
+              onChange={(e) => {
+                const nextValue = e.target.value;
+                const nextCount = nextValue.split(/[,،]/).map((item) => item.trim()).filter(Boolean).length;
+                const currentCount = servicesUrText.split(/[,،]/).map((item) => item.trim()).filter(Boolean).length;
+                if (nextCount > 2 && nextCount >= currentCount) {
+                  showToast('Maximum 2 Urdu services allowed. Remove an existing entry first.', 'error');
+                  return;
+                }
+                setServicesUrText(nextValue);
+              }}
               placeholder="مثال: تازہ گوشت، فرروزن فوڈز"
             />
 
