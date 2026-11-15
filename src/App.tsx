@@ -30,6 +30,7 @@ const Emergency = lazy(() => import('./pages/Emergency').then((m) => ({ default:
 const Announcements = lazy(() =>
   import('./pages/Announcements').then((m) => ({ default: m.Announcements }))
 );
+const News = lazy(() => import('./pages/News').then((m) => ({ default: m.News })));
 const StaticPage = lazy(() => import('./pages/StaticPage').then((m) => ({ default: m.StaticPage })));
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })));
 const OwnerRegistration = lazy(() => import('./pages/OwnerRegistration').then((m) => ({ default: m.OwnerRegistration })));
