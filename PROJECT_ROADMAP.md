@@ -24,7 +24,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## Existing functionality to preserve
 
-- The 14 legacy imported listings that currently have more than 2 English service entries were not automatically trimmed or deleted. The owner-edit trigger permits unrelated edits while preserving unchanged legacy arrays; owners can review and reduce services to 2 before changing them. New/changed owner service arrays are capped at 2.
+- The 14 legacy imported listings with more than 2 English service entries currently have no linked owner. They were not trimmed or deleted. Admin can review them now; once a listing is linked to its owner, that owner can reduce the list to 2. Unchanged legacy arrays remain intact during unrelated owner edits; changed owner service arrays are capped at 2.
 - Product catalogue starts empty; owners add and maintain their own products (up to 2 per business). Public visitors see only active products on published business listings.
 
 - Offer limits continue to follow the configured plan values (Free 0, Basic 2, Premium 10 active offers); database enforcement now matches the active-offer count shown in the portal. A universal two-offer cap would be a separate confirmed rule change.
