@@ -22,7 +22,8 @@ export function NewsManager({ actorId }: { actorId: string }) {
   const [items, setItems] = useState<NewsArticleRow[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
-  const [featured, setFeatured] = useState(false);\n  const [publishedAt, setPublishedAt] = useState<string | null>(null);
+  const [featured, setFeatured] = useState(false);
+  const [publishedAt, setPublishedAt] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,6 +45,7 @@ export function NewsManager({ actorId }: { actorId: string }) {
     setForm(emptyForm);
     setStatus('draft');
     setFeatured(false);
+    setPublishedAt(null);
     setEditingId(null);
   };
 
@@ -57,6 +59,7 @@ export function NewsManager({ actorId }: { actorId: string }) {
         cover_image_url: form.cover_image_url || null,
         status,
         is_featured: featured,
+        published_at: publishedAt,
       }, actorId);
       showToast(status === 'published' ? 'News article published.' : 'Draft saved.', 'success');
       reset();
@@ -82,6 +85,7 @@ export function NewsManager({ actorId }: { actorId: string }) {
     });
     setStatus(item.status);
     setFeatured(item.is_featured);
+    setPublishedAt(item.published_at);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
