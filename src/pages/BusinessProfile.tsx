@@ -27,6 +27,7 @@ import {
 import {
   fetchBusinessBySlug,
   fetchRelatedBusinesses,
+  fetchPublicOwnerProfile,
   trackBusinessEvent,
 } from '../lib/api';
 import { useI18n } from '../lib/i18n';
@@ -44,7 +45,7 @@ import {
   getFavorites,
   toggleFavoriteId,
 } from '../lib/offlineStorage';
-import type { BusinessPublicView } from '../types/directory';
+import type { BusinessPublicView, OwnerPublicProfileView } from '../types/directory';
 import { AppShell } from '../components/layout/AppShell';
 import { OpenNowBadge, OpeningHoursTable } from '../components/directory/OpenNowBadge';
 import { BusinessCard } from '../components/directory/BusinessCard';
@@ -106,6 +107,7 @@ export function BusinessProfile() {
   const viewedSlugRef = useRef<string | null>(null);
 
   const [business, setBusiness] = useState<BusinessPublicView | null>(null);
+  const [ownerProfile, setOwnerProfile] = useState<OwnerPublicProfileView | null>(null);
   const [related, setRelated] = useState<BusinessPublicView[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -127,7 +129,15 @@ export function BusinessProfile() {
     try {
       const found = await fetchBusinessBySlug(slug);
       setBusiness(found);
+      setOwnerProfile(null);
       if (found) {
+        if (found.owner_id) {
+          try {
+            setOwnerProfile(await fetchPublicOwnerProfile(found.owner_id));
+          } catch {
+            setOwnerProfile(null);
+          }
+        }
         updatePageSeo({
           title: found.meta_title_en || `${found.name_en} — Sadiqabad | Hello Sadiqabad`,
           description:
@@ -806,6 +816,26 @@ export function BusinessProfile() {
                       </a>
                     ))}
                   </div>
+                )}
+
+                {ownerProfile && (
+                  <Link
+                    to={`/owner-profile/${business.owner_id}`}
+                    className="mt-3 p-3 rounded-xl border border-outline-variant/40 bg-surface-container-low flex items-center gap-3 hover:border-primary/50 transition-colors"
+                  >
+                    {ownerProfile.photo_url ? (
+                      <ImageWithFallback src={ownerProfile.photo_url} alt={ownerProfile.display_name || 'Business owner'} className="w-11 h-11 rounded-full shrink-0" />
+                    ) : (
+                      <span className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-5 h-5" />
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-xs font-bold text-on-surface">{ownerProfile.display_name || (lang === 'ur' ? 'کاروبار کے مالک' : 'Business Owner')}</span>
+                      <span className="block text-[11px] text-primary font-semibold mt-0.5">{lang === 'ur' ? 'مالک کا عوامی پروفائل دیکھیں' : 'View public owner profile'}</span>
+                    </span>
+                    <ExternalLink className="w-4 h-4 text-on-surface-variant shrink-0" />
+                  </Link>
                 )}
 
                 {/* Report & Claim Links */}
