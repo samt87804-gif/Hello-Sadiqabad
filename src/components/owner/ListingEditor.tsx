@@ -58,8 +58,6 @@ function buildInitialForm(business: BusinessPublicView): Partial<BusinessRow> {
     description_en: business.description_en ?? '',
     description_ur: business.description_ur ?? '',
     established_year: business.established_year ?? undefined,
-    owner_name: business.owner_name ?? '',
-    owner_photo_url: business.owner_photo_url ?? '',
     phone_primary: business.phone_primary,
     phone_secondary: business.phone_secondary ?? '',
     whatsapp: business.whatsapp ?? '',
@@ -239,7 +237,6 @@ export function ListingEditor({
     const httpsCheck = [
       { label: 'Store Logo URL', val: form.logo_url },
       { label: 'Cover Banner URL', val: form.cover_url },
-      { label: 'Owner Avatar URL', val: form.owner_photo_url },
       { label: 'Website URL', val: form.website_url },
       { label: 'Facebook URL', val: form.facebook_url },
       { label: 'Instagram URL', val: form.instagram_url },
@@ -284,8 +281,6 @@ export function ListingEditor({
         description_en: form.description_en?.trim() || null,
         description_ur: form.description_ur?.trim() || null,
         established_year: form.established_year ?? null,
-        owner_name: form.owner_name?.trim() || null,
-        owner_photo_url: form.owner_photo_url?.trim() || null,
         phone_primary: form.phone_primary?.trim() || '',
         phone_secondary: form.phone_secondary?.trim() || null,
         whatsapp: canWhatsApp ? form.whatsapp?.trim() || null : null,
@@ -521,20 +516,8 @@ export function ListingEditor({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Owner / Proprietor Name"
-                value={form.owner_name ?? ''}
-                onChange={(e) => update({ owner_name: e.target.value })}
-                placeholder="e.g. Haji Muhammad Aslam"
-              />
-              <Input
-                label="Owner Avatar Photo URL (HTTPS)"
-                dir="ltr"
-                value={form.owner_photo_url ?? ''}
-                onChange={(e) => update({ owner_photo_url: e.target.value })}
-                placeholder="https://..."
-              />
+            <div className="p-3 rounded-xl bg-surface-container-low text-xs text-on-surface-variant">
+              Owner name and profile photo are managed by Admin in the Public Owner Profile privacy settings.
             </div>
 
             <div>
