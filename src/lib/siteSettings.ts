@@ -3,8 +3,22 @@ import type { SiteSettingRow } from '../types/database';
 
 export const DEFAULT_HERO_BANNER_URL = 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/Sadiqabad%20Phone%20Directory%20Landmark%20Banner.png';
 
+export interface DirectoryImageUrls {
+  categories: Record<string, string>;
+  areas: Record<string, string>;
+  helplines: Record<string, string>;
+  businesses: Record<string, string>;
+  offers: Record<string, string>;
+  ads: Record<string, string>;
+}
+
+export const EMPTY_DIRECTORY_IMAGE_URLS: DirectoryImageUrls = {
+  categories: {}, areas: {}, helplines: {}, businesses: {}, offers: {}, ads: {},
+};
+
 export interface SiteSettingsMap {
   hero_banner_url: string;
+  directory_image_urls: DirectoryImageUrls;
   site_name: string;
   contact_phone: string;
   contact_whatsapp: string;
@@ -21,6 +35,19 @@ export function parseSiteSettings(rows: SiteSettingRow[] = SEED_SITE_SETTINGS): 
   const map = new Map(rows.map((r) => [r.key, r.value]));
   return {
     hero_banner_url: String(map.get('hero_banner_url') ?? DEFAULT_HERO_BANNER_URL),
+    directory_image_urls: (() => {
+      const value = map.get('directory_image_urls');
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return EMPTY_DIRECTORY_IMAGE_URLS;
+      const record = value as Partial<DirectoryImageUrls>;
+      return {
+        categories: record.categories && typeof record.categories === 'object' ? record.categories : {},
+        areas: record.areas && typeof record.areas === 'object' ? record.areas : {},
+        helplines: record.helplines && typeof record.helplines === 'object' ? record.helplines : {},
+        businesses: record.businesses && typeof record.businesses === 'object' ? record.businesses : {},
+        offers: record.offers && typeof record.offers === 'object' ? record.offers : {},
+        ads: record.ads && typeof record.ads === 'object' ? record.ads : {},
+      };
+    })(),
     site_name: String(map.get('site_name') ?? 'Hello Sadiqabad'),
     contact_phone: String(map.get('contact_phone') ?? '0300-8671234'),
     contact_whatsapp: String(map.get('contact_whatsapp') ?? '0300-8671234'),
