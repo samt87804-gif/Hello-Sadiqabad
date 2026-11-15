@@ -2050,6 +2050,7 @@ export const SEED_PAGES: PageRow[] = [
 
 export const SEED_SITE_SETTINGS: SiteSettingRow[] = [
   { key: 'hero_banner_url', value: 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/Sadiqabad%20Phone%20Directory%20Landmark%20Banner.png', description: 'Homepage hero banner image URL', is_public: true },
+  { key: 'directory_image_urls', value: { categories: {}, areas: {}, helplines: {}, businesses: {}, offers: {}, ads: {} }, description: 'Public image URL registry for directory content', is_public: true },
   { key: 'site_name', value: 'Hello Sadiqabad', description: 'Directory title', is_public: true },
   { key: 'contact_phone', value: '0300-8671234', description: 'Civic desk phone', is_public: true },
   { key: 'contact_whatsapp', value: '0300-8671234', description: 'Civic desk WhatsApp', is_public: true },
