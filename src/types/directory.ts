@@ -25,6 +25,14 @@ export interface SearchFiltersState {
   sort: SortOption;
 }
 
+export interface OwnerPublicProfileView {
+  owner_id: string;
+  display_name: string | null;
+  photo_url: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
 export interface BusinessPublicView extends BusinessRow {
   category?: CategoryRow | null;
   area?: AreaRow | null;
