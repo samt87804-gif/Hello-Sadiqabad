@@ -397,6 +397,25 @@ export interface SearchLogRow {
   created_at: string;
 }
 
+export interface NewsArticleRow {
+  id: string;
+  slug: string;
+  title_en: string;
+  title_ur: string;
+  excerpt_en: string;
+  excerpt_ur: string;
+  content_en: string;
+  content_ur: string;
+  cover_image_url: string | null;
+  status: 'draft' | 'published';
+  is_featured: boolean;
+  published_at: string | null;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AnnouncementRow {
   id: string;
   title_en: string;
