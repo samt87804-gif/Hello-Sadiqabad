@@ -938,7 +938,7 @@ export function PlanCard({
   const requestUpgrade = async (targetPlan: string) => {
     setSending(true);
     try {
-      await submitPublicSuggestion({
+      const result = await submitPublicSuggestion({
         type: 'plan_upgrade',
         business_id: business.id,
         payload: {
@@ -948,8 +948,13 @@ export function PlanCard({
         contact_name: ownerName ?? business.owner_name ?? business.name_en,
         contact_phone: ownerPhone ?? business.phone_primary,
       });
+      if (!result.ok) {
+        throw new Error(result.error ?? 'Your upgrade request could not be submitted.');
+      }
       showToast('Upgrade inquiry submitted! Our local sales team will contact you.', 'success');
       setRequestNote('');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Your upgrade request could not be submitted.', 'error');
     } finally {
       setSending(false);
     }
