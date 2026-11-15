@@ -653,6 +653,20 @@ export async function fetchRelatedBusinesses(businessId:string,categoryId:string
   return (await fetchGitHubBusinesses()).filter((business)=>business.id!==businessId&&business.category_id===categoryId).slice(0,limit);
 }
 
+export async function fetchPublicOwnerProfile(ownerId: string): Promise<import('../types/directory').OwnerPublicProfileView | null> {
+  const client = getSupabaseClient();
+  if (!client || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ownerId)) {
+    return null;
+  }
+  const { data, error } = await client
+    .from('owner_public_profile_directory')
+    .select('owner_id,display_name,photo_url,phone,email')
+    .eq('owner_id', ownerId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data ?? null) as import('../types/directory').OwnerPublicProfileView | null;
+}
+
 export async function fetchEmergencyContacts(): Promise<{ items: EmergencyContactRow[]; fromCache: boolean; cachedAt: string | null }> {
   const client = getSupabaseClient();
   if (client) {
