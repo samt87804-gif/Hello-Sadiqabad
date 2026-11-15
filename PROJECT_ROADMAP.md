@@ -10,7 +10,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- [ ] News Module — implementation underway: bilingual public feed/article pages, Admin draft/publish editor, and database RLS; pending build/deployment verification.
+- [x] News Module — bilingual public feed/article pages, Admin draft/publish editor, database RLS, and production deployment verified.
 
 ## Remaining
 
