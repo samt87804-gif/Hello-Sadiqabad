@@ -155,8 +155,8 @@ export function AdminPortal() {
       ] = await Promise.all([
         canViewDashboard ? fetchAdminDashboardCounts() : Promise.resolve(emptyCounts),
         can('business.create') || can('business.publish') ? fetchAdminBusinesses() : Promise.resolve([]),
-        can('business.create') ? fetchAllCategories(true) : can('business.publish') ? fetchAllCategories(false) : Promise.resolve([]),
-        can('business.create') ? fetchAllAreas(true) : can('business.publish') ? fetchAllAreas(false) : Promise.resolve([]),
+        can('business.create') || can('settings.manage') ? fetchAllCategories(true) : can('business.publish') ? fetchAllCategories(false) : Promise.resolve([]),
+        can('business.create') || can('settings.manage') ? fetchAllAreas(true) : can('business.publish') ? fetchAllAreas(false) : Promise.resolve([]),
         can('tiers.manage') ? fetchPlans(true) : Promise.resolve([]),
         can('moderation.review') ? fetchAllReviewsAdmin() : Promise.resolve([]),
         can('moderation.review') ? fetchAllSubmissionsAdmin() : Promise.resolve([]),
@@ -400,6 +400,9 @@ export function AdminPortal() {
           <SettingsManager
             settings={settings}
             pages={pages}
+            categories={categories}
+            areas={areas}
+            emergencyContacts={emergencyContacts}
             actorId={actorId}
             onReload={reload}
           />
