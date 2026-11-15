@@ -59,11 +59,12 @@ Deno.serve(async (req: Request) => {
     if (request.status !== "pending") return response(req, { ok: false, error: "This request has already been reviewed or is being processed" }, 409);
 
     if (action === "reject") {
-      const { error } = await db.from("owner_registration_requests").update({
+      const { data: rejected, error } = await db.from("owner_registration_requests").update({
         status: "rejected", reviewed_by: actor.id, reviewed_at: new Date().toISOString(),
         admin_note: note, updated_at: new Date().toISOString(),
-      }).eq("id", requestId).eq("status", "pending");
+      }).eq("id", requestId).eq("status", "pending").select("id").maybeSingle();
       if (error) throw error;
+      if (!rejected) return response(req, { ok: false, error: "This request is already being processed" }, 409);
       return response(req, { ok: true, status: "rejected" });
     }
 
@@ -73,7 +74,7 @@ Deno.serve(async (req: Request) => {
     if (lockError || !locked) return response(req, { ok: false, error: "This request is already being processed" }, 409);
     lockedId = requestId;
 
-    const siteUrl = (Deno.env.get("SITE_URL") ?? "https://hellosadiqabad.com").replace(/\/$/, "");
+    const siteUrl = (Deno.env.get("SITE_URL") ?? "https://hello-sadiqabad-2bs.pages.dev").replace(/\/$/, "");
     const { data: invited, error: inviteError } = await db.auth.admin.inviteUserByEmail(request.email, {
       data: { full_name: request.full_name },
       redirectTo: siteUrl + "/reset-password",
