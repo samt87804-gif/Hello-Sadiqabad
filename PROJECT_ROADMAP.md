@@ -12,7 +12,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- None
+- Owner Products & Services Catalogue — database, RLS, owner product manager, public product display, and service-limit UI under verification.
 
 ## Remaining
 
