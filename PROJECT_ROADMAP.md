@@ -15,7 +15,6 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## Remaining
 
-- [ ] Enhanced Owner Portal (multiple-business management and remaining owner workflows)
 - [ ] Sponsor Ads enhancements
 - [ ] Government Helpline module
 - [ ] Local Authorities module
