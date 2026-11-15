@@ -52,7 +52,7 @@ import { BarChartSvg, LineChartSvg } from '../ui/Charts';
 import { ConfirmDialog, Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
-import { EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../../lib/siteSettings';
+import type { DirectoryImageUrls } from '../../lib/siteSettings';
 
 export function TaxonomyManager({
   mode,
