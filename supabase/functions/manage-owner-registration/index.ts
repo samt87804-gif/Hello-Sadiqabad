@@ -20,7 +20,7 @@ function response(req: Request, data: unknown, status = 200) {
 
 async function getActor(req: Request) {
   const authHeader = req.headers.get("authorization") ?? "";
-  const token = /^Bearer\\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim() ?? null;
+  const token = /^Bearer\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim() ?? null;
   if (!token) return null;
   const { data, error } = await db.auth.getUser(token);
   return error ? null : data.user;
