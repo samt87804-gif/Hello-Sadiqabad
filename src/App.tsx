@@ -112,7 +112,9 @@ export default function App() {
                     <Route path="/map" element={<MapPage />} />
                     <Route path="/favorites" element={<Favorites />} />
                     <Route path="/emergency" element={<Emergency />} />
-                    <Route path="/announcements" element={<Announcements />} />\n                    <Route path="/news" element={<News />} />\n                    <Route path="/news/:slug" element={<News />} />
+                    <Route path="/announcements" element={<Announcements />} />
+                    <Route path="/news" element={<News />} />
+                    <Route path="/news/:slug" element={<News />} />
 
                     {/* Static Civic & Legal Pages */}
                     <Route path="/about" element={<StaticPage slug="about" />} />
