@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Search, X } from 'lucide-react';
-import { fetchCategoriesWithCounts } from '../lib/api';
+import { fetchCategoriesWithCounts, fetchPublicSiteSettings } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { bilingualText } from '../lib/format';
 import { updatePageSeo } from '../lib/seo';
@@ -10,10 +10,13 @@ import { AppShell } from '../components/layout/AppShell';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { EmptyState } from '../components/ui/Feedback';
 import { Card, Container, SectionHeading } from '../components/ui/Surface';
+import { ImageWithFallback } from '../components/ui/ImageWithFallback';
+import { EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../lib/siteSettings';
 
 export function Categories() {
   const { lang, urduHints } = useI18n();
   const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
+  const [directoryImageUrls, setDirectoryImageUrls] = useState<DirectoryImageUrls>(EMPTY_DIRECTORY_IMAGE_URLS);
   const [filterText, setFilterText] = useState('');
 
   useEffect(() => {
@@ -22,7 +25,10 @@ export function Categories() {
       description: 'Browse every business category and local service sector in Sadiqabad.',
       canonicalPath: '/categories',
     });
-    fetchCategoriesWithCounts().then(setCategories);
+    Promise.all([fetchCategoriesWithCounts(), fetchPublicSiteSettings()]).then(([items, settings]) => {
+      setCategories(items);
+      setDirectoryImageUrls(settings.directory_image_urls || EMPTY_DIRECTORY_IMAGE_URLS);
+    });
   }, []);
 
   const q = filterText.trim().toLowerCase();
@@ -94,7 +100,11 @@ export function Categories() {
                     className="w-[30%] min-w-[92px] sm:min-w-[112px] bg-primary-fixed/70 flex items-center justify-center shrink-0"
                     style={{ color: cat.color }}
                   >
-                    <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
+                    {directoryImageUrls.categories[cat.slug] ? (
+                      <ImageWithFallback src={directoryImageUrls.categories[cat.slug]} alt={`${cat.name_en} category`} className="w-full h-full" fallbackIcon={<CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />} />
+                    ) : (
+                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0 p-3 sm:p-4 flex items-center justify-between gap-2">
                     <div className="min-w-0">
