@@ -151,7 +151,7 @@ export function NewsManager({ actorId }: { actorId: string }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-bold text-sm">{item.title_en}</h3>
                   <Badge variant={item.status === 'published' ? 'success' : 'neutral'}>{item.status}</Badge>
-                  {item.is_featured && <Badge variant="info">Featured</Badge>}
+                  {item.is_featured && <Badge variant="primary">Featured</Badge>}
                 </div>
                 <p className="text-xs text-primary font-urdu" dir="rtl">{item.title_ur}</p>
                 <p className="text-xs text-on-surface-variant line-clamp-2">{item.excerpt_en}</p>
