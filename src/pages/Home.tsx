@@ -27,7 +27,7 @@ import { useDebounce } from '../lib/hooks';
 import { useI18n } from '../lib/i18n';
 import { bilingualText, formatDateShort } from '../lib/format';
 import { updatePageSeo } from '../lib/seo';
-import { DEFAULT_HERO_BANNER_URL } from '../lib/siteSettings';
+import { DEFAULT_HERO_BANNER_URL, EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../lib/siteSettings';
 import {
   clearRecentlyViewed,
   getFavorites,
@@ -82,6 +82,7 @@ export function Home() {
   const [ads, setAds] = useState<AdRow[]>([]);
   const [adsEnabled, setAdsEnabled] = useState(true);
   const [heroBannerUrl, setHeroBannerUrl] = useState(DEFAULT_HERO_BANNER_URL);
+  const [directoryImageUrls, setDirectoryImageUrls] = useState<DirectoryImageUrls>(EMPTY_DIRECTORY_IMAGE_URLS);
   const [offers, setOffers] = useState<Array<OfferRow & { business: BusinessPublicView | null }>>([]);
   const [recentItems, setRecentItems] = useState<RecentViewedItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>(() => getFavorites());
@@ -119,6 +120,7 @@ export function Home() {
         setOffers(activeOffers.slice(0, 4));
         setAdsEnabled(settings.ads_enabled);
         setHeroBannerUrl(settings.hero_banner_url || DEFAULT_HERO_BANNER_URL);
+        setDirectoryImageUrls(settings.directory_image_urls || EMPTY_DIRECTORY_IMAGE_URLS);
       })
       .catch(() => {
         setCategories([]);
@@ -466,7 +468,11 @@ export function Home() {
                     className="w-[30%] min-w-[88px] sm:min-w-[104px] bg-primary-fixed/70 flex items-center justify-center shrink-0"
                     style={{ color: cat.color }}
                   >
-                    <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
+                    {directoryImageUrls.categories[cat.slug] ? (
+                      <ImageWithFallback src={directoryImageUrls.categories[cat.slug]} alt={`${cat.name_en} category`} className="w-full h-full" fallbackIcon={<CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />} />
+                    ) : (
+                      <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0 p-3 sm:p-4 flex items-center justify-between gap-2">
                     <div className="min-w-0">
@@ -621,6 +627,7 @@ export function Home() {
                         to={`/area/${a.slug}`}
                         className="px-3 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant/40 hover:border-primary/50 text-xs font-semibold text-on-surface transition-colors"
                       >
+                        {directoryImageUrls.areas[a.slug] && <ImageWithFallback src={directoryImageUrls.areas[a.slug]} alt="" className="w-6 h-6 rounded-full inline-block me-1.5 align-middle" />}
                         {bilingualText(lang, a.name_en, a.name_ur)}
                       </Link>
                     ))}
