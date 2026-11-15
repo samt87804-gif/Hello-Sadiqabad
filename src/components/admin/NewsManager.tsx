@@ -22,7 +22,7 @@ export function NewsManager({ actorId }: { actorId: string }) {
   const [items, setItems] = useState<NewsArticleRow[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
-  const [featured, setFeatured] = useState(false);
+  const [featured, setFeatured] = useState(false);\n  const [publishedAt, setPublishedAt] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
