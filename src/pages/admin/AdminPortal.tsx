@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
 import { useAuth } from '../../lib/auth';
 import { usePermissions } from '../../lib/permissions';
 import {
@@ -318,6 +319,8 @@ export function AdminPortal() {
         ) : (
           <PermissionDenied />
         );
+      case 'owner-requests':
+        return hasPermission('owners.create') ? <OwnerRegistrationRequests /> : <PermissionDenied />;
       case 'owners':
         return hasPermission('owners.create') ? (
           <OwnersManager

@@ -29,6 +29,7 @@ const Announcements = lazy(() =>
 );
 const StaticPage = lazy(() => import('./pages/StaticPage').then((m) => ({ default: m.StaticPage })));
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })));
+const OwnerRegistration = lazy(() => import('./pages/OwnerRegistration').then((m) => ({ default: m.OwnerRegistration })));
 const ForgotPassword = lazy(() =>
   import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword }))
 );
@@ -121,6 +122,7 @@ export default function App() {
 
                     {/* Portal Auth Routes */}
                     <Route path="/login" element={<Login />} />
+                    <Route path="/owner-register" element={<OwnerRegistration />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route

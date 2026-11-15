@@ -338,6 +338,12 @@ export function Login() {
                     : 'Claim or register shop →'}
                 </span>
               </Link>
+              <Link
+                to="/owner-register"
+                className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+              >
+                Request a new Owner Portal account
+              </Link>
             </div>
           </form>
 

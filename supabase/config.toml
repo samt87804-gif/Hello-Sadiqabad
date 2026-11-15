@@ -20,3 +20,6 @@ verify_jwt = true
 
 [functions.admin-set-user-active]
 verify_jwt = true
+
+[functions.manage-owner-registration]
+verify_jwt = true

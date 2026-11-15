@@ -21,6 +21,7 @@ import {
   Shield,
   Sparkles,
   Users,
+  UserRoundPlus,
   Wrench,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
@@ -48,6 +49,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { tab: 'import', label: 'CSV Import', icon: FileSpreadsheet, requiredPerm: 'import.run' },
   { tab: 'export', label: 'Backup & Export', icon: Download, superAdminOnly: true },
   { tab: 'owners', label: 'Owners', icon: Users, requiredPerm: 'owners.create' },
+  { tab: 'owner-requests', label: 'Owner Requests', icon: UserRoundPlus, requiredPerm: 'owners.create' },
   { tab: 'ads', label: 'Sponsored Ads', icon: Sparkles, requiredPerm: 'ads.review' },
   { tab: 'plans', label: 'Plans & Expiry', icon: Crown, requiredPerm: 'tiers.manage', badgeKey: 'expiring_plans' },
   { tab: 'categories', label: 'Categories', icon: FolderTree, superAdminOnly: true },
