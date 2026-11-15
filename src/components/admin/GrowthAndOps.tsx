@@ -6,7 +6,6 @@ import {
   Crown,
   Edit2,
   Globe,
-  ShieldCheck,
   FileSpreadsheet,
   KeyRound,
   Plus,
@@ -219,7 +218,7 @@ export function OwnersManager({
   const [phone, setPhone] = useState('');
   const [assignBizId, setAssignBizId] = useState('');
 
-  const owners = profiles.filter((p) => p.role === 'owner');
+  const owners = useMemo(() => profiles.filter((p) => p.role === 'owner'), [profiles]);
 
   useEffect(() => {
     const client = getSupabaseClient();
@@ -241,7 +240,7 @@ export function OwnersManager({
         setPublicProfiles(next);
       });
     return () => { active = false; };
-  }, [profiles, showToast]);
+  }, [owners, showToast]);
 
   const openPublicProfileEditor = (owner: ProfileRow & { email?: string }) => {
     const saved = publicProfiles[owner.id];
