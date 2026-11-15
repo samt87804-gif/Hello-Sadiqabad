@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
     if (!body) return reply(req, { ok: false, error: "Invalid or oversized request body" }, 400);
     if (body.website_hp) return reply(req, { ok: true });
 
-    const types = ["new_business", "correction", "claim", "phone_suggestion", "report", "broken_image"];
+    const types = ["new_business", "correction", "claim", "phone_suggestion", "report", "broken_image", "plan_upgrade"];
     if (typeof body.type !== "string" || !types.includes(body.type) ||
       !body.payload || typeof body.payload !== "object" || Array.isArray(body.payload)) {
       return reply(req, { ok: false, error: "Invalid submission" }, 400);
@@ -93,13 +93,37 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const submittedBy = ["claim", "new_business"].includes(body.type)
-      ? await authenticatedOwnerId(req)
-      : null;
+    const payload = body.payload as Record<string, unknown>;
+    const businessId = typeof body.business_id === "string" ? body.business_id : null;
+    let submittedBy: string | null = null;
+
+    if (body.type === "plan_upgrade") {
+      submittedBy = await authenticatedOwnerId(req);
+      if (!submittedBy) {
+        return reply(req, { ok: false, error: "Please sign in with your active owner account to request a plan upgrade" }, 403);
+      }
+      if (!businessId) {
+        return reply(req, { ok: false, error: "A business listing is required for a plan upgrade" }, 400);
+      }
+      if (payload.requested_plan !== "basic" && payload.requested_plan !== "premium") {
+        return reply(req, { ok: false, error: "Choose a valid upgrade plan" }, 400);
+      }
+      const { data: ownedBusiness, error: ownershipError } = await db.from("businesses")
+        .select("id")
+        .eq("id", businessId)
+        .eq("owner_id", submittedBy)
+        .maybeSingle();
+      if (ownershipError || !ownedBusiness) {
+        return reply(req, { ok: false, error: "You can only request an upgrade for a business linked to your account" }, 403);
+      }
+    } else if (body.type === "claim" || body.type === "new_business") {
+      submittedBy = await authenticatedOwnerId(req);
+    }
+
     const { error: insertError } = await db.from("submissions").insert({
       type: body.type,
-      business_id: body.business_id ?? null,
-      payload: body.payload,
+      business_id: businessId,
+      payload,
       contact_name: typeof body.contact_name === "string" ? body.contact_name.trim().slice(0, 100) : null,
       contact_phone: typeof body.contact_phone === "string" ? body.contact_phone.trim().slice(0, 30) : null,
       submitted_by: submittedBy,
