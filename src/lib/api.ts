@@ -54,6 +54,7 @@ import type {
   LeadRow,
   LeadStatus,
   MyPermissionsRpcResult,
+  NewsArticleRow,
   NotificationRow,
   OfferRow,
   PageRow,
@@ -2587,4 +2588,90 @@ export function generateSitemapXml(baseUrl = supabaseConfig.siteUrl): string {
     ...urls.map((u) => `  <url><loc>${cleanBase}${u}</loc></url>`),
     '</urlset>',
   ].join('\n');
+}
+
+export async function fetchPublishedNewsArticles(limit = 24): Promise<NewsArticleRow[]> {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  const safeLimit = Math.max(1, Math.min(50, Math.trunc(limit) || 24));
+  const { data, error } = await client
+    .from('news_articles')
+    .select('*')
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .lte('published_at', nowIso())
+    .order('published_at', { ascending: false })
+    .limit(safeLimit);
+  if (error) throw error;
+  return (data ?? []) as NewsArticleRow[];
+}
+
+export async function fetchPublishedNewsArticleBySlug(slug: string): Promise<NewsArticleRow | null> {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return null;
+  const client = getSupabaseClient();
+  if (!client) return null;
+  const { data, error } = await client
+    .from('news_articles')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .lte('published_at', nowIso())
+    .maybeSingle();
+  if (error) throw error;
+  return (data as NewsArticleRow | null) ?? null;
+}
+
+export async function fetchAllNewsArticlesAdmin(): Promise<NewsArticleRow[]> {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  const { data, error } = await client
+    .from('news_articles')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return (data ?? []) as NewsArticleRow[];
+}
+
+export async function upsertNewsArticle(
+  article: Partial<NewsArticleRow> & {
+    slug: string;
+    title_en: string;
+    title_ur: string;
+    excerpt_en: string;
+    excerpt_ur: string;
+    content_en: string;
+    content_ur: string;
+  },
+  actorId: string
+): Promise<NewsArticleRow> {
+  const slug = article.slug.trim().toLowerCase();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error('Use a URL-friendly slug with lowercase letters, numbers and hyphens.');
+  }
+  const required = [
+    article.title_en, article.title_ur, article.excerpt_en,
+    article.excerpt_ur, article.content_en, article.content_ur,
+  ];
+  if (required.some((value) => !value.trim())) throw new Error('Complete both English and Urdu news fields.');
+  if (article.cover_image_url && !/^https:\/\//i.test(article.cover_image_url.trim())) {
+    throw new Error('Cover image URL must use HTTPS.');
+  }
+  const client = getSupabaseClient();
+  if (!client) throw new Error('News publishing requires the connected database.');
+  const status = article.status ?? 'draft';
+  const payload = {
+    ...article,
+    slug,
+    status,
+    published_at: status === 'published' ? (article.published_at ?? nowIso()) : null,
+    cover_image_url: article.cover_image_url?.trim() || null,
+    created_by: article.created_by ?? actorId,
+    updated_by: actorId,
+    updated_at: nowIso(),
+  };
+  const { data, error } = await client.from('news_articles').upsert(payload).select().single();
+  if (error) throw error;
+  return data as NewsArticleRow;
 }
