@@ -7,10 +7,11 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 - [x] Homepage hero banner
 - [x] Owner registration request flow and Admin approval/rejection workflow
 - [x] Public owner profiles with Admin-controlled field-level privacy
+- [x] News Module — bilingual public feed/article pages, Admin draft/publish editor, database RLS, and production deployment verified
 
 ## In progress
 
-- [x] News Module — bilingual public feed/article pages, Admin draft/publish editor, database RLS, and production deployment verified.
+- None
 
 ## Remaining
 
