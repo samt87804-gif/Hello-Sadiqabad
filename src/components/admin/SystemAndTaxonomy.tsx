@@ -52,6 +52,7 @@ import { BarChartSvg, LineChartSvg } from '../ui/Charts';
 import { ConfirmDialog, Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
+import { EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../../lib/siteSettings';
 
 export function TaxonomyManager({
   mode,
@@ -1280,11 +1281,17 @@ export function BackupExportManager({
 export function SettingsManager({
   settings,
   pages,
+  categories,
+  areas,
+  emergencyContacts,
   actorId,
   onReload,
 }: {
   settings: SiteSettingRow[];
   pages: PageRow[];
+  categories: CategoryRow[];
+  areas: AreaRow[];
+  emergencyContacts: EmergencyContactRow[];
   actorId: string;
   onReload: () => Promise<void>;
 }) {
@@ -1297,8 +1304,51 @@ export function SettingsManager({
   const [pageEn, setPageEn] = useState(activePage?.body_md_en ?? '');
   const [pageUr, setPageUr] = useState(activePage?.body_md_ur ?? '');
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
+  const [directoryImageDrafts, setDirectoryImageDrafts] = useState<Record<string, string>>({});
+  const directoryImageSetting = settings.find((setting) => setting.key === 'directory_image_urls');
+  const storedDirectoryImages = directoryImageSetting?.value && typeof directoryImageSetting.value === 'object'
+    ? directoryImageSetting.value as Partial<DirectoryImageUrls>
+    : {};
+  const directoryImages: DirectoryImageUrls = {
+    categories: storedDirectoryImages.categories ?? {},
+    areas: storedDirectoryImages.areas ?? {},
+    helplines: storedDirectoryImages.helplines ?? {},
+    businesses: storedDirectoryImages.businesses ?? {},
+    offers: storedDirectoryImages.offers ?? {},
+    ads: storedDirectoryImages.ads ?? {},
+  };
   const heroBannerSetting = settings.find((setting) => setting.key === 'hero_banner_url');
   const heroBannerDraft = draftValues.hero_banner_url ?? String(heroBannerSetting?.value ?? '');
+
+  const saveDirectoryImage = async (kind: keyof DirectoryImageUrls, itemKey: string) => {
+    const draftKey = `${kind}:${itemKey}`;
+    const url = (directoryImageDrafts[draftKey] ?? directoryImages[kind][itemKey] ?? '').trim();
+    if (url) {
+      let parsed: URL;
+      try { parsed = new URL(url); } catch {
+        showToast('Please enter a valid public image URL.', 'error');
+        return;
+      }
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        showToast('Image URL must start with https:// or http://.', 'error');
+        return;
+      }
+    }
+    const next: DirectoryImageUrls = {
+      categories: { ...directoryImages.categories },
+      areas: { ...directoryImages.areas },
+      helplines: { ...directoryImages.helplines },
+      businesses: { ...directoryImages.businesses },
+      offers: { ...directoryImages.offers },
+      ads: { ...directoryImages.ads },
+    };
+    if (url) next[kind][itemKey] = url;
+    else delete next[kind][itemKey];
+    await updateSiteSetting('directory_image_urls', next, actorId);
+    showToast(url ? 'Image URL saved and published.' : 'Image URL cleared.', 'success');
+    setDirectoryImageDrafts((previous) => { const copy = { ...previous }; delete copy[draftKey]; return copy; });
+    await onReload();
+  };
 
   const saveHeroBanner = async () => {
     const url = heroBannerDraft.trim();
@@ -1386,10 +1436,65 @@ export function SettingsManager({
           <Button onClick={saveHeroBanner} disabled={!heroBannerDraft.trim()}>Save Banner</Button>
         </div>
       </Card>
+      <Card className="p-5 space-y-4">
+        <div>
+          <h2 className="text-base font-bold text-on-surface">Directory Image URL Manager</h2>
+          <p className="text-xs text-on-surface-variant mt-1">Paste public Supabase Storage URLs. Save each image to publish it immediately on the website; leave a URL blank and save to remove that image.</p>
+        </div>
+        {([
+          { kind: 'categories' as const, title: 'Category Cards', items: categories.map((item) => ({ key: item.slug, label: item.name_en, detail: item.name_ur })) },
+          { kind: 'areas' as const, title: 'Area & Bazaar Cards', items: areas.map((item) => ({ key: item.slug, label: item.name_en, detail: item.name_ur })) },
+          { kind: 'helplines' as const, title: 'Government & Emergency Helplines', items: emergencyContacts.map((item) => ({ key: item.id, label: item.name_en, detail: item.phone })) },
+        ]).map((section) => (
+          <div key={section.kind} className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-on-surface">{section.title}</h3>
+              <span className="text-[10px] text-on-surface-variant">{section.items.length} records</span>
+            </div>
+            {section.items.length === 0 ? (
+              <p className="text-xs text-on-surface-variant rounded-xl bg-surface-container-low p-3">No records are available for this section.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {section.items.map((item) => {
+                  const savedUrl = directoryImages[section.kind][item.key] ?? '';
+                  const draftKey = `${section.kind}:${item.key}`;
+                  const value = directoryImageDrafts[draftKey] ?? savedUrl;
+                  return (
+                    <div key={item.key} className="rounded-xl border border-outline-variant/40 p-3 space-y-2 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-on-surface truncate">{item.label}</p>
+                          <p className="text-[10px] text-on-surface-variant truncate">{item.detail}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold ${savedUrl ? 'text-primary' : 'text-on-surface-variant'}`}>{savedUrl ? 'Image set' : 'Icon fallback'}</span>
+                      </div>
+                      {value && <img src={value} alt={`${item.label} preview`} className="w-full h-28 object-cover rounded-lg bg-surface-container" />}
+                      <input
+                        type="url"
+                        value={value}
+                        onChange={(event) => setDirectoryImageDrafts((previous) => ({ ...previous, [draftKey]: event.target.value }))}
+                        placeholder="https://.../image.png"
+                        aria-label={`${item.label} image URL`}
+                        className="w-full h-9 px-2.5 rounded-lg border border-outline-variant bg-surface text-[11px] font-mono"
+                      />
+                      <div className="flex justify-end">
+                        <Button size="sm" variant="outline" onClick={() => saveDirectoryImage(section.kind, item.key)}>Save Image URL</Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+        <div className="rounded-xl bg-surface-container-low p-3 text-[11px] text-on-surface-variant">
+          Business logo/cover images, offer images and sponsor-ad images continue to use their existing URL fields in their respective Admin editors. New News and Authority image fields can be added when those modules are built.
+        </div>
+      </Card>
       <Card className="p-5 space-y-3">
         <h2 className="text-base font-bold text-on-surface">Site Settings &amp; Feature Flags</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {settings.filter((setting) => setting.key !== 'hero_banner_url').map((s) => (
+          {settings.filter((setting) => setting.key !== 'hero_banner_url' && setting.key !== 'directory_image_urls').map((s) => (
             <div
               key={s.key}
               className="p-3 rounded-xl bg-surface-container-low flex flex-col gap-2 text-xs"
