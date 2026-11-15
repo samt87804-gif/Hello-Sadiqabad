@@ -5,8 +5,7 @@ import { fetchPublicOwnerProfile, searchBusinesses } from '../lib/api';
 import type { BusinessPublicView, OwnerPublicProfileView } from '../types/directory';
 import { updatePageSeo } from '../lib/seo';
 import { AppShell } from '../components/layout/AppShell';
-import { Container } from '../components/ui/Surface';
-import { Card } from '../components/ui/Surface';
+import { Card, Container } from '../components/ui/Surface';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { Skeleton, ErrorState } from '../components/ui/Feedback';
 
