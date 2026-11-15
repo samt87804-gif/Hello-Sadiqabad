@@ -57,6 +57,7 @@ import type {
   NewsArticleRow,
   NotificationRow,
   OfferRow,
+  ProductRow,
   PageRow,
   PlanRow,
   ProfileRow,
@@ -1144,6 +1145,55 @@ export async function updateOwnerBusiness(
   });
   saveDemoDb(db);
   return updated;
+}
+
+export async function fetchBusinessProducts(businessId: string): Promise<ProductRow[]> {
+  const client = getSupabaseClient();
+  if (!client || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId)) {
+    return [];
+  }
+  const { data, error } = await client
+    .from('business_products')
+    .select('*')
+    .eq('business_id', businessId)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true })
+    .limit(2);
+  if (error) throw error;
+  return (data ?? []) as ProductRow[];
+}
+
+export async function upsertBusinessProduct(
+  product: Partial<ProductRow> & { business_id: string; name_en: string }
+): Promise<ProductRow> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Product catalogue is unavailable while the app is offline.');
+  const payload = {
+    ...product,
+    name_en: product.name_en.trim(),
+    name_ur: product.name_ur?.trim() || null,
+    description_en: product.description_en?.trim() || null,
+    description_ur: product.description_ur?.trim() || null,
+    image_url: product.image_url?.trim() || null,
+    updated_at: nowIso(),
+  };
+  const { data, error } = await client
+    .from('business_products')
+    .upsert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as ProductRow;
+}
+
+export async function deleteBusinessProduct(productId: string): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Product catalogue is unavailable while the app is offline.');
+  const { error } = await client
+    .from('business_products')
+    .delete()
+    .eq('id', productId);
+  if (error) throw error;
 }
 
 export async function fetchBusinessOffers(businessId: string): Promise<OfferRow[]> {
