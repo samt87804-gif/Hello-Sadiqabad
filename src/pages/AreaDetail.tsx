@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, Map as MapIcon, MapPin, PlusCircle } from 'lucide-react';
-import { fetchAllAreas, fetchAllCategories, searchBusinesses } from '../lib/api';
+import { fetchAllAreas, fetchAllCategories, fetchPublicSiteSettings, searchBusinesses } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { bilingualText } from '../lib/format';
 import { updatePageSeo } from '../lib/seo';
@@ -13,6 +13,8 @@ import { BusinessCard } from '../components/directory/BusinessCard';
 import { BusinessCardSkeleton, EmptyState } from '../components/ui/Feedback';
 import { Button } from '../components/ui/Button';
 import { Card, Container } from '../components/ui/Surface';
+import { ImageWithFallback } from '../components/ui/ImageWithFallback';
+import { EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../lib/siteSettings';
 
 export function AreaDetail() {
   const { slug = '' } = useParams();
@@ -20,6 +22,7 @@ export function AreaDetail() {
   const [area, setArea] = useState<AreaRow | null>(null);
   const [allAreas, setAllAreas] = useState<AreaRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [directoryImageUrls, setDirectoryImageUrls] = useState<DirectoryImageUrls>(EMPTY_DIRECTORY_IMAGE_URLS);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [businesses, setBusinesses] = useState<BusinessPublicView[]>([]);
   const [favorites, setFavorites] = useState<string[]>(() => getFavorites());
@@ -33,12 +36,13 @@ export function AreaDetail() {
     let active = true;
     setSelectedCategory('');
     setMetaError(false);
-    Promise.all([fetchAllAreas(), fetchAllCategories()]).then(([ar, cats]) => {
+    Promise.all([fetchAllAreas(), fetchAllCategories(), fetchPublicSiteSettings()]).then(([ar, cats, settings]) => {
       if (!active) return;
       const found = ar.find((a) => a.slug === slug) ?? null;
       setArea(found);
       setAllAreas(ar);
       setCategories(cats);
+      setDirectoryImageUrls(settings.directory_image_urls || EMPTY_DIRECTORY_IMAGE_URLS);
       if (found) {
         updatePageSeo({
           title: `Businesses in ${found.name_en}, Sadiqabad — Hello Sadiqabad`,
@@ -105,8 +109,8 @@ export function AreaDetail() {
 
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-secondary-fixed text-secondary flex items-center justify-center shrink-0">
-                <MapPin className="w-5 h-5" />
+              <div className="w-11 h-11 rounded-2xl bg-secondary-fixed text-secondary flex items-center justify-center shrink-0 overflow-hidden">
+                {area && directoryImageUrls.areas[area.slug] ? <ImageWithFallback src={directoryImageUrls.areas[area.slug]} alt={`${area.name_en} area`} className="w-full h-full rounded-2xl" /> : <MapPin className="w-5 h-5" />}
               </div>
               <div>
                 <h1 className="text-2xl font-extrabold text-on-surface">
@@ -194,6 +198,7 @@ export function AreaDetail() {
                     to={`/area/${a.slug}`}
                     className="px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors"
                   >
+                    {directoryImageUrls.areas[a.slug] && <ImageWithFallback src={directoryImageUrls.areas[a.slug]} alt="" className="w-6 h-6 rounded-full inline-block me-1.5 align-middle" />}
                     {bilingualText(lang, a.name_en, a.name_ur)}
                   </Link>
                 ))}
