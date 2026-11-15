@@ -120,6 +120,21 @@ export interface ProfileRow {
   updated_at: string;
 }
 
+export interface OwnerPublicProfileRow {
+  owner_id: string;
+  display_name: string | null;
+  photo_url: string | null;
+  phone: string | null;
+  email: string | null;
+  is_public: boolean;
+  show_name: boolean;
+  show_photo: boolean;
+  show_phone: boolean;
+  show_email: boolean;
+  updated_by: string | null;
+  updated_at: string;
+}
+
 export interface StaffMemberRow {
   id: string;
   user_id: string;
