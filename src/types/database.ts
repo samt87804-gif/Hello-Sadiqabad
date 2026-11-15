@@ -318,6 +318,21 @@ export interface AuditLogRow {
   created_at: string;
 }
 
+export interface ProductRow {
+  id: string;
+  business_id: string;
+  name_en: string;
+  name_ur: string | null;
+  description_en: string | null;
+  description_ur: string | null;
+  price: number | null;
+  image_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface OfferRow {
   id: string;
   business_id: string;
