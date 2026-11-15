@@ -24,10 +24,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import {
+  deleteBusinessProduct,
   deleteOffer,
   fetchAllAreas,
   fetchAllCategories,
   fetchBusinessOffers,
+  fetchBusinessProducts,
   fetchNotifications,
   fetchOwnerDashboardStats,
   fetchOwnerInquiries,
@@ -40,6 +42,7 @@ import {
   replyToReview,
   updateInquiryStatus,
   updateOwnerBusiness,
+  upsertBusinessProduct,
   upsertOffer,
 } from '../../lib/api';
 import { daysUntil, formatDateShort } from '../../lib/format';
@@ -56,6 +59,7 @@ import type {
   NotificationRow,
   OfferRow,
   PlanRow,
+  ProductRow,
   ReviewRow,
   SubmissionRow,
 } from '../../types/database';
@@ -68,6 +72,7 @@ import {
   InquiriesInbox,
   NotificationsList,
   OffersManager,
+  ProductCatalogueManager,
   OwnerAnalytics,
   PlanCard,
   ReviewsReply,
@@ -91,6 +96,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
   const [plans, setPlans] = useState<PlanRow[]>([]);
   const [stats, setStats] = useState<OwnerDashboardStats | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
+  const [products, setProducts] = useState<ProductRow[]>([]);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
@@ -144,12 +150,18 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
       setInquiries(inqs);
 
       if (preferredId) {
-        const [st, offs] = await Promise.all([
+        const [st, offs, prods] = await Promise.all([
           fetchOwnerDashboardStats(preferredId, days),
           fetchBusinessOffers(preferredId),
+          fetchBusinessProducts(preferredId),
         ]);
         setStats(st);
         setOffers(offs);
+        setProducts(prods);
+      } else {
+        setStats(null);
+        setOffers([]);
+        setProducts([]);
       }
     } catch (error) {
       showToast(
@@ -187,6 +199,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
     plans,
     stats,
     offers,
+    products,
     reviews,
     inquiries,
     notifications,
@@ -899,6 +912,40 @@ export function OwnerListing() {
       ) : (
         <Card className="p-6 text-center text-sm text-on-surface-variant">
           No business listing selected or assigned yet.
+        </Card>
+      )}
+    </OwnerShell>
+  );
+}
+
+export function OwnerProducts() {
+  const data = useOwnerPortalData();
+  const business = data.activeBusiness;
+
+  return (
+    <OwnerShell
+      unreadCount={data.unreadCount}
+      listings={data.listings}
+      selectedId={data.selectedId}
+      onSelect={data.setSelectedId}
+      loading={data.loading}
+    >
+      {business ? (
+        <ProductCatalogueManager
+          business={business}
+          products={data.products}
+          onSave={async (product) => {
+            await upsertBusinessProduct(product);
+            await data.reload();
+          }}
+          onDelete={async (id) => {
+            await deleteBusinessProduct(id);
+            await data.reload();
+          }}
+        />
+      ) : (
+        <Card className="p-6 text-center text-sm text-on-surface-variant">
+          Add or claim a business listing before managing products.
         </Card>
       )}
     </OwnerShell>
