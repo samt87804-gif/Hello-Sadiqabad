@@ -33,6 +33,7 @@ import {
   fetchOwnerInquiries,
   fetchOwnerListings,
   fetchOwnerReviews,
+  fetchOwnerSubmissions,
   fetchPlans,
   fetchPublicSiteSettings,
   markNotificationsRead,
@@ -41,7 +42,7 @@ import {
   updateOwnerBusiness,
   upsertOffer,
 } from '../../lib/api';
-import { daysUntil } from '../../lib/format';
+import { daysUntil, formatDateShort } from '../../lib/format';
 import { DEFAULT_SITE_SETTINGS, type SiteSettingsMap } from '../../lib/siteSettings';
 import { evaluatePasswordStrength } from '../../lib/password';
 import { normalizePkPhone } from '../../lib/phone';
@@ -56,6 +57,7 @@ import type {
   OfferRow,
   PlanRow,
   ReviewRow,
+  SubmissionRow,
 } from '../../types/database';
 import type { BusinessPublicView, OwnerDashboardStats } from '../../types/directory';
 import { AppHeader } from '../../components/layout/AppHeader';
@@ -200,6 +202,7 @@ function OwnerShell({
   selectedId,
   onSelect,
   loading,
+  showSwitcher = true,
   children,
 }: {
   unreadCount: number;
@@ -207,6 +210,7 @@ function OwnerShell({
   selectedId: string;
   onSelect: (id: string) => void;
   loading: boolean;
+  showSwitcher?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -218,7 +222,7 @@ function OwnerShell({
       <div className="flex-1 flex flex-col lg:flex-row pb-20">
         <OwnerNav unreadCount={unreadCount} />
         <main className="flex-1 p-4 sm:p-6 pb-10 max-w-5xl w-full mx-auto space-y-5">
-          {listings.length > 1 && (
+          {showSwitcher && listings.length > 1 && (
             <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-surface-container-lowest border border-outline-variant/40">
               <span className="text-xs font-bold text-on-surface-variant">Your Businesses ({listings.length})</span>
               <select
@@ -240,6 +244,176 @@ function OwnerShell({
       </div>
       <AppFooter variant="portal" withBottomNavOffset={false} />
     </div>
+  );
+}
+
+export function OwnerBusinesses() {
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const [listings, setListings] = useState<BusinessPublicView[]>([]);
+  const [requests, setRequests] = useState<SubmissionRow[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    if (!user) {
+      setLoading(false);
+      return () => { active = false; };
+    }
+    setLoading(true);
+    Promise.all([
+      fetchOwnerListings(user.id),
+      fetchOwnerSubmissions(user.id),
+      fetchNotifications(user.id),
+    ]).then(([owned, ownRequests, notifications]) => {
+      if (!active) return;
+      setListings(owned);
+      setRequests(ownRequests);
+      setUnreadCount(notifications.filter((item) => !item.is_read).length);
+    }).catch((error) => {
+      if (active) {
+        showToast(error instanceof Error ? error.message : 'Your business list could not be loaded.', 'error');
+      }
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, [user?.id, retry, showToast]);
+
+  const businessStatusVariant = (status: string): 'success' | 'warning' | 'danger' | 'neutral' => {
+    if (status === 'published') return 'success';
+    if (status === 'rejected' || status === 'suspended' || status === 'archived') return 'danger';
+    if (status === 'pending_approval') return 'warning';
+    return 'neutral';
+  };
+
+  const requestStatusVariant = (status: string): 'success' | 'warning' | 'danger' | 'neutral' => {
+    if (status === 'done') return 'success';
+    if (status === 'rejected') return 'danger';
+    if (status === 'new') return 'warning';
+    return 'neutral';
+  };
+
+  const requestTitle = (request: SubmissionRow) => {
+    if (request.type === 'new_business') {
+      const name = request.payload?.name_en;
+      return typeof name === 'string' && name.trim() ? `New business: ${name}` : 'New business request';
+    }
+    if (request.type === 'claim') return 'Business ownership claim';
+    if (request.type === 'plan_upgrade') {
+      const planCode = request.payload?.requested_plan;
+      return typeof planCode === 'string' ? `Plan upgrade request: ${planCode.toUpperCase()}` : 'Plan upgrade request';
+    }
+    return 'Owner request';
+  };
+
+  return (
+    <OwnerShell
+      unreadCount={unreadCount}
+      listings={listings}
+      selectedId=""
+      onSelect={() => {}}
+      loading={loading}
+      showSwitcher={false}
+    >
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-on-surface">My Businesses</h1>
+            <p className="text-sm text-on-surface-variant">Manage every business connected to your owner account</p>
+            <p className="font-urdu text-xs text-primary mt-1" dir="rtl">میرے کاروبار اور درخواستیں</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/search" className="min-h-[40px] px-3.5 rounded-xl border border-outline-variant text-xs font-bold inline-flex items-center gap-1.5 hover:bg-surface-container-low">
+              <Search className="w-4 h-4" /> Find & Claim
+            </Link>
+            <Link to="/add-business" className="min-h-[40px] px-3.5 rounded-xl bg-primary text-on-primary text-xs font-bold inline-flex items-center gap-1.5">
+              <PlusCircle className="w-4 h-4" /> Add Business
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="p-4">
+            <p className="text-xs text-on-surface-variant">Businesses linked to you</p>
+            <p className="text-2xl font-extrabold text-on-surface tabular-nums">{listings.length}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-xs text-on-surface-variant">Requests awaiting review</p>
+            <p className="text-2xl font-extrabold text-on-surface tabular-nums">{requests.filter((item) => item.status === 'new').length}</p>
+          </Card>
+        </div>
+
+        <section className="space-y-3">
+          <h2 className="text-base font-bold text-on-surface">Your Business Listings</h2>
+          {listings.length === 0 ? (
+            <Card className="p-6 text-center space-y-3">
+              <Store className="w-9 h-9 mx-auto text-primary" />
+              <p className="text-sm font-semibold text-on-surface">No approved or linked businesses yet</p>
+              <p className="text-xs text-on-surface-variant">Add a new business or claim an existing Sadiqabad listing. It will appear here after Admin approval.</p>
+              <div className="flex justify-center flex-wrap gap-2">
+                <Link to="/add-business"><Button size="sm">Add Business</Button></Link>
+                <Link to="/search"><Button size="sm" variant="outline">Find a Listing</Button></Link>
+              </div>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {listings.map((business) => (
+                <Card key={business.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-surface-container-low shrink-0">
+                    <ImageWithFallback src={business.logo_url ?? ''} alt={business.name_en} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-bold text-sm text-on-surface">{business.name_en}</h3>
+                      <Badge variant={businessStatusVariant(business.status)}>{business.status.replaceAll('_', ' ')}</Badge>
+                      <Badge variant="neutral">{effectivePlanCode(business.plan_code, business.plan_expires_at).toUpperCase()}</Badge>
+                    </div>
+                    {business.name_ur && <p className="font-urdu text-xs text-primary" dir="rtl">{business.name_ur}</p>}
+                    <p className="text-xs text-on-surface-variant">{business.category?.name_en ?? 'Uncategorized'} · {business.area?.name_en ?? 'Sadiqabad'}</p>
+                    <p className="text-[11px] text-outline">Updated {formatDateShort(business.updated_at)}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 sm:justify-end">
+                    <Link to={`/owner/listings/${business.id}`}><Button size="sm" variant="outline"><Edit3 className="w-3.5 h-3.5" /> Edit</Button></Link>
+                    {business.status === 'published' && <Link to={`/business/${business.slug}`}><Button size="sm" variant="ghost"><ExternalLink className="w-3.5 h-3.5" /> View</Button></Link>}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-bold text-on-surface">My Requests & Approval History</h2>
+            <span className="text-xs text-on-surface-variant">{requests.length} recent requests</span>
+          </div>
+          {requests.length === 0 ? (
+            <Card className="p-5 text-sm text-on-surface-variant">You have not submitted any business, claim, or plan requests yet.</Card>
+          ) : (
+            <div className="space-y-2">
+              {requests.map((request) => (
+                <Card key={request.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="min-w-0 space-y-1">
+                    <p className="text-sm font-bold text-on-surface">{requestTitle(request)}</p>
+                    <p className="text-[11px] text-on-surface-variant">Submitted {formatDateShort(request.created_at)}</p>
+                    {request.status === 'done' && request.type === 'new_business' && <p className="text-xs text-tertiary">Approved — your business should now appear in the listings above.</p>}
+                    {request.status === 'done' && request.type === 'claim' && <p className="text-xs text-tertiary">Approved — the claimed business is now linked to your account.</p>}
+                    {request.status === 'rejected' && <p className="text-xs text-danger">This request was not approved. Please contact the Hello Sadiqabad team for guidance.</p>}
+                  </div>
+                  <Badge variant={requestStatusVariant(request.status)}>{request.status === 'new' ? 'Pending review' : request.status === 'done' ? 'Approved' : request.status.replaceAll('_', ' ')}</Badge>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+        <div className="flex justify-end">
+          <Button size="sm" variant="ghost" onClick={() => setRetry((value) => value + 1)}>Refresh status</Button>
+        </div>
+      </div>
+    </OwnerShell>
   );
 }
 
@@ -428,6 +602,12 @@ export function OwnerDashboard() {
                   className="min-h-[40px] px-3.5 rounded-xl border border-primary/40 text-primary text-xs font-bold inline-flex items-center gap-1.5 hover:bg-primary/5"
                 >
                   <PlusCircle className="w-3.5 h-3.5" /> Add Another Business
+                </Link>
+                <Link
+                  to="/owner/businesses"
+                  className="min-h-[40px] px-3.5 rounded-xl border border-outline-variant text-xs font-bold inline-flex items-center gap-1.5 hover:bg-surface-container-low"
+                >
+                  <Store className="w-3.5 h-3.5" /> Manage All Businesses
                 </Link>
                 <Link
                   to={`/owner/listings/${biz.id}`}
