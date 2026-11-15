@@ -20,28 +20,31 @@ export function OwnerPublicProfile() {
     let active = true;
     setLoading(true);
     setFailed(false);
-    Promise.all([
-      fetchPublicOwnerProfile(ownerId),
-      searchBusinesses({}, { page: 1, limit: 1000, logSearch: false }),
-    ]).then(([owner, result]) => {
-      if (!active) return;
-      if (!owner) {
-        setProfile(null);
-        setBusinesses([]);
-        return;
+    const load = async () => {
+      try {
+        const owner = await fetchPublicOwnerProfile(ownerId);
+        if (!active) return;
+        if (!owner) {
+          setProfile(null);
+          setBusinesses([]);
+          return;
+        }
+        setProfile(owner);
+        updatePageSeo({
+          title: owner.display_name ? `${owner.display_name} — Hello Sadiqabad` : 'Business Owner — Hello Sadiqabad',
+          description: 'Public business owner profile and approved Sadiqabad business listings.',
+          canonicalPath: `/owner-profile/${ownerId}`,
+        });
+        const result = await searchBusinesses({}, { page: 1, limit: 1000, logSearch: false });
+        if (!active) return;
+        setBusinesses(result.items.filter((business) => business.owner_id === ownerId));
+      } catch {
+        if (active) setFailed(true);
+      } finally {
+        if (active) setLoading(false);
       }
-      setProfile(owner);
-      setBusinesses(result.items.filter((business) => business.owner_id === ownerId));
-      updatePageSeo({
-        title: owner.display_name ? `${owner.display_name} — Hello Sadiqabad` : 'Business Owner — Hello Sadiqabad',
-        description: 'Public business owner profile and approved Sadiqabad business listings.',
-        canonicalPath: `/owner-profile/${ownerId}`,
-      });
-    }).catch(() => {
-      if (active) setFailed(true);
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
+    };
+    void load();
     return () => { active = false; };
   }, [ownerId]);
 
