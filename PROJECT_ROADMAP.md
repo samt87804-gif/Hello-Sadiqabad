@@ -10,7 +10,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- [ ] News Module — requirements clarification pending; the existing Civic Announcements feature is separate and already implemented.
+- [ ] News Module — implementation underway: bilingual public feed/article pages, Admin draft/publish editor, and database RLS; pending build/deployment verification.
 
 ## Remaining
 
