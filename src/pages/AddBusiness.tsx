@@ -5,6 +5,7 @@ import { useI18n } from '../lib/i18n';
 import { bilingualText } from '../lib/format';
 import { normalizePkPhone } from '../lib/phone';
 import { updatePageSeo } from '../lib/seo';
+import { useAuth } from '../lib/auth';
 import type { AreaRow, CategoryRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
@@ -23,6 +24,8 @@ const QUICK_FACILITIES = [
 export function AddBusiness() {
   const { showToast } = useToast();
   const { lang } = useI18n();
+  const { role } = useAuth();
+  const isOwner = role === 'owner';
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [areas, setAreas] = useState<AreaRow[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -227,12 +230,18 @@ export function AddBusiness() {
           <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div className="text-xs text-on-surface space-y-1">
             <p className="font-bold">
-              {lang === 'ur' ? 'لسٹنگ کی درخواست اور پلان کا جائزہ' : 'Listing Request & Plan Review'}
+              {isOwner
+                ? (lang === 'ur' ? 'اپنے اکاؤنٹ میں دوسرا کاروبار شامل کریں' : 'Add Another Business to Your Owner Account')
+                : (lang === 'ur' ? 'لسٹنگ کی درخواست اور پلان کا جائزہ' : 'Listing Request & Plan Review')}
             </p>
             <p className="text-on-surface-variant">
-              {lang === 'ur'
-                ? 'ہر دکان کو مستقل پروفائل، ون ٹیپ کال بٹن اور نقشہ پن ملتا ہے۔ واٹس ایپ چیٹ، گیلری اور آفرز کے لیے منظوری کے بعد بیسک یا پریمیم پلان طلب کریں۔'
-                : 'Every shop gets a permanent profile, phone tap-to-call button, and map pin. Need WhatsApp chat, gallery photos & special offer banners? Request a Basic or Premium Plan after listing approval.'}
+              {isOwner
+                ? (lang === 'ur'
+                  ? 'یہ نئی لسٹنگ ایڈمن کی منظوری کے بعد خودکار طور پر آپ کے اسی اونر پورٹل میں شامل ہو جائے گی۔ منظوری سے پہلے یہ عوامی ڈائریکٹری میں نظر نہیں آئے گی۔'
+                  : 'Submit a separate listing for each business. Once Admin approves it, the new business is automatically linked to this same Owner Portal. It will not appear publicly before approval.')
+                : (lang === 'ur'
+                  ? 'ہر دکان کو مستقل پروفائل، ون ٹیپ کال بٹن اور نقشہ پن ملتا ہے۔ واٹس ایپ چیٹ، گیلری اور آفرز کے لیے منظوری کے بعد بیسک یا پریمیم پلان طلب کریں۔'
+                  : 'Every shop gets a permanent profile, phone tap-to-call button, and map pin. Need WhatsApp chat, gallery photos & special offer banners? Request a Basic or Premium Plan after listing approval.')}
             </p>
           </div>
         </div>
