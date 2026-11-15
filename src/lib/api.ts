@@ -1005,6 +1005,20 @@ export async function fetchOwnerListings(ownerId: string): Promise<BusinessPubli
     .map((b) => enrichBusiness(b, db));
 }
 
+export async function fetchOwnerSubmissions(ownerId: string): Promise<SubmissionRow[]> {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  const { data, error } = await client
+    .from('submissions')
+    .select('id,type,business_id,payload,status,created_at,updated_at')
+    .eq('submitted_by', ownerId)
+    .in('type', ['new_business', 'claim', 'plan_upgrade'])
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return (data ?? []) as SubmissionRow[];
+}
+
 export async function fetchOwnerDashboardStats(
   businessId: string,
   days = 30
