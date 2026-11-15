@@ -265,9 +265,13 @@ export function AddBusiness() {
               آپ کی درخواست ماڈریشن کے لیے موصول ہو گئی ہے۔
             </p>
             <p className="text-sm text-on-surface-variant max-w-md mx-auto">
-              {lang === 'ur'
-                ? 'ایڈمن جائزے اور منظوری کے بعد آپ کا کاروبار ڈائریکٹری میں شائع کر دیا جائے گا۔'
-                : 'Your listing request has been queued for admin review. Approved listings are published to the directory.'}
+              {isOwner
+                ? (lang === 'ur'
+                  ? 'ایڈمن کی منظوری کے بعد یہ کاروبار آپ کے موجودہ اونر اکاؤنٹ کے ساتھ منسلک ہو کر پورٹل میں دکھائی دے گا۔'
+                  : 'After Admin approval, this business will be linked to your existing owner account and appear in your Owner Portal.')
+                : (lang === 'ur'
+                  ? 'ایڈمن جائزے اور منظوری کے بعد آپ کا کاروبار ڈائریکٹری میں شائع کر دیا جائے گا۔'
+                  : 'Your listing request has been queued for admin review. Approved listings are published to the directory.')}
             </p>
             <div className="pt-2">
               <Button onClick={() => setSubmitted(false)} variant="outline">
