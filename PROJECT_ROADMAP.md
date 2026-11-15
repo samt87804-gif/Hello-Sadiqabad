@@ -11,7 +11,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- None
+- [ ] Enhanced Owner Portal — My Businesses page, owner-only request history, and database-enforced active-offer limits; remaining owner workflows still under review.
 
 ## Remaining
 
