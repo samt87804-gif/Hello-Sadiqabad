@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AlertTriangle, MapPin, MessageCircle, PhoneCall, ShieldAlert } from 'lucide-react';
-import { fetchEmergencyContacts } from '../lib/api';
+import { fetchEmergencyContacts, fetchPublicSiteSettings } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { bilingualText, formatDateShort } from '../lib/format';
 import { buildTelUrl, buildWhatsAppUrl } from '../lib/phone';
@@ -9,6 +9,8 @@ import type { EmergencyCategory, EmergencyContactRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { Badge, Card, Container } from '../components/ui/Surface';
+import { ImageWithFallback } from '../components/ui/ImageWithFallback';
+import { EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../lib/siteSettings';
 
 const CATEGORIES: Array<{ id: 'all' | EmergencyCategory; labelEn: string; labelUr: string }> = [
   { id: 'all', labelEn: 'All Helplines', labelUr: 'تمام ہیلپ لائنز' },
@@ -23,6 +25,7 @@ const CATEGORIES: Array<{ id: 'all' | EmergencyCategory; labelEn: string; labelU
 export function Emergency() {
   const { lang, urduHints } = useI18n();
   const [contacts, setContacts] = useState<EmergencyContactRow[]>([]);
+  const [directoryImageUrls, setDirectoryImageUrls] = useState<DirectoryImageUrls>(EMPTY_DIRECTORY_IMAGE_URLS);
   const [filter, setFilter] = useState<'all' | EmergencyCategory>('all');
   const [fromCache, setFromCache] = useState(false);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
@@ -33,8 +36,9 @@ export function Emergency() {
       description: 'Offline-ready 24/7 emergency helpline directory for Sadiqabad, District Rahim Yar Khan.',
       canonicalPath: '/emergency',
     });
-    fetchEmergencyContacts().then((res) => {
+    Promise.all([fetchEmergencyContacts(), fetchPublicSiteSettings()]).then(([res, settings]) => {
       setContacts(res.items);
+      setDirectoryImageUrls(settings.directory_image_urls || EMPTY_DIRECTORY_IMAGE_URLS);
       setFromCache(res.fromCache);
       setCachedAt(res.cachedAt);
     });
@@ -135,8 +139,8 @@ export function Emergency() {
             <Card key={em.id} className="p-4 border-error/25 flex flex-col justify-between gap-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-error-container text-error flex items-center justify-center shrink-0">
-                    <CategoryIcon name={em.icon} className="w-5 h-5" />
+                  <div className="w-11 h-11 rounded-2xl bg-error-container text-error flex items-center justify-center shrink-0 overflow-hidden">
+                    {directoryImageUrls.helplines[em.id] ? <ImageWithFallback src={directoryImageUrls.helplines[em.id]} alt={`${em.name_en} helpline`} className="w-full h-full rounded-2xl" /> : <CategoryIcon name={em.icon} className="w-5 h-5" />}
                   </div>
                   <div>
                     <h2 className="text-base font-bold text-on-surface">
