@@ -101,11 +101,6 @@ as $function$
 declare
   product_count integer;
 begin
-  if auth.uid() is not null
-     and (private.is_super_admin() or private.staff_has_permission('business.publish')) then
-    return new;
-  end if;
-
   perform 1
     from public.businesses b
     where b.id = new.business_id
