@@ -8,10 +8,11 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 - [x] Owner registration request flow and Admin approval/rejection workflow
 - [x] Public owner profiles with Admin-controlled field-level privacy
 - [x] News Module — bilingual public feed/article pages, Admin draft/publish editor, database RLS, and production deployment verified
+- [x] Enhanced Owner Portal — My Businesses management, owner-only approval/request history, secure plan-upgrade submissions, and database-enforced active-offer limits
 
 ## In progress
 
-- [x] Enhanced Owner Portal — My Businesses management, owner-only approval/request history, secure plan-upgrade submissions, and database-enforced active-offer limits.
+- None
 
 ## Remaining
 
