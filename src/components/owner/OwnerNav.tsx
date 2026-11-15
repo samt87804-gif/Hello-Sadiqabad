@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  PlusCircle,
   Star,
   Tag,
   UserCircle,
@@ -21,6 +22,7 @@ export function OwnerNav({ unreadCount = 0 }: { unreadCount?: number }) {
   const links = [
     { to: '/owner', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/owner/listing', label: 'Edit Listing', icon: Edit3 },
+    { to: '/add-business', label: 'Add Business', icon: PlusCircle },
     { to: '/owner/offers', label: 'Offers', icon: Tag },
     { to: '/owner/reviews', label: 'Reviews', icon: Star },
     { to: '/owner/inquiries', label: 'Inquiries', icon: MessageSquare },
