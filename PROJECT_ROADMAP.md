@@ -11,16 +11,19 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- [ ] Enhanced Owner Portal — My Businesses page, owner-only request history, and database-enforced active-offer limits; remaining owner workflows still under review.
+- [x] Enhanced Owner Portal — My Businesses management, owner-only approval/request history, secure plan-upgrade submissions, and database-enforced active-offer limits.
 
 ## Remaining
 
+- [ ] Owner Products & Services Catalogue — separate owner-managed products (max 2 per business) and service-count controls (max 2; existing business data needs a safe owner-reviewed trim path)
 - [ ] Sponsor Ads enhancements
 - [ ] Government Helpline module
 - [ ] Local Authorities module
 - [ ] Read-only, Roman Urdu-first AI chatbot
 
 ## Existing functionality to preserve
+
+- Offer limits continue to follow the configured plan values (Free 0, Basic 2, Premium 10 active offers); database enforcement now matches the active-offer count shown in the portal. A universal two-offer cap would be a separate confirmed rule change.
 
 - Civic Announcements already exist at `/announcements`, with bilingual title/body, optional link, active date range, and Admin management permission `announcements.manage`.
 - Do not replace or break Civic Announcements when adding a separate News feature unless explicitly requested.
