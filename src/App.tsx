@@ -17,6 +17,9 @@ const AreaDetail = lazy(() => import('./pages/AreaDetail').then((m) => ({ defaul
 const BusinessProfile = lazy(() =>
   import('./pages/BusinessProfile').then((m) => ({ default: m.BusinessProfile }))
 );
+const OwnerPublicProfile = lazy(() =>
+  import('./pages/OwnerPublicProfile').then((m) => ({ default: m.OwnerPublicProfile }))
+);
 const Offers = lazy(() => import('./pages/Offers').then((m) => ({ default: m.Offers })));
 const AddBusiness = lazy(() =>
   import('./pages/AddBusiness').then((m) => ({ default: m.AddBusiness }))
@@ -103,6 +106,7 @@ export default function App() {
                     <Route path="/category/:slug" element={<CategoryDetail />} />
                     <Route path="/area/:slug" element={<AreaDetail />} />
                     <Route path="/business/:slug" element={<BusinessProfile />} />
+                    <Route path="/owner-profile/:ownerId" element={<OwnerPublicProfile />} />
                     <Route path="/offers" element={<Offers />} />
                     <Route path="/add-business" element={<AddBusiness />} />
                     <Route path="/map" element={<MapPage />} />
