@@ -117,9 +117,16 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
       setPlans(pls);
       setNotifications(notifs);
 
+      let persistedId = '';
+      try {
+        persistedId = window.localStorage.getItem(`hs_owner_active_business_${user.id}`) ?? '';
+      } catch {
+        // Continue with the first owned listing when browser storage is unavailable.
+      }
       const preferredId =
         (routeListingId && owned.some((b) => b.id === routeListingId) ? routeListingId : '') ||
         (selectedId && owned.some((b) => b.id === selectedId) ? selectedId : '') ||
+        (persistedId && owned.some((business) => business.id === persistedId) ? persistedId : '') ||
         owned[0]?.id ||
         '';
       if (preferredId !== selectedId) {
@@ -155,6 +162,15 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
   useEffect(() => {
     reload();
   }, [reload]);
+
+  useEffect(() => {
+    if (!user || !selectedId || !listings.some((business) => business.id === selectedId)) return;
+    try {
+      window.localStorage.setItem(`hs_owner_active_business_${user.id}`, selectedId);
+    } catch {
+      // The active listing still works for this page if browser storage is unavailable.
+    }
+  }, [user, selectedId, listings]);
 
   const activeBusiness = listings.find((b) => b.id === selectedId) ?? listings[0] ?? null;
   const unreadCount = notifications.filter((n) => !n.is_read).length;
@@ -204,7 +220,7 @@ function OwnerShell({
         <main className="flex-1 p-4 sm:p-6 pb-10 max-w-5xl w-full mx-auto space-y-5">
           {listings.length > 1 && (
             <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-surface-container-lowest border border-outline-variant/40">
-              <span className="text-xs font-bold text-on-surface-variant">Active Listing:</span>
+              <span className="text-xs font-bold text-on-surface-variant">Your Businesses ({listings.length})</span>
               <select
                 value={selectedId}
                 onChange={(e) => onSelect(e.target.value)}
