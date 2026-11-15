@@ -14,6 +14,8 @@ import {
   MessageSquareReply,
   Phone,
   Plus,
+  Package,
+  Pencil,
   Send,
   Star,
   Trash2,
@@ -25,6 +27,7 @@ import type {
   NotificationRow,
   OfferRow,
   PlanRow,
+  ProductRow,
   ReviewRow,
 } from '../../types/database';
 import type { BusinessPublicView, OwnerDashboardStats } from '../../types/directory';
@@ -45,6 +48,196 @@ import { ConfirmDialog, Modal } from '../ui/Modal';
 import { LineChartSvg } from '../ui/Charts';
 import { useToast } from '../ui/Toast';
 import { submitPublicSuggestion } from '../../lib/api';
+
+export function ProductCatalogueManager({
+  business,
+  products,
+  onSave,
+  onDelete,
+}: {
+  business: BusinessPublicView;
+  products: ProductRow[];
+  onSave: (product: Partial<ProductRow> & { business_id: string; name_en: string }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const { showToast } = useToast();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<ProductRow | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [nameEn, setNameEn] = useState('');
+  const [nameUr, setNameUr] = useState('');
+  const [descriptionEn, setDescriptionEn] = useState('');
+  const [descriptionUr, setDescriptionUr] = useState('');
+  const [price, setPrice] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const openNew = () => {
+    if (products.length >= 2) {
+      showToast('Each business can have a maximum of 2 products. Remove one before adding another.', 'error');
+      return;
+    }
+    setEditing(null);
+    setNameEn('');
+    setNameUr('');
+    setDescriptionEn('');
+    setDescriptionUr('');
+    setPrice('');
+    setImageUrl('');
+    setIsActive(true);
+    setModalOpen(true);
+  };
+
+  const openEdit = (product: ProductRow) => {
+    setEditing(product);
+    setNameEn(product.name_en);
+    setNameUr(product.name_ur ?? '');
+    setDescriptionEn(product.description_en ?? '');
+    setDescriptionUr(product.description_ur ?? '');
+    setPrice(product.price === null ? '' : String(product.price));
+    setImageUrl(product.image_url ?? '');
+    setIsActive(product.is_active);
+    setModalOpen(true);
+  };
+
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const trimmedName = nameEn.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 120) {
+      showToast('Product name must be between 2 and 120 characters.', 'error');
+      return;
+    }
+    const parsedPrice = price.trim() ? Number(price) : null;
+    if (parsedPrice !== null && (!Number.isFinite(parsedPrice) || parsedPrice < 0)) {
+      showToast('Enter a valid non-negative price in PKR.', 'error');
+      return;
+    }
+    if (imageUrl.trim() && !isValidHttpsUrl(imageUrl.trim())) {
+      showToast('Product image URL must be a valid HTTPS link.', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave({
+        ...(editing ? { id: editing.id } : {}),
+        business_id: business.id,
+        name_en: trimmedName,
+        name_ur: nameUr.trim() || null,
+        description_en: descriptionEn.trim() || null,
+        description_ur: descriptionUr.trim() || null,
+        price: parsedPrice,
+        image_url: imageUrl.trim() || null,
+        is_active: isActive,
+        sort_order: editing?.sort_order ?? products.length,
+      });
+      showToast(editing ? 'Product updated.' : 'Product added to your catalogue.', 'success');
+      setModalOpen(false);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Product could not be saved.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-on-surface">Products Catalogue</h2>
+          <p className="text-xs text-on-surface-variant">Add up to 2 products for {business.name_en}</p>
+          <p className="font-urdu text-xs text-primary mt-1" dir="rtl">ہر کاروبار کے لیے زیادہ سے زیادہ 2 مصنوعات</p>
+        </div>
+        <Button onClick={openNew} disabled={products.length >= 2} leftIcon={<Plus className="w-4 h-4" />}>
+          Add Product ({products.length}/2)
+        </Button>
+      </div>
+
+      {products.length === 0 ? (
+        <Card className="p-8 text-center space-y-2">
+          <Package className="w-9 h-9 mx-auto text-primary" />
+          <p className="text-sm font-bold text-on-surface">No products added yet</p>
+          <p className="text-xs text-on-surface-variant">Add up to two products to display them on your public business profile.</p>
+          <div><Button size="sm" onClick={openNew}>Add your first product</Button></div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {products.map((product) => (
+            <Card key={product.id} className="p-4 flex flex-col gap-3">
+              {product.image_url && (
+                <img src={product.image_url} alt={product.name_en} loading="lazy" className="w-full h-36 object-cover rounded-xl bg-surface-container-low" />
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-bold text-sm text-on-surface">{product.name_en}</h3>
+                <Badge variant={product.is_active ? 'success' : 'neutral'}>{product.is_active ? 'Visible' : 'Hidden'}</Badge>
+              </div>
+              {product.name_ur && <p className="font-urdu text-sm text-primary" dir="rtl">{product.name_ur}</p>}
+              {product.description_en && <p className="text-xs text-on-surface-variant">{product.description_en}</p>}
+              {product.price !== null && <p className="text-sm font-bold text-on-surface">{new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 2 }).format(product.price)}</p>}
+              <div className="flex justify-end gap-2 border-t border-outline-variant/30 pt-3">
+                <Button size="sm" variant="outline" onClick={() => openEdit(product)} leftIcon={<Pencil className="w-3.5 h-3.5" />}>Edit</Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={async () => {
+                    try {
+                      await onSave({ ...product, is_active: !product.is_active });
+                      showToast(product.is_active ? 'Product hidden from public profile.' : 'Product is now visible.', 'success');
+                    } catch (error) {
+                      showToast(error instanceof Error ? error.message : 'Product status could not be changed.', 'error');
+                    }
+                  }}
+                >
+                  {product.is_active ? 'Hide' : 'Show'}
+                </Button>
+                <Button size="sm" variant="danger" onClick={() => setConfirmDeleteId(product.id)}>Delete</Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={Boolean(confirmDeleteId)}
+        onClose={() => setConfirmDeleteId(null)}
+        destructive
+        title="Delete Product"
+        message="This will permanently remove this product from your business catalogue."
+        confirmLabel="Delete Product"
+        onConfirm={async () => {
+          if (!confirmDeleteId) return;
+          try {
+            await onDelete(confirmDeleteId);
+            showToast('Product deleted.', 'success');
+          } catch (error) {
+            showToast(error instanceof Error ? error.message : 'Product could not be deleted.', 'error');
+          } finally {
+            setConfirmDeleteId(null);
+          }
+        }}
+      />
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Product' : 'Add Product'}>
+        <form onSubmit={save} className="space-y-3">
+          <Input label="Product Name (English)" required maxLength={120} value={nameEn} onChange={(event) => setNameEn(event.target.value)} />
+          <Input label="Product Name (Urdu)" dir="rtl" className="font-urdu" maxLength={120} value={nameUr} onChange={(event) => setNameUr(event.target.value)} />
+          <Textarea label="Description (English)" rows={3} value={descriptionEn} onChange={(event) => setDescriptionEn(event.target.value)} />
+          <Textarea label="Description (Urdu)" rows={3} value={descriptionUr} onChange={(event) => setDescriptionUr(event.target.value)} />
+          <Input label="Price in PKR (optional)" type="number" min="0" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} />
+          <Input label="Product Image URL (HTTPS, optional)" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." />
+          <label className="flex items-center gap-2 text-sm text-on-surface">
+            <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} className="accent-primary" />
+            Show this product on my public business profile
+          </label>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button type="submit" loading={saving}>{editing ? 'Save Changes' : 'Add Product'}</Button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
 
 export function OffersManager({
   business,
