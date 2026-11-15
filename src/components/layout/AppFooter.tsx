@@ -83,7 +83,8 @@ export function AppFooter({
                   <li><Link to="/categories" className="hover:text-primary">All Categories</Link></li>
                   <li><Link to="/offers" className="hover:text-primary">Local Offers &amp; Deals</Link></li>
                   <li><Link to="/map" className="hover:text-primary">City Map Explorer</Link></li>
-                  <li><Link to="/announcements" className="hover:text-primary">City Notices</Link></li>\n                  <li><Link to="/news" className="hover:text-primary">Local News</Link></li>
+                  <li><Link to="/announcements" className="hover:text-primary">City Notices</Link></li>
+                  <li><Link to="/news" className="hover:text-primary">Local News</Link></li>
                   <li><Link to="/add-business" className="hover:text-primary font-semibold text-primary">Add Your Business</Link></li>
                 </ul>
               </div>
