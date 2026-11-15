@@ -408,6 +408,12 @@ export function OwnerDashboard() {
                   <ExternalLink className="w-3.5 h-3.5" /> View Public Profile
                 </Link>
                 <Link
+                  to="/add-business"
+                  className="min-h-[40px] px-3.5 rounded-xl border border-primary/40 text-primary text-xs font-bold inline-flex items-center gap-1.5 hover:bg-primary/5"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> Add Another Business
+                </Link>
+                <Link
                   to={`/owner/listings/${biz.id}`}
                   className="min-h-[40px] px-3.5 rounded-xl bg-primary text-on-primary text-xs font-bold inline-flex items-center gap-1.5"
                 >
