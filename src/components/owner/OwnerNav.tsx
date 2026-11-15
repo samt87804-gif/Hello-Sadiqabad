@@ -11,6 +11,7 @@ import {
   MessageSquare,
   PlusCircle,
   Star,
+  Store,
   Tag,
   UserCircle,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ export function OwnerNav({ unreadCount = 0 }: { unreadCount?: number }) {
 
   const links = [
     { to: '/owner', label: 'Overview', icon: LayoutDashboard, end: true },
+    { to: '/owner/businesses', label: 'My Businesses', icon: Store },
     { to: '/owner/listing', label: 'Edit Listing', icon: Edit3 },
     { to: '/add-business', label: 'Add Business', icon: PlusCircle },
     { to: '/owner/offers', label: 'Offers', icon: Tag },
