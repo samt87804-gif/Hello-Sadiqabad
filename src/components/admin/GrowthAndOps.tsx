@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRightCircle,
   CheckCircle2,
   Crown,
   Edit2,
+  Globe,
+  ShieldCheck,
   FileSpreadsheet,
   KeyRound,
   Plus,
@@ -56,6 +58,8 @@ import { Button } from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/FormFields';
 import { ConfirmDialog, Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
+import { getSupabaseClient } from '../../lib/supabase';
+import type { OwnerPublicProfileRow } from '../../types/database';
 
 export function LeadsManager({
   leads,
@@ -193,6 +197,21 @@ export function OwnersManager({
     id: string;
     name: string;
   } | null>(null);
+  const [publicProfiles, setPublicProfiles] = useState<Record<string, OwnerPublicProfileRow>>({});
+  const [profileEditorOwner, setProfileEditorOwner] = useState<(ProfileRow & { email?: string }) | null>(null);
+  const [profileForm, setProfileForm] = useState<Omit<OwnerPublicProfileRow, 'updated_at' | 'updated_by'>>({
+    owner_id: '',
+    display_name: '',
+    photo_url: '',
+    phone: '',
+    email: '',
+    is_public: false,
+    show_name: false,
+    show_photo: false,
+    show_phone: false,
+    show_email: false,
+  });
+  const [profileSaving, setProfileSaving] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -201,6 +220,93 @@ export function OwnersManager({
   const [assignBizId, setAssignBizId] = useState('');
 
   const owners = profiles.filter((p) => p.role === 'owner');
+
+  useEffect(() => {
+    const client = getSupabaseClient();
+    if (!client || owners.length === 0) {
+      setPublicProfiles({});
+      return;
+    }
+    let active = true;
+    client.from('owner_public_profiles').select('*')
+      .in('owner_id', owners.map((owner) => owner.id))
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          showToast(error.message, 'error');
+          return;
+        }
+        const next: Record<string, OwnerPublicProfileRow> = {};
+        for (const row of (data ?? []) as OwnerPublicProfileRow[]) next[row.owner_id] = row;
+        setPublicProfiles(next);
+      });
+    return () => { active = false; };
+  }, [profiles, showToast]);
+
+  const openPublicProfileEditor = (owner: ProfileRow & { email?: string }) => {
+    const saved = publicProfiles[owner.id];
+    setProfileEditorOwner(owner);
+    setProfileForm(saved ? {
+      owner_id: saved.owner_id,
+      display_name: saved.display_name ?? owner.full_name ?? '',
+      photo_url: saved.photo_url ?? '',
+      phone: saved.phone ?? owner.phone ?? '',
+      email: saved.email ?? owner.email ?? '',
+      is_public: saved.is_public,
+      show_name: saved.show_name,
+      show_photo: saved.show_photo,
+      show_phone: saved.show_phone,
+      show_email: saved.show_email,
+    } : {
+      owner_id: owner.id,
+      display_name: owner.full_name ?? '',
+      photo_url: '',
+      phone: owner.phone ?? '',
+      email: owner.email ?? '',
+      is_public: false,
+      show_name: false,
+      show_photo: false,
+      show_phone: false,
+      show_email: false,
+    });
+  };
+
+  const savePublicProfile = async () => {
+    const client = getSupabaseClient();
+    if (!client || !profileEditorOwner) return;
+    if (profileForm.photo_url?.trim() && !isValidHttpsUrl(profileForm.photo_url.trim())) {
+      showToast('Owner profile photo must be a valid HTTPS URL.', 'error');
+      return;
+    }
+    if ((profileForm.display_name ?? '').trim().length > 120 ||
+        (profileForm.phone ?? '').trim().length > 40 ||
+        (profileForm.email ?? '').trim().length > 254) {
+      showToast('Please check the owner profile field lengths.', 'error');
+      return;
+    }
+    setProfileSaving(true);
+    try {
+      const payload = {
+        ...profileForm,
+        display_name: profileForm.display_name?.trim() || null,
+        photo_url: profileForm.photo_url?.trim() || null,
+        phone: profileForm.phone?.trim() || null,
+        email: profileForm.email?.trim().toLowerCase() || null,
+        updated_by: actorId,
+        updated_at: new Date().toISOString(),
+      };
+      const { data, error } = await client.from('owner_public_profiles')
+        .upsert(payload, { onConflict: 'owner_id' }).select('*').single();
+      if (error) throw error;
+      setPublicProfiles((current) => ({ ...current, [profileEditorOwner.id]: data as OwnerPublicProfileRow }));
+      showToast('Owner public profile and privacy settings saved.', 'success');
+      setProfileEditorOwner(null);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not save owner profile.', 'error');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const createOwner = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,6 +382,14 @@ export function OwnersManager({
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={() => openPublicProfileEditor(owner)}
+                  leftIcon={<Globe className="w-3.5 h-3.5" />}
+                >
+                  Public Profile &amp; Privacy
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => setResetUserId(owner.id)}
                   leftIcon={<KeyRound className="w-3.5 h-3.5" />}
                 >
@@ -339,6 +453,47 @@ export function OwnersManager({
             <Button type="submit">Create Owner</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        open={Boolean(profileEditorOwner)}
+        onClose={() => setProfileEditorOwner(null)}
+        title={profileEditorOwner ? `Public Profile — ${profileEditorOwner.full_name || profileEditorOwner.email || 'Owner'}` : 'Public Owner Profile'}
+      >
+        <div className="space-y-4">
+          <div className="p-3 rounded-xl bg-primary-fixed/30 border border-primary/20 text-xs text-on-surface-variant">
+            Owner information stays private unless the profile is enabled and each individual field is selected below. The profile photo URL is managed by Admin.
+          </div>
+          <label className="flex items-center gap-2 text-sm font-bold">
+            <input type="checkbox" checked={profileForm.is_public} onChange={(e) => setProfileForm((p) => ({ ...p, is_public: e.target.checked }))} className="w-4 h-4 accent-primary" />
+            Enable public owner profile
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input label="Public Display Name" maxLength={120} value={profileForm.display_name ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, display_name: e.target.value }))} />
+            <Input label="Admin-managed Profile Photo URL (HTTPS)" dir="ltr" value={profileForm.photo_url ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, photo_url: e.target.value }))} placeholder="https://..." />
+            <Input label="Public Contact Phone" dir="ltr" maxLength={40} value={profileForm.phone ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))} />
+            <Input label="Public Contact Email" type="email" dir="ltr" maxLength={254} value={profileForm.email ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))} />
+          </div>
+          <div className="space-y-2 border-t border-outline-variant/30 pt-3">
+            <p className="text-xs font-bold text-on-surface">Field-level visibility</p>
+            {([
+              ['show_name', 'Show owner name'],
+              ['show_photo', 'Show profile photo'],
+              ['show_phone', 'Show contact phone'],
+              ['show_email', 'Show contact email'],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="flex items-center gap-2 text-sm text-on-surface">
+                <input type="checkbox" checked={profileForm[key]} disabled={!profileForm.is_public} onChange={(e) => setProfileForm((p) => ({ ...p, [key]: e.target.checked }))} className="w-4 h-4 accent-primary" />
+                {label}
+              </label>
+            ))}
+            {!profileForm.is_public && <p className="text-xs text-on-surface-variant">Enable the profile to select public fields. All fields remain hidden while disabled.</p>}
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setProfileEditorOwner(null)}>Cancel</Button>
+            <Button loading={profileSaving} onClick={() => void savePublicProfile()}>Save Privacy Settings</Button>
+          </div>
+        </div>
       </Modal>
 
       <Modal open={Boolean(resetUserId)} onClose={() => setResetUserId(null)} title="Set Temporary Password">
