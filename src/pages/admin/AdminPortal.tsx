@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';\nimport { NewsManager } from '../../components/admin/NewsManager';
+import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
+import { NewsManager } from '../../components/admin/NewsManager';
 import { useAuth } from '../../lib/auth';
 import { usePermissions } from '../../lib/permissions';
 import {
