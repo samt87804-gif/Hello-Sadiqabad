@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import {
   fetchBusinessBySlug,
+  fetchBusinessProducts,
   fetchRelatedBusinesses,
   fetchPublicOwnerProfile,
   trackBusinessEvent,
@@ -46,6 +47,7 @@ import {
   toggleFavoriteId,
 } from '../lib/offlineStorage';
 import type { BusinessPublicView, OwnerPublicProfileView } from '../types/directory';
+import type { ProductRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { OpenNowBadge, OpeningHoursTable } from '../components/directory/OpenNowBadge';
 import { BusinessCard } from '../components/directory/BusinessCard';
@@ -108,6 +110,7 @@ export function BusinessProfile() {
 
   const [business, setBusiness] = useState<BusinessPublicView | null>(null);
   const [ownerProfile, setOwnerProfile] = useState<OwnerPublicProfileView | null>(null);
+  const [products, setProducts] = useState<ProductRow[]>([]);
   const [related, setRelated] = useState<BusinessPublicView[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -130,7 +133,13 @@ export function BusinessProfile() {
       const found = await fetchBusinessBySlug(slug);
       setBusiness(found);
       setOwnerProfile(null);
+      setProducts([]);
       if (found) {
+        try {
+          setProducts(await fetchBusinessProducts(found.id));
+        } catch {
+          setProducts([]);
+        }
         if (found.owner_id) {
           try {
             setOwnerProfile(await fetchPublicOwnerProfile(found.owner_id));
@@ -474,6 +483,48 @@ export function BusinessProfile() {
                         <CheckCircle2 className="w-3.5 h-3.5 text-tertiary" />
                         <span>{srv}</span>
                       </span>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Products Catalogue */}
+              {products.length > 0 && (
+                <Card className="p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-base font-bold text-on-surface">
+                      {lang === 'ur' ? 'مصنوعات' : 'Products'}
+                    </h2>
+                    {lang === 'en' && urduHints && (
+                      <span className="font-urdu text-xs text-on-surface-variant" dir="rtl">مصنوعات</span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {products.map((product) => (
+                      <div key={product.id} className="rounded-xl border border-outline-variant/40 overflow-hidden bg-surface-container-lowest">
+                        {product.image_url && (
+                          <ImageWithFallback
+                            src={product.image_url}
+                            alt={lang === 'ur' ? product.name_ur || product.name_en : product.name_en}
+                            className="w-full h-36"
+                          />
+                        )}
+                        <div className="p-3 space-y-1.5">
+                          <h3 className="text-sm font-bold text-on-surface">
+                            {lang === 'ur' ? product.name_ur || product.name_en : product.name_en}
+                          </h3>
+                          {(lang === 'ur' ? product.description_ur || product.description_en : product.description_en) && (
+                            <p className={lang === 'ur' ? 'font-urdu text-xs text-on-surface-variant leading-6' : 'text-xs text-on-surface-variant'}>
+                              {lang === 'ur' ? product.description_ur || product.description_en : product.description_en}
+                            </p>
+                          )}
+                          {product.price !== null && (
+                            <p className="text-sm font-bold text-primary">
+                              {new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 2 }).format(product.price)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </Card>
