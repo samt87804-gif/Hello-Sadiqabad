@@ -383,6 +383,8 @@ export function AdminPortal() {
         ) : (
           <PermissionDenied />
         );
+      case 'news':
+        return hasPermission('announcements.manage') ? <NewsManager actorId={actorId} /> : <PermissionDenied />;
       case 'announcements':
         return hasPermission('announcements.manage') ? (
           <AnnouncementsManager
