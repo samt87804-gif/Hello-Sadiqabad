@@ -82,7 +82,7 @@ export function Map() {
     setLoadError(false);
     searchBusinesses(
       { category: selectedCat, area: selectedArea, open: openOnly },
-      { limit: 1000, signal: controller.signal }
+      { limit: 5000, signal: controller.signal }
     ).then((res) => {
       if (controller.signal.aborted || reqId !== filterReqIdRef.current) return;
       setMapResultsTotal(res.total);
@@ -464,8 +464,15 @@ export function Map() {
                   <div className="rounded-xl bg-surface/95 backdrop-blur shadow-lg border border-outline-variant/60 px-3 py-2 text-xs font-bold text-on-surface pointer-events-auto">
                     <span>{businesses.length} {lang === 'ur' ? 'مقامات' : 'places'}</span>
                     <span className="mx-2 text-on-surface-variant">·</span>
-                    <span className="text-primary">{lang === 'ur' ? 'سبز: تصدیق شدہ' : 'Green: verified'}</span>
+                    <span className="text-primary">{lang === 'ur' ? 'سبز: تصدیق شدہ' : 'Green: verified'}</span><span className="mx-1 text-on-surface-variant">/</span><span className="text-amber-700">{lang === 'ur' ? 'نارنجی: غیر تصدیق شدہ' : 'Amber: unverified'}</span>
                   </div>
+                  {isMapExpanded && (
+                    <button type="button" onClick={handleNearMe}
+                      aria-label={lang === 'ur' ? 'میرے مقام پر جائیں' : 'Center on my location'}
+                      className="pointer-events-auto min-h-11 min-w-11 rounded-xl bg-surface/95 backdrop-blur shadow-lg border border-outline-variant/60 text-on-surface flex items-center justify-center">
+                      <Crosshair className="w-5 h-5" />
+                    </button>
+                  )}
                   <button type="button" onClick={() => setIsMapExpanded((value) => !value)}
                     aria-label={isMapExpanded ? (lang === 'ur' ? 'فل اسکرین بند کریں' : 'Exit full screen map') : (lang === 'ur' ? 'فل اسکرین نقشہ کھولیں' : 'Open full screen map')}
                     className="pointer-events-auto min-h-11 min-w-11 rounded-xl bg-surface/95 backdrop-blur shadow-lg border border-outline-variant/60 text-on-surface flex items-center justify-center">
