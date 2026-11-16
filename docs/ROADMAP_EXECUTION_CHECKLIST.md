@@ -203,8 +203,8 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Database schema and policies verified directly; anonymous-role read query returned no rows because no profile records have been created yet.
 - [x] Supabase security advisor reported no new findings for this migration; existing owner profile security-definer view and leaked-password protection warnings remain pre-existing.
 - [x] Add indexes for created_by and updated_by; remove unused GIN index on business_ids.
-- [x] GitHub Actions CI run 43829930729 succeeded (edge-functions and build jobs).
-- [x] Cloudflare Pages production deployment `06abc713-48bb-4e72-a78c-dc23427fd57e` succeeded for commit `1878f203e4a3b447b86e4c8af5dbfa220968dab6`; canonical site https://hello-sadiqabad-2bs.pages.dev.
+- [x] GitHub Actions CI run 43830226159 succeeded for final application commit `192e349129e42a61032fd52f63a323b76f247d6e` (edge-functions and build jobs).
+- [x] Cloudflare Pages production deployment `f7456c2d-dbae-49f8-b33e-e4713c39f311` succeeded for final application commit `192e349129e42a61032fd52f63a323b76f247d6e`; canonical site https://hello-sadiqabad-2bs.pages.dev.
 - [ ] Super Admin to test the first portrait upload and create a real profile after entering verified person details; no public person has been seeded or invented.
 
 ### Batch 7 status
