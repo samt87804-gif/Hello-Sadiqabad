@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Newspaper } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Newspaper, Search, X } from 'lucide-react';
 import { fetchPublishedNewsArticleBySlug, fetchPublishedNewsArticles } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { bilingualText, formatDateShort } from '../lib/format';
@@ -38,6 +38,7 @@ export function News() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -61,6 +62,12 @@ export function News() {
   }, [slug, retry]);
 
   const title = lang === 'ur' ? 'صادق آباد کی خبریں' : 'Sadiqabad News';
+  const filteredItems = useMemo(() => {
+    const term = query.trim().toLocaleLowerCase();
+    if (!term) return items;
+    return items.filter((item) => [item.title_en, item.title_ur, item.excerpt_en, item.excerpt_ur]
+      .filter(Boolean).join(' ').toLocaleLowerCase().includes(term));
+  }, [items, query]);
   const galleryImages = article?.image_urls?.filter((url) => url && url !== article.cover_image_url) ?? [];
   const youtubeEmbedUrl = getYouTubeEmbedUrl(article?.youtube_url);
   return (
@@ -122,8 +129,22 @@ export function News() {
           <EmptyState icon={<Newspaper className="w-6 h-6" />} title={lang === 'ur' ? 'ابھی کوئی خبر موجود نہیں' : 'No news published yet'}
             description={lang === 'ur' ? 'نئی مقامی خبروں کے لیے بعد میں دوبارہ تشریف لائیں۔' : 'Please check back for the latest Sadiqabad news.'} />
         ) : (
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
+              <input type="search" value={query} onChange={(event) => setQuery(event.target.value)}
+                placeholder={lang === 'ur' ? 'خبروں میں تلاش کریں...' : 'Search news by title or summary...'}
+                aria-label={lang === 'ur' ? 'خبریں تلاش کریں' : 'Search news'}
+                className="min-h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-3 pl-10 pr-11 text-sm text-on-surface outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+              {query && <button type="button" onClick={() => setQuery('')} aria-label={lang === 'ur' ? 'تلاش صاف کریں' : 'Clear search'}
+                className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container"><X className="h-4 w-4" /></button>}
+            </div>
+            {filteredItems.length === 0 ? (
+              <EmptyState icon={<Newspaper className="w-6 h-6" />} title={lang === 'ur' ? 'کوئی خبر نہیں ملی' : 'No matching news'}
+                description={lang === 'ur' ? 'دوسرے الفاظ سے تلاش کریں۔' : 'Try a different title or keyword.'} />
+            ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {items.map(item => (
+            {filteredItems.map(item => (
               <Card key={item.id} className="overflow-hidden">
                 {item.cover_image_url && <img src={item.cover_image_url} alt="" className="w-full aspect-[16/9] object-cover" loading="lazy" />}
                 <div className="p-4 space-y-2">
@@ -138,6 +159,8 @@ export function News() {
                 </div>
               </Card>
             ))}
+          </div>
+            )}
           </div>
         )}
       </Container>
