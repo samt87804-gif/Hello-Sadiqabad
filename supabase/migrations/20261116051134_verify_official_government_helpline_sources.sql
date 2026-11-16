@@ -15,9 +15,9 @@ where phone='1787' and category='government';
 
 insert into public.emergency_contacts
   (city_id,name_en,name_ur,phone,category,icon,sort_order,is_active,description_en,description_ur,source_url,verified_at)
-select c.id,'Punjab Highway Patrol Helpline','پنجاب ہائی وے پٹرول ہیلپ لائن','1124','government','shield-check',7,true,
-       'Punjab Highway Patrol contact listed by the District Government Rahim Yar Khan.',
-       'ضلعی حکومت رحیم یار خان کی سرکاری رابطہ فہرست میں درج پنجاب ہائی وے پٹرول نمبر۔',
+select c.id,'Patrolling Police Helpline','گشت پولیس ہیلپ لائن','1124','government','shield-check',7,true,
+       'Patrolling Police contact listed by the District Government Rahim Yar Khan.',
+       'ضلعی حکومت رحیم یار خان کی سرکاری رابطہ فہرست میں درج گشت پولیس نمبر۔',
        'https://rykhan.punjab.gov.pk/contact_us',now()
 from public.cities c
 where c.slug='sadiqabad'
