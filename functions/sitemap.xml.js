@@ -1,9 +1,9 @@
-import { buildSitemapXml } from '../src/lib/sitemap.ts';
+import { buildSitemapXml, filterIndexableTaxonomy } from '../src/lib/sitemap.ts';
 
 const SITE_ORIGIN = 'https://hellosadiqabad.com';
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 20;
-const SAFE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SAFE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;\nconst SAFE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const STATIC_PAGE_SLUGS = new Set(['about', 'advertise', 'contact', 'terms', 'privacy', 'listing-terms', 'refund-policy', 'faq']);
 
 function xmlResponse(xml) {
@@ -94,9 +94,9 @@ export async function onRequestGet({ request, env }) {
       categories, areas, businesses, news, pages, authorityProfiles, ownerProfiles,
       localAuthorities, emergencyContacts, offers, announcements,
     ] = await Promise.all([
-      fetchPublicRows(baseUrl, publicKey, 'categories', 'slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
-      fetchPublicRows(baseUrl, publicKey, 'areas', 'slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
-      fetchPublicRows(baseUrl, publicKey, 'businesses', 'slug,updated_at', { status: 'eq.published' }, 'slug.asc'),
+      fetchPublicRows(baseUrl, publicKey, 'categories', 'id,slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
+      fetchPublicRows(baseUrl, publicKey, 'areas', 'id,slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
+      fetchPublicRows(baseUrl, publicKey, 'businesses', 'slug,updated_at,category_id,area_id', { status: 'eq.published' }, 'slug.asc'),
       fetchPublicRows(baseUrl, publicKey, 'news_articles', 'slug,published_at,updated_at', { status: 'eq.published', published_at: 'lte.' + nowIso }, 'slug.asc'),
       fetchPublicRows(baseUrl, publicKey, 'pages', 'slug,updated_at', { is_published: 'eq.true' }, 'slug.asc'),
       fetchPublicRows(baseUrl, publicKey, 'authority_profiles', 'slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
@@ -107,11 +107,11 @@ export async function onRequestGet({ request, env }) {
       fetchPublicRows(baseUrl, publicKey, 'announcements', 'id,start_date,end_date,updated_at', { is_active: 'eq.true' }),
     ]);
 
-    const activeAnnouncements = announcements.filter((row) => isCurrentAnnouncement(row, now.getTime()));
+    const activeAnnouncements = announcements.filter((row) => isCurrentAnnouncement(row, now.getTime()));\n    const indexableTaxonomy = filterIndexableTaxonomy(categories, areas, businesses, 3);
     const entries = [{ path: '/' }];
 
-    if (categories.length > 0) entries.push({ path: '/categories' });
-    if (areas.length > 0 || businesses.length > 0) entries.push({ path: '/map' });
+    if (indexableTaxonomy.categories.length > 0) entries.push({ path: '/categories' });
+    if (indexableTaxonomy.areas.length > 0 || businesses.length > 0) entries.push({ path: '/map' });
     if (emergencyContacts.length > 0) entries.push({ path: '/emergency' });
     if (emergencyContacts.some((row) => String(row.category).toLowerCase() === 'government')) {
       entries.push({ path: '/government-helplines' });
