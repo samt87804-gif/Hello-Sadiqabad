@@ -5,7 +5,7 @@ import { fetchActiveOffers } from '../lib/api';
 import { bilingualText, formatDateShort } from '../lib/format';
 import { useI18n } from '../lib/i18n';
 import { buildTelUrl, formatPkPhoneDisplay } from '../lib/phone';
-import { updatePageSeo } from '../lib/seo';
+import { updatePageRobots, updatePageSeo } from '../lib/seo';
 import type { OfferRow } from '../types/database';
 import type { BusinessPublicView } from '../types/directory';
 import { AppShell } from '../components/layout/AppShell';
@@ -27,13 +27,18 @@ export function Offers() {
       title: 'Local Offers & Discounts in Sadiqabad — Hello Sadiqabad',
       description: 'Active discounts, wholesale deals, and seasonal offers from verified Sadiqabad businesses.',
       canonicalPath: '/offers',
+      robots: 'noindex,follow',
     });
     setLoading(true);
     setLoadError(false);
     fetchActiveOffers()
-      .then(setOffers)
+      .then((data) => {
+        setOffers(data);
+        updatePageRobots(data.length > 0);
+      })
       .catch(() => {
         setOffers([]);
+        updatePageRobots(false);
         setLoadError(true);
       })
       .finally(() => setLoading(false));
