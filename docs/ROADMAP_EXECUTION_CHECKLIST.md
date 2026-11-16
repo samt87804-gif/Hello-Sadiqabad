@@ -162,3 +162,50 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - Workers AI inference is usage-based; actual charges depend on usage and the Cloudflare account plan.
 - The public directory context is edge-cached for 180 seconds. Search-specific business matches are fetched separately for the user's latest question.
 - The chatbot is informational only and must not be expanded into an action-taking agent without separate approval.
+
+## Batch 7 — Search, Areas UI & Authority Profiles (16 November 2026)
+
+### Search acceptance
+- [x] Shared normalization helper applies NFKC, case folding, diacritic normalization and whitespace/punctuation normalization.
+- [x] Public directory search matches normalized query tokens against shop names, Urdu names, descriptions, addresses, category/area labels, tags and services.
+- [x] Search suggestions use the same case-insensitive normalization.
+- [x] Regression tests cover uppercase and lowercase versions of the same shop name.
+- [ ] GitHub CI must pass the new tests, typecheck and production build before batch completion.
+
+### Areas dropdown acceptance
+- [x] Replace the native Area select in public search filters with a styled searchable dropdown.
+- [x] Show selected area, available-area count, live matching count, and an All Areas option.
+- [x] Preserve area slugs in URL filters and existing search behavior.
+- [ ] Verify the dropdown in production on mobile and desktop after deployment.
+
+### Authority Profiles data model
+- [x] Preserve `public.local_authorities` as the separate directory of government office contact points; no existing authority row was changed.
+- [x] Create `public.authority_profiles` for named individuals such as Press Club Chairman, Lawyers Association President, Ghalla Mandi Chairman, Auto Union President and government officers.
+- [x] Profile fields: English/Urdu name, photo URL, designation, organization/union, current status label, authority/responsibilities, bilingual bio, phone, email, website, Facebook, Instagram, linked published business IDs, source URL, sort order and active status.
+- [x] Add Admin-controlled display toggles for status, organization, authority, bio, contact details and linked businesses.
+- [x] Add public listing route `/authority-profiles` and detail route `/authority-profiles/:slug`.
+- [x] Add Super Admin-only Admin navigation and create/edit/publish/hide manager.
+- [x] Allow portrait uploads (JPG/PNG/WebP/AVIF, max 5 MB) to the existing public `Hello Sadiqabad` bucket under `authority-profiles/`.
+- [x] Include profiles in the full JSON backup and add the profile directory to the sitemap.
+- [x] Cross-link authority profiles from the existing Local Authorities public page.
+
+### Database migrations and security
+- [x] Applied `20261116110000_create_authority_profiles`.
+- [x] Applied `20261116112000_index_authority_profile_audit_users`.
+- [x] Enable RLS; anonymous visitors can read active profiles only.
+- [x] Authenticated users can read active profiles; Super Admin can read inactive profiles and manage all profile records.
+- [x] Insert/update/delete policies require `private.is_super_admin()`.
+- [x] Public SELECT and authenticated write grants added explicitly for the new public table (Data API exposure no longer assumed from schema alone).
+- [x] Add updated-at and audit-log triggers.
+- [x] Storage write policies restrict insert/update/delete to Super Admins and the `Hello Sadiqabad/authority-profiles/` folder.
+- [x] Database schema and policies verified directly; anonymous-role read query returned no rows because no profile records have been created yet.
+- [x] Supabase security advisor reported no new findings for this migration; existing owner profile security-definer view and leaked-password protection warnings remain pre-existing.
+- [x] Add indexes for created_by and updated_by; remove unused GIN index on business_ids.
+- [ ] Run full GitHub CI and production deployment verification.
+- [ ] Test Admin portrait upload and create a real profile after the Admin enters verified person details; no public person has been seeded or invented.
+
+### Batch 7 status
+- Implementation and database migrations are on `main`.
+- Public profiles remain empty until the Admin enters a real office-holder's details and photo.
+- The existing Local Authorities directory remains intact.
+- Chatbot Batch 5 live acceptance is still pending user testing.
