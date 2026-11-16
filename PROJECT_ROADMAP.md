@@ -183,3 +183,13 @@ Batch 3 — completed (16 November 2026):
 - [ ] Offers and announcements currently have zero active records each and are correctly omitted from the sitemap; their empty pages still declare index,follow, so consider dynamic noindex until real content is published.
 - [ ] Review candidate Google Places records against current business records by place ID/address/coordinates before any import. No production import, merge, rename, or deletion has been performed.
 - [ ] Resolve data-quality gaps only from verified sources or owner/business submissions; no phone, address, image, or description has been invented.
+
+
+## Phase 2 continuation — Empty listing-page indexability (17 November 2026)
+
+- [x] Add a shared robots metadata helper for client-rendered pages.
+- [x] Offers route starts as `noindex,follow` and switches to `index,follow` only when active offers load; fetch failures and zero active offers remain noindex.
+- [x] Announcements route follows the same pattern for the currently selected announcement set; fetch failures and empty results remain noindex.
+- [x] GitHub Actions CI passed for code commit `bac9261c134bc782159db8d696026ff0979fdc4a`.
+- [x] Cloudflare Pages production deployment succeeded: `017a7ca2-fe39-463d-9e46-631bba2e1fbe`.
+- [ ] Browser-render recheck of the two post-deploy robots tags is pending because Cloudflare browser-rendering returned HTTP 429; prior live checks of both pages showed HTTP 200 and the empty state.
