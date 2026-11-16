@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
 import { NewsManager } from '../../components/admin/NewsManager';
 import { LocalAuthoritiesManager } from '../../components/admin/LocalAuthoritiesManager';
+import { AuthorityProfilesManager } from '../../components/admin/AuthorityProfilesManager';
 import { useAuth } from '../../lib/auth';
 import { usePermissions } from '../../lib/permissions';
 import {
@@ -23,6 +24,7 @@ import {
   fetchEmergencyContactsAdmin,
   fetchImportBatches,
   fetchLocalAuthoritiesAdmin,
+  fetchAuthorityProfilesAdmin,
   fetchLeads,
   fetchPlans,
   fetchProfilesAdmin,
@@ -35,6 +37,7 @@ import type {
   CategoryRow,
   EmergencyContactRow,
   LocalAuthorityRow,
+  AuthorityProfileRow,
   ImportBatchRow,
   InquiryRow,
   LeadRow,
@@ -110,6 +113,7 @@ export function AdminPortal() {
   const [batches, setBatches] = useState<ImportBatchRow[]>([]);
   const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContactRow[]>([]);
   const [localAuthorities, setLocalAuthorities] = useState<LocalAuthorityRow[]>([]);
+  const [authorityProfiles, setAuthorityProfiles] = useState<AuthorityProfileRow[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
   const [analytics, setAnalytics] = useState<AdminAnalyticsData | null>(null);
   const [settings, setSettings] = useState<SiteSettingRow[]>([]);
