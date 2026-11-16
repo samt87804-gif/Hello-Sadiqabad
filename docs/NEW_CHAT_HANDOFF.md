@@ -31,14 +31,14 @@ Use the connected GitHub, Cloudflare and Supabase tools where available. Read th
 - Automatic HTTPS Rewrites, HTTP/3 and Brotli ON.
 - Pages production `VITE_SITE_URL` updated to `https://hellosadiqabad.com`; existing other variables preserved.
 - Security headers updated in `public/_headers` (one-year HSTS, CSP with `object-src 'none'`, `base-uri`, `form-action`, `frame-ancestors`, Cloudflare Insights allowlist, nosniff, SAMEORIGIN, strict-origin referrer policy, Permissions-Policy).
-- Latest production Pages deployment: commit `a9b14edb9d46cfec74cbed0804fd6a2c03e59292`, deployment `e0530a45-bc26-4b05-8965-cfe9c4fd69a0` — build and deploy succeeded.
+- Latest production Pages deployment: commit `2d966202510c4d63d668780ce84a2e4237af6287`, deployment `0b25073c-b7f2-4600-a8b4-0fe7fa3583a7` — build and deploy succeeded.
 - Supabase `owner_public_profile_directory` is `security_invoker=true` and `security_barrier=true`; anon can read only generated/redacted public columns under RLS. Raw phone/email and base-table SELECT remain denied. Anon read was tested; no SECURITY DEFINER view or RLS bypass.
 - Supabase Security Advisor reports only leaked-password protection disabled. Connected organization is on Free plan; feature is plan-gated. Do not request credentials or upgrade without owner decision.
 - Owner confirmed Supabase Auth Site URL and all three canonical redirect URLs were saved on 17 November 2026.
 - Owner confirmed Google Search Console Domain property `hellosadiqabad.com` is verified. Matching TXT record is present in Cloudflare DNS.
 - Dynamic `/sitemap.xml` is live: browser-verified HTTP 200 XML, 516 unique canonical URLs, zero duplicates/private URLs; owner profiles are included only through the redacted public view when opted in.
 - `www.hellosadiqabad.com` is intentionally unsupported; apex domain is the only active Pages custom domain.
-- `robots.txt` points to sitemap; homepage, search noindex, news, business and category metadata/JSON-LD were browser spot-checked. No full-site crawl or Google Rich Results Test has been performed.
+- `robots.txt` points to sitemap; homepage, search noindex, news, business and category metadata/JSON-LD were browser spot-checked. Mobile 390×844 business breadcrumb and News image alt text were browser-tested. News images now have descriptive alt text; business pages have visible Home → category → business breadcrumbs. No full-site crawl or Google Rich Results Test has been performed.
 - Cloudflare rate-limit rule active on POST `/api/chat`: 30 requests/10 seconds per IP+colo, 10-second block with JSON 429.
 
 ### Mandatory working rules (owner-confirmed 17 November 2026)

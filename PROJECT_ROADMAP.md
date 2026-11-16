@@ -12,7 +12,7 @@ This is the live application project checklist. Update it on `main` whenever a t
 - Phase 0: Cloudflare HTTPS/TLS/CSP headers reviewed; one narrow chat API rate-limit rule active. Supabase RLS retained; public owner-profile view fixed using `security_invoker`, generated redacted columns and column-level grants. Missing owner-profile FK index added.
 - Supabase leaked-password protection remains disabled because the connected organization is on the Free plan; no automatic upgrade or credential request.
 - Phase 1 foundation deployed: dynamic `/sitemap.xml` returns 516 unique canonical URLs; `robots.txt` points to it; canonical/OG/Twitter metadata, Organization/WebSite, NewsArticle, LocalBusiness and BreadcrumbList schema added; search/auth/private/unknown routes are noindex.
-- Targeted live browser checks passed for homepage collaboration credit/banner, sitemap, robots, search noindex, news, business and category metadata/schema. Full-site crawl and Google Rich Results Test remain pending.
+- Targeted live browser checks passed for homepage collaboration credit/banner, sitemap, robots, search noindex, news, business and category metadata/schema, mobile business breadcrumb and News image alt text. News image alt text and visible business breadcrumbs were improved. Full-site crawl and Google Rich Results Test remain pending.
 - Owner's next manual task: submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps, then inspect important URLs and request indexing.
 
 ## Completed
