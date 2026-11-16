@@ -1,4 +1,4 @@
-const MODEL = '@cf/zai-org/glm-4.7-flash';
+const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_HISTORY_MESSAGES = 8;
 const RATE_WINDOW_MS = 5 * 60 * 1000;
@@ -70,7 +70,7 @@ async function fetchPublicContext(env, origin) {
     ['areas', { select: 'id,name_en,name_ur,slug', is_active: 'eq.true', order: 'name_en.asc', limit: '60' }],
     ['emergency_contacts', { select: 'name_en,name_ur,phone,category,description_en,description_ur,source_url,verified_at', is_active: 'eq.true', order: 'sort_order.asc', limit: '35' }],
     ['local_authorities', { select: 'name_en,name_ur,authority_type,description_en,description_ur,phone,phone_secondary,email,address_en,address_ur,website_url,map_url,office_hours_en,office_hours_ur,source_url,verified_at', is_active: 'eq.true', order: 'sort_order.asc', limit: '25' }],
-    ['news_articles', { select: 'title_en,title_ur,excerpt_en,excerpt_ur,content_en,content_ur,slug,published_at', status: 'eq.published', published_at: `lte.${now}`, order: 'published_at.desc', limit: '8' }],
+    ['news_articles', { select: 'title_en,title_ur,excerpt_en,excerpt_ur,slug,published_at', status: 'eq.published', published_at: `lte.${now}`, order: 'published_at.desc', limit: '8' }],
     ['business_products', { select: 'business_id,name_en,name_ur,description_en,description_ur,price', is_active: 'eq.true', limit: '20' }],
     ['offers', { select: 'business_id,title,description,valid_from,valid_to', status: 'eq.active', order: 'valid_to.asc', limit: '15' }],
     ['announcements', { select: 'title_en,title_ur,body_en,body_ur,start_date,end_date', is_active: 'eq.true', order: 'start_date.desc', limit: '8' }],
@@ -100,6 +100,7 @@ async function fetchPublicContext(env, origin) {
     return business ? { name: business.name_en, name_ur: business.name_ur, slug: business.slug } : null;
   };
 
+  const clip = (value, limit = 400) => typeof value === 'string' ? value.slice(0, limit) : value;
   const context = {
     businesses: businesses.map((item) => ({
       name: item.name_en, name_ur: item.name_ur, slug: item.slug,
@@ -107,9 +108,9 @@ async function fetchPublicContext(env, origin) {
       category_ur: categories.get(item.category_id)?.name_ur || null,
       area: areas.get(item.area_id)?.name_en || null,
       area_ur: areas.get(item.area_id)?.name_ur || null,
-      address: item.address_en, address_ur: item.address_ur,
+      address: clip(item.address_en, 180), address_ur: clip(item.address_ur, 180),
       phone: item.phone_primary, alternate_phone: item.phone_secondary, whatsapp: item.whatsapp,
-      website: item.website_url, description: item.description_en, description_ur: item.description_ur,
+      website: item.website_url, description: clip(item.description_en), description_ur: clip(item.description_ur),
       services: item.services_en, services_ur: item.services_ur,
       opening_hours: item.opening_hours, open_24_hours: item.is_open_24h, home_delivery: item.home_delivery,
     })),
@@ -117,18 +118,18 @@ async function fetchPublicContext(env, origin) {
       name: name_en, name_ur, slug, parent: categories.get(parent_id)?.name_en || null,
     })),
     areas: (rows.areas || []).map(({ name_en, name_ur, slug }) => ({ name: name_en, name_ur, slug })),
-    government_helplines: rows.emergency_contacts || [],
-    local_authorities: rows.local_authorities || [],
-    news: rows.news_articles || [],
+    government_helplines: (rows.emergency_contacts || []).map((item) => ({ ...item, description_en: clip(item.description_en), description_ur: clip(item.description_ur) })),
+    local_authorities: (rows.local_authorities || []).map((item) => ({ ...item, description_en: clip(item.description_en), description_ur: clip(item.description_ur), address_en: clip(item.address_en, 180), address_ur: clip(item.address_ur, 180) })),
+    news: (rows.news_articles || []).map((item) => ({ ...item, excerpt_en: clip(item.excerpt_en, 500), excerpt_ur: clip(item.excerpt_ur, 500) })),
     products: (rows.business_products || []).map((item) => ({
       business: businessLabel(item.business_id), name: item.name_en, name_ur: item.name_ur,
-      description: item.description_en, description_ur: item.description_ur, price: item.price,
+      description: clip(item.description_en, 280), description_ur: clip(item.description_ur, 280), price: item.price,
     })).filter((item) => item.business),
     offers: (rows.offers || []).map((item) => ({
-      business: businessLabel(item.business_id), title: item.title, description: item.description,
+      business: businessLabel(item.business_id), title: item.title, description: clip(item.description, 280),
       valid_from: item.valid_from, valid_to: item.valid_to,
     })).filter((item) => item.business),
-    announcements: rows.announcements || [],
+    announcements: (rows.announcements || []).map((item) => ({ ...item, body_en: clip(item.body_en, 500), body_ur: clip(item.body_ur, 500) })),
     public_owner_profiles: (rows.owner_public_profile_directory || []).map((profile) => ({
       name: profile.display_name, phone: profile.phone, email: profile.email,
       businesses: (rows.owner_public_profile_businesses || [])
