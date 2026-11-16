@@ -1,7 +1,7 @@
 # Production deployment
 
 Cloudflare Pages project: `hello-sadiqabad`
-Production URL: https://hello-sadiqabad-2bs.pages.dev
+Production URL: https://hellosadiqabad.com
 Production branch: `main`
 
 ## Build settings
@@ -18,7 +18,7 @@ Set these in Cloudflare Pages → Settings → Variables and secrets → Product
 
 - `VITE_SUPABASE_URL`: Supabase project URL
 - `VITE_SUPABASE_PUBLISHABLE_KEY`: Supabase publishable/legacy anon public key
-- `VITE_SITE_URL`: `https://hello-sadiqabad-2bs.pages.dev`
+- `VITE_SITE_URL`: `https://hellosadiqabad.com`
 - `VITE_DEFAULT_CITY`: `sadiqabad`
 
 After changing a variable, trigger a new production deployment because Vite embeds `VITE_*` values at build time.
