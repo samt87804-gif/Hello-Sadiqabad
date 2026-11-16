@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';\nimport { Link } from 'react-router-dom';\nimport { UsersRound } from 'lucide-react';
 import { Building2, ExternalLink, Mail, MapPin, PhoneCall, Search } from 'lucide-react';
 import type { LocalAuthorityRow, LocalAuthorityType } from '../types/database';
 import { fetchLocalAuthorities } from '../lib/api';
@@ -51,7 +51,7 @@ export function LocalAuthorities() {
         <header className="rounded-3xl bg-primary text-white p-6 space-y-2">
           <div className="flex items-center gap-2"><Building2 className="w-7 h-7" /><h1 className="text-2xl font-extrabold">{lang === 'ur' ? 'صادق آباد کے مقامی سرکاری ادارے' : 'Sadiqabad Local Authorities'}</h1></div>
           {lang === 'en' && urduHints && <p className="font-urdu text-sm text-white/90" dir="rtl">صادق آباد کے بلدیاتی اور سرکاری اداروں کے رابطے</p>}
-          <p className="text-sm text-white/90">{lang === 'ur' ? 'دفاتر کے رابطے سرکاری ذرائع سے لیے گئے ہیں۔ ہر ادارے کے کارڈ پر اصل ماخذ دیکھیں۔' : 'Public office contacts sourced from official government directories. Open each source link to verify current details.'}</p>
+          <p className="text-sm text-white/90">{lang === 'ur' ? 'دفاتر کے رابطے سرکاری ذرائع سے لیے گئے ہیں۔ ہر ادارے کے کارڈ پر اصل ماخذ دیکھیں۔' : 'Public office contacts sourced from official government directories. Open each source link to verify current details.'}</p>\n          <Link to="/authority-profiles" className="inline-flex items-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 px-3 py-2 text-xs font-bold text-white"><UsersRound className="w-4 h-4" />{lang === 'ur' ? 'چیئرمینز اور عہدیداران کی پروفائلز' : 'Chairmen & Office-holder Profiles'}</Link>
         </header>
 
         <AdPlacementSlot placement="authorities_banner" />
