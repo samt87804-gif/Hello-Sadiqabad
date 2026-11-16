@@ -1,6 +1,6 @@
 # Hello Sadiqabad — Roadmap Execution Checklist
 
-Last reviewed: 16 November 2026
+Last reviewed: 17 November 2026
 
 This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap remains the status source of truth. This document preserves acceptance criteria, dependencies, official source provenance, migrations and verification evidence so a later batch does not silently omit requirements.
 
@@ -216,3 +216,30 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - Public profiles remain empty until the Admin enters a real office-holder's details and photo; no person was fabricated.
 - The existing Local Authorities office/contact directory and records remain intact.
 - Chatbot Batch 5 live acceptance is still pending user testing.
+
+
+## Batch 8 — Local SEO and contact-data integrity (17 November 2026)
+
+### Read-only audit
+- [x] Audit the 223 published listings for missing/placeholder phone, missing address/area/coordinates, thin descriptions and missing custom SEO fields.
+- [x] Audit 374-row crawler export, 771-row seed workbook and 204-row locality workbook for duplicate title/phone candidates, place-ID uniqueness, city relevance and area-name scope.
+- [x] Record the evidence, import safeguards and follow-up priorities in `docs/LOCAL_SEO_DATA_QUALITY_AUDIT.md`.
+- [x] No live directory records were inserted, updated, renamed, merged, deactivated or deleted.
+
+### Indexable local taxonomy
+- [x] Add a tested sitemap eligibility helper: categories require at least one published listing; area pages require at least three.
+- [x] Apply the eligibility filter to both taxonomy index routes and detail URL generation in the sitemap (not just the index-page check).
+- [x] Verify deployed sitemap responds 200 and contains 170 URLs in the current snapshot, including 10 category detail URLs and 14 area detail URLs; no search URL was present.
+- [x] Existing area/category records remain available to directory filters and direct navigation; sitemap eligibility is not a database visibility or deletion rule.
+
+### Contact data integrity
+- [x] Add `isValidPkPhone` and prevent empty/zero/all-zero phone values from producing telephone or WhatsApp destinations.
+- [x] Hide invalid primary/secondary call actions on business cards and business profiles; keep directions and other available actions intact.
+- [x] Add automated tests for empty, zero, all-zero, mobile, landline and emergency-code cases.
+
+### Verification
+- [x] GitHub Actions CI run 43954510510 passed (TypeScript, automated tests, production build and Edge Function typecheck).
+- [x] Cloudflare Pages deployment `642660b9-02e8-4b77-b1a3-2fc2301896c6` succeeded for commit `b31b27e0dca53f3d330e5e848ab7fcbfafcf7855`.
+- [x] Browser-rendered sitemap verification returned HTTP 200 and 170 `<loc>` entries, including 14 `/area/` and 10 `/category/` entries.
+- [ ] Browser-rendered invalid-phone business-profile check remains pending due to a 429 rate limit; automated tests and production build passed.
+- [ ] Full public-route crawl and Google Rich Results Test remain pending.
