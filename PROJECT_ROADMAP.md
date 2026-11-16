@@ -9,12 +9,16 @@ This is the live application project checklist. Update it on `main` whenever a t
 - Current source of truth: [Domain, Security & SEO Master Plan](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md).
 - Working mode: direct commits to `main` only; no feature branches or Pull Requests unless the owner changes this instruction.
 - Owner-confirmed 17 November 2026: Supabase Auth Site URL and canonical redirect URLs saved; Google Search Console Domain property verified and DNS TXT retained in Cloudflare.
+- Phase 0: Cloudflare HTTPS/TLS/CSP headers reviewed; one narrow chat API rate-limit rule active. Supabase RLS retained; public owner-profile view fixed using `security_invoker`, generated redacted columns and column-level grants. Missing owner-profile FK index added.
 - Supabase leaked-password protection remains disabled because the connected organization is on the Free plan; no automatic upgrade or credential request.
-- Phase 0 response-level HTTPS/CSP/WAF verification remains in progress; Phase 1 sitemap and technical SEO are not yet deployed.
+- Phase 1 foundation deployed: dynamic `/sitemap.xml` returns 516 unique canonical URLs; `robots.txt` points to it; canonical/OG/Twitter metadata, Organization/WebSite, NewsArticle, LocalBusiness and BreadcrumbList schema added; search/auth/private/unknown routes are noindex.
+- Targeted live browser checks passed for homepage collaboration credit/banner, sitemap, robots, search noindex, news, business and category metadata/schema. Full-site crawl and Google Rich Results Test remain pending.
+- Owner's next manual task: submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps, then inspect important URLs and request indexing.
 
 ## Completed
 
 - [x] Homepage hero banner
+- [x] Homepage collaboration credit under the header and AP KI AWAZ × INSPIRE ACADEMY banner at the bottom; deployed and browser-verified
 - [x] Owner registration request flow and Admin approval/rejection workflow
 - [x] Public owner profiles with Admin-controlled field-level privacy
 - [x] News Module — bilingual public feed/article pages, Admin draft/publish editor, database RLS, and production deployment verified
@@ -90,8 +94,8 @@ Batch 3 — completed (16 November 2026):
 
 ### Batch 5 implementation notes
 - No Supabase schema migration or database writes were required.
-- Public directory reads use the existing anonymous RLS policies and a redacted owner-profile view; only explicitly public owner fields are eligible for chatbot context.
-- The in-memory request throttle is best-effort per Cloudflare isolate, not a globally coordinated rate limit. A Cloudflare WAF rate-limiting rule can be added if production traffic requires stronger enforcement.
+- Public directory reads use existing anonymous RLS policies and the redacted owner-profile view. That view is now `security_invoker=true` with generated public-only columns and column-level anon grants; raw phone/email and private profile fields remain inaccessible.
+- The in-memory request throttle remains best-effort per Cloudflare isolate. A Cloudflare zone-level rate-limit rule is now active on POST `/api/chat`: 30 requests per 10 seconds per IP+colo, 10-second block with JSON 429; other site routes are not included.
 - Workers AI is usage-based; actual inference charges depend on usage and the Cloudflare account plan.
 
 ## Batch 6 — Official Government Contacts Expansion (completed 16 November 2026)

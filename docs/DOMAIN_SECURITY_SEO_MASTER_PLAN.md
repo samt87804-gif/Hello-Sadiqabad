@@ -1,6 +1,6 @@
 # Hello Sadiqabad — Domain, Security & SEO Master Plan
 
-Last updated: 17 November 2026  
+Last updated: 17 November 2026 — Phase 0 security verification and Phase 1 technical SEO deployed  
 Canonical website: https://hellosadiqabad.com  
 Repository: https://github.com/samt87804-gif/Hello-Sadiqabad  
 Production: Cloudflare Pages project `hello-sadiqabad`, branch `main`  
@@ -34,7 +34,7 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 9. **Concise Roman Urdu updates:** report changes, tests, deployment evidence, blockers and the owner's next action. Never claim browser testing unless an actual browser test was performed.
 10. **Phase discipline:** complete and verify the current phase before marking it accepted or moving to the next phase. Do not silently skip blockers; document plan/permission limitations.
 
-## Verified baseline — 16 November 2026
+## Verified baseline — 17 November 2026
 
 ### Completed and verified
 - [x] Cloudflare Pages custom domain `hellosadiqabad.com` is active and certificate validation is active.
@@ -45,17 +45,19 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [x] Cloudflare Pages production `VITE_SITE_URL` is `https://hellosadiqabad.com`; other existing production variables were preserved.
 - [x] Cloudflare production deployment for commit `a061a78018133d14da17a0ecaf8505537e4e024e` completed successfully.
 - [x] `public/_headers` now includes HSTS (max-age 1 year), CSP, nosniff, SAMEORIGIN, strict-origin referrer policy and restricted Permissions-Policy.
-- [x] Supabase view `public.owner_public_profile_directory` was changed to `security_invoker=true` and verified in `pg_class.reloptions`; Supabase Security Advisor no longer reports its SECURITY DEFINER finding.
-- [x] Supabase health advisor returned no findings at the time of check.
+- [x] Supabase view `public.owner_public_profile_directory` uses `security_invoker=true` and `security_barrier=true`. A safe additive migration adds generated, redacted public columns, grants anon access only to those columns, and adds an anon RLS policy. Verified anon can read the public view while raw phone/email columns and table-level SELECT remain unavailable. No SECURITY DEFINER view or RLS bypass is used.
+- [x] Supabase missing FK index on `owner_public_profiles.updated_by` added through an additive migration; no rows or policies changed.
+- [x] Public owner registration flow reviewed: public form creates a pending request only; Admin approval triggers the server-side invite flow. No direct `auth.signUp` call exists in the frontend; sign-in requires an active role/profile. Two existing Auth users have matching profiles; no orphan Auth users were found.
+- [x] Supabase Health Advisor returned no findings; Security Advisor now reports only the Free-plan leaked-password-protection warning.
 
 ### Still open / not yet completed
 - [x] Owner confirmed Supabase Auth Site URL and all three canonical allowed redirect URLs were saved in the dashboard (17 November 2026).
 - [ ] Supabase leaked-password protection remains disabled. Connected organization is confirmed on the Free plan; this feature is plan-gated and cannot be enabled on the current subscription. Do not change plans automatically; revisit only if the owner independently elects to upgrade.
 - [x] Owner created the Google Search Console Domain property for `hellosadiqabad.com` and confirmed successful DNS TXT verification (17 November 2026). The verification TXT record remains in Cloudflare DNS.
-- [ ] `www.hellosadiqabad.com` is not currently connected as a Pages custom domain; it returned Pages domain-not-found at audit time. Decide whether to support www and redirect it to apex.
-- [ ] No sitemap exists in the current `main` tree; `public/sitemap.xml` is absent. Build a dynamic, accurate sitemap in Phase 1.
+- [x] `www.hellosadiqabad.com` is intentionally unsupported. Pages custom-domain list contains only the active apex domain; no www DNS record was added.
+- [x] Dynamic `/sitemap.xml` Pages Function is deployed. Browser-rendered production response is HTTP 200, `application/xml`, 516 unique canonical URLs, zero duplicates, zero wrong hosts and no private/admin routes. Current data: 223 published businesses, 263 active areas, 14 active categories, one published news article plus its listing, and eight published static pages. Public owner profiles are included only through the redacted public view when opted in; currently there are zero.
 - [ ] No claim is made that Google has indexed the site or that rankings have improved.
-- [ ] A full live browser security test, external scanner assessment and full SEO crawl have not yet been performed.
+- [x] Targeted live browser tests performed for homepage, collaboration credit/banner, sitemap, robots.txt, search noindex, news article metadata/NewsArticle schema, business LocalBusiness/BreadcrumbList schema, category breadcrumbs, and HTTPS upgrade. A full external security scanner and full-site SEO crawl have not been performed.
 
 ## Phase 0 — Finish domain and account security
 
@@ -63,59 +65,55 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [x] Cloudflare HTTPS/TLS/canonical Pages env settings above.
 - [x] Security headers deployed.
 - [x] Supabase public-profile view security fix deployed to database.
-- [ ] Verify actual production response headers over HTTPS and test HTTP-to-HTTPS redirect. Cloudflare settings are correct, but external DNS/network access from the execution environment failed; response-level verification remains pending.
+- [x] Cloudflare Always Use HTTPS is ON and TLS 1.2 is configured. Browser-rendered HTTP homepage ended at the canonical HTTPS URL; the browser marked the 307 as an internal `HttpsUpgrades` navigation, so the exact origin-generated redirect status is not claimed. HTTPS response headers were inspected in the live browser.
 - [x] Keep `www.hellosadiqabad.com` intentionally unsupported for now; only the canonical apex hostname is connected to Pages and present in DNS. Do not add a second indexable hostname unless the owner explicitly requests www support.
-- [ ] Review CSP against real production requests; tighten only after confirming required integrations, maps, media, fonts and Supabase connections.
+- [x] Reviewed CSP against the app's actual integrations (Supabase, OpenStreetMap, YouTube/Vimeo embeds, Google Fonts and Cloudflare Web Analytics). Added `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'`, and Cloudflare Insights script/connect hosts. Live response header inspected.
 - [x] Reviewed the current zone DNS listing: apex proxied CNAME to the Pages project and owner-verified Google TXT record are present; no other records appeared in the returned listing. No records were deleted.
-- [ ] Review Cloudflare WAF/bot protections and rate limits for public forms/chat endpoint; introduce rules carefully to avoid blocking normal visitors.
-- [x] Re-reviewed Supabase Security, Performance and Health Advisors and public RLS state. Security Advisor reports leaked-password protection disabled only; Health Advisor has no findings. Performance Advisor reports one unindexed FK, 26 unused-index notices and two multiple-permissive-policy notices; these are documented for targeted review. No indexes/policies were removed or weakened. All inspected public base tables have RLS enabled.
-- [ ] Check public signup policy and account provisioning. Keep signups restricted to the intended Admin-approved flow.
-- [ ] Review Supabase Auth redirect configuration after owner completes dashboard changes.
+- [x] Cloudflare managed WAF and Layer 7 DDoS protections reviewed. Added and verified one narrow zone rate-limit rule for POST `/api/chat`: 30 requests per 10 seconds per source IP/data-centre, temporary 10-second block, JSON 429 response. Other site routes are not covered by this rule.
+- [x] Re-reviewed Supabase Security, Performance and Health Advisors and public RLS state. Security Advisor reports only leaked-password protection disabled; Health Advisor is clean. The missing `owner_public_profiles.updated_by` FK index is now added. Performance Advisor still reports 26 unused-index INFO notices and two multiple-permissive-policy WARN notices; no unused indexes or policies were removed because query/policy semantics have not justified removal. All inspected public base tables retain RLS.
+- [x] Verified application-level signup/account provisioning: the public owner form only submits a pending request, Admin approval sends the invitation server-side, and frontend contains no direct `auth.signUp` call. The provider-level global signup toggle is not exposed by the connected API, so its dashboard state is not claimed.
+- [x] Owner confirmed Supabase Auth Site URL and allowed redirects saved; no further redirect change needed.
 
 ### Owner actions
-1. Open Supabase Auth URL configuration:
-   https://supabase.com/dashboard/project/efwohfzqitevkuybnyif/auth/url-configuration
-2. Set Site URL to `https://hellosadiqabad.com` (owner confirmed saved on 17 November 2026).
-3. Add allowed redirect URLs (owner confirmed all three saved on 17 November 2026):
-   - `https://hellosadiqabad.com/**`
-   - `https://hellosadiqabad.com/reset-password`
-   - `https://hellosadiqabad.com/change-password`
-   - Add www URLs only if www is actually configured.
-4. Save.
-5. Leaked-password protection is currently unavailable on the connected Free plan. Owner action is only needed if the owner independently chooses to upgrade; never share credentials.
-6. Tell the assistant when done; do not share passwords or private keys.
+1. Supabase Auth Site URL and all three canonical redirect URLs are already saved and owner-confirmed. Do not repeat this task.
+2. Leaked Password Protection is unavailable on the connected Free plan. No action is required unless the owner independently chooses to upgrade; never share credentials.
+3. Google Search Console Domain property `hellosadiqabad.com` is verified. The matching TXT record is already in Cloudflare DNS; do not add a duplicate or remove it.
+4. Submit the deployed sitemap in Search Console → Sitemaps using `https://hellosadiqabad.com/sitemap.xml`.
+5. After Google accepts the sitemap, use URL Inspection on the homepage and selected important business/category/area/news pages, then request indexing once per URL.
+6. Share Search Console reports and verified local-business corrections when available. Never share passwords or private keys.
+7. The app's owner registration is Admin-approved at application level. The global Supabase Email-provider signup toggle is not readable through the connected API; no change is requested now because there is no public `auth.signUp` flow and unapproved users cannot access a role-protected portal.
 
 ### Phase 0 acceptance
-- HTTP requests redirect to HTTPS.
-- Production HTTPS response headers are present and do not break app functionality.
-- Supabase Auth password reset and allowed redirect paths use the canonical domain (owner-confirmed dashboard save).
-- Leaked-password protection is either enabled after a plan upgrade or explicitly recorded as a Free-plan limitation accepted by the owner.
-- Security Advisor findings are reviewed and remaining warnings are documented.
-- www is either intentionally unsupported or redirects permanently to apex.
+- Cloudflare Always Use HTTPS is ON; browser-rendered HTTP navigation ends on the canonical HTTPS origin. Exact server redirect status remains unclaimed because Chromium reported an internal HTTPS upgrade.
+- Production HTTPS headers and CSP were inspected in the live browser; homepage, sitemap and robots responses load.
+- Supabase Auth URL/redirect settings are owner-confirmed.
+- Security Advisor has only the plan-limited leaked-password warning; the Free-plan limitation is documented, with no automatic upgrade.
+- Application-level owner signup remains Admin-approved; RLS and the redacted public profile view are verified without SECURITY DEFINER or RLS bypass.
+- Cloudflare managed protections and the narrow chat rate-limit rule are active.
+- www is intentionally unsupported; apex remains canonical.
 
 ## Phase 1 — Technical SEO foundation
 
 ### Assistant implementation
-- [ ] Inspect all public routes, route parameters, rendering model, page titles/descriptions and canonical URL generation.
-- [ ] Create a dynamic, accurate XML sitemap at `https://hellosadiqabad.com/sitemap.xml`; include only canonical, public, indexable URLs.
-- [ ] Include appropriate public business, category, area, news, authority-profile and other useful detail pages only where their routes are stable and content is public.
-- [ ] Exclude Admin, Owner Portal, authentication/reset routes, drafts, private/inactive records, search query URLs, duplicate routes and error pages.
-- [ ] Add sitemap location to `robots.txt`.
-- [ ] Add unique title and meta description for homepage and each indexable page type.
-- [ ] Add canonical links using `https://hellosadiqabad.com`; avoid pages.dev and www duplicates.
-- [ ] Add Open Graph/Twitter metadata and social share image where appropriate.
-- [ ] Add valid JSON-LD structured data only where page content supports it (Organization/WebSite, BreadcrumbList, LocalBusiness on genuine individual business pages, NewsArticle on published news).
-- [ ] Ensure admin/private routes are noindex and also remain protected by authentication/RLS; robots.txt is not access control.
-- [ ] Ensure pages have crawlable internal links, descriptive headings and meaningful image alt text.
-- [ ] Validate sitemap XML, robots, canonical tags, metadata, structured data and route response behavior.
-- [ ] Build, run tests/typecheck and deploy to Cloudflare Pages; verify deployment ID and production endpoints.
+- [x] Inspect public routes, route parameters, client-rendering model, page SEO helper and canonical generation.
+- [x] Create dynamic `/sitemap.xml` Pages Function using the public Supabase publishable key and existing anon/RLS rules; live browser response is valid XML with 516 unique canonical URLs.
+- [x] Include 223 published businesses, 263 active areas, 14 active categories, published news, published static pages, active directory list pages, active authority profiles and opted-in owner profiles via the redacted public view only.
+- [x] Sitemap excludes Admin/Owner portals, auth/reset routes, drafts, private/inactive rows, search query URLs and error routes. No private owner base table is queried.
+- [x] `robots.txt` includes `Sitemap: https://hellosadiqabad.com/sitemap.xml`; live response is HTTP 200 text/plain.
+- [x] Improve page metadata helper; homepage, category, area, business, news, authority and static pages use page-specific titles/descriptions. Static-page descriptions derive from published body text.
+- [x] Canonical links and `og:url` use the canonical apex domain; live browser spot-check passed for home, news, business and category routes.
+- [x] Add page-specific Open Graph/Twitter title, description, URL, image and card metadata; business/news cover images are used when present, with site logo fallback.
+- [x] Add Organization/WebSite on homepage, NewsArticle on published article, LocalBusiness plus BreadcrumbList on business profiles, and BreadcrumbList on category/area pages. Live browser JSON-LD spot-checks passed.
+- [x] Add `noindex,follow` for search, favorites, add-business, auth, Admin/Owner and unknown routes; search noindex was browser-tested. Authentication/RLS remains the actual access control.
+- [ ] Full internal-link, heading and image-alt audit remains to be completed.
+- [x] Targeted live browser validation: sitemap 200/516 unique URLs/no private URLs; robots 200; search noindex; canonical and JSON-LD spot-checks on home, news, business and category. Full-site crawl and Google Rich Results Test remain pending.
+- [x] GitHub CI (npm ci, dependency advisory gate, TypeScript, automated tests, production build and Edge Function typecheck) passed; Cloudflare Pages deployment `e0530a45-bc26-4b05-8965-cfe9c4fd69a0` for commit `a9b14edb9d46cfec74cbed0804fd6a2c03e59292` succeeded.
 
 ### Owner actions
-- [x] Create Google Search Console Domain property for `hellosadiqabad.com`: https://search.google.com/search-console (owner-confirmed).
-- [x] Copy and share the Google DNS TXT verification record (owner supplied DNS token only; no password shared).
-- [x] Assistant verified the matching TXT record already existed in Cloudflare DNS; owner clicked Verify and confirmed success.
-- [ ] After sitemap is deployed, submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps.
-- [ ] Use URL Inspection for homepage and a few important public pages; request indexing once after final URLs are live.
+- [x] Create Google Search Console Domain property for `hellosadiqabad.com`; owner confirmed verification succeeded.
+- [x] DNS TXT record is present in Cloudflare and verification succeeded; do not duplicate or remove it.
+- [ ] Submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps.
+- [ ] After submission is accepted, inspect the homepage and important public URLs and request indexing once.
 
 ### Phase 1 acceptance
 - Sitemap returns valid XML and only contains canonical, indexable public URLs.
@@ -195,4 +193,4 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 
 ## Current next action
 
-Continue Phase 0 technical verification first: response-level HTTPS/redirect checks, CSP and WAF/rate-limit review, and targeted remediation of confirmed low-risk findings. Owner has confirmed Auth URLs and Google Domain verification. Leaked-password protection is blocked by the Free plan. Once remaining Phase 0 technical checks are complete and the plan limitation is explicitly recorded, proceed to Phase 1 Technical SEO. Do not jump ahead or mark owner-only tasks complete without confirmation.
+Phase 0 technical work is implemented and verified, with leaked-password protection documented as a Free-plan limitation. Phase 1 foundation (dynamic sitemap, robots, canonical/meta, structured data, noindex and chat rate limit) is deployed. Owner's next manual action is to submit the sitemap in Search Console; then the assistant continues the full internal-link/image-alt/content SEO audit and later local SEO phases. Do not claim Google indexing until Search Console reports it.

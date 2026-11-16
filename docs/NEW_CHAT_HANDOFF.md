@@ -30,15 +30,16 @@ Use the connected GitHub, Cloudflare and Supabase tools where available. Read th
 - SSL mode Full, Always Use HTTPS ON, minimum TLS 1.2.
 - Automatic HTTPS Rewrites, HTTP/3 and Brotli ON.
 - Pages production `VITE_SITE_URL` updated to `https://hellosadiqabad.com`; existing other variables preserved.
-- Security headers updated in `public/_headers` (CSP, one-year HSTS, nosniff, SAMEORIGIN, strict-origin referrer policy, Permissions-Policy).
-- Latest deployment for commit `a061a78018133d14da17a0ecaf8505537e4e024e` completed successfully.
-- Supabase view `public.owner_public_profile_directory` was changed to `security_invoker=true` and verified. The Security Advisor's SECURITY DEFINER view finding cleared.
-- Supabase leaked-password protection remains disabled; the connected Supabase organization is confirmed on the Free plan and the feature is plan-gated. Do not ask for credentials or upgrade without owner decision.
+- Security headers updated in `public/_headers` (one-year HSTS, CSP with `object-src 'none'`, `base-uri`, `form-action`, `frame-ancestors`, Cloudflare Insights allowlist, nosniff, SAMEORIGIN, strict-origin referrer policy, Permissions-Policy).
+- Latest production Pages deployment: commit `a9b14edb9d46cfec74cbed0804fd6a2c03e59292`, deployment `e0530a45-bc26-4b05-8965-cfe9c4fd69a0` — build and deploy succeeded.
+- Supabase `owner_public_profile_directory` is `security_invoker=true` and `security_barrier=true`; anon can read only generated/redacted public columns under RLS. Raw phone/email and base-table SELECT remain denied. Anon read was tested; no SECURITY DEFINER view or RLS bypass.
+- Supabase Security Advisor reports only leaked-password protection disabled. Connected organization is on Free plan; feature is plan-gated. Do not request credentials or upgrade without owner decision.
 - Owner confirmed Supabase Auth Site URL and all three canonical redirect URLs were saved on 17 November 2026.
 - Owner confirmed Google Search Console Domain property `hellosadiqabad.com` is verified. Matching TXT record is present in Cloudflare DNS.
-- `public/sitemap.xml` is absent from current `main`; build a dynamic, accurate sitemap in Phase 1.
-- `www.hellosadiqabad.com` was not configured as a Pages custom domain at the last audit.
-- Do not claim Google indexing or rankings without Search Console evidence.
+- Dynamic `/sitemap.xml` is live: browser-verified HTTP 200 XML, 516 unique canonical URLs, zero duplicates/private URLs; owner profiles are included only through the redacted public view when opted in.
+- `www.hellosadiqabad.com` is intentionally unsupported; apex domain is the only active Pages custom domain.
+- `robots.txt` points to sitemap; homepage, search noindex, news, business and category metadata/JSON-LD were browser spot-checked. No full-site crawl or Google Rich Results Test has been performed.
+- Cloudflare rate-limit rule active on POST `/api/chat`: 30 requests/10 seconds per IP+colo, 10-second block with JSON 429.
 
 ### Mandatory working rules (owner-confirmed 17 November 2026)
 - Commit directly to `main`; do not create Pull Requests or feature branches unless I change this instruction.
@@ -53,17 +54,13 @@ Use the connected GitHub, Cloudflare and Supabase tools where available. Read th
 
 ### My role (website owner)
 I will do only the tasks that require my Google/Supabase dashboard or real-world owner participation:
-1. In Supabase Auth URL Configuration set Site URL to `https://hellosadiqabad.com`.
-2. Add allowed redirect URLs:
-   - `https://hellosadiqabad.com/**`
-   - `https://hellosadiqabad.com/reset-password`
-   - `https://hellosadiqabad.com/change-password`
-   Save and confirm when done.
-3. Leaked-password protection is unavailable on the connected Free plan. No action unless I decide to upgrade.
+1. Supabase Auth Site URL and canonical redirect URLs were saved and confirmed; do not repeat.
+2. Redirect URLs already saved; no further action.
+3. Leaked-password protection remains unavailable on Free; no action unless I independently choose to upgrade.
 4. Google Search Console Domain property `hellosadiqabad.com` is created and verified.
 5. DNS TXT verification is already present and verified. Do not add duplicates or remove the record.
 6. Search Console Verify already succeeded.
-7. After sitemap is deployed, I will submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps.
+7. Submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps (this is now the next owner action).
 8. I will use URL Inspection on the homepage and important public URLs and request indexing once the final URLs are ready.
 9. I will share Search Console reports/screenshots/exports when asked, and provide accurate local business information, official sources, corrections and authorized photos.
 10. I will encourage genuine local businesses to claim their own eligible Google Business Profiles and share their directory pages naturally. I will not buy searches, clicks, reviews or backlinks.
@@ -82,4 +79,4 @@ You own the technical work:
 - Do not promise top rankings or a fixed time. Do not use fake searches, bots, click farms, fake reviews or purchased backlinks.
 
 ### Immediate next task
-Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`, verify current live settings and continue the first unchecked Phase 0 technical verification task. Do not ask the owner to repeat completed Auth URL or Google verification tasks. The Free-plan leaked-password limitation is already documented. Once Phase 0 is accepted, proceed to Phase 1 Technical SEO.
+Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verified and Phase 1 foundation is deployed. Ask the owner only to submit the live sitemap in Search Console; continue the full internal-link/image-alt/content SEO audit and local SEO work. Do not repeat completed Auth URL or Google verification tasks, and do not claim indexing until Search Console confirms it.
