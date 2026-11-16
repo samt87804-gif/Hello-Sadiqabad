@@ -284,7 +284,13 @@ export function Home() {
                             ? `/business/${s.slug}`
                             : s.kind === 'category'
                             ? `/category/${s.slug}`
-                            : `/area/${s.slug}`;
+                            : s.kind === 'area'
+                            ? `/area/${s.slug}`
+                            : s.kind === 'news'
+                            ? `/news/${s.slug}`
+                            : s.slug === 'government'
+                            ? '/government-helplines'
+                            : '/emergency';
                         return (
                           <Link
                             key={`${s.kind}-${s.slug}`}
@@ -302,9 +308,13 @@ export function Home() {
                               {lang === 'ur'
                                 ? s.kind === 'business'
                                   ? 'کاروبار'
-                                  : s.kind === 'category'
+                                   : s.kind === 'category'
                                   ? 'شعبہ'
-                                  : 'علاقہ'
+                                  : s.kind === 'area'
+                                  ? 'علاقہ'
+                                  : s.kind === 'news'
+                                  ? 'خبر'
+                                  : 'ہیلپ لائن'
                                 : s.kind}
                             </span>
                           </Link>
