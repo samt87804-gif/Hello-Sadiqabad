@@ -51,7 +51,7 @@ export interface CategoryWithChildren extends CategoryRow {
 }
 
 export interface SearchSuggestionItem {
-  kind: 'business' | 'category' | 'area';
+  kind: 'business' | 'category' | 'area' | 'news' | 'emergency';
   label_en: string;
   label_ur: string;
   slug: string;
