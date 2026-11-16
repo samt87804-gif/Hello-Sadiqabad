@@ -1967,6 +1967,29 @@ export async function reviewSubmission(
   saveDemoDb(db);
 }
 
+export async function deleteBusinessPermanently(id: string, actorId: string): Promise<void> {
+  if (!id) throw new Error('Business ID is required.');
+  const client = getSupabaseClient();
+  if (client) {
+    const { data, error } = await client
+      .from('businesses')
+      .delete()
+      .eq('id', id)
+      .select('id')
+      .single();
+    if (error) throw error;
+    if (!data?.id) throw new Error('Business delete was not confirmed.');
+    return;
+  }
+
+  const db = loadDemoDb();
+  const index = db.businesses.findIndex((business) => business.id === id);
+  if (index < 0) throw new Error('Business not found.');
+  db.businesses.splice(index, 1);
+  appendAuditDemo(db, actorId, 'business.delete', 'businesses', id, { deleted: true });
+  saveDemoDb(db);
+}
+
 export async function bulkUpdateBusinesses(
   ids: string[],
   patch: Partial<Pick<BusinessRow, 'status' | 'category_id' | 'area_id' | 'assigned_to' | 'is_verified'>>,
