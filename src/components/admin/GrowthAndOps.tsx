@@ -975,6 +975,12 @@ export function ImportManager({
   );
 }
 
+function getAdDisplayStatus(ad: AdRow, today: string): string {
+  if (ad.status === 'active' && ad.start_date > today) return 'scheduled';
+  if (ad.status === 'active' && ad.end_date < today) return 'expired';
+  return ad.status;
+}
+
 export function AdsManager({
   ads,
   businesses,
@@ -990,7 +996,9 @@ export function AdsManager({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAd, setEditingAd] = useState<AdRow | null>(null);
   const [confirmRejectAd, setConfirmRejectAd] = useState<AdRow | null>(null);
-
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [placementFilter, setPlacementFilter] = useState('all');
   const [title, setTitle] = useState('');
   const [businessId, setBusinessId] = useState(businesses[0]?.id ?? '');
   const [placement, setPlacement] = useState<AdPlacement>('homepage_top');
@@ -1000,7 +1008,31 @@ export function AdsManager({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
+  const totals = useMemo(() => {
+    const impressions = ads.reduce((sum, ad) => sum + ad.impressions, 0);
+    const clicks = ads.reduce((sum, ad) => sum + ad.clicks, 0);
+    return {
+      active: ads.filter((ad) => getAdDisplayStatus(ad, today) === 'active').length,
+      pending: ads.filter((ad) => ad.status === 'pending').length,
+      impressions,
+      clicks,
+      ctr: impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : '0.0',
+    };
+  }, [ads, today]);
+
+  const filteredAds = useMemo(() => ads.filter((ad) => {
+    const business = businesses.find((item) => item.id === ad.business_id);
+    const haystack = [ad.title, business?.name_en ?? '', ad.placement, ad.notes ?? ''].join(' ').toLowerCase();
+    return (!query.trim() || haystack.includes(query.trim().toLowerCase())) &&
+      (statusFilter === 'all' || getAdDisplayStatus(ad, today) === statusFilter) &&
+      (placementFilter === 'all' || ad.placement === placementFilter);
+  }), [ads, businesses, query, statusFilter, placementFilter, today]);
+
   const openCreateModal = () => {
+    const endDateObj = new Date();
+    endDateObj.setDate(endDateObj.getDate() + 30);
+    const end = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(endDateObj);
     setEditingAd(null);
     setTitle('');
     setBusinessId(businesses[0]?.id ?? '');
@@ -1008,8 +1040,8 @@ export function AdsManager({
     setImageUrl('');
     setTargetUrl('');
     setNotes('');
-    setStartDate(new Date().toISOString().slice(0, 10));
-    setEndDate('');
+    setStartDate(today);
+    setEndDate(end);
     setModalOpen(true);
   };
 
@@ -1021,128 +1053,134 @@ export function AdsManager({
     setImageUrl(ad.image_url);
     setTargetUrl(ad.target_url ?? '');
     setNotes(ad.notes ?? '');
-    setStartDate(ad.start_date ? ad.start_date.slice(0, 10) : '');
-    setEndDate(ad.end_date ? ad.end_date.slice(0, 10) : '');
+    setStartDate(ad.start_date);
+    setEndDate(ad.end_date);
     setModalOpen(true);
   };
 
   const saveAdForm = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!businessId) {
+      showToast('Select a sponsoring business first.', 'error');
+      return;
+    }
     if (!isValidHttpsUrl(imageUrl)) {
       showToast('Banner image URL must be valid HTTPS.', 'error');
       return;
     }
-    if (targetUrl.trim() && !targetUrl.trim().startsWith('/') && !isValidHttpsUrl(targetUrl.trim())) {
-      showToast('Target URL must start with https:// or /', 'error');
+    const destination = targetUrl.trim();
+    const safeInternal = destination.startsWith('/') && !destination.startsWith('//') &&
+      /^\/[A-Za-z0-9/_?&=#%+.-]*$/.test(destination);
+    if (destination && !safeInternal && !isValidHttpsUrl(destination)) {
+      showToast('Target URL must be HTTPS or a safe same-site path (not //host).', 'error');
       return;
     }
-    await upsertAd(
-      {
+    if (!startDate || !endDate || endDate < startDate) {
+      showToast('Choose a valid campaign start and end date.', 'error');
+      return;
+    }
+    const business = businesses.find((item) => item.id === businessId);
+    const fallbackTarget = business ? '/business/' + business.slug : null;
+    try {
+      await upsertAd({
         id: editingAd?.id,
         title: title.trim(),
         business_id: businessId,
         placement,
         image_url: imageUrl.trim(),
-        target_url: targetUrl.trim() || null,
+        target_url: destination || fallbackTarget,
         notes: notes.trim() || null,
-        start_date: startDate || undefined,
-        end_date: endDate || undefined,
+        start_date: startDate,
+        end_date: endDate,
         status: editingAd?.status ?? 'active',
-      },
-      actorId
-    );
-    showToast(editingAd ? 'Sponsored ad updated!' : 'Sponsored ad created!', 'success');
-    setModalOpen(false);
-    setEditingAd(null);
-    await onReload();
+      }, actorId);
+      showToast(editingAd ? 'Sponsored campaign updated!' : 'Sponsored campaign created!', 'success');
+      setModalOpen(false);
+      setEditingAd(null);
+      await onReload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not save sponsored campaign.', 'error');
+    }
   };
 
   const setStatus = async (ad: AdRow, status: AdStatus) => {
-    await upsertAd({ ...ad, status }, actorId);
-    showToast(`Ad status set to ${status}.`, 'success');
-    await onReload();
+    try {
+      await upsertAd({ ...ad, status }, actorId);
+      showToast('Campaign status set to ' + status + '.', 'success');
+      await onReload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not update campaign status.', 'error');
+    }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-secondary" /> Sponsored Ads ({ads.length})
-        </h2>
-        <Button onClick={openCreateModal} leftIcon={<Plus className="w-4 h-4" />}>
-          Create Ad
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-secondary" /> Sponsored Campaigns ({ads.length})
+          </h2>
+          <p className="text-xs text-on-surface-variant mt-1">Manage placement, schedule, approvals and live performance.</p>
+        </div>
+        <Button onClick={openCreateModal} disabled={businesses.length === 0} leftIcon={<Plus className="w-4 h-4" />}>
+          Create Campaign
         </Button>
       </div>
 
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
+        <Card className="p-3"><p className="text-[11px] text-on-surface-variant">Live campaigns</p><p className="text-2xl font-extrabold text-primary tabular-nums">{totals.active}</p></Card>
+        <Card className="p-3"><p className="text-[11px] text-on-surface-variant">Pending review</p><p className="text-2xl font-extrabold tabular-nums">{totals.pending}</p></Card>
+        <Card className="p-3"><p className="text-[11px] text-on-surface-variant">Impressions</p><p className="text-2xl font-extrabold tabular-nums">{totals.impressions.toLocaleString()}</p></Card>
+        <Card className="p-3"><p className="text-[11px] text-on-surface-variant">Clicks</p><p className="text-2xl font-extrabold tabular-nums">{totals.clicks.toLocaleString()}</p></Card>
+        <Card className="p-3 col-span-2 lg:col-span-1"><p className="text-[11px] text-on-surface-variant">Overall CTR</p><p className="text-2xl font-extrabold tabular-nums">{totals.ctr}%</p></Card>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <input aria-label="Search campaigns" placeholder="Search title, business or notes…" value={query} onChange={(e) => setQuery(e.target.value)} className="h-10 px-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm" />
+        <select aria-label="Filter by campaign status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 px-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+          <option value="all">All statuses</option><option value="active">Live</option><option value="scheduled">Scheduled</option><option value="pending">Pending</option><option value="paused">Paused</option><option value="expired">Expired</option><option value="rejected">Rejected</option>
+        </select>
+        <select aria-label="Filter by placement" value={placementFilter} onChange={(e) => setPlacementFilter(e.target.value)} className="h-10 px-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm">
+          <option value="all">All placements</option><option value="homepage_top">Homepage Top</option><option value="search_sidebar">Search Sidebar</option><option value="category_banner">Category Banner</option><option value="popup">Popup</option><option value="emergency_banner">Government Helplines</option><option value="authorities_banner">Local Authorities</option>
+        </select>
+      </div>
+
       <div className="space-y-3">
-        {ads.map((ad) => {
+        {filteredAds.map((ad) => {
           const ctr = ad.impressions > 0 ? ((ad.clicks / ad.impressions) * 100).toFixed(1) : '0.0';
+          const status = getAdDisplayStatus(ad, today);
+          const business = businesses.find((item) => item.id === ad.business_id);
           return (
-            <Card key={ad.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
+            <Card key={ad.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+              <img src={ad.image_url} alt="" className="w-full sm:w-28 h-24 object-cover rounded-xl bg-surface-container shrink-0" loading="lazy" />
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-sm">{ad.title}</span>
-                  <Badge
-                    variant={
-                      ad.status === 'active'
-                        ? 'success'
-                        : ad.status === 'pending'
-                        ? 'warning'
-                        : ad.status === 'rejected'
-                        ? 'danger'
-                        : 'neutral'
-                    }
-                  >
-                    {ad.status}
-                  </Badge>
+                  <Badge variant={status === 'active' ? 'success' : status === 'pending' || status === 'scheduled' ? 'warning' : status === 'rejected' ? 'danger' : 'neutral'}>{status}</Badge>
                   <Badge variant="secondary">{ad.placement}</Badge>
                 </div>
-                <p className="text-xs text-on-surface-variant tabular-nums mt-1">
-                  Impressions: {ad.impressions} · Clicks: {ad.clicks} · CTR: {ctr}%
-                  {ad.end_date ? ` · Ends ${formatDateShort(ad.end_date)}` : ''}
-                </p>
+                <p className="text-xs text-on-surface-variant mt-1">{business?.name_en ?? 'Business listing'} · {formatDateShort(ad.start_date)} – {formatDateShort(ad.end_date)}</p>
+                <p className="text-xs text-on-surface-variant tabular-nums mt-1">Impressions: {ad.impressions.toLocaleString()} · Clicks: {ad.clicks.toLocaleString()} · CTR: {ctr}%</p>
+                {ad.notes && <p className="text-xs text-outline mt-1 line-clamp-2">{ad.notes}</p>}
               </div>
               <div className="flex gap-2 shrink-0 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openEditModal(ad)}
-                  leftIcon={<Edit2 className="w-3.5 h-3.5" />}
-                >
-                  Edit
-                </Button>
-                {ad.status === 'pending' && (
-                  <>
-                    <Button size="sm" onClick={() => setStatus(ad, 'active')}>
-                      Approve
-                    </Button>
-                    <Button size="sm" variant="danger" onClick={() => setConfirmRejectAd(ad)}>
-                      Reject
-                    </Button>
-                  </>
-                )}
-                {ad.status !== 'pending' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setStatus(ad, ad.status === 'active' ? 'paused' : 'active')}
-                  >
-                    {ad.status === 'active' ? 'Pause' : 'Activate'}
-                  </Button>
-                )}
+                <Button size="sm" variant="outline" onClick={() => openEditModal(ad)} leftIcon={<Edit2 className="w-3.5 h-3.5" />}>Edit</Button>
+                {ad.status === 'pending' && <><Button size="sm" onClick={() => setStatus(ad, 'active')}>Approve</Button><Button size="sm" variant="danger" onClick={() => setConfirmRejectAd(ad)}>Reject</Button></>}
+                {ad.status !== 'pending' && <Button size="sm" variant="outline" onClick={() => setStatus(ad, ad.status === 'active' ? 'paused' : 'active')}>{ad.status === 'active' ? 'Pause' : 'Activate'}</Button>}
               </div>
             </Card>
           );
         })}
+        {filteredAds.length === 0 && <Card className="p-8 text-center text-sm text-on-surface-variant">No campaigns match these filters.</Card>}
       </div>
 
       <ConfirmDialog
         open={Boolean(confirmRejectAd)}
         onClose={() => setConfirmRejectAd(null)}
         destructive
-        title="Reject Sponsored Ad?"
-        message={`Reject "${confirmRejectAd?.title ?? ''}"? The advertiser will need to update or resubmit their creative.`}
-        confirmLabel="Reject Ad"
+        title="Reject Sponsored Campaign?"
+        message={'Reject "' + (confirmRejectAd?.title ?? '') + '"? The campaign will no longer be eligible to display.'}
+        confirmLabel="Reject Campaign"
         onConfirm={async () => {
           if (!confirmRejectAd) return;
           const target = confirmRejectAd;
@@ -1151,58 +1189,29 @@ export function AdsManager({
         }}
       />
 
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editingAd ? `Edit Sponsored Banner — ${editingAd.title}` : 'Create Sponsored Banner'}
-      >
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingAd ? 'Edit Campaign — ' + editingAd.title : 'Create Sponsored Campaign'}>
         <form onSubmit={saveAdForm} className="space-y-3">
           <Input label="Campaign Title" required value={title} onChange={(e) => setTitle(e.target.value)} />
           <Select label="Sponsoring Business" value={businessId} onChange={(e) => setBusinessId(e.target.value)}>
-            {businesses.map((b) => (
-              <option key={b.id} value={b.id}>{b.name_en}</option>
-            ))}
+            {businesses.map((b) => <option key={b.id} value={b.id}>{b.name_en}</option>)}
           </Select>
           <Select label="Placement" value={placement} onChange={(e) => setPlacement(e.target.value as AdPlacement)}>
             <option value="homepage_top">Homepage Top Spotlight</option>
             <option value="search_sidebar">Search Sidebar</option>
             <option value="category_banner">Category Banner</option>
             <option value="popup">Popup Spotlight Modal</option>
+            <option value="emergency_banner">Government Helplines Banner</option>
+            <option value="authorities_banner">Local Authorities Banner</option>
           </Select>
           <Input label="Banner Image URL (HTTPS)" required dir="ltr" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-          <Input
-            label="Target URL (optional, defaults to business profile)"
-            dir="ltr"
-            placeholder="https://... or /offers"
-            value={targetUrl}
-            onChange={(e) => setTargetUrl(e.target.value)}
-          />
+          {imageUrl && isValidHttpsUrl(imageUrl) && <img src={imageUrl} alt="Campaign preview" className="w-full max-h-44 object-cover rounded-xl border border-outline-variant" />}
+          <Input label="Target URL (optional; defaults to business profile)" dir="ltr" placeholder="https://… or /business/slug" value={targetUrl} onChange={(e) => setTargetUrl(e.target.value)} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Start Date"
-              type="date"
-              dir="ltr"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <Input
-              label="End Date"
-              type="date"
-              dir="ltr"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
+            <Input label="Start Date" type="date" required dir="ltr" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <Input label="End Date" type="date" required dir="ltr" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
-          <Textarea
-            label="Campaign Notes (optional)"
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button type="submit">{editingAd ? 'Save Changes' : 'Publish Ad'}</Button>
-          </div>
+          <Textarea label="Campaign Notes (optional)" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button><Button type="submit">{editingAd ? 'Save Changes' : 'Create Campaign'}</Button></div>
         </form>
       </Modal>
     </div>
