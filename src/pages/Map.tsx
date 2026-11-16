@@ -184,6 +184,14 @@ export function Map() {
 
     // Immediately render all currently filtered business markers
     renderMarkers(currentBusinesses);
+    if (!userCoordsRef.current && currentBusinesses.length > 1) {
+      const points = currentBusinesses
+        .filter((biz) => typeof biz.lat === 'number' && typeof biz.lng === 'number')
+        .map((biz) => [biz.lat as number, biz.lng as number] as [number, number]);
+      if (points.length > 1) {
+        map.fitBounds(L.latLngBounds(points), { padding: [32, 32], maxZoom: 15, animate: false });
+      }
+    }
 
     // Apply preserved user coordinates if established
     if (userCoordsRef.current) {
