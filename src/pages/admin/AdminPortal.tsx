@@ -345,6 +345,7 @@ export function AdminPortal() {
             areas={areas}
             emergencyContacts={emergencyContacts}
             localAuthorities={localAuthorities}
+            authorityProfiles={authorityProfiles}
             leads={leads}
           />
         ) : (
