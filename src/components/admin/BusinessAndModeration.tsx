@@ -351,12 +351,17 @@ export function BusinessManager({
         { name_en: nameEn, name_ur: nameUr, slug, is_active: true },
         actorId
       );
-      await onReload();
       setForm((current) => ({ ...current, area_id: createdArea.id }));
       setNewAreaEn('');
       setNewAreaUr('');
       setShowAddArea(false);
-      showToast('Naya area save ho gaya aur business ke liye select kar diya gaya.', 'success');
+      showToast('Naya area Supabase mein save ho gaya aur business ke liye select kar diya gaya.', 'success');
+      try {
+        await onReload();
+      } catch (reloadError) {
+        console.error('Area saved, but admin data refresh failed:', reloadError);
+        showToast('Area save ho gaya hai; list refresh nahi ho saki. Admin data baad mein reload kar lein.', 'error');
+      }
     } catch (error) {
       const dbError = error as { code?: string; message?: string };
       if (dbError?.code === '23505') {
