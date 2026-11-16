@@ -236,6 +236,35 @@ function ChunkLoadNotice() {
   );
 }
 
+function RouteIndexing() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    const portalRoute = /^\/(?:admin|owner)(?:\/|$)/.test(path);
+    const noIndexRoutes = new Set([
+      '/search',
+      '/favorites',
+      '/add-business',
+      '/login',
+      '/owner-register',
+      '/forgot-password',
+      '/reset-password',
+      '/change-password',
+    ]);
+    const noIndex = portalRoute || noIndexRoutes.has(path);
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) {
+      robots = document.createElement('meta');
+      robots.name = 'robots';
+      document.head.appendChild(robots);
+    }
+    robots.content = noIndex ? 'noindex,follow' : 'index,follow,max-image-preview:large';
+  }, [location.pathname]);
+
+  return null;
+}
+
 function PageLoader() {
   return (
     <div className="min-h-screen bg-surface p-6 max-w-5xl mx-auto space-y-4">
@@ -258,6 +287,7 @@ export default function App() {
             <ToastProvider>
               <BrowserRouter>
                 <AdminScrollPersistence />
+                <RouteIndexing />
                 <ChunkLoadNotice />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>

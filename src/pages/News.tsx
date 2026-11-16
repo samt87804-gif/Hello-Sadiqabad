@@ -55,6 +55,38 @@ export function News() {
         title: result.article ? result.article.title_en + ' — Hello Sadiqabad News' : 'Sadiqabad News — Hello Sadiqabad',
         description: result.article?.excerpt_en ?? 'Latest verified local news and community updates from Sadiqabad.',
         canonicalPath: slug ? '/news/' + slug : '/news',
+        ogType: result.article ? 'article' : 'website',
+        jsonLd: result.article
+          ? {
+              '@context': 'https://schema.org',
+              '@type': 'NewsArticle',
+              headline: result.article.title_en,
+              description: result.article.excerpt_en,
+              datePublished: result.article.published_at,
+              dateModified: result.article.updated_at || result.article.published_at,
+              ...(result.article.cover_image_url ? { image: [result.article.cover_image_url] } : {}),
+              mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': 'https://hellosadiqabad.com/news/' + result.article.slug,
+              },
+              publisher: {
+                '@type': 'Organization',
+                name: 'Hello Sadiqabad',
+                url: 'https://hellosadiqabad.com/',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/186747.png',
+                },
+              },
+              inLanguage: ['en', 'ur'],
+            }
+          : {
+              '@context': 'https://schema.org',
+              '@type': 'CollectionPage',
+              name: 'Sadiqabad News',
+              url: 'https://hellosadiqabad.com/news',
+              inLanguage: ['en', 'ur'],
+            },
       });
     }).catch(() => { if (active) setFailed(true); })
       .finally(() => { if (active) setLoading(false); });

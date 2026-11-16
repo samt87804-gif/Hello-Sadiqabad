@@ -96,6 +96,26 @@ export function Home() {
       description:
         'Find shops, doctors, hospitals, pharmacies, and 24/7 emergency contacts in Sadiqabad, District Rahim Yar Khan, Punjab.',
       canonicalPath: '/',
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'Organization',
+            '@id': 'https://hellosadiqabad.com/#organization',
+            name: 'Hello Sadiqabad',
+            url: 'https://hellosadiqabad.com/',
+            logo: 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/186747.png',
+          },
+          {
+            '@type': 'WebSite',
+            '@id': 'https://hellosadiqabad.com/#website',
+            name: 'Hello Sadiqabad',
+            url: 'https://hellosadiqabad.com/',
+            publisher: { '@id': 'https://hellosadiqabad.com/#organization' },
+            inLanguage: ['en', 'ur'],
+          },
+        ],
+      },
     });
 
     setRecentItems(getRecentlyViewed());

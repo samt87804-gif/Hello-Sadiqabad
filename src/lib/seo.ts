@@ -7,6 +7,7 @@ export function updatePageSeo(opts: {
   path?: string;
   canonicalPath?: string;
   jsonLd?: Record<string, unknown> | null;
+  ogType?: 'website' | 'article';
 }) {
   const fullTitle = opts.title.includes('Hello Sadiqabad')
     ? opts.title
@@ -35,6 +36,9 @@ export function updatePageSeo(opts: {
   setMeta('meta[name="description"]', desc);
   setMeta('meta[property="og:title"]', fullTitle);
   setMeta('meta[property="og:description"]', desc);
+  setMeta('meta[name="twitter:title"]', fullTitle);
+  setMeta('meta[name="twitter:description"]', desc);
+  setMeta('meta[property="og:type"]', opts.ogType ?? 'website');
 
   let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
   if (!canonical) {
@@ -44,6 +48,7 @@ export function updatePageSeo(opts: {
   }
   const cleanPath = opts.path ?? opts.canonicalPath ?? window.location.pathname;
   canonical.href = `${supabaseConfig.siteUrl.replace(/\/$/, '')}${cleanPath}`;
+  setMeta('meta[property="og:url"]', canonical.href);
 
   const existingJsonLd = document.getElementById('hs-json-ld');
   if (existingJsonLd) existingJsonLd.remove();
