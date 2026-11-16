@@ -34,6 +34,20 @@ export function normalizeDirectorySearchText(value: unknown): string {
     .replace(/\s+/g, ' ');
 }
 
+export function matchesDirectoryBusinessQuery(business: BusinessPublicView, queryValue: unknown): boolean {
+  const query = normalizeDirectorySearchText(queryValue);
+  if (!query) return true;
+  const searchableText = normalizeDirectorySearchText([
+    business.name_en, business.name_ur, business.description_en, business.description_ur,
+    business.address_en, business.address_ur, business.phone_primary,
+    business.category?.name_en, business.category?.name_ur,
+    business.area?.name_en, business.area?.name_ur,
+    ...(business.category?.synonyms ?? []), ...(business.tags ?? []),
+    ...(business.services_en ?? []), ...(business.services_ur ?? []),
+  ].join(' '));
+  return query.split(' ').every((token) => searchableText.includes(token));
+}
+
 const PLAN_PRIORITY: Record<string, number> = {
   premium: 3,
   basic: 2,
