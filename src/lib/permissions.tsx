@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import type { PermissionKey, StaffType, UserRole } from '../types/database';
 import { useAuth } from './auth';
@@ -48,17 +48,17 @@ export const STAFF_TYPE_LABELS: Record<StaffType, { en: string; ur: string; desc
 export function usePermissions() {
   const { role, permissions, staffTypes, isActiveUser } = useAuth();
 
-  const hasPermission = (perm: PermissionKey): boolean => {
+  const hasPermission = useCallback((perm: PermissionKey): boolean => {
     if (!isActiveUser) return false;
     if (role === 'super_admin') return true;
     return permissions.includes(perm);
-  };
+  }, [isActiveUser, role, permissions]);
 
-  const hasAnyPermission = (...perms: PermissionKey[]): boolean => {
+  const hasAnyPermission = useCallback((...perms: PermissionKey[]): boolean => {
     if (!isActiveUser) return false;
     if (role === 'super_admin') return true;
     return perms.some((p) => permissions.includes(p));
-  };
+  }, [isActiveUser, role, permissions]);
 
   return {
     role,
