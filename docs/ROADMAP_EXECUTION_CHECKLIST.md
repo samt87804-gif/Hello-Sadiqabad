@@ -79,7 +79,8 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Applied follow-up source correction: `20261116051134_verify_official_government_helpline_sources`.
 - [x] Both migrations are recorded with matching filenames under `supabase/migrations/`.
 - [x] No existing business, owner, ad or emergency contact rows deleted.
-- [x] Anonymous RLS check: five active authority rows visible; inactive rows not visible.
+- [x] Anonymous RLS check at Batch 4: five active authority rows visible; inactive rows not visible.
+- [x] Batch 6 anonymous RLS check: all four newly seeded police stations are visible as active rows; no private/inactive rows were exposed.
 - [x] Owner write check: INSERT denied by RLS.
 - [x] Super Admin INSERT tested successfully in a rolled-back transaction.
 - [x] No RLS test records persisted.
@@ -97,7 +98,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 
 ### Local authorities
 - Municipal Committee Sadiqabad: https://mcsadiqabad.lgpunjab.org.pk/
-- Punjab Police Sadiqabad Circle and station numbers: https://punjabpolice.gov.pk/node/3549
+- Punjab Police Sadiqabad Circle and station numbers (SDPO, City, Saddar, Ahmed Pur Lamma, Kot Sabzal, Bhong and Machka): https://punjabpolice.gov.pk/node/3549
 - Tehsil Council Sadiqabad official listing: https://lgcd.punjab.gov.pk/district-rahim-yar-khan
 
 ## Batch completion record
@@ -105,12 +106,18 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - Batch 4 approval: user approved on 16 November 2026.
 - Code status: implemented and deployed.
 - Database status: additive migration applied; RLS smoke checks passed.
-- Active records: six Government Helplines and five Local Authorities.
+- Active records after Batch 6: six Government Helplines and nine Local Authorities.
 - Data caveat: older District Control Room number 068-9230389 was retained but deactivated because the current official district page did not confirm it; no existing rows were deleted.
 - CI status: final GitHub Actions run 43808174348 succeeded for commit 69ad062d984f6f4bcc5e59cc1ca3dc480febc2eb.
 - Cloudflare production deployment: b628632c-60c2-491b-bf5c-0025a67683c2 succeeded; preview URL https://b628632c.hello-sadiqabad-2bs.pages.dev and canonical site https://hello-sadiqabad-2bs.pages.dev.
 - Ads telemetry caveat: no ad campaigns currently exist in production, so the tracking code is deployed but real campaign clicks/impressions will be observed after an ad is activated.
-- Next batch: Read-only Roman Urdu-first AI chatbot; do not start until user approves.
+- Batch 6 approval: user authorized continuation on 16 November 2026.
+- Batch 6 implementation: four additional police-station records inserted additively into `public.local_authorities`; no existing rows were changed and no schema migration was needed.
+- Batch 6 source: official Punjab Police Sadiqabad Circle directory, https://punjabpolice.gov.pk/node/3549.
+- Batch 6 records: Ahmed Pur Lamma (068-5020028), Kot Sabzal (068-5020030), Bhong (068-5020029), and Machka (068-5020031).
+- Batch 6 verification: Supabase anonymous-role query returned all four active records with their source URLs and verification timestamps; existing active-only RLS remained effective.
+- Batch 6 is data-only; no application code or Pages deployment was required.
+- Next: continue only with additional government contacts when a direct official source confirms them. Batch 5 chatbot live acceptance remains pending user testing.
 
 
 ## Batch 5 — Read-only Roman Urdu-first AI Chatbot (implementation deployed; live acceptance pending)
