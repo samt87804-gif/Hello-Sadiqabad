@@ -160,7 +160,7 @@ function AreaPicker({
   areas: AreaRow[];
   value: string;
   onChange: (value: string) => void;
-  lang: string;
+  lang: 'en' | 'ur';
   urduHints: boolean;
 }) {
   const [open, setOpen] = useState(false);
