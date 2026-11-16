@@ -2702,6 +2702,8 @@ export function generateSitemapXml(baseUrl = supabaseConfig.siteUrl): string {
     '/offers',
     '/map',
     '/emergency',
+    '/government-helplines',
+    '/local-authorities',
     '/announcements',
     '/add-business',
   ];
