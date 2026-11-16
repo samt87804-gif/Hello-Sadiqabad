@@ -29,7 +29,7 @@ import {
   getCachedEmergencyContacts,
   getOrCreateSessionId,
 } from './offlineStorage';
-import { effectivePlanCode, filterAndRankBusinesses } from './searchFilter';
+import { effectivePlanCode, filterAndRankBusinesses, normalizeDirectorySearchText } from './searchFilter';
 import { normalizePkPhone } from './phone';
 import { daysUntil, slugify } from './format';
 import { attachPublicOffers, getPakistanDateString, isOfferCurrentlyValid } from './offers';
@@ -54,6 +54,7 @@ import type {
   LeadRow,
   LeadStatus,
   LocalAuthorityRow,
+  AuthorityProfileRow,
   MyPermissionsRpcResult,
   NewsArticleRow,
   NotificationRow,
@@ -590,8 +591,13 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
   return githubBusinessCache;
 }
 function matchesGitHubBusiness(business:BusinessPublicView,filters:Partial<SearchFiltersState>):boolean {
-  const query=filters.q?.trim().toLowerCase();
-  if(query&&![business.name_en,business.name_ur||'',business.address_en||'',business.phone_primary||'',business.category?.name_en||'',business.area?.name_en||'',...(business.tags||[])].join(' ').toLowerCase().includes(query))return false;
+  const query=normalizeDirectorySearchText(filters.q);
+  const searchableText=normalizeDirectorySearchText([
+    business.name_en,business.name_ur,business.address_en,business.address_ur,business.phone_primary,
+    business.description_en,business.description_ur,business.category?.name_en,business.category?.name_ur,
+    business.area?.name_en,business.area?.name_ur,...(business.tags||[]),...(business.services_en||[]),...(business.services_ur||[])
+  ].join(' '));
+  if(query&&!query.split(' ').every((token)=>searchableText.includes(token)))return false;
   if(filters.category&&business.category?.slug!==filters.category)return false;
   if(filters.area&&business.area?.slug!==filters.area)return false;
   if(filters.verified&&!business.is_verified)return false;
@@ -636,15 +642,15 @@ export async function searchBusinesses(
 
 export async function fetchSearchSuggestions(query:string,options:{signal?:AbortSignal}={}):Promise<SearchSuggestionItem[]> {
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
-  const term=query.trim().toLowerCase();if(term.length<2)return [];
+  const term=normalizeDirectorySearchText(query);if(term.length<2)return [];
   const [categories,areas,businesses]=await Promise.all([fetchAllCategories(),fetchAllAreas(),fetchGitHubBusinesses()]);
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
   const results:SearchSuggestionItem[]=[];
-  for(const c of categories)if(c.is_active&&(c.name_en.toLowerCase().includes(term)||c.name_ur.includes(term)||c.synonyms.some((v)=>v.toLowerCase().includes(term))))
+  for(const c of categories)if(c.is_active&&(normalizeDirectorySearchText(c.name_en).includes(term)||c.name_ur.includes(term)||c.synonyms.some((v)=>normalizeDirectorySearchText(v).includes(term))))
     results.push({kind:'category',label_en:c.name_en,label_ur:c.name_ur,slug:c.slug,subtitle:'Category'});
-  for(const a of areas)if(a.is_active&&(a.name_en.toLowerCase().includes(term)||a.name_ur.includes(term)))
+  for(const a of areas)if(a.is_active&&(normalizeDirectorySearchText(a.name_en).includes(term)||a.name_ur.includes(term)))
     results.push({kind:'area',label_en:a.name_en,label_ur:a.name_ur,slug:a.slug,subtitle:'Neighborhood'});
-  for(const b of businesses)if(b.name_en.toLowerCase().includes(term)||(b.name_ur||'').includes(term)||(b.tags||[]).some((tag)=>tag.toLowerCase().includes(term)))
+  for(const b of businesses)if(normalizeDirectorySearchText(b.name_en).includes(term)||(b.name_ur||'').includes(term)||(b.tags||[]).some((tag)=>normalizeDirectorySearchText(tag).includes(term)))
     results.push({kind:'business',label_en:b.name_en,label_ur:b.name_ur||b.name_en,slug:b.slug,subtitle:b.area?.name_en||'Sadiqabad'});
   const unique=new Map<string,SearchSuggestionItem>();for(const item of results)unique.set(item.kind+':'+item.slug,item);
   return [...unique.values()].slice(0,8);
