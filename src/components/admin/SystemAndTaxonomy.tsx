@@ -151,6 +151,10 @@ export function TaxonomyManager({
   const saveEditEmergency = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editEm) return;
+    if (editEm.category === 'government' && !editEm.source_url) {
+      showToast('Government helplines require an official source URL.', 'error');
+      return;
+    }
     if (editEm.source_url && !isValidHttpsUrl(editEm.source_url)) {
       showToast('Source URL must be a valid HTTPS link.', 'error');
       return;
@@ -276,6 +280,7 @@ export function TaxonomyManager({
                 <span className="text-xs font-extrabold text-error tabular-nums" dir="ltr">
                   {em.phone}
                 </span>
+                {em.source_url && <a href={em.source_url} target="_blank" rel="noopener noreferrer" className="block text-[10px] font-semibold text-primary underline">Official source</a>}
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <Button
