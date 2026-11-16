@@ -84,18 +84,26 @@ Batch 3 — completed (16 November 2026):
 - The in-memory request throttle is best-effort per Cloudflare isolate, not a globally coordinated rate limit. A Cloudflare WAF rate-limiting rule can be added if production traffic requires stronger enforcement.
 - Workers AI is usage-based; actual inference charges depend on usage and the Cloudflare account plan.
 
-## Batch 6 — Sadiqabad Police Directory Expansion (completed 16 November 2026)
+## Batch 6 — Official Government Contacts Expansion (completed 16 November 2026)
 
+### Government Helplines
+- [x] Add Pakistan Railways Enquiry — 117, listed by the District Rahim Yar Khan official contact directory.
+- [x] Add WAPDA Electricity Helpline — 118, listed by the District Rahim Yar Khan official contact directory.
+- [x] Preserve all existing emergency and Government helpline entries; both additions include source URL and verification timestamp.
+
+### Local Authorities
 - [x] Add Ahmed Pur Lamma Police Station — 068-5020028.
 - [x] Add Kot Sabzal Police Station — 068-5020030.
 - [x] Add Bhong Police Station — 068-5020029.
 - [x] Add Machka Police Station — 068-5020031.
 - [x] Use the official Punjab Police Sadiqabad Circle directory as the source for all four records.
 - [x] Preserve the existing five authority records; additions are separate, active records with source URL and verification timestamp.
-- [x] Verify all four new records are visible under the Supabase anonymous role through existing active-only RLS.
+
+### Verification
+- [x] Verify all six new contacts are visible under the Supabase anonymous role through existing active-only RLS.
 
 ## Remaining after Batch 6
-- [ ] Expand Government Helplines only when additional numbers are confirmed by official sources.
+- [ ] Expand Government Helplines further only when additional numbers are confirmed by official sources.
 - [ ] Expand Local Authorities further only when additional direct public contact details are officially published.
 
 ## Existing functionality to preserve
