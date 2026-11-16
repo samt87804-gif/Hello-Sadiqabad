@@ -374,10 +374,28 @@ export function BusinessManager({
     }
   };
 
+  const runDuplicateCheck = async () => {
+    const found = await findDuplicateBusinesses(
+      form.phone_primary,
+      form.name_en,
+      form.area_id,
+      form.address_en,
+      form.lat,
+      form.lng
+    );
+    const matches = found.filter((candidate) => candidate.id !== editing?.id);
+    setDuplicates(matches);
+    return matches;
+  };
+
   const checkDuplicates = async () => {
-    const found = await findDuplicateBusinesses(form.phone_primary, form.name_en, form.area_id);
-    setDuplicates(found.filter((d) => d.id !== editing?.id));
-    if (found.length === 0) showToast('No duplicates found in directory.', 'success');
+    try {
+      const matches = await runDuplicateCheck();
+      if (matches.length === 0) showToast('No likely duplicates found in this city.', 'success');
+      else showToast('Possible duplicate mil gaya. Save se pehle neeche record check karein.', 'error');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Duplicate check nahi ho saka.', 'error');
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -394,6 +412,11 @@ export function BusinessManager({
     }
     setSaving(true);
     try {
+      const possibleDuplicates = await runDuplicateCheck();
+      if (possibleDuplicates.length > 0) {
+        showToast('Business save nahi hua: mumkin duplicate listing mil gayi. Neeche mojood record verify karein.', 'error');
+        return;
+      }
       await adminUpsertBusiness(
         {
           id: editing?.id,
