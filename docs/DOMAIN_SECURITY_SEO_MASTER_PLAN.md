@@ -114,7 +114,7 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 ### Owner actions
 - [x] Create Google Search Console Domain property for `hellosadiqabad.com`; owner confirmed verification succeeded.
 - [x] DNS TXT record is present in Cloudflare and verification succeeded; do not duplicate or remove it.
-- [ ] Submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps.
+- [x] Owner submitted `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps (17 November 2026); Google reports successful submission and says it will process periodically. Processing/indexing is not yet confirmed.
 - [ ] After submission is accepted, inspect the homepage and important public URLs and request indexing once.
 
 ### Phase 1 acceptance
@@ -124,7 +124,7 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [x] JSON-LD is valid JSON and rendered correctly for the tested Organization/WebSite, NewsArticle, LocalBusiness and BreadcrumbList pages.
 - [ ] External Google Rich Results/Schema validation has not yet been run.
 - [x] Search Console Domain property is verified.
-- [ ] Sitemap acceptance in Search Console is pending owner submission.
+- [x] Sitemap submission completed by owner; Google processing is pending and acceptance/index coverage are not yet confirmed.
 - [x] No admin/private data is exposed by the sitemap or the redacted public owner-profile view.
 
 ## Phase 2 — Local SEO for Sadiqabad
@@ -197,4 +197,4 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 
 ## Current next action
 
-Phase 0 technical work is implemented and verified, with leaked-password protection documented as a Free-plan limitation. Phase 1 foundation (dynamic sitemap, robots, canonical/meta, structured data, noindex and chat rate limit) is deployed. Owner's next manual action is to submit the sitemap in Search Console; then the assistant continues the full internal-link/image-alt/content SEO audit and later local SEO phases. Do not claim Google indexing until Search Console reports it.
+Phase 0 technical work is implemented and verified, with leaked-password protection documented as a Free-plan limitation. Phase 1 foundation (dynamic sitemap, robots, canonical/meta, structured data, noindex and chat rate limit) is deployed; owner submitted the sitemap on 17 November 2026 and Google says it will process periodically. Assistant continues full-site internal-link, heading, image-alt, structured-data and content SEO audits. Owner's next manual action is URL Inspection for homepage and priority public URLs, then request indexing once per URL; first check sitemap processing/status. Do not claim Google indexing until Search Console reports it.
