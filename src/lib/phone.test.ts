@@ -4,7 +4,7 @@ import {
   buildTelUrl,
   buildWhatsAppUrl,
   formatPkPhoneDisplay,
-  isValidHttpsUrl,
+  isValidHttpsUrl,\n  isValidPkPhone,
   normalizePkPhone,
 } from './phone';
 
@@ -30,4 +30,15 @@ test('validates HTTPS URLs strictly and rejects HTTP or oversized URLs', () => {
   assert.equal(isValidHttpsUrl('http://hellosadiqabad.com/logo.png'), false);
   assert.equal(isValidHttpsUrl('javascript:alert(1)'), false);
   assert.equal(isValidHttpsUrl('https://example.com/' + 'a'.repeat(500)), false);
+});
+
+test('rejects blank and placeholder phone values instead of creating dead call links', () => {
+  for (const value of ['', '0', '00000000000', '0000000000', null, undefined]) {
+    assert.equal(isValidPkPhone(value), false);
+    assert.equal(buildTelUrl(value), '#');
+    assert.equal(buildWhatsAppUrl(value), '#');
+  }
+  assert.equal(isValidPkPhone('03008671234'), true);
+  assert.equal(isValidPkPhone('0685702232'), true);
+  assert.equal(isValidPkPhone('1122'), true);
 });
