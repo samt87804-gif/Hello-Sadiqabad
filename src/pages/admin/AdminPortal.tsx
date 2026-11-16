@@ -135,6 +135,23 @@ export function AdminPortal() {
         expiring_plans: 0,
         published_businesses: 0,
       };
+      const failedRequests: string[] = [];
+      const safeLoad = async <T,>(request: Promise<T>, fallback: T): Promise<T> => {
+        let timeoutId: number | undefined;
+        try {
+          return await Promise.race([
+            request,
+            new Promise<T>((_, reject) => {
+              timeoutId = window.setTimeout(() => reject(new Error('Request timed out after 12 seconds')), 12000);
+            }),
+          ]);
+        } catch (error) {
+          failedRequests.push(error instanceof Error ? error.message : 'A data request failed');
+          return fallback;
+        } finally {
+          if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+        }
+      };
       const [
         c,
         biz,
@@ -156,25 +173,25 @@ export function AdminPortal() {
         pgs,
         aud,
       ] = await Promise.all([
-        canViewDashboard ? fetchAdminDashboardCounts() : Promise.resolve(emptyCounts),
-        can('business.create') || can('business.publish') ? fetchAdminBusinesses() : Promise.resolve([]),
-        can('business.create') || can('settings.manage') ? fetchAllCategories(true) : can('business.publish') ? fetchAllCategories(false) : Promise.resolve([]),
-        can('business.create') || can('settings.manage') ? fetchAllAreas(true) : can('business.publish') ? fetchAllAreas(false) : Promise.resolve([]),
-        can('tiers.manage') ? fetchPlans(true) : Promise.resolve([]),
-        can('moderation.review') ? fetchAllReviewsAdmin() : Promise.resolve([]),
-        can('moderation.review') ? fetchAllSubmissionsAdmin() : Promise.resolve([]),
-        can('support.read') ? fetchAllInquiriesAdmin() : Promise.resolve([]),
-        can('leads.manage') ? fetchLeads() : Promise.resolve([]),
-        can('owners.create') ? fetchProfilesAdmin() : Promise.resolve([]),
-        can('ads.review') ? fetchAllAdsAdmin() : Promise.resolve([]),
-        can('import.run') ? fetchImportBatches() : Promise.resolve([]),
-        fetchEmergencyContactsAdmin(),
-        isSuperAdmin ? fetchLocalAuthoritiesAdmin() : Promise.resolve([]),
-        isSuperAdmin ? fetchAuthorityProfilesAdmin() : Promise.resolve([]),
-        fetchAnnouncements(can('announcements.manage') ? false : true),
-        can('settings.manage') ? fetchAllSiteSettingsAdmin() : Promise.resolve([]),
-        can('settings.manage') ? fetchAllPagesAdmin() : Promise.resolve([]),
-        isSuperAdmin ? fetchAuditLogs(100) : Promise.resolve([]),
+        canViewDashboard ? safeLoad(fetchAdminDashboardCounts(), emptyCounts) : Promise.resolve(emptyCounts),
+        can('business.create') || can('business.publish') ? safeLoad(fetchAdminBusinesses(), []) : Promise.resolve([]),
+        can('business.create') || can('settings.manage') ? safeLoad(fetchAllCategories(true), []) : can('business.publish') ? safeLoad(fetchAllCategories(false), []) : Promise.resolve([]),
+        can('business.create') || can('settings.manage') ? safeLoad(fetchAllAreas(true), []) : can('business.publish') ? safeLoad(fetchAllAreas(false), []) : Promise.resolve([]),
+        can('tiers.manage') ? safeLoad(fetchPlans(true), []) : Promise.resolve([]),
+        can('moderation.review') ? safeLoad(fetchAllReviewsAdmin(), []) : Promise.resolve([]),
+        can('moderation.review') ? safeLoad(fetchAllSubmissionsAdmin(), []) : Promise.resolve([]),
+        can('support.read') ? safeLoad(fetchAllInquiriesAdmin(), []) : Promise.resolve([]),
+        can('leads.manage') ? safeLoad(fetchLeads(), []) : Promise.resolve([]),
+        can('owners.create') ? safeLoad(fetchProfilesAdmin(), []) : Promise.resolve([]),
+        can('ads.review') ? safeLoad(fetchAllAdsAdmin(), []) : Promise.resolve([]),
+        can('import.run') ? safeLoad(fetchImportBatches(), []) : Promise.resolve([]),
+        safeLoad(fetchEmergencyContactsAdmin(), []),
+        isSuperAdmin ? safeLoad(fetchLocalAuthoritiesAdmin(), []) : Promise.resolve([]),
+        isSuperAdmin ? safeLoad(fetchAuthorityProfilesAdmin(), []) : Promise.resolve([]),
+        safeLoad(fetchAnnouncements(can('announcements.manage') ? false : true), []),
+        can('settings.manage') ? safeLoad(fetchAllSiteSettingsAdmin(), []) : Promise.resolve([]),
+        can('settings.manage') ? safeLoad(fetchAllPagesAdmin(), []) : Promise.resolve([]),
+        isSuperAdmin ? safeLoad(fetchAuditLogs(100), []) : Promise.resolve([]),
       ]);
       setCounts(c);
       setBusinesses(biz);
@@ -195,6 +212,9 @@ export function AdminPortal() {
       setSettings(sett);
       setPages(pgs);
       setAuditLogs(aud);
+      if (failedRequests.length) {
+        showToast(`${failedRequests.length} admin data request(s) failed or timed out. Available sections remain usable; retry the affected section.`, 'error');
+      }
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : 'Admin portal data could not be loaded.',
