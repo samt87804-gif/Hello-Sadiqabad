@@ -6,6 +6,27 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/FormFields';
 import { useToast } from '../ui/Toast';
 
+function parseMapCoordinates(raw: string): { lat: number; lng: number } | null {
+  const value = raw.trim();
+  if (!value) return null;
+  const patterns = [
+    /@(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)/,
+    /!3d(-?\d{1,3}(?:\.\d+)?)!4d(-?\d{1,3}(?:\.\d+)?)/,
+    /[?&](?:q|query|ll|center)=(-?\d{1,3}(?:\.\d+)?)[,%2C+\s]+(-?\d{1,3}(?:\.\d+)?)/i,
+    /^\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/,
+  ];
+  for (const pattern of patterns) {
+    const match = value.match(pattern);
+    if (!match) continue;
+    const lat = Number(match[1]);
+    const lng = Number(match[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { lat: Math.round(lat * 100000) / 100000, lng: Math.round(lng * 100000) / 100000 };
+    }
+  }
+  return null;
+}
+
 const DEFAULT_CENTER = { lat: 28.3062, lng: 70.1308 };
 
 export function LocationPicker({
@@ -30,6 +51,7 @@ export function LocationPicker({
   const [latDraft, setLatDraft] = useState(typeof lat === 'number' ? String(lat) : '');
   const [lngDraft, setLngDraft] = useState(typeof lng === 'number' ? String(lng) : '');
   const [locating, setLocating] = useState(false);
+  const [mapLink, setMapLink] = useState('');
 
   useEffect(() => {
     setLatDraft(typeof lat === 'number' ? String(lat) : '');
@@ -92,6 +114,18 @@ export function LocationPicker({
       markerRef.current.setLatLng([lat, lng]);
     }
   }, [lat, lng]);
+
+  const applyMapLink = () => {
+    const coords = parseMapCoordinates(mapLink);
+    if (!coords) {
+      showToast('Google Maps ka full link ya coordinates (latitude, longitude) paste karein. Short links mein coordinates maujood na hon to unhein pehle Google Maps mein khol kar full URL copy karein.', 'error');
+      return;
+    }
+    mapRef.current?.setView([coords.lat, coords.lng], 17);
+    markerRef.current?.setLatLng([coords.lat, coords.lng]);
+    onChangeRef.current(coords);
+    showToast('Google Maps location map par pin ho gayi.', 'success');
+  };
 
   const useCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -159,6 +193,24 @@ export function LocationPicker({
           {locating ? 'Locating…' : 'Use My GPS'}
         </Button>
       </div>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex-1">
+          <Input
+            label="Google Maps link / coordinates paste karein"
+            dir="ltr"
+            value={mapLink}
+            onChange={(e) => setMapLink(e.target.value)}
+            placeholder="https://www.google.com/maps/... ya 28.30, 70.13"
+          />
+        </div>
+        <div className="sm:self-end">
+          <Button size="sm" onClick={applyMapLink} disabled={!mapLink.trim()}>
+            Set Map Pin
+          </Button>
+        </div>
+      </div>
+      <p className="text-[11px] text-on-surface-variant">Google Maps ke full URL mein location coordinates hon to pin automatic usi jagah set hoga. Short links (maps.app.goo.gl) agar coordinates expose na karein to full URL ya coordinates paste karein.</p>
 
       <div
         ref={containerRef}
