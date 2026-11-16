@@ -162,7 +162,7 @@ export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all'
                         {lang === 'ur' ? em.description_ur || em.description_en : em.description_en}
                       </p>
                     )}
-                    {em.source_url && <a href={em.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex text-[10px] font-bold text-primary underline mt-1">{lang === 'ur' ? 'سرکاری ماخذ' : 'Official source'}</a>}
+                    {em.source_url && <div className="flex items-center justify-center gap-1.5 flex-wrap mt-1"><a href={em.source_url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-primary underline">{lang === 'ur' ? 'سرکاری ماخذ' : 'Official source'}</a>{em.verified_at && <span className="text-[10px] text-outline">{lang === 'ur' ? 'تصدیق' : 'Checked'}: {formatDateShort(em.verified_at)}</span>}</div>}
                   </div>
                   <div className="w-full space-y-2">
                     <span className="block text-xl sm:text-2xl font-extrabold text-error tabular-nums" dir="ltr">{em.phone}</span>
