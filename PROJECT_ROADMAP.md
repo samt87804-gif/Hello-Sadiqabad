@@ -178,6 +178,8 @@ Batch 3 — completed (16 November 2026):
 - [x] Version the sitemap edge-cache key so the previously cached pre-filter sitemap cannot continue serving stale area URLs.
 - [x] Final CI passed (run 43954510510) and Cloudflare Pages production deployment succeeded (deployment c3c0e3ba-1729-4f9b-87f8-cbca75e60ed4, commit 81e9378f681f9ad82e7af680ccf4735ad9256d6d).
 - [x] Browser-render the production invalid-phone business profile: HTTP 200, correct canonical URL, no tel: link, no placeholder phone display, and no Call action.
+- [x] Browser-render all six owner-submitted priority routes (/categories, /emergency, /map, /news, /offers, /announcements): each returned HTTP 200 with matching canonical, unique title/description, an H1, and index-follow robots.
 - [ ] Complete the remaining full route-by-route live browser audit and Google Rich Results Test.
+- [ ] Offers and announcements currently have zero active records each and are correctly omitted from the sitemap; their empty pages still declare index,follow, so consider dynamic noindex until real content is published.
 - [ ] Review candidate Google Places records against current business records by place ID/address/coordinates before any import. No production import, merge, rename, or deletion has been performed.
 - [ ] Resolve data-quality gaps only from verified sources or owner/business submissions; no phone, address, image, or description has been invented.
