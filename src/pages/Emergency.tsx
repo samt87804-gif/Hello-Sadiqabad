@@ -143,35 +143,35 @@ export function Emergency() {
                     ? <ImageWithFallback src={directoryImageUrls.helplines[em.id]} alt={`${em.name_en} helpline`} className="w-full h-full" />
                     : <CategoryIcon name={em.icon} className="w-10 h-10 text-error" />}
                 </div>
-                <div className="w-3/5 min-w-0 p-3 sm:p-4 flex flex-col justify-between gap-2">
-                  <div className="min-w-0">
-                    <h2 className="text-sm sm:text-base font-bold text-on-surface line-clamp-2">
+                <div className="w-3/5 min-w-0 p-3 sm:p-4 flex flex-col items-center justify-center text-center gap-2">
+                  <div className="w-full min-w-0">
+                    <h2 className="text-base sm:text-lg font-extrabold text-on-surface leading-snug line-clamp-2">
                       {bilingualText(lang, em.name_en, em.name_ur)}
                     </h2>
                     {lang === 'en' && urduHints && (
-                      <p className="font-urdu text-xs text-primary leading-[1.8] mt-1 line-clamp-2" dir="rtl">
+                      <p className="font-urdu text-sm text-primary leading-[1.8] mt-1 line-clamp-2" dir="rtl">
                         {em.name_ur}
                       </p>
                     )}
                     {(lang === 'ur' ? em.description_ur || em.description_en : em.description_en) && (
-                      <p className="text-[11px] text-on-surface-variant mt-1 line-clamp-2">
+                      <p className="text-xs text-on-surface-variant mt-1 line-clamp-2">
                         {lang === 'ur' ? em.description_ur || em.description_en : em.description_en}
                       </p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <span className="block text-base sm:text-lg font-extrabold text-error tabular-nums" dir="ltr">{em.phone}</span>
-                    <div className="flex items-center gap-1.5">
+                  <div className="w-full space-y-2">
+                    <span className="block text-xl sm:text-2xl font-extrabold text-error tabular-nums" dir="ltr">{em.phone}</span>
+                    <div className="flex items-center justify-center gap-1.5">
                       <a href={buildTelUrl(em.phone)}
-                        className="flex-1 min-h-9 px-2 rounded-lg bg-[#ba1a1a] dark:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:opacity-95">
-                        <PhoneCall className="w-3.5 h-3.5" />
+                        className="flex-1 min-h-10 px-2 rounded-lg bg-[#ba1a1a] dark:bg-[#b91c1c] text-white font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-95">
+                        <PhoneCall className="w-4 h-4" />
                         {lang === 'ur' ? 'کال کریں' : 'Call'}
                       </a>
                       {em.whatsapp && (
                         <a href={buildWhatsAppUrl(em.whatsapp)} target="_blank" rel="noopener noreferrer"
                           aria-label={lang === 'ur' ? 'واٹس ایپ' : 'WhatsApp'}
-                          className="min-h-9 px-2.5 rounded-lg bg-whatsapp text-white font-bold text-xs flex items-center justify-center">
-                          <MessageCircle className="w-3.5 h-3.5" />
+                          className="min-h-10 px-3 rounded-lg bg-whatsapp text-white font-bold text-sm flex items-center justify-center">
+                          <MessageCircle className="w-4 h-4" />
                         </a>
                       )}
                     </div>
