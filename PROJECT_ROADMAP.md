@@ -106,7 +106,7 @@ Batch 3 — completed (16 November 2026):
 - [ ] Expand Government Helplines further only when additional numbers are confirmed by official sources.
 - [ ] Expand Local Authorities further only when additional direct public contact details are officially published.
 
-## Batch 7 — Search, Areas UI & Authority Profiles (implementation in progress)
+## Batch 7 — Search, Areas UI & Authority Profiles (deployed 16 November 2026; Admin acceptance pending)
 
 ### Search
 - [x] Normalize search terms and searchable business text using Unicode normalization and case folding.
@@ -130,8 +130,10 @@ Batch 3 — completed (16 November 2026):
 ### Database and security
 - [x] Add `public.authority_profiles` with active-only public RLS, Super Admin CRUD policies, audit/update triggers and indexes.
 - [x] Add dedicated storage write policies for `authority-profiles/` in the existing public bucket.
-- [x] Grant only public SELECT and authenticated write privileges; no service-role key is used by the frontend.
+- [x] Grant public SELECT and authenticated write privileges; explicitly revoke anon INSERT/UPDATE/DELETE and verify anon cannot write; no service-role key is used by the frontend.
 - [x] Keep the existing `public.local_authorities` rows and behavior unchanged.
+- [x] GitHub CI, typecheck, tests, production build and Cloudflare Pages deployment succeeded.
+- [ ] Super Admin to create the first real authority profile and confirm portrait upload; no real office-holder profile was fabricated or seeded.
 
 ## Existing functionality to preserve
 
