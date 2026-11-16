@@ -1008,7 +1008,7 @@ export function BusinessProfile() {
         onClose={() => setLightboxIdx(null)}
         onIndexChange={setLightboxIdx}
         title={business.name_en}
-        phone={isValidPkPhone(business.phone_primary) ? business.phone_primary : null}
+        phone={isValidPkPhone(business.phone_primary) ? business.phone_primary : undefined}
         whatsapp={canWhatsApp ? business.whatsapp : null}
         onShare={() => setShareOpen(true)}
       />
