@@ -223,24 +223,6 @@ export function AdminPortal() {
     return () => { cancelled = true; };
   }, [analyticsDays, canViewAnalytics, showToast]);
 
-  // Refresh only the moderation queues when returning to this browser tab.
-  // Do not reload the whole portal: that can disturb open forms and the user's scroll position.
-  useEffect(() => {
-    const refreshModerationWhenVisible = () => {
-      if (document.visibilityState !== 'visible' || !hasPermission('moderation.review')) return;
-      void Promise.all([fetchAllReviewsAdmin(), fetchAllSubmissionsAdmin()])
-        .then(([nextReviews, nextSubmissions]) => {
-          setReviews(nextReviews);
-          setSubmissions(nextSubmissions);
-        })
-        .catch(() => {
-          // Keep the already-rendered queue if a background refresh temporarily fails.
-        });
-    };
-    document.addEventListener('visibilitychange', refreshModerationWhenVisible);
-    return () => document.removeEventListener('visibilitychange', refreshModerationWhenVisible);
-  }, [hasPermission]);
-
   const actorId = user?.id ?? 'user-admin-1';
 
   const handleGlobalJump = (e: React.FormEvent) => {
