@@ -51,7 +51,7 @@ Batch 3 — completed (16 November 2026):
 - [x] Add a dedicated /government-helplines page and Government category without creating a duplicate helpline table.
 - [x] Add official source URL and verification timestamp to emergency_contacts.
 - [x] Add Admin source URL management and require an official HTTPS source for Government-category records.
-- [x] Seed six government helpline entries with linked official sources: District Control Room (two numbers), Suthra Punjab 1139, Punjab Police IGP complaints 1787, Punjab Women 1043, and LGCD 0800-02345.
+- [x] Seed six government helpline entries with linked official sources: District Control Room 0800-33444, Punjab Highway Patrol 1124, Suthra Punjab 1139, Punjab Police IGP complaints 1787, Punjab Women 1043, and LGCD 0800-02345.
 - [x] Show source links and source-checked dates on public cards.
 - [ ] Verify final production route, offline cache behavior and public display.
 
