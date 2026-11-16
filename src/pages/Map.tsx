@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Crosshair, List, Map as MapIcon, MapPin, Phone } from 'lucide-react';
+import { Crosshair, List, Map as MapIcon, MapPin, Phone, Maximize2, Minimize2 } from 'lucide-react';
 import { fetchAllAreas, fetchAllCategories, searchBusinesses } from '../lib/api';
 import { bilingualText } from '../lib/format';
 import { useI18n } from '../lib/i18n';
@@ -36,6 +36,8 @@ export function Map() {
   const [selectedArea, setSelectedArea] = useState(() => params.get('area') ?? '');
   const [openOnly, setOpenOnly] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [mapResultsTotal, setMapResultsTotal] = useState(0);
   const [businesses, setBusinesses] = useState<BusinessPublicView[]>([]);
   const [selectedBiz, setSelectedBiz] = useState<BusinessPublicView | null>(null);
   const [userCoords, setUserCoords] = useState<[number, number] | null>(null);
@@ -80,9 +82,10 @@ export function Map() {
     setLoadError(false);
     searchBusinesses(
       { category: selectedCat, area: selectedArea, open: openOnly },
-      { limit: 50, signal: controller.signal }
+      { limit: 1000, signal: controller.signal }
     ).then((res) => {
       if (controller.signal.aborted || reqId !== filterReqIdRef.current) return;
+      setMapResultsTotal(res.total);
       const withCoords = res.items.filter(
         (b) => typeof b.lat === 'number' && typeof b.lng === 'number'
       );
@@ -100,6 +103,7 @@ export function Map() {
       if (controller.signal.aborted || (error instanceof DOMException && error.name === 'AbortError') ||
         reqId !== filterReqIdRef.current) return;
       setBusinesses([]);
+      setMapResultsTotal(0);
       setSelectedBiz(null);
       setLoadError(true);
     });
@@ -197,7 +201,28 @@ export function Map() {
 
   useEffect(() => {
     renderMarkers(businesses);
+    const map = mapInstanceRef.current;
+    if (!map || userCoordsRef.current || businesses.length === 0) return;
+    const points = businesses
+      .filter((biz) => typeof biz.lat === 'number' && typeof biz.lng === 'number')
+      .map((biz) => [biz.lat as number, biz.lng as number] as [number, number]);
+    if (points.length === 1) map.setView(points[0], 15);
+    else if (points.length > 1) map.fitBounds(L.latLngBounds(points), { padding: [32, 32], maxZoom: 15, animate: false });
   }, [businesses, lang]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || viewMode !== 'map') return;
+    const frame = window.requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+    const onResize = () => map.invalidateSize({ pan: false });
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, [isMapExpanded, viewMode]);
 
   const handleNearMe = () => {
     if (!navigator.geolocation) {
@@ -265,7 +290,7 @@ export function Map() {
 
   return (
     <AppShell>
-      <Container className="py-6 space-y-5">
+      <Container className="py-4 sm:py-6 space-y-4 sm:space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionHeading
             title={lang === 'ur' ? 'صادق آباد انٹرایکٹو نقشہ' : 'Sadiqabad City Map Explorer'}
@@ -344,6 +369,8 @@ export function Map() {
           </div>
         </div>
 
+        <p className="text-xs text-on-surface-variant" aria-live="polite">{lang === 'ur' ? 'نقشے پر ' + businesses.length + ' مقامات دکھائے جا رہے ہیں' : 'Showing ' + businesses.length + ' mapped locations' + (mapResultsTotal > businesses.length ? ' of ' + mapResultsTotal + ' listings' : '')}</p>
+
         {(metaError || loadError) && (
           <div role="alert" className="p-3 rounded-xl border border-error/30 bg-error/5 text-sm text-on-surface flex flex-wrap items-center justify-between gap-3">
             <span>
@@ -416,14 +443,51 @@ export function Map() {
           )
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            <div className="lg:col-span-8">
-              <div
-                ref={mapDivRef}
-                className="w-full h-[380px] sm:h-[460px] rounded-2xl overflow-hidden border border-outline-variant/50 shadow-sm z-10"
-              />
+            <div className={isMapExpanded ? 'fixed inset-0 z-[100] bg-surface p-2 sm:p-3' : 'lg:col-span-8 min-w-0'}>
+              <div className={isMapExpanded ? 'relative w-full h-full' : 'relative w-full'}>
+                <div
+                  ref={mapDivRef}
+                  className={isMapExpanded
+                    ? 'w-full h-[calc(100dvh-1rem)] sm:h-[calc(100dvh-1.5rem)] rounded-xl overflow-hidden border border-outline-variant/50 shadow-sm'
+                    : 'w-full h-[62dvh] min-h-[420px] max-h-[680px] sm:h-[520px] lg:h-[620px] rounded-2xl overflow-hidden border border-outline-variant/50 shadow-sm z-10'}
+                  style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'contain' }}
+                />
+                <div className="absolute top-3 left-3 right-3 z-[500] flex items-start justify-between gap-2 pointer-events-none">
+                  <div className="rounded-xl bg-surface/95 backdrop-blur shadow-lg border border-outline-variant/60 px-3 py-2 text-xs font-bold text-on-surface pointer-events-auto">
+                    <span>{businesses.length} {lang === 'ur' ? 'مقامات' : 'places'}</span>
+                    <span className="mx-2 text-on-surface-variant">·</span>
+                    <span className="text-primary">{lang === 'ur' ? 'سبز: تصدیق شدہ' : 'Green: verified'}</span>
+                  </div>
+                  <button type="button" onClick={() => setIsMapExpanded((value) => !value)}
+                    aria-label={isMapExpanded ? (lang === 'ur' ? 'فل اسکرین بند کریں' : 'Exit full screen map') : (lang === 'ur' ? 'فل اسکرین نقشہ کھولیں' : 'Open full screen map')}
+                    className="pointer-events-auto min-h-11 min-w-11 rounded-xl bg-surface/95 backdrop-blur shadow-lg border border-outline-variant/60 text-on-surface flex items-center justify-center">
+                    {isMapExpanded ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                  </button>
+                </div>
+                {isMapExpanded && selectedBiz && (
+                  <div className="absolute bottom-3 left-3 right-3 z-[500] max-w-xl mx-auto">
+                    <div className="rounded-2xl border border-outline-variant/60 bg-surface/95 backdrop-blur shadow-xl p-3 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-primary">{lang === 'ur' ? 'منتخب کردہ مقام' : 'Selected place'}</p>
+                          <p className="text-sm font-bold text-on-surface truncate">{bilingualText(lang, selectedBiz.name_en, selectedBiz.name_ur)}</p>
+                          <p className="text-xs text-on-surface-variant line-clamp-2">{lang === 'ur' ? selectedBiz.address_ur || selectedBiz.address_en : selectedBiz.address_en}</p>
+                        </div>
+                        <button type="button" onClick={() => setIsMapExpanded(false)} className="shrink-0 min-h-10 px-3 rounded-lg bg-surface-container text-xs font-bold text-on-surface">{lang === 'ur' ? 'بند' : 'Close'}</button>
+                      </div>
+                      <div className="flex gap-2">
+                        <a href={buildTelUrl(selectedBiz.phone_primary)} className="flex-1 min-h-10 rounded-lg bg-primary text-on-primary text-xs font-bold flex items-center justify-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5" /> <span dir="ltr">{formatPkPhoneDisplay(selectedBiz.phone_primary)}</span>
+                        </a>
+                        <Link to={'/business/' + selectedBiz.slug} className="min-h-10 px-4 rounded-lg bg-surface-container text-xs font-bold flex items-center">{lang === 'ur' ? 'پروفائل' : 'Profile'}</Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="lg:col-span-4 space-y-4">
+            <div className={isMapExpanded ? 'hidden' : 'lg:col-span-4 space-y-4'}>
               {selectedBiz && (
                 <Card className="p-4 border-primary/40 space-y-2.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
