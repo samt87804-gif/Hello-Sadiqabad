@@ -55,12 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isActiveUser, setIsActiveUser] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const hydrationVersion = useRef(0);
+  const hydratedUserId = useRef<string | null>(null);
 
   const isDemoMode = !supabaseConfig.isConfigured && !supabaseConfig.isProductionBuild;
 
-  const hydrateUser = useCallback(async (authUser: AuthUser | null) => {
+  const hydrateUser = useCallback(async (authUser: AuthUser | null, force = false) => {
+    if (authUser && !force && hydratedUserId.current === authUser.id) return;
     const version = ++hydrationVersion.current;
     if (!authUser) {
+      hydratedUserId.current = null;
       setUser(null);
       setProfile(null);
       setRole(null);
@@ -102,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStaffTypes(permsRes.staff_types ?? []);
         setPermissions(permsRes.permissions ?? []);
         setIsActiveUser(true);
+        hydratedUserId.current = authUser.id;
       } catch {
         // Fail closed if the profile or permission service cannot be verified.
         if (version !== hydrationVersion.current) return;
@@ -110,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStaffTypes([]);
         setPermissions([]);
         setIsActiveUser(false);
+        hydratedUserId.current = null;
       } finally {
         if (version === hydrationVersion.current) setLoading(false);
       }
@@ -135,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStaffTypes(permsRes.staff_types ?? []);
     setPermissions(permsRes.permissions ?? []);
     setIsActiveUser(permsRes.is_active);
+    hydratedUserId.current = authUser.id;
     setLoading(false);
   }, []);
 
@@ -235,7 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error || !data.user) {
         return { ok: false, error: error?.message ?? 'Invalid credentials.' };
       }
-      await hydrateUser({ id: data.user.id, email: data.user.email ?? cleanEmail });
+      await hydrateUser({ id: data.user.id, email: data.user.email ?? cleanEmail }, true);
       const [perms, profRes] = await Promise.all([
         fetchMyPermissions(data.user.id),
         client.from('profiles').select('must_change_password').eq('id', data.user.id).single(),
@@ -329,7 +335,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = async () => {
     if (user) {
-      await hydrateUser(user);
+      await hydrateUser(user, true);
     }
   };
 
