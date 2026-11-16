@@ -325,6 +325,23 @@ export function BusinessProfile() {
         </div>
 
         <Container className="relative -mt-10 space-y-6">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 pt-2 text-xs text-on-surface-variant">
+            <Link to="/" className="font-semibold hover:text-primary">
+              {lang === 'ur' ? 'ہوم' : 'Home'}
+            </Link>
+            {business.category?.slug && business.category.name_en && (
+              <>
+                <span aria-hidden="true">/</span>
+                <Link to={`/category/${business.category.slug}`} className="font-semibold hover:text-primary">
+                  {bilingualText(lang, business.category.name_en, business.category.name_ur)}
+                </Link>
+              </>
+            )}
+            <span aria-hidden="true">/</span>
+            <span aria-current="page" className="font-bold text-on-surface truncate">
+              {bilingualText(lang, business.name_en, business.name_ur)}
+            </span>
+          </nav>
           {/* Identity Header Row */}
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <div className="relative w-24 h-24 rounded-2xl bg-surface-container-lowest p-1.5 shadow-lg border border-outline-variant/40">

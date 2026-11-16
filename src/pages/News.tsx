@@ -125,11 +125,11 @@ export function News() {
             action={<Link to="/news"><Button>Browse News</Button></Link>} />
         ) : article ? (
           <article className="max-w-3xl mx-auto space-y-4">
-            {article.cover_image_url && <img src={article.cover_image_url} alt="" className="w-full max-h-[420px] object-cover rounded-2xl" loading="lazy" />}
+            {article.cover_image_url && <img src={article.cover_image_url} alt={article.title_en} className="w-full max-h-[420px] object-cover rounded-2xl" loading="lazy" />}
             {galleryImages.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {galleryImages.map((url, index) => (
-                  <img key={url + index} src={url} alt={`Article image ${index + 1}`}
+                  <img key={url + index} src={url} alt={`${article.title_en} — image ${index + 1}`}
                     className="w-full aspect-video object-cover rounded-xl border border-outline-variant/30" loading="lazy" />
                 ))}
               </div>
@@ -179,7 +179,7 @@ export function News() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredItems.map(item => (
               <Card key={item.id} className="overflow-hidden">
-                {item.cover_image_url && <img src={item.cover_image_url} alt="" className="w-full aspect-[16/9] object-cover" loading="lazy" />}
+                {item.cover_image_url && <img src={item.cover_image_url} alt={item.title_en} className="w-full aspect-[16/9] object-cover" loading="lazy" />}
                 <div className="p-4 space-y-2">
                   {item.is_featured && <span className="text-[10px] uppercase tracking-wider font-bold text-primary">Featured</span>}
                   <p className="text-[11px] text-on-surface-variant">{formatDateShort(item.published_at ?? item.created_at, lang)}</p>
