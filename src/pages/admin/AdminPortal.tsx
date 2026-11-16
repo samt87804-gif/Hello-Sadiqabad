@@ -120,7 +120,6 @@ export function AdminPortal() {
   const [pages, setPages] = useState<PageRow[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [visitedTabs, setVisitedTabs] = useState<string[]>([tab]);
   const reload = useCallback(async () => {
     setLoading(true);
     try {
@@ -219,10 +218,6 @@ export function AdminPortal() {
   useEffect(() => {
     reload();
   }, [reload]);
-
-  useEffect(() => {
-    setVisitedTabs((current) => current.includes(tab) ? current : [...current, tab]);
-  }, [tab]);
 
   // Refresh only the moderation queues when returning to this browser tab.
   // Do not reload the whole portal: that can disturb open forms and the user's scroll position.
@@ -614,7 +609,7 @@ export function AdminPortal() {
             })()}
           </div>
 
-          {visitedTabs.map((visitedTab) => <div key={visitedTab} hidden={visitedTab !== tab} aria-hidden={visitedTab !== tab}>{renderTab(visitedTab)}</div>)}
+          {renderTab(tab)}
         </main>
       </div>
       <AppFooter variant="portal" withBottomNavOffset={false} />
