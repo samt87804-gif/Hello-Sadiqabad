@@ -27,6 +27,8 @@ const AddBusiness = lazy(() =>
 const MapPage = lazy(() => import('./pages/Map').then((m) => ({ default: m.Map })));
 const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })));
 const Emergency = lazy(() => import('./pages/Emergency').then((m) => ({ default: m.Emergency })));
+const GovernmentHelplines = lazy(() => import('./pages/Emergency').then((m) => ({ default: m.GovernmentHelplines })));
+const LocalAuthorities = lazy(() => import('./pages/LocalAuthorities').then((m) => ({ default: m.LocalAuthorities })));
 const Announcements = lazy(() =>
   import('./pages/Announcements').then((m) => ({ default: m.Announcements }))
 );
@@ -122,6 +124,8 @@ export default function App() {
                     <Route path="/map" element={<MapPage />} />
                     <Route path="/favorites" element={<Favorites />} />
                     <Route path="/emergency" element={<Emergency />} />
+                    <Route path="/government-helplines" element={<GovernmentHelplines />} />
+                    <Route path="/local-authorities" element={<LocalAuthorities />} />
                     <Route path="/announcements" element={<Announcements />} />
                     <Route path="/news" element={<News />} />
                     <Route path="/news/:slug" element={<News />} />
