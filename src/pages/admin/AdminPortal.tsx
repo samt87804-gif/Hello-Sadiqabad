@@ -90,7 +90,7 @@ export function AdminPortal() {
   const { tab = 'overview' } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { hasPermission, isSuperAdmin } = usePermissions();
+  const { hasPermission, isSuperAdmin, permissions } = usePermissions();
   const { showToast } = useToast();
 
   const [analyticsDays, setAnalyticsDays] = useState<7 | 30 | 90>(30);
@@ -116,6 +116,7 @@ export function AdminPortal() {
   const [authorityProfiles, setAuthorityProfiles] = useState<AuthorityProfileRow[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
   const [analytics, setAnalytics] = useState<AdminAnalyticsData | null>(null);
+  const canViewAnalytics = isSuperAdmin || permissions.includes('analytics.view');
   const [settings, setSettings] = useState<SiteSettingRow[]>([]);
   const [pages, setPages] = useState<PageRow[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([]);
@@ -134,14 +135,6 @@ export function AdminPortal() {
         expiring_plans: 0,
         published_businesses: 0,
       };
-      const emptyAnalytics: AdminAnalyticsData = {
-        daily_traffic: [],
-        top_businesses: [],
-        top_categories: [],
-        top_searches: [],
-        zero_result_searches: [],
-        ad_performance: [],
-      };
       const [
         c,
         biz,
@@ -159,7 +152,6 @@ export function AdminPortal() {
         auths,
         authorityProfilesList,
         anns,
-        anl,
         sett,
         pgs,
         aud,
@@ -180,7 +172,6 @@ export function AdminPortal() {
         isSuperAdmin ? fetchLocalAuthoritiesAdmin() : Promise.resolve([]),
         isSuperAdmin ? fetchAuthorityProfilesAdmin() : Promise.resolve([]),
         fetchAnnouncements(can('announcements.manage') ? false : true),
-        can('analytics.view') ? fetchAdminAnalytics(analyticsDays) : Promise.resolve(emptyAnalytics),
         can('settings.manage') ? fetchAllSiteSettingsAdmin() : Promise.resolve([]),
         can('settings.manage') ? fetchAllPagesAdmin() : Promise.resolve([]),
         isSuperAdmin ? fetchAuditLogs(100) : Promise.resolve([]),
@@ -201,7 +192,6 @@ export function AdminPortal() {
       setLocalAuthorities(auths);
       setAuthorityProfiles(authorityProfilesList);
       setAnnouncements(anns);
-      setAnalytics(anl);
       setSettings(sett);
       setPages(pgs);
       setAuditLogs(aud);
@@ -213,11 +203,25 @@ export function AdminPortal() {
     } finally {
       setLoading(false);
     }
-  }, [analyticsDays, showToast]);
+  }, [showToast]);
 
   useEffect(() => {
     reload();
   }, [reload]);
+
+  useEffect(() => {
+    if (!canViewAnalytics) {
+      setAnalytics(null);
+      return;
+    }
+    let cancelled = false;
+    void fetchAdminAnalytics(analyticsDays)
+      .then((result) => { if (!cancelled) setAnalytics(result); })
+      .catch((error) => {
+        if (!cancelled) showToast(error instanceof Error ? error.message : 'Analytics could not be loaded.', 'error');
+      });
+    return () => { cancelled = true; };
+  }, [analyticsDays, canViewAnalytics, showToast]);
 
   // Refresh only the moderation queues when returning to this browser tab.
   // Do not reload the whole portal: that can disturb open forms and the user's scroll position.
