@@ -3,7 +3,8 @@ import { buildSitemapXml, filterIndexableTaxonomy } from '../src/lib/sitemap.ts'
 const SITE_ORIGIN = 'https://hellosadiqabad.com';
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 20;
-const SAFE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;\nconst SAFE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SAFE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SAFE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const STATIC_PAGE_SLUGS = new Set(['about', 'advertise', 'contact', 'terms', 'privacy', 'listing-terms', 'refund-policy', 'faq']);
 
 function xmlResponse(xml) {
@@ -107,7 +108,8 @@ export async function onRequestGet({ request, env }) {
       fetchPublicRows(baseUrl, publicKey, 'announcements', 'id,start_date,end_date,updated_at', { is_active: 'eq.true' }),
     ]);
 
-    const activeAnnouncements = announcements.filter((row) => isCurrentAnnouncement(row, now.getTime()));\n    const indexableTaxonomy = filterIndexableTaxonomy(categories, areas, businesses, 3);
+    const activeAnnouncements = announcements.filter((row) => isCurrentAnnouncement(row, now.getTime()));
+    const indexableTaxonomy = filterIndexableTaxonomy(categories, areas, businesses, 3);
     const entries = [{ path: '/' }];
 
     if (indexableTaxonomy.categories.length > 0) entries.push({ path: '/categories' });
