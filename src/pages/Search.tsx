@@ -5,6 +5,7 @@ import {
   fetchActiveAds,
   fetchAllAreas,
   fetchAllCategories,
+  fetchSearchSuggestions,
   searchBusinesses,
 } from '../lib/api';
 import { useDebounce } from '../lib/hooks';
@@ -13,7 +14,7 @@ import { updatePageSeo } from '../lib/seo';
 import { getFavorites, toggleFavoriteId } from '../lib/offlineStorage';
 import { SADIQABAD_CENTER_COORDS, isValidCoords } from '../lib/searchFilter';
 import type { AdRow, AreaRow, CategoryRow } from '../types/database';
-import type { BusinessPublicView, SearchFiltersState, SortOption } from '../types/directory';
+import type { BusinessPublicView, SearchFiltersState, SearchSuggestionItem, SortOption } from '../types/directory';
 import { AppShell } from '../components/layout/AppShell';
 import { AdBanner } from '../components/directory/AdBanner';
 import { BusinessCard } from '../components/directory/BusinessCard';
@@ -52,6 +53,8 @@ export function Search() {
   const [areas, setAreas] = useState<AreaRow[]>([]);
   const [sidebarAds, setSidebarAds] = useState<AdRow[]>([]);
   const [results, setResults] = useState<BusinessPublicView[]>([]);
+  const [globalMatches, setGlobalMatches] = useState<SearchSuggestionItem[]>([]);
+  const globalAbortRef = useRef<AbortController | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -111,6 +114,25 @@ export function Search() {
       setSidebarAds(ads);
     });
   }, []);
+
+  // Cross-directory matches include only public categories, areas, published news and active helplines.
+  useEffect(() => {
+    globalAbortRef.current?.abort();
+    const controller = new AbortController();
+    globalAbortRef.current = controller;
+    if (debouncedQ.trim().length < 2) {
+      setGlobalMatches([]);
+      return () => controller.abort();
+    }
+    fetchSearchSuggestions(debouncedQ, { signal: controller.signal })
+      .then((items) => {
+        if (!controller.signal.aborted) setGlobalMatches(items.filter((item) => item.kind !== 'business'));
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted && error?.name !== 'AbortError') setGlobalMatches([]);
+      });
+    return () => controller.abort();
+  }, [debouncedQ]);
 
   // Nearest sorting location handler: falls back strictly to Sadiqabad city centre coordinates
   useEffect(() => {
@@ -465,6 +487,42 @@ export function Search() {
                   </button>
                 )}
               </div>
+            )}
+
+            {globalMatches.length > 0 && (
+              <section aria-label={lang === 'ur' ? 'دیگر متعلقہ نتائج' : 'Other matching results'} className="space-y-2">
+                <h2 className="text-sm font-bold text-on-surface">{lang === 'ur' ? 'دیگر متعلقہ نتائج' : 'More matching results'}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {globalMatches.map((item) => {
+                    const destination = item.kind === 'category'
+                      ? `/category/${item.slug}`
+                      : item.kind === 'area'
+                      ? `/area/${item.slug}`
+                      : item.kind === 'news'
+                      ? `/news/${item.slug}`
+                      : item.slug === 'government'
+                      ? '/government-helplines'
+                      : '/emergency';
+                    const kindLabel = item.kind === 'category'
+                      ? (lang === 'ur' ? 'شعبہ' : 'Category')
+                      : item.kind === 'area'
+                      ? (lang === 'ur' ? 'علاقہ' : 'Area')
+                      : item.kind === 'news'
+                      ? (lang === 'ur' ? 'خبر' : 'News')
+                      : (lang === 'ur' ? 'ہیلپ لائن' : 'Helpline');
+                    return (
+                      <Link key={item.kind + ':' + item.slug} to={destination}
+                        className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold text-on-surface">{lang === 'ur' ? item.label_ur : item.label_en}</span>
+                          {item.subtitle && <span className="block truncate text-xs text-on-surface-variant">{item.subtitle}</span>}
+                        </span>
+                        <span className="shrink-0 rounded-md bg-surface-container px-2 py-1 text-[10px] font-bold text-primary">{kindLabel}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
             )}
 
             <div className="flex items-center justify-between gap-2 text-xs sm:text-sm text-on-surface-variant">
