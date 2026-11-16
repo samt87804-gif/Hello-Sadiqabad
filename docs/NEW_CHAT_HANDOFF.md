@@ -99,3 +99,11 @@ Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verifi
 - Code commit: `bac9261c134bc782159db8d696026ff0979fdc4a`; CI run 43956280854 passed; Cloudflare deployment 017a7ca2-fe39-463d-9e46-631bba2e1fbe succeeded.
 - Live post-deploy browser-render verification completed for both `/offers` and `/announcements`: HTTP 200, correct canonical URL, one H1, and `noindex,follow` while active content is empty.
 - Next safe data task: build a read-only Google Places candidate-matching review keyed by place ID/address/coordinates; do not import or alter production listings until manual review is complete.
+
+
+### Data audit follow-up — 17 November 2026
+- Cross-workbook reconciliation of crawler (374 rows) + New Seed Data (771 rows): 1,145 rows, 1,109 likely Sadiqabad, 36 geographic-review rows, 1,028 unique Place IDs, 117 Place IDs repeated across the two files (234 participating rows).
+- Live `public.businesses` schema has no Google Place ID column. The 223 published businesses were re-counted read-only: 49 without area, 15 without primary phone, 7 without coordinates, 33 without address.
+- Generated owner review workbook: `Hello_Sadiqabad_Business_Data_Audit.xlsx` (summary, source quality, Sadiqabad candidates, repeated Place IDs, geo review, 204-area master, methodology).
+- No source candidates have been declared a confirmed new business or live duplicate. No production records were changed.
+- Next technical step: read-only matching by normalized name, phone, address and coordinate proximity, then prepare an ambiguous-match review queue. Do not add schema columns or import data without an explicit reviewed plan.
