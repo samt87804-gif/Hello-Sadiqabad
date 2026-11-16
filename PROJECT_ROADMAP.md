@@ -167,3 +167,15 @@ Batch 3 — completed (16 November 2026):
 3. Commit roadmap updates to `main` alongside the completed task.
 4. Work through user-requested improvements in batches of three; update this checklist after each verified batch and ask before starting the next batch.
 5. Keep docs/ROADMAP_EXECUTION_CHECKLIST.md synchronized with detailed acceptance criteria, source register, migrations, test results and deployment references.
+
+
+## Phase 2 progress — Local SEO & directory quality (17 November 2026)
+
+- [x] Read-only audit of live business/category/area completeness and the three supplied Excel workbooks; findings are recorded in `docs/LOCAL_SEO_DATA_QUALITY_AUDIT.md`.
+- [x] Sitemap now includes category detail pages only when they have at least one published business, and area detail pages only when they have at least three published businesses. The current live-data snapshot produces 10 category detail URLs and 14 area detail URLs; no business or area records were deleted or hidden from the directory.
+- [x] Add regression tests for sitemap taxonomy eligibility.
+- [x] Reject blank/placeholder Pakistani phone values when creating tel: or WhatsApp links; hide invalid call actions on business cards and business profiles, including the sticky mobile action and secondary phone line.
+- [x] Final CI passed (run 43954510510) and Cloudflare Pages production deployment succeeded (deployment 642660b9-02e8-4b77-b1a3-2fc2301896c6, commit b31b27e0dca53f3d330e5e848ab7fcbfafcf7855).
+- [ ] Complete full route-by-route live browser audit, including invalid-phone business profile visual check; one browser-render request was rate-limited and not retried prematurely.
+- [ ] Review candidate Google Places records against current business records by place ID/address/coordinates before any import. No production import, merge, rename, or deletion has been performed.
+- [ ] Resolve data-quality gaps only from verified sources or owner/business submissions; no phone, address, image, or description has been invented.
