@@ -76,7 +76,8 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 ## Database migration
 
 - [x] Applied: `20261116044916_enhance_ads_and_add_government_directories`.
-- [x] Recorded in repository: `supabase/migrations/20261116044916_enhance_ads_and_add_government_directories.sql`.
+- [x] Applied follow-up source correction: `20261116051134_verify_official_government_helpline_sources`.
+- [x] Both migrations are recorded with matching filenames under `supabase/migrations/`.
 - [x] No existing business, owner, ad or emergency contact rows deleted.
 - [x] Anonymous RLS check: five active authority rows visible; inactive rows not visible.
 - [x] Owner write check: INSERT denied by RLS.
