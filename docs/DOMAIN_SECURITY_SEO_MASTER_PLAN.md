@@ -1,6 +1,6 @@
 # Hello Sadiqabad — Domain, Security & SEO Master Plan
 
-Last updated: 16 November 2026  
+Last updated: 17 November 2026  
 Canonical website: https://hellosadiqabad.com  
 Repository: https://github.com/samt87804-gif/Hello-Sadiqabad  
 Production: Cloudflare Pages project `hello-sadiqabad`, branch `main`  
@@ -20,6 +20,20 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - Work directly on `main` as previously requested; check CI and Pages deployment after commits.
 - Keep this plan and the handoff document current.
 
+
+
+### Mandatory execution rules (owner-confirmed 17 November 2026)
+1. **Direct main only:** commit approved implementation changes directly to GitHub `main`. Do not create feature branches or Pull Requests unless the owner explicitly changes this rule. (The earlier homepage collaboration PR #12 was already merged before this rule was reaffirmed.)
+2. **Inspect before every change:** inspect current files, routes/data flows, deployment settings, database schema, RLS policies and migrations before editing or configuring anything.
+3. **No collateral changes:** keep each change narrowly scoped; preserve existing UI, business workflows, accounts, records, storage objects, auth behavior and integrations. Avoid opportunistic refactors.
+4. **Data protection:** never delete, truncate, bulk-replace, re-seed over, or mutate existing business/user data. No destructive database operation without explicit owner approval. Prefer additive, reversible changes.
+5. **Security boundaries:** never disable or bypass RLS, auth, permissions, moderation or server-side validation to make a feature work. Never expose service-role/secret keys.
+6. **Evidence-based completion:** run relevant automated tests, typecheck and production build; inspect CI and Pages deployment; verify affected production endpoints/settings where network access permits. Record checks that could not be performed as pending, with the reason.
+7. **Documentation discipline:** update this master plan, handoff and application roadmap when relevant. Mark items complete only when evidence supports that status; distinguish implemented, CI-passed, deployed, endpoint-verified and owner-confirmed.
+8. **Owner-only actions:** do all technical work that connected tools and repository access permit. Ask the owner only for actions requiring their Google/Supabase dashboard, private account interaction, real-world factual confirmation or explicit approval. Give step-by-step instructions with exact menu paths, values and expected success result.
+9. **Concise Roman Urdu updates:** report changes, tests, deployment evidence, blockers and the owner's next action. Never claim browser testing unless an actual browser test was performed.
+10. **Phase discipline:** complete and verify the current phase before marking it accepted or moving to the next phase. Do not silently skip blockers; document plan/permission limitations.
+
 ## Verified baseline — 16 November 2026
 
 ### Completed and verified
@@ -35,11 +49,11 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [x] Supabase health advisor returned no findings at the time of check.
 
 ### Still open / not yet completed
-- [ ] Supabase Auth Site URL and allowed redirect URLs need dashboard configuration by the owner.
-- [ ] Supabase leaked-password protection remains disabled; owner must enable it in Auth settings.
-- [ ] Google Search Console Domain property and DNS TXT verification are not yet completed.
+- [x] Owner confirmed Supabase Auth Site URL and all three canonical allowed redirect URLs were saved in the dashboard (17 November 2026).
+- [ ] Supabase leaked-password protection remains disabled. Connected organization is confirmed on the Free plan; this feature is plan-gated and cannot be enabled on the current subscription. Do not change plans automatically; revisit only if the owner independently elects to upgrade.
+- [x] Owner created the Google Search Console Domain property for `hellosadiqabad.com` and confirmed successful DNS TXT verification (17 November 2026). The verification TXT record remains in Cloudflare DNS.
 - [ ] `www.hellosadiqabad.com` is not currently connected as a Pages custom domain; it returned Pages domain-not-found at audit time. Decide whether to support www and redirect it to apex.
-- [ ] No sitemap was present at the last code audit; `/sitemap.xml` returned 404. Build a correct sitemap in Phase 1.
+- [ ] No sitemap exists in the current `main` tree; `public/sitemap.xml` is absent. Build a dynamic, accurate sitemap in Phase 1.
 - [ ] No claim is made that Google has indexed the site or that rankings have improved.
 - [ ] A full live browser security test, external scanner assessment and full SEO crawl have not yet been performed.
 
@@ -49,32 +63,33 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [x] Cloudflare HTTPS/TLS/canonical Pages env settings above.
 - [x] Security headers deployed.
 - [x] Supabase public-profile view security fix deployed to database.
-- [ ] Verify actual production response headers over HTTPS and test HTTP-to-HTTPS redirect.
-- [ ] Decide and implement www strategy: either intentionally leave www unsupported, or add Pages custom domain + DNS and a permanent redirect to https://hellosadiqabad.com. Do not leave duplicate indexable hostnames.
+- [ ] Verify actual production response headers over HTTPS and test HTTP-to-HTTPS redirect. Cloudflare settings are correct, but external DNS/network access from the execution environment failed; response-level verification remains pending.
+- [x] Keep `www.hellosadiqabad.com` intentionally unsupported for now; only the canonical apex hostname is connected to Pages and present in DNS. Do not add a second indexable hostname unless the owner explicitly requests www support.
 - [ ] Review CSP against real production requests; tighten only after confirming required integrations, maps, media, fonts and Supabase connections.
-- [ ] Review Cloudflare DNS records for unnecessary/stale records; do not delete unknown records.
+- [x] Reviewed the current zone DNS listing: apex proxied CNAME to the Pages project and owner-verified Google TXT record are present; no other records appeared in the returned listing. No records were deleted.
 - [ ] Review Cloudflare WAF/bot protections and rate limits for public forms/chat endpoint; introduce rules carefully to avoid blocking normal visitors.
-- [ ] Review Supabase RLS/security/performance advisors and remediate verified findings without weakening access controls.
+- [x] Re-reviewed Supabase Security, Performance and Health Advisors and public RLS state. Security Advisor reports leaked-password protection disabled only; Health Advisor has no findings. Performance Advisor reports one unindexed FK, 26 unused-index notices and two multiple-permissive-policy notices; these are documented for targeted review. No indexes/policies were removed or weakened. All inspected public base tables have RLS enabled.
 - [ ] Check public signup policy and account provisioning. Keep signups restricted to the intended Admin-approved flow.
 - [ ] Review Supabase Auth redirect configuration after owner completes dashboard changes.
 
 ### Owner actions
 1. Open Supabase Auth URL configuration:
    https://supabase.com/dashboard/project/efwohfzqitevkuybnyif/auth/url-configuration
-2. Set Site URL to `https://hellosadiqabad.com`.
-3. Add allowed redirect URLs:
+2. Set Site URL to `https://hellosadiqabad.com` (owner confirmed saved on 17 November 2026).
+3. Add allowed redirect URLs (owner confirmed all three saved on 17 November 2026):
    - `https://hellosadiqabad.com/**`
    - `https://hellosadiqabad.com/reset-password`
    - `https://hellosadiqabad.com/change-password`
    - Add www URLs only if www is actually configured.
 4. Save.
-5. In Supabase Auth password/security settings, enable leaked-password protection.
+5. Leaked-password protection is currently unavailable on the connected Free plan. Owner action is only needed if the owner independently chooses to upgrade; never share credentials.
 6. Tell the assistant when done; do not share passwords or private keys.
 
 ### Phase 0 acceptance
 - HTTP requests redirect to HTTPS.
 - Production HTTPS response headers are present and do not break app functionality.
-- Supabase Auth password reset and allowed redirect paths use the canonical domain.
+- Supabase Auth password reset and allowed redirect paths use the canonical domain (owner-confirmed dashboard save).
+- Leaked-password protection is either enabled after a plan upgrade or explicitly recorded as a Free-plan limitation accepted by the owner.
 - Security Advisor findings are reviewed and remaining warnings are documented.
 - www is either intentionally unsupported or redirects permanently to apex.
 
@@ -96,9 +111,9 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [ ] Build, run tests/typecheck and deploy to Cloudflare Pages; verify deployment ID and production endpoints.
 
 ### Owner actions
-- [ ] Create Google Search Console Domain property for `hellosadiqabad.com`: https://search.google.com/search-console
-- [ ] Copy the exact DNS TXT verification record Google provides and send its name/value to the assistant (DNS token only; never send Google password).
-- [ ] Assistant adds TXT to Cloudflare DNS; owner clicks Verify in Search Console.
+- [x] Create Google Search Console Domain property for `hellosadiqabad.com`: https://search.google.com/search-console (owner-confirmed).
+- [x] Copy and share the Google DNS TXT verification record (owner supplied DNS token only; no password shared).
+- [x] Assistant verified the matching TXT record already existed in Cloudflare DNS; owner clicked Verify and confirmed success.
 - [ ] After sitemap is deployed, submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps.
 - [ ] Use URL Inspection for homepage and a few important public pages; request indexing once after final URLs are live.
 
@@ -180,4 +195,4 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 
 ## Current next action
 
-Start with Phase 0 remaining verification and owner dashboard steps. Once Phase 0 is accepted, begin Phase 1 Technical SEO. Do not jump ahead or mark owner-only tasks complete without confirmation.
+Continue Phase 0 technical verification first: response-level HTTPS/redirect checks, CSP and WAF/rate-limit review, and targeted remediation of confirmed low-risk findings. Owner has confirmed Auth URLs and Google Domain verification. Leaked-password protection is blocked by the Free plan. Once remaining Phase 0 technical checks are complete and the plan limitation is explicitly recorded, proceed to Phase 1 Technical SEO. Do not jump ahead or mark owner-only tasks complete without confirmation.

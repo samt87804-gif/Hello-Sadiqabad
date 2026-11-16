@@ -33,12 +33,23 @@ Use the connected GitHub, Cloudflare and Supabase tools where available. Read th
 - Security headers updated in `public/_headers` (CSP, one-year HSTS, nosniff, SAMEORIGIN, strict-origin referrer policy, Permissions-Policy).
 - Latest deployment for commit `a061a78018133d14da17a0ecaf8505537e4e024e` completed successfully.
 - Supabase view `public.owner_public_profile_directory` was changed to `security_invoker=true` and verified. The Security Advisor's SECURITY DEFINER view finding cleared.
-- Supabase leaked-password protection is still disabled and needs owner action.
-- Supabase Auth Site URL/redirect URLs have NOT yet been configured.
-- Google Search Console Domain property is NOT yet verified.
-- Sitemap did not exist at the last audit; `/sitemap.xml` returned 404.
+- Supabase leaked-password protection remains disabled; the connected Supabase organization is confirmed on the Free plan and the feature is plan-gated. Do not ask for credentials or upgrade without owner decision.
+- Owner confirmed Supabase Auth Site URL and all three canonical redirect URLs were saved on 17 November 2026.
+- Owner confirmed Google Search Console Domain property `hellosadiqabad.com` is verified. Matching TXT record is present in Cloudflare DNS.
+- `public/sitemap.xml` is absent from current `main`; build a dynamic, accurate sitemap in Phase 1.
 - `www.hellosadiqabad.com` was not configured as a Pages custom domain at the last audit.
 - Do not claim Google indexing or rankings without Search Console evidence.
+
+### Mandatory working rules (owner-confirmed 17 November 2026)
+- Commit directly to `main`; do not create Pull Requests or feature branches unless I change this instruction.
+- Inspect current code/configuration/schema/RLS/migrations before every change.
+- Make narrowly scoped changes and do not break unrelated features or existing data.
+- Never delete or overwrite existing business/user data; no destructive DB operations without explicit approval.
+- Never bypass RLS, auth, permissions or moderation.
+- Run relevant tests, typecheck, build and verify Cloudflare deployment/endpoints. Never claim a check that was not performed.
+- Keep the master plan, handoff and roadmap updated with evidence.
+- Do all technical work yourself; ask me only for dashboard/private-account actions, factual local verification or explicit approvals. Explain manual steps in detail.
+- Communicate concise Roman Urdu status updates and clearly state blockers.
 
 ### My role (website owner)
 I will do only the tasks that require my Google/Supabase dashboard or real-world owner participation:
@@ -48,10 +59,10 @@ I will do only the tasks that require my Google/Supabase dashboard or real-world
    - `https://hellosadiqabad.com/reset-password`
    - `https://hellosadiqabad.com/change-password`
    Save and confirm when done.
-3. Enable leaked-password protection in Supabase Auth password/security settings and confirm.
-4. In Google Search Console create a **Domain** property for `hellosadiqabad.com`.
-5. Copy the DNS TXT verification record Google gives me and send only that DNS record's name/value to ChatGPT. Never send my Google password.
-6. After ChatGPT adds the TXT record in Cloudflare, I will click Verify in Search Console.
+3. Leaked-password protection is unavailable on the connected Free plan. No action unless I decide to upgrade.
+4. Google Search Console Domain property `hellosadiqabad.com` is created and verified.
+5. DNS TXT verification is already present and verified. Do not add duplicates or remove the record.
+6. Search Console Verify already succeeded.
 7. After sitemap is deployed, I will submit `https://hellosadiqabad.com/sitemap.xml` in Search Console → Sitemaps.
 8. I will use URL Inspection on the homepage and important public URLs and request indexing once the final URLs are ready.
 9. I will share Search Console reports/screenshots/exports when asked, and provide accurate local business information, official sources, corrections and authorized photos.
@@ -71,4 +82,4 @@ You own the technical work:
 - Do not promise top rankings or a fixed time. Do not use fake searches, bots, click farms, fake reviews or purchased backlinks.
 
 ### Immediate next task
-Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`, verify current live settings (they may have changed), and continue the first unchecked Phase 0 technical verification task. Also tell me clearly to complete the Supabase Auth URL/password-protection tasks and Google Search Console Domain/TXT verification described above. Once Phase 0 is accepted, proceed to Phase 1 Technical SEO. Do not repeat completed work unnecessarily.
+Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`, verify current live settings and continue the first unchecked Phase 0 technical verification task. Do not ask the owner to repeat completed Auth URL or Google verification tasks. The Free-plan leaked-password limitation is already documented. Once Phase 0 is accepted, proceed to Phase 1 Technical SEO.

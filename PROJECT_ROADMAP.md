@@ -1,6 +1,16 @@
 # Hello Sadiqabad — Project Roadmap
 
-This is the live application project checklist. Update it on `main` whenever a task is verified complete. A phase is checked only after implementation and verification.\n\n**Domain, security and SEO work is tracked separately in [docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md). New-chat continuity and the website owner's Google/Supabase checklist are in [docs/NEW_CHAT_HANDOFF.md](docs/NEW_CHAT_HANDOFF.md).**
+This is the live application project checklist. Update it on `main` whenever a task is verified complete. A phase is checked only after implementation and verification.
+
+**Domain, security and SEO work is tracked separately in [docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md). New-chat continuity and the website owner's Google/Supabase checklist are in [docs/NEW_CHAT_HANDOFF.md](docs/NEW_CHAT_HANDOFF.md).**
+
+## Domain, security and SEO implementation
+
+- Current source of truth: [Domain, Security & SEO Master Plan](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md).
+- Working mode: direct commits to `main` only; no feature branches or Pull Requests unless the owner changes this instruction.
+- Owner-confirmed 17 November 2026: Supabase Auth Site URL and canonical redirect URLs saved; Google Search Console Domain property verified and DNS TXT retained in Cloudflare.
+- Supabase leaked-password protection remains disabled because the connected organization is on the Free plan; no automatic upgrade or credential request.
+- Phase 0 response-level HTTPS/CSP/WAF verification remains in progress; Phase 1 sitemap and technical SEO are not yet deployed.
 
 ## Completed
 
