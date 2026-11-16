@@ -207,7 +207,7 @@ export function Home() {
           <Container>
             <p className="text-center text-sm sm:text-base font-medium text-on-surface-variant">
               A Collaborative Project By <strong className="font-extrabold text-on-surface">AP KI AWAZ</strong>{' '}
-              <span aria-hidden="true" className="mx-1 text-primary font-bold">×</span>{' '}
+              <span aria-hidden="true" className="mx-1 text-primary font-bold">X</span>{' '}
               <strong className="font-extrabold text-on-surface">INSPIRE ACADEMY</strong>
             </p>
           </Container>
