@@ -5,7 +5,6 @@ import type { AuthorityProfileRow } from '../types/database';
 import type { BusinessPublicView } from '../types/directory';
 import { fetchAuthorityProfiles, fetchBusinessesByIds } from '../lib/api';
 import { useI18n } from '../lib/i18n';
-import { bilingualText } from '../lib/format';
 import { buildTelUrl } from '../lib/phone';
 import { updatePageSeo } from '../lib/seo';
 import { AppShell } from '../components/layout/AppShell';
