@@ -92,6 +92,10 @@ export function TaxonomyManager({
     } else if (mode === 'areas') {
       await upsertArea({ name_en: nameEn.trim(), name_ur: nameUr.trim(), slug: slugify(nameEn) }, actorId);
     } else {
+      if (emCat === 'government' && !sourceUrl.trim()) {
+        showToast('Government helplines require an official source URL.', 'error');
+        return;
+      }
       if (sourceUrl.trim() && !isValidHttpsUrl(sourceUrl.trim())) {
         showToast('Source URL must be a valid HTTPS link.', 'error');
         return;
