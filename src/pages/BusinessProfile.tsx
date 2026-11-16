@@ -38,7 +38,7 @@ import {
   extractSafeEmbedUrl,
   formatDateShort,
 } from '../lib/format';
-import { buildTelUrl, buildWhatsAppUrl, formatPkPhoneDisplay } from '../lib/phone';
+import { buildTelUrl, buildWhatsAppUrl, formatPkPhoneDisplay, isValidPkPhone } from '../lib/phone';
 import { buildLocalBusinessJsonLd, updatePageSeo } from '../lib/seo';
 import { effectivePlanCode } from '../lib/searchFilter';
 import {
@@ -226,7 +226,7 @@ export function BusinessProfile() {
   }
 
   const effPlan = effectivePlanCode(business.plan_code, business.plan_expires_at);
-  const canWhatsApp = Boolean(business.whatsapp) && (effPlan === 'basic' || effPlan === 'premium');
+  const canWhatsApp = isValidPkPhone(business.whatsapp) && (effPlan === 'basic' || effPlan === 'premium');
   const canGallery = effPlan === 'basic' || effPlan === 'premium';
   const canVideos = effPlan === 'basic' || effPlan === 'premium';
   const canQr = effPlan === 'basic' || effPlan === 'premium';
@@ -744,6 +744,7 @@ export function BusinessProfile() {
                 </div>
 
                 <div className="space-y-2">
+                  {isValidPkPhone(business.phone_primary) && (
                   <a
                     href={buildTelUrl(business.phone_primary)}
                     onClick={() => trackBusinessEvent(business.id, 'call')}
@@ -761,6 +762,7 @@ export function BusinessProfile() {
                       </span>
                     </div>
                   </a>
+                  )}
 
                   {business.phone_secondary && (
                     <a
@@ -955,6 +957,7 @@ export function BusinessProfile() {
       {/* Stitch 06 Sticky Mobile Action Bar (above frozen mobile footer) */}
       <div className="fixed bottom-9 inset-x-0 z-30 md:hidden bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant/40 px-3 py-2 shadow-lg">
         <div className="flex items-center gap-2 max-w-md mx-auto">
+          {isValidPkPhone(business.phone_primary) && (
           <a
             href={buildTelUrl(business.phone_primary)}
             onClick={() => trackBusinessEvent(business.id, 'call')}
@@ -962,6 +965,7 @@ export function BusinessProfile() {
           >
             <Phone className="w-4 h-4" /> {t('action.call', 'Call')}
           </a>
+          )}
           {canWhatsApp && (
             <a
               href={buildWhatsAppUrl(
@@ -1004,7 +1008,7 @@ export function BusinessProfile() {
         onClose={() => setLightboxIdx(null)}
         onIndexChange={setLightboxIdx}
         title={business.name_en}
-        phone={business.phone_primary}
+        phone={isValidPkPhone(business.phone_primary) ? business.phone_primary : null}
         whatsapp={canWhatsApp ? business.whatsapp : null}
         onShare={() => setShareOpen(true)}
       />
