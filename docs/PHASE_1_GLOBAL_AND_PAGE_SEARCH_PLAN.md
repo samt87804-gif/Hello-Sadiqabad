@@ -144,8 +144,9 @@ Phase 1 is complete only when all applicable checks below pass:
 - [ ] Inspect individual Admin manager components and their list data/filters
 - [ ] Inspect remaining public list pages (offers, announcements, areas, favorites, authorities)
 - [ ] Finalize global-search result schema and routes
-- [ ] Implement Global Search
-- [ ] Implement page-level search rollout
+- [x] Implement Global Search (homepage autocomplete plus cross-directory results on `/search`)
+- [x] Implement page-level live search on Emergency and News listings
+- [ ] Implement remaining page-level search rollout
 
 
 ## Progress log
@@ -153,8 +154,9 @@ Phase 1 is complete only when all applicable checks below pass:
 - [x] 2026-11-16 — Phase 1 scope, page inventory targets, acceptance criteria, and working rules documented in the repository.
 - [x] 2026-11-16 — Confirmed repository default branch is `main` and package scripts include `typecheck`, `test`, `build`, and `check`.
 - [ ] Repository code/route/data audit completed.
-- [ ] Global search implemented and tested.
-- [ ] Page-level search rollout implemented and tested.
+- [x] Global search implementation pushed; Cloudflare production build/deploy succeeded. Typecheck and interactive browser checks remain pending.
+- [x] Emergency and News page-level live search implementation pushed; Cloudflare production build/deploy succeeded. Typecheck and interactive browser checks remain pending.
+- [ ] Remaining page-level search rollout implemented and tested.
 - [ ] Full Phase 1 acceptance criteria passed.
 - [ ] Production deployment verified.
 
