@@ -1,12 +1,16 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { saveAdminRecoverySnapshot } from './lib/adminRecovery';
 
 // Recover once when a tab still references a chunk from an older deployment.
 // The short-lived guard prevents a broken deployment from causing reload loops.
 const CHUNK_RELOAD_KEY = 'hs:chunk-reload-at';
 window.addEventListener('vite:preloadError', (event) => {
   event.preventDefault();
+  // A deployment may replace lazy-loaded chunks while an admin is entering data.
+  // Snapshot the current form and scroll before the one-time recovery reload.
+  saveAdminRecoverySnapshot();
   try {
     const previousAttempt = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY) || 0);
     if (Date.now() - previousAttempt > 30_000) {
