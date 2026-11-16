@@ -6,6 +6,7 @@ import { AuthProvider } from './lib/auth';
 import { RequireAuth, RequireRole } from './lib/permissions';
 import { ToastProvider } from './components/ui/Toast';
 import { ErrorBoundary, Skeleton } from './components/ui/Feedback';
+import { restoreAdminRecoverySnapshot, saveAdminRecoverySnapshot } from './lib/adminRecovery';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const Search = lazy(() => import('./pages/Search').then((m) => ({ default: m.Search })));
@@ -100,95 +101,87 @@ function AdminScrollPersistence() {
   const restoredForPath = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!location.pathname.startsWith('/admin')) return;
+    const path = location.pathname;
+    if (!path.startsWith('/admin')) return;
+    restoredForPath.current = null;
 
-    const key = `hs_admin_scroll_v2:${location.pathname}`;
-    const readPosition = () => {
-      try {
-        const sessionValue = sessionStorage.getItem(key);
-        const localValue = localStorage.getItem(key);
-        const value = sessionValue ?? localValue;
-        const parsed = Number(value ?? 0);
-        return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-      } catch {
-        return 0;
-      }
+    const save = () => saveAdminRecoverySnapshot(path);
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') save();
     };
-
-    const savePosition = () => {
-      const value = String(Math.max(0, window.scrollY || window.pageYOffset || 0));
-      try {
-        sessionStorage.setItem(key, value);
-        localStorage.setItem(key, value);
-      } catch {
-        // Scroll restoration still works with browser-native history when storage is blocked.
-      }
-    };
-
     let saveFrame = 0;
     const onScroll = () => {
       if (saveFrame) cancelAnimationFrame(saveFrame);
       saveFrame = requestAnimationFrame(() => {
         saveFrame = 0;
-        savePosition();
+        save();
       });
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('pagehide', savePosition);
-    window.addEventListener('beforeunload', savePosition);
-    document.addEventListener('visibilitychange', savePosition);
+    window.addEventListener('pagehide', save);
+    window.addEventListener('beforeunload', save);
+    document.addEventListener('visibilitychange', onVisibility);
+    document.addEventListener('input', save, true);
+    document.addEventListener('change', save, true);
 
-    const savedPosition = readPosition();
-    let restoreFrame = 0;
-    let restoreAttempts = 0;
+    let restoreTimer = 0;
+    let attemptsStartedAt = 0;
     const attemptRestore = () => {
-      if (restoredForPath.current === location.pathname || savedPosition <= 0) return;
-      const ready = document.querySelector('[data-admin-scroll-ready="true"]');
-      if (!ready) return;
+      if (restoredForPath.current === path) return;
+      const root = document.querySelector('[data-admin-scroll-ready="true"]');
+      if (!root) return;
+
+      const targetY = restoreAdminRecoverySnapshot(path);
+      if (targetY === null) {
+        restoredForPath.current = path;
+        return;
+      }
 
       const maxScroll = Math.max(
         0,
         document.documentElement.scrollHeight - window.innerHeight,
         document.body.scrollHeight - window.innerHeight
       );
-      // Wait until the admin content has enough height to reach the saved offset.
-      if (maxScroll + 4 < savedPosition && restoreAttempts < 180) {
-        restoreAttempts += 1;
-        restoreFrame = requestAnimationFrame(attemptRestore);
+      const enoughHeight = maxScroll + 8 >= targetY;
+      const timedOut = Date.now() - attemptsStartedAt > 15000;
+      if (!enoughHeight && !timedOut) {
+        restoreTimer = window.setTimeout(attemptRestore, 150);
         return;
       }
 
-      window.scrollTo({ top: Math.min(savedPosition, maxScroll), left: 0, behavior: 'auto' });
-      restoredForPath.current = location.pathname;
+      window.scrollTo({ top: Math.min(targetY, maxScroll), left: 0, behavior: 'auto' });
+      restoredForPath.current = path;
     };
 
     const startRestore = () => {
-      if (restoredForPath.current === location.pathname) return;
-      restoreAttempts = 0;
-      if (restoreFrame) cancelAnimationFrame(restoreFrame);
-      restoreFrame = requestAnimationFrame(() => {
-        restoreFrame = requestAnimationFrame(attemptRestore);
-      });
+      if (restoredForPath.current === path || restoreTimer) return;
+      attemptsStartedAt = Date.now();
+      restoreTimer = window.setTimeout(() => {
+        restoreTimer = 0;
+        attemptRestore();
+      }, 80);
     };
 
     const observer = new MutationObserver(startRestore);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    observer.observe(document.body, { childList: true, subtree: true });
     const resizeObserver = new ResizeObserver(startRestore);
     resizeObserver.observe(document.documentElement);
     window.addEventListener('pageshow', startRestore);
     startRestore();
 
     return () => {
-      savePosition();
+      save();
       if (saveFrame) cancelAnimationFrame(saveFrame);
-      if (restoreFrame) cancelAnimationFrame(restoreFrame);
+      if (restoreTimer) window.clearTimeout(restoreTimer);
       observer.disconnect();
       resizeObserver.disconnect();
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('pagehide', savePosition);
-      window.removeEventListener('beforeunload', savePosition);
-      document.removeEventListener('visibilitychange', savePosition);
+      window.removeEventListener('pagehide', save);
+      window.removeEventListener('beforeunload', save);
+      document.removeEventListener('visibilitychange', onVisibility);
+      document.removeEventListener('input', save, true);
+      document.removeEventListener('change', save, true);
       window.removeEventListener('pageshow', startRestore);
     };
   }, [location.pathname]);
