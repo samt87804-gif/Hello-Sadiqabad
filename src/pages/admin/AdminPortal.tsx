@@ -211,6 +211,16 @@ export function AdminPortal() {
     setVisitedTabs((current) => current.includes(tab) ? current : [...current, tab]);
   }, [tab]);
 
+  // Refresh the moderation queue when an Admin returns from another browser tab.
+  // Existing tab components stay mounted, so an open editor and its unsaved state survive this refresh.
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void reload();
+    };
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => document.removeEventListener('visibilitychange', refreshWhenVisible);
+  }, [reload]);
+
   const actorId = user?.id ?? 'user-admin-1';
 
   const handleGlobalJump = (e: React.FormEvent) => {
