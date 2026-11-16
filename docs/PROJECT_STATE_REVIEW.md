@@ -59,6 +59,16 @@ The user asked for nine improvements, implemented in batches with approval befor
 
 The supplied PWA logo is referenced directly from the public Supabase Storage URL in the manifest; the same source is used for the header and browser/app icon links.
 
+## Batch 4 — implementation in progress (16 November 2026)
+
+- Sponsor Ads: campaign dashboard metrics and filters, schedule-aware status labels, creative preview, new civic placements, safe target URL validation, and campaign writes that do not overwrite impression/click counters.
+- Government Helplines: dedicated public route using the existing emergency_contacts store, source URLs and verification timestamps, six official-source helpline records, and Admin source management.
+- Local Authorities: additive RLS-protected table, five official-source Sadiqabad records, public search/filter route, Super Admin manager, audit triggers, and JSON backup export support.
+- Supabase migration: `20261116044916_enhance_ads_and_add_government_directories`.
+- Security checks so far: anonymous SELECT sees active authority rows only; owner INSERT is denied; Super Admin INSERT was tested in a rolled-back transaction; no RLS test records persisted.
+- Source data caveat: Tehsil Council Sadiqabad is listed without a direct public phone because the cited official directory does not publish one. Municipal Committee Sadiqabad details use its official site; police numbers use the Punjab Police directory.
+- Final build and deployment verification are tracked in PROJECT_ROADMAP.md and docs/ROADMAP_EXECUTION_CHECKLIST.md.
+
 ## Operating checklist
 
 - Inspect the current code, database schema, RLS and relevant migrations before every change.
