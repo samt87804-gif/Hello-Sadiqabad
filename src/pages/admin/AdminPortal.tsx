@@ -167,7 +167,7 @@ export function AdminPortal() {
         try {
           const saved = Number(sessionStorage.getItem(`hs_admin_scroll:${location.pathname}`) ?? 0);
           if (Number.isFinite(saved) && saved > 0) {
-            window.scrollTo({ top: saved, left: 0, behavior: 'instant' });
+            window.scrollTo({ top: saved, left: 0, behavior: 'auto' });
           }
         } catch {
           // Keep the browser's default position if storage is unavailable.
