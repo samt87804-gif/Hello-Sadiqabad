@@ -67,7 +67,7 @@ export function AppShell({
 
   const showFooter = !hideFooter;
   const showBottomNav = !hideBottomNav;
-  const showChatbot = !/^\\/(admin|owner)(\\/|$)/.test(location.pathname) &&
+  const showChatbot = !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/owner') &&
     !['/login', '/owner-register', '/forgot-password', '/reset-password', '/change-password'].includes(location.pathname);
 
   return (
