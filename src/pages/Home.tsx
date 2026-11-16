@@ -203,6 +203,15 @@ export function Home() {
   return (
     <AppShell>
       <div className="space-y-8 py-5 sm:py-7">
+        <section aria-label="Project collaboration">
+          <Container>
+            <p className="text-center text-sm sm:text-base font-medium text-on-surface-variant">
+              A Collaborative Project By <strong className="font-extrabold text-on-surface">AP KI AWAZ</strong>{' '}
+              <span aria-hidden="true" className="mx-1 text-primary font-bold">X</span>{' '}
+              <strong className="font-extrabold text-on-surface">INSPIRE ACADEMY</strong>
+            </p>
+          </Container>
+        </section>
         {loadError && (
           <Container>
             <div role="alert" className="p-3 rounded-xl border border-error/30 bg-error/5 text-sm text-on-surface flex flex-wrap items-center justify-between gap-3">
@@ -734,6 +743,18 @@ export function Home() {
                 <span>{t('action.registerBusiness', 'Register Business Now')}</span>
               </Link>
             </Card>
+          </Container>
+        </section>
+
+        <section aria-label="A Collaborative Project By AP KI AWAZ and INSPIRE ACADEMY">
+          <Container>
+            <img
+              src="https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/Hello%20Sadiqabad%20Collaboration%20Banner.png"
+              alt="A Collaborative Project By AP KI AWAZ and INSPIRE ACADEMY"
+              className="block h-auto w-full rounded-2xl"
+              loading="lazy"
+              decoding="async"
+            />
           </Container>
         </section>
       </div>
