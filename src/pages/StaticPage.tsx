@@ -6,7 +6,7 @@ import { useI18n } from '../lib/i18n';
 import { bilingualText } from '../lib/format';
 import { buildTelUrl, buildWhatsAppUrl, formatPkPhoneDisplay } from '../lib/phone';
 import { DEFAULT_SITE_SETTINGS, type SiteSettingsMap } from '../lib/siteSettings';
-import { updatePageSeo } from '../lib/seo';
+import { toMetaDescription, updatePageSeo } from '../lib/seo';
 import type { PageRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { MarkdownSafe } from '../components/ui/DataDisplay';
@@ -40,7 +40,7 @@ export function StaticPage({ slug }: { slug: string }) {
         if (res) {
           updatePageSeo({
             title: `${res.title_en} — Hello Sadiqabad`,
-            description: `${res.title_en} for Hello Sadiqabad city directory.`,
+            description: toMetaDescription(res.body_md_en, `${res.title_en} information for the Hello Sadiqabad city directory.`),
             canonicalPath: `/${res.slug}`,
           });
         }

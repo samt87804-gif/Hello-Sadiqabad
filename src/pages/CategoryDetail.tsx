@@ -63,6 +63,15 @@ export function CategoryDetail() {
           title: `${found.name_en} in Sadiqabad — Hello Sadiqabad`,
           description: `Verified ${found.name_en} (${found.name_ur}) businesses in Sadiqabad, Punjab.`,
           canonicalPath: `/category/${found.slug}`,
+          jsonLd: {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://hellosadiqabad.com/' },
+              { '@type': 'ListItem', position: 2, name: 'Categories', item: 'https://hellosadiqabad.com/categories' },
+              { '@type': 'ListItem', position: 3, name: found.name_en, item: 'https://hellosadiqabad.com/category/' + found.slug },
+            ],
+          },
         });
       }
     }).catch(() => {

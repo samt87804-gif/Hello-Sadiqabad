@@ -48,6 +48,15 @@ export function AreaDetail() {
           title: `Businesses in ${found.name_en}, Sadiqabad — Hello Sadiqabad`,
           description: `Discover shops, doctors, and services located in ${found.name_en}, Sadiqabad.`,
           canonicalPath: `/area/${found.slug}`,
+          jsonLd: {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://hellosadiqabad.com/' },
+              { '@type': 'ListItem', position: 2, name: 'City Map', item: 'https://hellosadiqabad.com/map' },
+              { '@type': 'ListItem', position: 3, name: found.name_en, item: 'https://hellosadiqabad.com/area/' + found.slug },
+            ],
+          },
         });
       }
     }).catch(() => {

@@ -56,6 +56,7 @@ export function News() {
         description: result.article?.excerpt_en ?? 'Latest verified local news and community updates from Sadiqabad.',
         canonicalPath: slug ? '/news/' + slug : '/news',
         ogType: result.article ? 'article' : 'website',
+        image: result.article?.cover_image_url || null,
         jsonLd: result.article
           ? {
               '@context': 'https://schema.org',

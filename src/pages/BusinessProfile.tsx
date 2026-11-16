@@ -154,6 +154,7 @@ export function BusinessProfile() {
             found.description_en ||
             `Phone number, hours, and location for ${found.name_en} in Sadiqabad.`,
           canonicalPath: `/business/${found.slug}`,
+          image: found.cover_url || found.logo_url || null,
           jsonLd: buildLocalBusinessJsonLd(found),
         });
         if (viewedSlugRef.current !== found.slug) {
