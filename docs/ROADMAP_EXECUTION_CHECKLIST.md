@@ -254,4 +254,4 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Empty/error Announcements page returns to `noindex,follow`; non-empty result set changes it to `index,follow,max-image-preview:large`.
 - [x] GitHub Actions CI run 43956280854 passed.
 - [x] Cloudflare Pages deployment 017a7ca2-fe39-463d-9e46-631bba2e1fbe succeeded.
-- [ ] Post-deployment browser-render check for robots tags pending after a Cloudflare 429 response.
+- [x] Post-deployment browser-render checks confirmed both routes return HTTP 200, correct canonical URL, one H1, and `noindex,follow` while empty.
