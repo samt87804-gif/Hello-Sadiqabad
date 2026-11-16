@@ -107,25 +107,43 @@ function AdminScrollPersistence() {
     restoredForPath.current = null;
     recoveredScrollY.current = null;
 
+    // localStorage is synchronous. Never serialize every admin field on every
+    // keystroke/scroll frame: debounce routine drafts, but flush immediately when
+    // the browser hides or unloads the document.
     const save = () => saveAdminRecoverySnapshot(path);
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') save();
-    };
-    let saveFrame = 0;
-    const onScroll = () => {
-      if (saveFrame) cancelAnimationFrame(saveFrame);
-      saveFrame = requestAnimationFrame(() => {
-        saveFrame = 0;
+    let draftSaveTimer = 0;
+    let scrollSaveTimer = 0;
+    const scheduleDraftSave = () => {
+      if (draftSaveTimer) window.clearTimeout(draftSaveTimer);
+      draftSaveTimer = window.setTimeout(() => {
+        draftSaveTimer = 0;
         save();
-      });
+      }, 700);
+    };
+    const scheduleScrollSave = () => {
+      if (scrollSaveTimer) return;
+      scrollSaveTimer = window.setTimeout(() => {
+        scrollSaveTimer = 0;
+        save();
+      }, 1200);
+    };
+    const flushSave = () => {
+      if (draftSaveTimer) window.clearTimeout(draftSaveTimer);
+      if (scrollSaveTimer) window.clearTimeout(scrollSaveTimer);
+      draftSaveTimer = 0;
+      scrollSaveTimer = 0;
+      save();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flushSave();
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('pagehide', save);
-    window.addEventListener('beforeunload', save);
+    window.addEventListener('scroll', scheduleScrollSave, { passive: true });
+    window.addEventListener('pagehide', flushSave);
+    window.addEventListener('beforeunload', flushSave);
     document.addEventListener('visibilitychange', onVisibility);
-    document.addEventListener('input', save, true);
-    document.addEventListener('change', save, true);
+    document.addEventListener('input', scheduleDraftSave, true);
+    document.addEventListener('change', scheduleDraftSave, true);
 
     let restoreTimer = 0;
     let attemptsStartedAt = 0;
@@ -176,17 +194,18 @@ function AdminScrollPersistence() {
     startRestore();
 
     return () => {
-      save();
-      if (saveFrame) cancelAnimationFrame(saveFrame);
+      flushSave();
+      if (draftSaveTimer) window.clearTimeout(draftSaveTimer);
+      if (scrollSaveTimer) window.clearTimeout(scrollSaveTimer);
       if (restoreTimer) window.clearTimeout(restoreTimer);
       observer.disconnect();
       resizeObserver.disconnect();
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('pagehide', save);
-      window.removeEventListener('beforeunload', save);
+      window.removeEventListener('scroll', scheduleScrollSave);
+      window.removeEventListener('pagehide', flushSave);
+      window.removeEventListener('beforeunload', flushSave);
       document.removeEventListener('visibilitychange', onVisibility);
-      document.removeEventListener('input', save, true);
-      document.removeEventListener('change', save, true);
+      document.removeEventListener('input', scheduleDraftSave, true);
+      document.removeEventListener('change', scheduleDraftSave, true);
       window.removeEventListener('pageshow', startRestore);
     };
   }, [location.pathname]);
