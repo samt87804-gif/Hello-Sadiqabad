@@ -245,3 +245,13 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Browser-rendered `/categories`, `/emergency`, `/map`, `/news`, `/offers`, and `/announcements`: all returned HTTP 200, matching canonical URLs, populated titles/descriptions, an H1, and `index,follow` robots.
 - [ ] The offers and announcements datasets currently have zero active rows; they are omitted from the sitemap, but their empty routes still send `index,follow`. Add dynamic `noindex,follow` until active content exists.
 - [ ] Full public-route crawl and Google Rich Results Test remain pending.
+
+
+## Batch 9 — Empty offers and announcements indexability (17 November 2026)
+
+- [x] Shared SEO helper supports explicit robots directives and dynamic indexability updates.
+- [x] Empty/error Offers page returns to `noindex,follow`; active offer data changes it to `index,follow,max-image-preview:large`.
+- [x] Empty/error Announcements page returns to `noindex,follow`; non-empty result set changes it to `index,follow,max-image-preview:large`.
+- [x] GitHub Actions CI run 43956280854 passed.
+- [x] Cloudflare Pages deployment 017a7ca2-fe39-463d-9e46-631bba2e1fbe succeeded.
+- [ ] Post-deployment browser-render check for robots tags pending after a Cloudflare 429 response.
