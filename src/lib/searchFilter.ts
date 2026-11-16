@@ -23,6 +23,17 @@ export function isValidCoords(coords: unknown): coords is { lat: number; lng: nu
   );
 }
 
+export function normalizeDirectorySearchText(value: unknown): string {
+  return String(value ?? '')
+    .normalize('NFKC')
+    .toLocaleLowerCase('en')
+    .normalize('NFD')
+    .replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[^\\p{L}\\p{N}]+/gu, ' ')
+    .trim()
+    .replace(/\\s+/g, ' ');
+}
+
 const PLAN_PRIORITY: Record<string, number> = {
   premium: 3,
   basic: 2,
@@ -50,7 +61,7 @@ export function filterAndRankBusinesses(
   userCoords?: { lat: number; lng: number } | null,
   now: Date = new Date()
 ): BusinessPublicView[] {
-  const query = (filters.q ?? '').trim().toLowerCase();
+  const query = normalizeDirectorySearchText(filters.q);
   const catMap = new Map(categories.map((c) => [c.id, c]));
   const areaMap = new Map(areas.map((a) => [a.id, a]));
   const planMap = new Map(plans.map((p) => [p.code, p]));
@@ -141,11 +152,11 @@ export function filterAndRankBusinesses(
           ...(b.tags ?? []),
           ...(b.services_en ?? []),
         ]
-          .join(' ')
-          .toLowerCase();
+          .join(' ');
+        const normalizedHaystack = normalizeDirectorySearchText(haystack);
 
         const tokens = query.split(/\s+/).filter(Boolean);
-        const matchesAllTokens = tokens.every((tok) => haystack.includes(tok));
+        const matchesAllTokens = tokens.every((tok) => normalizedHaystack.includes(tok));
         if (!matchesAllTokens) return false;
       }
 
@@ -154,11 +165,11 @@ export function filterAndRankBusinesses(
     .map((b) => {
       let textScore = 0;
       if (query) {
-        const nameLower = b.name_en.toLowerCase();
+        const nameLower = normalizeDirectorySearchText(b.name_en);
         if (nameLower === query) textScore += 100;
         else if (nameLower.startsWith(query)) textScore += 60;
         else if (nameLower.includes(query)) textScore += 35;
-        else if ((b.category?.synonyms ?? []).some((s) => s.toLowerCase().includes(query))) {
+        else if ((b.category?.synonyms ?? []).some((s) => normalizeDirectorySearchText(s).includes(query))) {
           textScore += 25;
         } else {
           textScore += 10;
