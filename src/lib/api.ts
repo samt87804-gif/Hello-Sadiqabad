@@ -2405,12 +2405,21 @@ export async function upsertArea(
 ): Promise<AreaRow> {
   const client = getSupabaseClient();
   if (client) {
-    const { data, error } = await client
-      .from('areas')
-      .upsert({ ...area, city_id: area.city_id ?? (await getDefaultCityId()), updated_at: nowIso() })
-      .select()
-      .single();
+    const cityId = area.city_id ?? (await getDefaultCityId());
+    const payload = {
+      ...area,
+      city_id: cityId,
+      slug: area.slug.trim() || slugify(area.name_en),
+      name_en: area.name_en.trim(),
+      name_ur: area.name_ur.trim(),
+      updated_at: nowIso(),
+    };
+    const query = area.id
+      ? client.from('areas').update(payload).eq('id', area.id)
+      : client.from('areas').insert({ ...payload, is_active: area.is_active ?? true });
+    const { data, error } = await query.select().single();
     if (error) throw error;
+    if (!data) throw new Error('Supabase ne area save karne ke baad koi record return nahi kiya.');
     return data as AreaRow;
   }
   const db = loadDemoDb();
