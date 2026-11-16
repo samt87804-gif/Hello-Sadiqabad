@@ -84,11 +84,19 @@ Batch 3 — completed (16 November 2026):
 - The in-memory request throttle is best-effort per Cloudflare isolate, not a globally coordinated rate limit. A Cloudflare WAF rate-limiting rule can be added if production traffic requires stronger enforcement.
 - Workers AI is usage-based; actual inference charges depend on usage and the Cloudflare account plan.
 
-## Remaining after Batch 5
+## Batch 6 — Sadiqabad Police Directory Expansion (completed 16 November 2026)
+
+- [x] Add Ahmed Pur Lamma Police Station — 068-5020028.
+- [x] Add Kot Sabzal Police Station — 068-5020030.
+- [x] Add Bhong Police Station — 068-5020029.
+- [x] Add Machka Police Station — 068-5020031.
+- [x] Use the official Punjab Police Sadiqabad Circle directory as the source for all four records.
+- [x] Preserve the existing five authority records; additions are separate, active records with source URL and verification timestamp.
+- [x] Verify all four new records are visible under the Supabase anonymous role through existing active-only RLS.
+
+## Remaining after Batch 6
 - [ ] Expand Government Helplines only when additional numbers are confirmed by official sources.
-- [ ] Expand Local Authorities only when direct public contact details are officially published.
-- [ ] Expand Government Helplines only when additional numbers are confirmed by official sources.
-- [ ] Expand Local Authorities only when direct public contact details are officially published.
+- [ ] Expand Local Authorities further only when additional direct public contact details are officially published.
 
 ## Existing functionality to preserve
 
