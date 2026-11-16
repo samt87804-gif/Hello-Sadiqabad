@@ -192,20 +192,27 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 ### Database migrations and security
 - [x] Applied `20261116110000_create_authority_profiles`.
 - [x] Applied `20261116112000_index_authority_profile_audit_users`.
+- [x] Applied `20261116113000_restrict_authority_profile_anon_write`.
 - [x] Enable RLS; anonymous visitors can read active profiles only.
 - [x] Authenticated users can read active profiles; Super Admin can read inactive profiles and manage all profile records.
 - [x] Insert/update/delete policies require `private.is_super_admin()`.
 - [x] Public SELECT and authenticated write grants added explicitly for the new public table (Data API exposure no longer assumed from schema alone).
+- [x] Explicitly revoke anon INSERT/UPDATE/DELETE; `has_table_privilege` verified anon SELECT=true and anon INSERT/UPDATE/DELETE=false.
 - [x] Add updated-at and audit-log triggers.
 - [x] Storage write policies restrict insert/update/delete to Super Admins and the `Hello Sadiqabad/authority-profiles/` folder.
 - [x] Database schema and policies verified directly; anonymous-role read query returned no rows because no profile records have been created yet.
 - [x] Supabase security advisor reported no new findings for this migration; existing owner profile security-definer view and leaked-password protection warnings remain pre-existing.
 - [x] Add indexes for created_by and updated_by; remove unused GIN index on business_ids.
-- [ ] Run full GitHub CI and production deployment verification.
-- [ ] Test Admin portrait upload and create a real profile after the Admin enters verified person details; no public person has been seeded or invented.
+- [x] GitHub Actions CI run 43829930729 succeeded (edge-functions and build jobs).
+- [x] Cloudflare Pages production deployment `06abc713-48bb-4e72-a78c-dc23427fd57e` succeeded for commit `1878f203e4a3b447b86e4c8af5dbfa220968dab6`; canonical site https://hello-sadiqabad-2bs.pages.dev.
+- [ ] Super Admin to test the first portrait upload and create a real profile after entering verified person details; no public person has been seeded or invented.
 
 ### Batch 7 status
-- Implementation and database migrations are on `main`.
-- Public profiles remain empty until the Admin enters a real office-holder's details and photo.
-- The existing Local Authorities directory remains intact.
+- Implementation and database migrations are on `main` and deployed to production.
+- GitHub CI, TypeScript typecheck, automated tests and production build passed.
+- Supabase RLS test confirmed anon sees active test rows only; inactive test rows were hidden and transaction was rolled back.
+- Supabase privilege test confirmed anon can SELECT but cannot INSERT, UPDATE or DELETE; authenticated Super Admin write grants remain in place behind RLS.
+- Security Advisor reported no new findings from this batch; the existing `owner_public_profile_directory` security-definer view and leaked-password protection warnings are pre-existing.
+- Public profiles remain empty until the Admin enters a real office-holder's details and photo; no person was fabricated.
+- The existing Local Authorities office/contact directory and records remain intact.
 - Chatbot Batch 5 live acceptance is still pending user testing.
