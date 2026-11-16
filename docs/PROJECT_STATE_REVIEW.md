@@ -40,7 +40,7 @@ Last reviewed: 16 November 2026
 
 ## User-requested improvements
 
-The user asked for eight improvements, to be implemented in batches of three. Their detailed status is maintained in PROJECT_ROADMAP.md. Do not begin a later batch until the current batch is completed, verified and the user approves the next one.
+The user asked for nine improvements, implemented in batches with approval before each new batch. Their detailed status is maintained in PROJECT_ROADMAP.md. Do not begin a later batch until the current batch is completed, verified and the user approves the next one.
 
 ### Batch 1
 1. News button in mobile bottom navigation.
@@ -52,9 +52,12 @@ The user asked for eight improvements, to be implemented in batches of three. Th
 5. Owner products, services and offers are submitted to moderation; public data changes only after Admin approval.
 6. Owners select the published businesses shown on their public owner profile.
 
-### Batch 3
-7. Move category listing count to the far right and make it larger/bolder without otherwise changing the category card design.
-8. Apply the supplied logo to the website header and PWA install icon.
+### Batch 3 — completed
+7. Category listing count is larger/bolder and right-aligned on homepage and All Categories cards.
+8. The supplied logo is used in the header, favicon, Apple touch icon and PWA manifest icon references.
+9. Helpline card names and phone numbers are centered and enlarged within the right 60% of the 16:9 cards.
+
+The supplied PWA logo is referenced directly from the public Supabase Storage URL in the manifest; the same source is used for the header and browser/app icon links.
 
 ## Operating checklist
 
