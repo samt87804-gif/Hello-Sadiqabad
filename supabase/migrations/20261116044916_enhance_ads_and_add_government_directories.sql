@@ -130,7 +130,7 @@ from public.cities c
 cross join (values
   ('District Control Room — Toll Free','ضلعی کنٹرول روم — ٹول فری','0800-33444','building-2',1,
    '24/7 District Government Rahim Yar Khan public helpline.','ضلعی حکومت رحیم یار خان کی 24/7 عوامی ہیلپ لائن۔',
-   'https://rykhan.punjab.gov.pk/help_line'),
+   'https://rykhan.punjab.gov.pk/contact_us'),
   ('Punjab Highway Patrol Helpline','پنجاب ہائی وے پٹرول ہیلپ لائن','1124','shield-check',7,
    'Punjab Highway Patrol contact listed by the District Government Rahim Yar Khan.','ضلعی حکومت رحیم یار خان کی سرکاری رابطہ فہرست میں درج پنجاب ہائی وے پٹرول نمبر۔',
    'https://rykhan.punjab.gov.pk/contact_us'),
@@ -139,7 +139,7 @@ cross join (values
    'https://suthra.punjab.gov.pk/complaint.php'),
   ('IGP Police Complaint Center','آئی جی پی پولیس شکایت مرکز','1787','shield-check',4,
    'Punjab Police complaint helpline for reporting police-related complaints.','پولیس سے متعلق شکایات درج کرانے کے لیے پنجاب پولیس ہیلپ لائن۔',
-   'https://www.punjabpolice.gov.pk/IGP-Complaint-Cell'),
+   'https://www.punjabpolice.gov.pk/contact_details'),
   ('Punjab Women Toll-Free Helpline','پنجاب خواتین ٹول فری ہیلپ لائن','1043','heart-handshake',5,
    'Punjab Commission on the Status of Women helpline for women in distress and rights-related complaints.','خواتین کی مدد اور حقوق سے متعلق شکایات کے لیے پنجاب کمیشن کی ہیلپ لائن۔',
    'https://pcsw.punjab.gov.pk/system/files/PGPR-2023%20%26%202024-Web.pdf'),
