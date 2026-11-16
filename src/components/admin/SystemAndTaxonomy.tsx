@@ -34,7 +34,7 @@ import type {
 } from '../../types/database';
 import type { AdminAnalyticsData, BusinessPublicView } from '../../types/directory';
 import { formatDateShort, slugify } from '../../lib/format';
-import { normalizePkPhone } from '../../lib/phone';
+import { isValidHttpsUrl, normalizePkPhone } from '../../lib/phone';
 import { STAFF_TYPE_LABELS } from '../../lib/permissions';
 import {
   adminCreateUser,
@@ -75,6 +75,7 @@ export function TaxonomyManager({
   const [nameEn, setNameEn] = useState('');
   const [nameUr, setNameUr] = useState('');
   const [phone, setPhone] = useState('');
+  const [sourceUrl, setSourceUrl] = useState('');
   const [emCat, setEmCat] = useState<EmergencyCategory>('general');
 
   const [editCat, setEditCat] = useState<CategoryRow | null>(null);
@@ -90,8 +91,12 @@ export function TaxonomyManager({
     } else if (mode === 'areas') {
       await upsertArea({ name_en: nameEn.trim(), name_ur: nameUr.trim(), slug: slugify(nameEn) }, actorId);
     } else {
+      if (sourceUrl.trim() && !isValidHttpsUrl(sourceUrl.trim())) {
+        showToast('Source URL must be a valid HTTPS link.', 'error');
+        return;
+      }
       await upsertEmergencyContact(
-        { name_en: nameEn.trim(), name_ur: nameUr.trim(), phone: phone.trim(), category: emCat },
+        { name_en: nameEn.trim(), name_ur: nameUr.trim(), phone: phone.trim(), category: emCat, source_url: sourceUrl.trim() || null, verified_at: sourceUrl.trim() ? new Date().toISOString() : null },
         actorId
       );
     }
@@ -99,6 +104,7 @@ export function TaxonomyManager({
     setNameEn('');
     setNameUr('');
     setPhone('');
+    setSourceUrl('');
     await onReload();
   };
 
@@ -140,6 +146,10 @@ export function TaxonomyManager({
   const saveEditEmergency = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editEm) return;
+    if (editEm.source_url && !isValidHttpsUrl(editEm.source_url)) {
+      showToast('Source URL must be a valid HTTPS link.', 'error');
+      return;
+    }
     await upsertEmergencyContact(editEm, actorId);
     showToast('Emergency contact updated!', 'success');
     setEditEm(null);
@@ -164,7 +174,9 @@ export function TaxonomyManager({
                 <option value="ambulance">Ambulance</option>
                 <option value="utility">Utility</option>
                 <option value="general">General</option>
+                <option value="government">Government Helpline</option>
               </Select>
+              <Input label="Official Source URL (HTTPS)" dir="ltr" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} />
             </>
           )}
           <Button type="submit" leftIcon={<Plus className="w-4 h-4" />}>Add</Button>
@@ -339,11 +351,13 @@ export function TaxonomyManager({
                 <option value="ambulance">Ambulance</option>
                 <option value="utility">Utility</option>
                 <option value="general">General</option>
+                <option value="government">Government Helpline</option>
               </Select>
               <Input label="Sort Order" type="number" dir="ltr" value={editEm.sort_order} onChange={(e) => setEditEm({ ...editEm, sort_order: Number(e.target.value) })} />
             </div>
             <Textarea label="Description (English)" rows={2} value={editEm.description_en ?? ''} onChange={(e) => setEditEm({ ...editEm, description_en: e.target.value || null })} />
             <Textarea label="Description (Urdu)" dir="rtl" className="font-urdu" rows={2} value={editEm.description_ur ?? ''} onChange={(e) => setEditEm({ ...editEm, description_ur: e.target.value || null })} />
+            <Input label="Official Source URL (HTTPS)" dir="ltr" value={editEm.source_url ?? ''} onChange={(e) => setEditEm({ ...editEm, source_url: e.target.value || null, verified_at: new Date().toISOString() })} />
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setEditEm(null)}>Cancel</Button>
               <Button type="submit">Save Helpline</Button>
