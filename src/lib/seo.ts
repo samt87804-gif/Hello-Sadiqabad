@@ -9,6 +9,7 @@ export function updatePageSeo(opts: {
   jsonLd?: Record<string, unknown> | null;
   ogType?: 'website' | 'article';
   image?: string | null;
+  robots?: string;
 }) {
   const fullTitle = opts.title.includes('Hello Sadiqabad')
     ? opts.title
@@ -35,6 +36,7 @@ export function updatePageSeo(opts: {
     opts.description ||
     'Bilingual local business directory and emergency phone book for Sadiqabad, District Rahim Yar Khan.';
   setMeta('meta[name="description"]', desc);
+  setMeta('meta[name="robots"]', opts.robots ?? 'index,follow,max-image-preview:large');
   setMeta('meta[property="og:title"]', fullTitle);
   setMeta('meta[property="og:description"]', desc);
   setMeta('meta[name="twitter:title"]', fullTitle);
@@ -149,4 +151,16 @@ export function buildLocalBusinessJsonLd(business: BusinessPublicView): Record<s
       },
     ],
   };
+}
+
+
+/** Keep empty or failed listing pages out of search results until content exists. */
+export function updatePageRobots(indexable: boolean): void {
+  let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+  if (!robots) {
+    robots = document.createElement('meta');
+    robots.name = 'robots';
+    document.head.appendChild(robots);
+  }
+  robots.content = indexable ? 'index,follow,max-image-preview:large' : 'noindex,follow';
 }
