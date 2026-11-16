@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { AlertTriangle, MapPin, MessageCircle, PhoneCall, ShieldAlert } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, MapPin, MessageCircle, PhoneCall, Search, ShieldAlert, X } from 'lucide-react';
 import { fetchEmergencyContacts, fetchPublicSiteSettings } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { bilingualText, formatDateShort } from '../lib/format';
@@ -29,6 +29,7 @@ export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all'
   const [contacts, setContacts] = useState<EmergencyContactRow[]>([]);
   const [directoryImageUrls, setDirectoryImageUrls] = useState<DirectoryImageUrls>(EMPTY_DIRECTORY_IMAGE_URLS);
   const [filter, setFilter] = useState<'all' | EmergencyCategory>(initialCategory);
+  const [query, setQuery] = useState('');
   const [fromCache, setFromCache] = useState(false);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
 
@@ -47,7 +48,15 @@ export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all'
   }, []);
 
   const priorityTop = initialCategory === 'government' ? [] : contacts.filter((c) => ['1122', '15', '16', '115'].includes(c.phone)).slice(0, 4);
-  const visible = contacts.filter((c) => filter === 'all' || c.category === filter);
+  const visible = useMemo(() => {
+    const term = query.trim().toLocaleLowerCase();
+    return contacts.filter((contact) => {
+      const categoryMatches = filter === 'all' || contact.category === filter;
+      const searchable = [contact.name_en, contact.name_ur, contact.phone, contact.description_en, contact.description_ur, contact.category]
+        .filter(Boolean).join(' ').toLocaleLowerCase();
+      return categoryMatches && (!term || searchable.includes(term));
+    });
+  }, [contacts, filter, query]);
 
   return (
     <AppShell>
@@ -136,8 +145,29 @@ export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all'
           ))}
         </div>}
 
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={lang === 'ur' ? 'نام، فون نمبر یا سروس تلاش کریں...' : 'Search helpline name, phone number or service...'}
+            aria-label={lang === 'ur' ? 'ہیلپ لائنز تلاش کریں' : 'Search helplines'}
+            className="min-h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-3 pl-10 pr-11 text-sm text-on-surface outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          />
+          {query && <button type="button" onClick={() => setQuery('')} aria-label={lang === 'ur' ? 'تلاش صاف کریں' : 'Clear search'}
+            className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container">
+            <X className="h-4 w-4" />
+          </button>}
+        </div>
+
         <AdPlacementSlot placement="emergency_banner" />
 
+        {visible.length === 0 ? (
+          <div className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-8 text-center text-sm text-on-surface-variant" role="status">
+            {lang === 'ur' ? 'آپ کی تلاش سے کوئی ہیلپ لائن نہیں ملی۔' : 'No helplines match your search.'}
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {visible.map((em) => (
             <Card key={em.id} className="overflow-hidden border-error/25">
@@ -186,6 +216,7 @@ export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all'
             </Card>
           ))}
         </div>
+        )}
       </Container>
     </AppShell>
   );
