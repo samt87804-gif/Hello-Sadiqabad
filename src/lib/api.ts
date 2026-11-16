@@ -53,6 +53,7 @@ import type {
   InquiryStatus,
   LeadRow,
   LeadStatus,
+  LocalAuthorityRow,
   MyPermissionsRpcResult,
   NewsArticleRow,
   NotificationRow,
@@ -92,6 +93,7 @@ export interface DemoDbState {
   offers: OfferRow[];
   reviews: ReviewRow[];
   emergency_contacts: EmergencyContactRow[];
+  local_authorities: LocalAuthorityRow[];
   announcements: AnnouncementRow[];
   ads: AdRow[];
   pages: PageRow[];
@@ -121,6 +123,7 @@ function createInitialDemoDb(): DemoDbState {
     offers: structuredClone(SEED_OFFERS),
     reviews: structuredClone(SEED_REVIEWS),
     emergency_contacts: structuredClone(SEED_EMERGENCY_CONTACTS),
+    local_authorities: [],
     announcements: structuredClone(SEED_ANNOUNCEMENTS),
     ads: structuredClone(SEED_ADS),
     pages: structuredClone(SEED_PAGES),
@@ -710,6 +713,29 @@ export async function fetchEmergencyContactsAdmin(): Promise<EmergencyContactRow
     return (data ?? []) as EmergencyContactRow[];
   }
   return loadDemoDb().emergency_contacts;
+}
+
+export async function fetchLocalAuthorities(): Promise<LocalAuthorityRow[]> {
+  const client = getSupabaseClient();
+  if (client) {
+    const { data, error } = await client.from('local_authorities').select('*')
+      .eq('is_active', true).order('sort_order').order('name_en');
+    if (error) throw error;
+    return (data ?? []) as LocalAuthorityRow[];
+  }
+  return (loadDemoDb().local_authorities ?? []).filter((item) => item.is_active)
+    .sort((a, b) => a.sort_order - b.sort_order);
+}
+
+export async function fetchLocalAuthoritiesAdmin(): Promise<LocalAuthorityRow[]> {
+  const client = getSupabaseClient();
+  if (client) {
+    const { data, error } = await client.from('local_authorities').select('*')
+      .order('sort_order').order('name_en');
+    if (error) throw error;
+    return (data ?? []) as LocalAuthorityRow[];
+  }
+  return [...(loadDemoDb().local_authorities ?? [])].sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export async function fetchAnnouncements(activeOnly = true): Promise<AnnouncementRow[]> {
@@ -2201,12 +2227,17 @@ export async function upsertAd(
   actorId: string
 ): Promise<AdRow> {
   const client = getSupabaseClient();
+  const campaign = {
+    business_id: ad.business_id, title: ad.title.trim(), placement: ad.placement,
+    image_url: ad.image_url, target_url: ad.target_url ?? null,
+    start_date: ad.start_date ?? todayDateStr(), end_date: ad.end_date ?? '2027-12-31',
+    status: ad.status ?? 'active', notes: ad.notes ?? null,
+  };
   if (client) {
-    const { data, error } = await client
-      .from('ads')
-      .upsert({ ...ad, updated_at: nowIso() })
-      .select()
-      .single();
+    const write = ad.id
+      ? client.from('ads').update({ ...campaign, reviewed_by: actorId, updated_at: nowIso() }).eq('id', ad.id)
+      : client.from('ads').insert({ ...campaign, created_by: actorId, reviewed_by: actorId, updated_at: nowIso() });
+    const { data, error } = await write.select().single();
     if (error) throw error;
     return data as AdRow;
   }
@@ -2214,29 +2245,15 @@ export async function upsertAd(
   if (ad.id) {
     const idx = db.ads.findIndex((a) => a.id === ad.id);
     if (idx !== -1) {
-      db.ads[idx] = { ...db.ads[idx], ...ad, reviewed_by: actorId, updated_at: nowIso() };
+      db.ads[idx] = { ...db.ads[idx], ...campaign, reviewed_by: actorId, updated_at: nowIso() };
       appendAuditDemo(db, actorId, 'ad.update', 'ads', ad.id, { status: db.ads[idx].status });
       saveDemoDb(db);
       return db.ads[idx];
     }
   }
   const created: AdRow = {
-    id: uid('ad'),
-    business_id: ad.business_id,
-    title: ad.title,
-    placement: ad.placement,
-    image_url: ad.image_url,
-    target_url: ad.target_url ?? null,
-    start_date: ad.start_date ?? todayDateStr(),
-    end_date: ad.end_date ?? '2027-12-31',
-    status: ad.status ?? 'active',
-    notes: ad.notes ?? null,
-    impressions: 0,
-    clicks: 0,
-    created_by: actorId,
-    reviewed_by: actorId,
-    created_at: nowIso(),
-    updated_at: nowIso(),
+    id: uid('ad'), ...campaign, impressions: 0, clicks: 0,
+    created_by: actorId, reviewed_by: actorId, created_at: nowIso(), updated_at: nowIso(),
   };
   db.ads.unshift(created);
   appendAuditDemo(db, actorId, 'ad.create', 'ads', created.id);
@@ -2359,10 +2376,11 @@ export async function upsertEmergencyContact(
   actorId: string
 ): Promise<EmergencyContactRow> {
   const client = getSupabaseClient();
+  const verifiedAt = item.source_url ? (item.verified_at ?? nowIso()) : (item.verified_at ?? null);
   if (client) {
     const { data, error } = await client
       .from('emergency_contacts')
-      .upsert({ ...item, city_id: item.city_id ?? (await getDefaultCityId()), updated_at: nowIso() })
+      .upsert({ ...item, verified_at: verifiedAt, city_id: item.city_id ?? (await getDefaultCityId()), updated_at: nowIso() })
       .select()
       .single();
     if (error) throw error;
@@ -2372,29 +2390,63 @@ export async function upsertEmergencyContact(
   if (item.id) {
     const idx = db.emergency_contacts.findIndex((e) => e.id === item.id);
     if (idx !== -1) {
-      db.emergency_contacts[idx] = { ...db.emergency_contacts[idx], ...item, updated_at: nowIso() };
+      db.emergency_contacts[idx] = { ...db.emergency_contacts[idx], ...item, verified_at: verifiedAt, updated_at: nowIso() };
       saveDemoDb(db);
       return db.emergency_contacts[idx];
     }
   }
   const created: EmergencyContactRow = {
-    id: uid('em'),
-    city_id: db.city.id,
-    name_en: item.name_en,
-    name_ur: item.name_ur,
-    phone: item.phone,
-    category: item.category ?? 'general',
-    icon: item.icon ?? 'Phone',
-    sort_order: item.sort_order ?? db.emergency_contacts.length + 1,
-    is_active: item.is_active ?? true,
-    description_en: item.description_en ?? null,
-    description_ur: item.description_ur ?? null,
-    whatsapp: item.whatsapp ?? null,
-    created_at: nowIso(),
-    updated_at: nowIso(),
+    id: uid('em'), city_id: db.city.id, name_en: item.name_en, name_ur: item.name_ur,
+    phone: item.phone, category: item.category ?? 'general', icon: item.icon ?? 'Phone',
+    sort_order: item.sort_order ?? db.emergency_contacts.length + 1, is_active: item.is_active ?? true,
+    description_en: item.description_en ?? null, description_ur: item.description_ur ?? null,
+    whatsapp: item.whatsapp ?? null, source_url: item.source_url ?? null, verified_at: verifiedAt,
+    created_at: nowIso(), updated_at: nowIso(),
   };
   db.emergency_contacts.push(created);
   appendAuditDemo(db, actorId, 'emergency.create', 'emergency_contacts', created.id);
+  saveDemoDb(db);
+  return created;
+}
+
+export async function upsertLocalAuthority(
+  item: Partial<LocalAuthorityRow> & { name_en: string; name_ur: string; authority_type: LocalAuthorityRow['authority_type']; source_url: string },
+  actorId: string
+): Promise<LocalAuthorityRow> {
+  const client = getSupabaseClient();
+  const payload = { ...item, verified_at: item.verified_at ?? nowIso(), updated_at: nowIso() };
+  if (client) {
+    const { data, error } = await client.from('local_authorities')
+      .upsert({ ...payload, city_id: item.city_id ?? (await getDefaultCityId()) })
+      .select().single();
+    if (error) throw error;
+    return data as LocalAuthorityRow;
+  }
+  const db = loadDemoDb();
+  db.local_authorities ??= [];
+  if (item.id) {
+    const index = db.local_authorities.findIndex((row) => row.id === item.id);
+    if (index >= 0) {
+      db.local_authorities[index] = { ...db.local_authorities[index], ...payload } as LocalAuthorityRow;
+      appendAuditDemo(db, actorId, 'authority.update', 'local_authorities', item.id);
+      saveDemoDb(db);
+      return db.local_authorities[index];
+    }
+  }
+  const created: LocalAuthorityRow = {
+    id: uid('authority'), city_id: db.city.id, name_en: item.name_en, name_ur: item.name_ur,
+    authority_type: item.authority_type, description_en: item.description_en ?? null,
+    description_ur: item.description_ur ?? null, phone: item.phone ?? null,
+    phone_secondary: item.phone_secondary ?? null, email: item.email ?? null,
+    address_en: item.address_en ?? null, address_ur: item.address_ur ?? null,
+    website_url: item.website_url ?? null, map_url: item.map_url ?? null,
+    office_hours_en: item.office_hours_en ?? null, office_hours_ur: item.office_hours_ur ?? null,
+    source_url: item.source_url, verified_at: payload.verified_at as string,
+    sort_order: item.sort_order ?? db.local_authorities.length + 1, is_active: item.is_active ?? true,
+    created_at: nowIso(), updated_at: nowIso(),
+  };
+  db.local_authorities.push(created);
+  appendAuditDemo(db, actorId, 'authority.create', 'local_authorities', created.id);
   saveDemoDb(db);
   return created;
 }
