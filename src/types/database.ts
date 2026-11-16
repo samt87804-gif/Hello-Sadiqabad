@@ -305,6 +305,45 @@ export interface EmergencyContactRow {
 
 export type LocalAuthorityType = 'municipal' | 'police' | 'revenue' | 'district' | 'sanitation' | 'other';
 
+export interface AuthorityProfileRow {
+  id: string;
+  city_id: string;
+  slug: string;
+  name_en: string;
+  name_ur: string;
+  photo_url: string | null;
+  designation_en: string | null;
+  designation_ur: string | null;
+  organization_en: string | null;
+  organization_ur: string | null;
+  status_label_en: string | null;
+  status_label_ur: string | null;
+  authority_en: string | null;
+  authority_ur: string | null;
+  bio_en: string | null;
+  bio_ur: string | null;
+  phone: string | null;
+  email: string | null;
+  website_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  business_ids: string[];
+  show_status: boolean;
+  show_organization: boolean;
+  show_authority: boolean;
+  show_bio: boolean;
+  show_contact: boolean;
+  show_businesses: boolean;
+  source_url: string | null;
+  verified_at: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface LocalAuthorityRow {
   id: string;
   city_id: string;
