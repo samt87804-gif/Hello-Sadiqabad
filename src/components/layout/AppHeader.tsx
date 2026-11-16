@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { BookOpen, Moon, PlusCircle, Search, ShieldCheck, Sun, User } from 'lucide-react';
+import { Moon, PlusCircle, Search, ShieldCheck, Sun, User } from 'lucide-react';
 import { useTheme } from '../../lib/theme';
 import { useI18n } from '../../lib/i18n';
 import { useAuth } from '../../lib/auth';
 import { LanguageMenu } from './LanguageMenu';
+
+const BRAND_LOGO_URL = 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/186747.png';
 
 export function AppHeader() {
   const { theme, toggleTheme } = useTheme();
@@ -52,9 +54,14 @@ export function AppHeader() {
       {/* Main Nav Row */}
       <div className="max-w-6xl mx-auto h-14 sm:h-16 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-3 min-w-0">
         <Link to="/" className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm text-on-primary shrink-0">
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
+          <img
+            src={BRAND_LOGO_URL}
+            alt="Hello Sadiqabad"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain shrink-0"
+            width={40}
+            height={40}
+            fetchPriority="high"
+          />
           <div className="flex flex-col leading-none min-w-0">
             <div
               dir="ltr"
