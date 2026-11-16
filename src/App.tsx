@@ -252,7 +252,34 @@ function RouteIndexing() {
       '/reset-password',
       '/change-password',
     ]);
-    const noIndex = portalRoute || noIndexRoutes.has(path);
+    const publicStaticRoutes = new Set([
+      '/',
+      '/categories',
+      '/offers',
+      '/map',
+      '/emergency',
+      '/government-helplines',
+      '/local-authorities',
+      '/authority-profiles',
+      '/announcements',
+      '/news',
+      '/about',
+      '/advertise',
+      '/contact',
+      '/terms',
+      '/privacy',
+      '/listing-terms',
+      '/refund-policy',
+      '/faq',
+    ]);
+    const publicDynamicRoutes = [
+      /^\/(?:category|area|business)\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      /^\/news\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      /^\/authority-profiles\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      /^\/owner-profile\/[0-9a-f-]{36}$/i,
+    ];
+    const knownPublicRoute = publicStaticRoutes.has(path) || publicDynamicRoutes.some((pattern) => pattern.test(path));
+    const noIndex = portalRoute || noIndexRoutes.has(path) || !knownPublicRoute;
     let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (!robots) {
       robots = document.createElement('meta');

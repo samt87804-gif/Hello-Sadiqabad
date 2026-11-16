@@ -1,14 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /owner/
-Disallow: /login
-Disallow: /owner-register
-Disallow: /forgot-password
-Disallow: /reset-password
-Disallow: /change-password
-Disallow: /favorites
-Disallow: /search
-Disallow: /add-business
 
 Sitemap: https://hellosadiqabad.com/sitemap.xml
