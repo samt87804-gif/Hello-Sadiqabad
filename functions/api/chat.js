@@ -54,7 +54,7 @@ async function fetchTable(baseUrl, key, table, params) {
 async function fetchBusinessMatches(env, query) {
   const searchText = String(query || '').trim().slice(0, 120);
   if (!searchText) return [];
-  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\\/+$/, '');
+  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !key) return [];
 
