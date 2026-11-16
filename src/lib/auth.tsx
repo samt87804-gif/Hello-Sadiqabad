@@ -85,9 +85,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const client = getSupabaseClient();
     if (client) {
       try {
+        const withTimeout = <T,>(promise: PromiseLike<T>, label: string): Promise<T> =>
+          new Promise<T>((resolve, reject) => {
+            const timeoutId = window.setTimeout(() => reject(new Error(`${label} timed out after 12 seconds`)), 12000);
+            Promise.resolve(promise).then(resolve, reject).finally(() => window.clearTimeout(timeoutId));
+          });
         const [profRes, permsRes] = await Promise.all([
-          client.from('profiles').select('*').eq('id', authUser.id).single(),
-          fetchMyPermissions(authUser.id),
+          withTimeout(client.from('profiles').select('*').eq('id', authUser.id).single(), 'Profile verification'),
+          withTimeout(fetchMyPermissions(authUser.id), 'Permission verification'),
         ]);
         if (version !== hydrationVersion.current) return;
         if (profRes.error) throw profRes.error;
