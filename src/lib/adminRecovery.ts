@@ -65,7 +65,7 @@ export function saveAdminRecoverySnapshot(pathname = window.location.pathname): 
     controls,
   };
   try {
-    sessionStorage.setItem(getAdminRecoveryKey(pathname), JSON.stringify(snapshot));
+    localStorage.setItem(getAdminRecoveryKey(pathname), JSON.stringify(snapshot));
   } catch {
     // Storage may be unavailable or full; the page remains usable.
   }
@@ -99,11 +99,11 @@ function restoreControl(element: Element, saved: SavedControl) {
 export function restoreAdminRecoverySnapshot(pathname = window.location.pathname): number | null {
   if (!pathname.startsWith('/admin')) return null;
   try {
-    const raw = sessionStorage.getItem(getAdminRecoveryKey(pathname));
+    const raw = localStorage.getItem(getAdminRecoveryKey(pathname));
     if (!raw) return null;
     const snapshot = JSON.parse(raw) as AdminRecoverySnapshot;
     if (!snapshot || Date.now() - snapshot.savedAt > 12 * 60 * 60 * 1000) {
-      sessionStorage.removeItem(getAdminRecoveryKey(pathname));
+      localStorage.removeItem(getAdminRecoveryKey(pathname));
       return null;
     }
 
