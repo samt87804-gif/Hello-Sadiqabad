@@ -111,3 +111,45 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - Cloudflare production deployment: b628632c-60c2-491b-bf5c-0025a67683c2 succeeded; preview URL https://b628632c.hello-sadiqabad-2bs.pages.dev and canonical site https://hello-sadiqabad-2bs.pages.dev.
 - Ads telemetry caveat: no ad campaigns currently exist in production, so the tracking code is deployed but real campaign clicks/impressions will be observed after an ad is activated.
 - Next batch: Read-only Roman Urdu-first AI chatbot; do not start until user approves.
+
+
+## Batch 5 — Read-only Roman Urdu-first AI Chatbot (implementation deployed; live acceptance pending)
+
+### Scope and implementation
+- [x] Add a floating, mobile-responsive chatbot widget to public AppShell pages.
+- [x] Hide the chatbot on Admin routes and authenticated Owner Portal routes; retain it on public owner profile pages.
+- [x] Add the Cloudflare Pages Function endpoint `POST /api/chat`.
+- [x] Restrict the endpoint to same-origin browser requests when an Origin header is present.
+- [x] Validate message roles and payload shape; cap each message at 500 characters and conversation history at 8 messages.
+- [x] Add a best-effort per-isolate throttle of 12 requests per 5 minutes per IP.
+- [x] Use Workers AI model `@cf/meta/llama-3.3-70b-instruct-fp8-fast` through Cloudflare's Workers AI binding and default AI Gateway.
+- [x] Configure the Pages `AI` binding for both Production and Preview environments.
+- [x] Use the existing Supabase project URL and publishable key only; no service-role key, secret or new database credential is introduced.
+- [x] Read only through the existing anonymous/public Supabase RLS policies.
+- [x] Include public categories, areas, active Government Helplines, active Local Authorities, published News, active products/offers, active Civic Announcements and field-redacted public owner profiles.
+- [x] Add query-based business retrieval through the existing public `search_businesses` RPC. Only an explicit safe-field allowlist is passed to the model; owner IDs, owner-only data, plans, internal records and Admin-only data are excluded.
+- [x] Bound long descriptions and News excerpts to keep model context and usage under control.
+- [x] Add Roman Urdu-first system instructions, treat database text as untrusted input, resist prompt injection, prohibit actions/tool use and require an explicit unavailable-information response instead of guessing.
+- [x] No Supabase migration or database write was required.
+
+### Security and data-integrity review
+- [x] Published business retrieval is limited by the existing `businesses_anon_read` RLS policy.
+- [x] Product and offer reads are constrained by existing active/public RLS policies and their published-business checks.
+- [x] News is limited to published rows with a non-future `published_at`.
+- [x] Government Helplines and Local Authorities are limited to active rows by anonymous RLS.
+- [x] Public owner information is sourced only from `owner_public_profile_directory`, which redacts fields according to Admin-controlled visibility flags.
+- [x] The chatbot has no code path for inserting, updating, deleting, approving, booking, calling or messaging.
+- [x] Prompt history accepts only `user` and `assistant` roles; browser callers cannot submit a custom system role.
+- [ ] The current in-memory IP throttle is per-isolate best effort, not a distributed/global limit. Add a Cloudflare WAF rate-limiting rule if stronger production enforcement is required.
+
+### Verification record
+- [x] Direct model smoke test: selected Llama 3.3 70B Fast returned a short Roman Urdu greeting; response usage was lower than the initial reasoning-model candidate in this check.
+- [x] GitHub Actions CI run: `43825635321` — success for code commit `05a8668fbea9cc38f4d278af2bf5f1e014e0449c`.
+- [x] Cloudflare Pages deployment for code commit `05a8668fbea9cc38f4d278af2bf5f1e014e0449c`: `5ec40ad1-7c8b-4ce1-bbda-cc9a40c17f23` — deploy stage succeeded.
+- [ ] End-to-end POST request against the live Pages Function could not be executed from the current verification environment. User acceptance smoke test is still required for: Roman Urdu greeting, query-matched business, Government Helpline number, missing-data fallback, prompt injection and private/Admin data non-disclosure.
+- [ ] Confirm actual chatbot interaction on the public website before marking Batch 5 complete.
+
+### Operational notes
+- Workers AI inference is usage-based; actual charges depend on usage and the Cloudflare account plan.
+- The public directory context is edge-cached for 180 seconds. Search-specific business matches are fetched separately for the user's latest question.
+- The chatbot is informational only and must not be expanded into an action-taking agent without separate approval.
