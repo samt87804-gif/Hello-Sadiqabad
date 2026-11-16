@@ -13,7 +13,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- None
+- [ ] Batch 5 — Read-only, Roman Urdu-first AI Chatbot: implementation is on `main` and deployed; final end-to-end live chat verification is pending.
 
 ## User-requested improvements (16 November 2026)
 
@@ -66,8 +66,27 @@ Batch 3 — completed (16 November 2026):
 - [x] Seed five Sadiqabad entries from official sources; omit unpublished phone/address fields rather than inventing them.
 - [x] Verify production route/build, Super Admin tab wiring, RLS and public active-only visibility.
 
-## Remaining after Batch 4
-- [ ] Read-only, Roman Urdu-first AI chatbot — not started; requires approval as the next batch.
+## Batch 5 — AI Chatbot (implementation deployed; final live verification pending)
+
+- [x] Add a responsive floating chatbot to public pages; keep Admin and Owner Portal screens free of the widget.
+- [x] Add a read-only `/api/chat` Cloudflare Pages Function with same-origin validation, input/history limits and best-effort per-isolate request throttling.
+- [x] Connect Cloudflare Workers AI model `@cf/meta/llama-3.3-70b-instruct-fp8-fast` through the Pages `AI` binding and default AI Gateway.
+- [x] Configure Workers AI bindings for both Production and Preview environments.
+- [x] Read only approved public data through Supabase's publishable key and anonymous RLS: published businesses, query-matched published businesses, categories, areas, active helplines, active authorities, published news, active products/offers, current announcements and redacted public owner profiles.
+- [x] Whitelist fields before sending business search results to the model; do not forward owner IDs, private profile rows, admin records or service-role credentials.
+- [x] Add Roman Urdu-first instructions, prompt-injection resistance, no-action behavior and an explicit no-invention rule.
+- [x] GitHub CI, automated tests, typecheck and production build passed; Cloudflare Pages production deployment succeeded.
+- [ ] End-to-end live POST smoke test: verify Roman Urdu greeting, business search, helpline lookup, unknown information fallback, prompt-injection resistance and no private/Admin data disclosure.
+
+### Batch 5 implementation notes
+- No Supabase schema migration or database writes were required.
+- Public directory reads use the existing anonymous RLS policies and a redacted owner-profile view; only explicitly public owner fields are eligible for chatbot context.
+- The in-memory request throttle is best-effort per Cloudflare isolate, not a globally coordinated rate limit. A Cloudflare WAF rate-limiting rule can be added if production traffic requires stronger enforcement.
+- Workers AI is usage-based; actual inference charges depend on usage and the Cloudflare account plan.
+
+## Remaining after Batch 5
+- [ ] Expand Government Helplines only when additional numbers are confirmed by official sources.
+- [ ] Expand Local Authorities only when direct public contact details are officially published.
 - [ ] Expand Government Helplines only when additional numbers are confirmed by official sources.
 - [ ] Expand Local Authorities only when direct public contact details are officially published.
 
