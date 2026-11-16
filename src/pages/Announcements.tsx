@@ -4,7 +4,7 @@ import { Archive, ExternalLink, Megaphone, ShieldAlert } from 'lucide-react';
 import { fetchAnnouncements } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { bilingualText, formatDateShort } from '../lib/format';
-import { updatePageSeo } from '../lib/seo';
+import { updatePageRobots, updatePageSeo } from '../lib/seo';
 import type { AnnouncementRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { EmptyState, Skeleton } from '../components/ui/Feedback';
@@ -24,6 +24,7 @@ export function Announcements() {
       title: 'Civic Notices & City Announcements — Hello Sadiqabad',
       description: 'Public health camps, traffic advisories, and city notices for Sadiqabad.',
       canonicalPath: '/announcements',
+      robots: 'noindex,follow',
     });
   }, []);
 
@@ -32,8 +33,19 @@ export function Announcements() {
     setLoading(true);
     setLoadError(false);
     fetchAnnouncements(activeOnly)
-      .then((data) => { if (active) setItems(data); })
-      .catch(() => { if (active) { setItems([]); setLoadError(true); } })
+      .then((data) => {
+        if (active) {
+          setItems(data);
+          updatePageRobots(data.length > 0);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setItems([]);
+          updatePageRobots(false);
+          setLoadError(true);
+        }
+      })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [activeOnly, retryKey]);
