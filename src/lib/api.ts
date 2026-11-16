@@ -637,17 +637,29 @@ export async function searchBusinesses(
 export async function fetchSearchSuggestions(query:string,options:{signal?:AbortSignal}={}):Promise<SearchSuggestionItem[]> {
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
   const term=normalizeDirectorySearchText(query);if(term.length<2)return [];
-  const [categories,areas,businesses]=await Promise.all([fetchAllCategories(),fetchAllAreas(),fetchGitHubBusinesses()]);
+  const rawTerm=query.trim().toLocaleLowerCase();
+  const [categories,areas,businesses,news,emergency]=await Promise.all([
+    fetchAllCategories(),fetchAllAreas(),fetchGitHubBusinesses(),fetchPublishedNewsArticles(24),fetchEmergencyContacts(),
+  ]);
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
   const results:SearchSuggestionItem[]=[];
-  for(const c of categories)if(c.is_active&&(normalizeDirectorySearchText(c.name_en).includes(term)||c.name_ur.includes(term)||c.synonyms.some((v)=>normalizeDirectorySearchText(v).includes(term))))
+  for(const item of emergency.items)if(
+    normalizeDirectorySearchText(item.name_en).includes(term)||(item.name_ur||'').toLocaleLowerCase().includes(rawTerm)||
+    normalizeDirectorySearchText(item.phone).includes(term)||normalizeDirectorySearchText(item.description_en||'').includes(term)||
+    normalizeDirectorySearchText(item.description_ur||'').includes(term)
+  ) results.push({kind:'emergency',label_en:item.name_en,label_ur:item.name_ur,slug:item.category==='government'?'government':'all',subtitle:item.phone});
+  for(const item of news)if(
+    normalizeDirectorySearchText(item.title_en).includes(term)||(item.title_ur||'').toLocaleLowerCase().includes(rawTerm)||
+    normalizeDirectorySearchText(item.excerpt_en).includes(term)||(item.excerpt_ur||'').toLocaleLowerCase().includes(rawTerm)
+  ) results.push({kind:'news',label_en:item.title_en,label_ur:item.title_ur,slug:item.slug,subtitle:'News'});
+  for(const c of categories)if(c.is_active&&(normalizeDirectorySearchText(c.name_en).includes(term)||c.name_ur.includes(rawTerm)||c.synonyms.some((v)=>normalizeDirectorySearchText(v).includes(term))))
     results.push({kind:'category',label_en:c.name_en,label_ur:c.name_ur,slug:c.slug,subtitle:'Category'});
-  for(const a of areas)if(a.is_active&&(normalizeDirectorySearchText(a.name_en).includes(term)||a.name_ur.includes(term)))
+  for(const a of areas)if(a.is_active&&(normalizeDirectorySearchText(a.name_en).includes(term)||a.name_ur.includes(rawTerm)))
     results.push({kind:'area',label_en:a.name_en,label_ur:a.name_ur,slug:a.slug,subtitle:'Neighborhood'});
-  for(const b of businesses)if(normalizeDirectorySearchText(b.name_en).includes(term)||(b.name_ur||'').includes(term)||(b.tags||[]).some((tag)=>normalizeDirectorySearchText(tag).includes(term)))
+  for(const b of businesses)if(normalizeDirectorySearchText(b.name_en).includes(term)||(b.name_ur||'').toLocaleLowerCase().includes(rawTerm)||(b.tags||[]).some((tag)=>normalizeDirectorySearchText(tag).includes(term)))
     results.push({kind:'business',label_en:b.name_en,label_ur:b.name_ur||b.name_en,slug:b.slug,subtitle:b.area?.name_en||'Sadiqabad'});
   const unique=new Map<string,SearchSuggestionItem>();for(const item of results)unique.set(item.kind+':'+item.slug,item);
-  return [...unique.values()].slice(0,8);
+  return [...unique.values()].slice(0,10);
 }
 
 export async function fetchBusinessBySlug(slug:string):Promise<BusinessPublicView|null> {
