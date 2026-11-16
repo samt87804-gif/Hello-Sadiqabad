@@ -221,7 +221,7 @@ export function AdminPortal() {
   };
 
   const renderTab = (tabKey: string) => {
-    if (loading && !counts) {
+    if (!counts) {
       return <Skeleton className="h-72 rounded-2xl" />;
     }
 

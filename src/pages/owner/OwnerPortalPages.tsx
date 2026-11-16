@@ -38,7 +38,6 @@ import {
   setOwnerPublicProfileBusinessIds,
   fetchOwnerListings,
   fetchOwnerReviews,
-  fetchOwnerSubmissions,
   fetchPlans,
   fetchPublicSiteSettings,
   markNotificationsRead,
