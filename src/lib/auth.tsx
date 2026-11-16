@@ -160,13 +160,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (active) setLoading(false);
         });
 
-      const { data: sub } = client.auth.onAuthStateChange(async (_evt, session) => {
+      const { data: sub } = client.auth.onAuthStateChange(async (event, session) => {
         if (!active) return;
-        const supaUser = session?.user;
-        if (supaUser) {
-          await hydrateUser({ id: supaUser.id, email: supaUser.email ?? '' });
-        } else {
+
+        // Token refreshes happen when a background browser tab becomes active.
+        // The current user's identity and permissions are already hydrated, so
+        // re-fetching them here would blank the portal and reset its scroll.
+        // getSession() above handles the initial session; refreshProfile() and
+        // explicit sign-in handle profile/permission refreshes.
+        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') return;
+
+        if (event === 'SIGNED_OUT' || !session?.user) {
           await hydrateUser(null);
+          return;
+        }
+
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
+          await hydrateUser({ id: session.user.id, email: session.user.email ?? '' });
         }
       });
 
