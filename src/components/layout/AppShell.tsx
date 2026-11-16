@@ -10,6 +10,7 @@ import { AppBottomNav } from './AppBottomNav';
 import { AppFooter } from './AppFooter';
 import { PopupAdModal } from '../directory/AdBanner';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
+import { ChatbotWidget } from './ChatbotWidget';
 
 export function PwaUpdateToast() {
   const [hasUpdate, setHasUpdate] = useState(false);
@@ -66,6 +67,8 @@ export function AppShell({
 
   const showFooter = !hideFooter;
   const showBottomNav = !hideBottomNav;
+  const showChatbot = !/^\\/(admin|owner)(\\/|$)/.test(location.pathname) &&
+    !['/login', '/owner-register', '/forgot-password', '/reset-password', '/change-password'].includes(location.pathname);
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-on-surface overflow-x-clip">
@@ -124,6 +127,7 @@ export function AppShell({
       {showBottomNav && <AppBottomNav />}
       <PwaUpdateToast />
       <PopupAdModal />
+      {showChatbot && <ChatbotWidget />}
     </div>
   );
 }
