@@ -25,6 +25,7 @@ import type {
   EmergencyContactRow,
   LeadRow,
   LocalAuthorityRow,
+  AuthorityProfileRow,
   PageRow,
   PermissionKey,
   ProfileRow,
@@ -1119,6 +1120,7 @@ export function BackupExportManager({
   areas,
   emergencyContacts,
   localAuthorities = [],
+  authorityProfiles = [],
   leads = [],
 }: {
   businesses: BusinessPublicView[];
@@ -1126,6 +1128,7 @@ export function BackupExportManager({
   areas: AreaRow[];
   emergencyContacts: EmergencyContactRow[];
   localAuthorities?: LocalAuthorityRow[];
+  authorityProfiles?: AuthorityProfileRow[];
   leads?: LeadRow[];
 }) {
   const { showToast } = useToast();
@@ -1151,12 +1154,14 @@ export function BackupExportManager({
         areas: areas.length,
         emergency_contacts: emergencyContacts.length,
         local_authorities: localAuthorities.length,
+        authority_profiles: authorityProfiles.length,
         leads: leads.length,
       },
       categories,
       areas,
       emergency_contacts: emergencyContacts,
       local_authorities: localAuthorities,
+      authority_profiles: authorityProfiles,
       leads,
       businesses,
     };
@@ -1241,7 +1246,7 @@ export function BackupExportManager({
             <Badge variant="primary">{businesses.length} shops</Badge>
           </div>
           <p className="text-xs text-on-surface-variant">
-            Complete structured backup including businesses, categories, areas, emergency and government helplines, local authorities, and leads.
+            Complete structured backup including businesses, categories, areas, emergency and government helplines, local authorities, authority-holder profiles, and leads.
           </p>
           <Button onClick={exportFullJson} leftIcon={<FileJson className="w-4 h-4" />}>
             Download Full JSON Backup
