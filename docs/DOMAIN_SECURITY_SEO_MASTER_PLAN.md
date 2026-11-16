@@ -116,12 +116,14 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [ ] After submission is accepted, inspect the homepage and important public URLs and request indexing once.
 
 ### Phase 1 acceptance
-- Sitemap returns valid XML and only contains canonical, indexable public URLs.
-- robots.txt points to sitemap.
-- Canonicals and metadata are unique and correct for public page types.
-- Structured data passes Google's Rich Results/Schema validation where applicable.
-- Search Console Domain property is verified and sitemap is accepted (owner-confirmed).
-- No admin/private data is exposed by sitemap or public structured data.
+- [x] Sitemap returns valid XML and contains only canonical, indexable public URLs (516 currently; zero duplicates/private URLs).
+- [x] robots.txt points to the sitemap.
+- [x] Canonicals and metadata are unique for the tested public page types; full-site crawl remains pending.
+- [x] JSON-LD is valid JSON and rendered correctly for the tested Organization/WebSite, NewsArticle, LocalBusiness and BreadcrumbList pages.
+- [ ] External Google Rich Results/Schema validation has not yet been run.
+- [x] Search Console Domain property is verified.
+- [ ] Sitemap acceptance in Search Console is pending owner submission.
+- [x] No admin/private data is exposed by the sitemap or the redacted public owner-profile view.
 
 ## Phase 2 — Local SEO for Sadiqabad
 
