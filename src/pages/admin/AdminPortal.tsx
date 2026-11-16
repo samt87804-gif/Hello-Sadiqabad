@@ -223,7 +223,7 @@ export function AdminPortal() {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, isSuperAdmin, hasPermission]);
 
   useEffect(() => {
     reload();
