@@ -28,7 +28,8 @@ const MapPage = lazy(() => import('./pages/Map').then((m) => ({ default: m.Map }
 const Favorites = lazy(() => import('./pages/Favorites').then((m) => ({ default: m.Favorites })));
 const Emergency = lazy(() => import('./pages/Emergency').then((m) => ({ default: m.Emergency })));
 const GovernmentHelplines = lazy(() => import('./pages/Emergency').then((m) => ({ default: m.GovernmentHelplines })));
-const LocalAuthorities = lazy(() => import('./pages/LocalAuthorities').then((m) => ({ default: m.LocalAuthorities })));\nconst AuthorityProfiles = lazy(() => import('./pages/AuthorityProfiles').then((m) => ({ default: m.AuthorityProfiles })));
+const LocalAuthorities = lazy(() => import('./pages/LocalAuthorities').then((m) => ({ default: m.LocalAuthorities })));
+const AuthorityProfiles = lazy(() => import('./pages/AuthorityProfiles').then((m) => ({ default: m.AuthorityProfiles })));
 const Announcements = lazy(() =>
   import('./pages/Announcements').then((m) => ({ default: m.Announcements }))
 );
@@ -125,7 +126,9 @@ export default function App() {
                     <Route path="/favorites" element={<Favorites />} />
                     <Route path="/emergency" element={<Emergency />} />
                     <Route path="/government-helplines" element={<GovernmentHelplines />} />
-                    <Route path="/local-authorities" element={<LocalAuthorities />} />\n                    <Route path="/authority-profiles" element={<AuthorityProfiles />} />\n                    <Route path="/authority-profiles/:slug" element={<AuthorityProfiles />} />
+                    <Route path="/local-authorities" element={<LocalAuthorities />} />
+                    <Route path="/authority-profiles" element={<AuthorityProfiles />} />
+                    <Route path="/authority-profiles/:slug" element={<AuthorityProfiles />} />
                     <Route path="/announcements" element={<Announcements />} />
                     <Route path="/news" element={<News />} />
                     <Route path="/news/:slug" element={<News />} />
