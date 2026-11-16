@@ -1725,7 +1725,10 @@ export async function adminUpsertBusiness(
 export async function findDuplicateBusinesses(
   phone: string,
   name: string,
-  areaId?: string | null
+  areaId?: string | null,
+  address?: string | null,
+  lat?: number | null,
+  lng?: number | null
 ): Promise<BusinessRow[]> {
   const norm = normalizePkPhone(phone);
   const client = getSupabaseClient();
@@ -1734,18 +1737,27 @@ export async function findDuplicateBusinesses(
       p_phone_normalized: norm,
       p_name: name,
       p_area_id: areaId ?? null,
+      p_address: address ?? null,
+      p_lat: lat ?? null,
+      p_lng: lng ?? null,
+      p_city_id: await getDefaultCityId(),
     });
     if (error) throw error;
     if (!Array.isArray(data)) throw new Error('Duplicate check returned an invalid response.');
     return data as BusinessRow[];
   }
   const db = loadDemoDb();
-  const lower = name.trim().toLowerCase();
-  return db.businesses.filter(
-    (b) =>
-      (norm && b.phone_normalized === norm) ||
-      (lower.length >= 3 && b.name_en.toLowerCase().includes(lower))
-  );
+  const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const candidateName = normalize(name);
+  const candidateAddress = normalize(address ?? '');
+  return db.businesses.filter((business) => {
+    const phoneMatch = Boolean(norm && norm !== '+92' && norm !== '+920000000000' && business.phone_normalized === norm);
+    const nameMatch = candidateName.length >= 4 && normalize(business.name_en) === candidateName;
+    const addressMatch = candidateAddress.length > 0 && normalize(business.address_en ?? '') === candidateAddress;
+    const nearMatch = lat != null && lng != null && business.lat != null && business.lng != null
+      && Math.abs(business.lat - lat) <= 0.0004 && Math.abs(business.lng - lng) <= 0.0004;
+    return phoneMatch || (nameMatch && (business.area_id === (areaId ?? null) || addressMatch || nearMatch));
+  });
 }
 
 export async function fetchBusinessNotes(businessId: string): Promise<BusinessNoteRow[]> {
