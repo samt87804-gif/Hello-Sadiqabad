@@ -99,11 +99,13 @@ const AdminPortal = lazy(() =>
 function AdminScrollPersistence() {
   const location = useLocation();
   const restoredForPath = useRef<string | null>(null);
+  const recoveredScrollY = useRef<number | null>(null);
 
   useEffect(() => {
     const path = location.pathname;
     if (!path.startsWith('/admin')) return;
     restoredForPath.current = null;
+    recoveredScrollY.current = null;
 
     const save = () => saveAdminRecoverySnapshot(path);
     const onVisibility = () => {
@@ -132,7 +134,10 @@ function AdminScrollPersistence() {
       const root = document.querySelector('[data-admin-scroll-ready="true"]');
       if (!root) return;
 
-      const targetY = restoreAdminRecoverySnapshot(path);
+      if (recoveredScrollY.current === null) {
+        recoveredScrollY.current = restoreAdminRecoverySnapshot(path);
+      }
+      const targetY = recoveredScrollY.current;
       if (targetY === null) {
         restoredForPath.current = path;
         return;
