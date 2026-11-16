@@ -1,25 +1,14 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { saveAdminRecoverySnapshot } from './lib/adminRecovery';
-
-// Recover once when a tab still references a chunk from an older deployment.
-// The short-lived guard prevents a broken deployment from causing reload loops.
-const CHUNK_RELOAD_KEY = 'hs:chunk-reload-at';
+// Never force-reload the application when a deployment changes lazy-loaded chunks.
+// This is especially important in the admin workspace: only the administrator may
+// decide when to refresh. Keep the current document alive and expose a recoverable
+// event so the UI can explain that a manual refresh may be needed for that module.
 window.addEventListener('vite:preloadError', (event) => {
   event.preventDefault();
-  // A deployment may replace lazy-loaded chunks while an admin is entering data.
-  // Snapshot the current form and scroll before the one-time recovery reload.
-  saveAdminRecoverySnapshot();
-  try {
-    const previousAttempt = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY) || 0);
-    if (Date.now() - previousAttempt > 30_000) {
-      sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
-      window.location.reload();
-    }
-  } catch {
-    window.location.reload();
-  }
+  window.dispatchEvent(new CustomEvent('hs:chunk-load-error'));
+  console.error('[Hello Sadiqabad] A page module could not be loaded. The app was not reloaded; refresh manually when ready.');
 });
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
