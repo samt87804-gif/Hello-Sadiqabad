@@ -4,7 +4,7 @@ import { BadgeCheck, Bookmark, MapPin, MessageCircle, Phone, Star, Tag } from 'l
 import type { BusinessPublicView } from '../../types/directory';
 import { useI18n } from '../../lib/i18n';
 import { bilingualText } from '../../lib/format';
-import { buildTelUrl, buildWhatsAppUrl, formatPkPhoneDisplay } from '../../lib/phone';
+import { buildTelUrl, buildWhatsAppUrl, formatPkPhoneDisplay, isValidPkPhone } from '../../lib/phone';
 import { effectivePlanCode } from '../../lib/searchFilter';
 import { trackBusinessEvent } from '../../lib/api';
 import { ImageWithFallback } from '../ui/ImageWithFallback';
@@ -22,7 +22,7 @@ export function BusinessCard({
   const { lang, urduHints, t } = useI18n();
   const effPlan = effectivePlanCode(business.plan_code, business.plan_expires_at);
   const canWhatsApp =
-    Boolean(business.whatsapp) && (effPlan === 'basic' || effPlan === 'premium');
+    isValidPkPhone(business.whatsapp) && (effPlan === 'basic' || effPlan === 'premium');
   const displayName = bilingualText(lang, business.name_en, business.name_ur);
   const catName = business.category
     ? bilingualText(lang, business.category.name_en, business.category.name_ur)
@@ -143,16 +143,25 @@ export function BusinessCard({
 
       {/* Action Bar with Visible Phone Number */}
       <div className="pt-2 border-t border-outline-variant/25 flex items-center gap-2">
-        <a
-          href={buildTelUrl(business.phone_primary)}
-          onClick={() => trackBusinessEvent(business.id, 'call')}
-          className="flex-1 min-h-[42px] px-3 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-primary-container transition-colors"
-        >
-          <Phone className="w-3.5 h-3.5 shrink-0" />
-          <span dir="ltr" className="tabular-nums truncate">
-            {formatPkPhoneDisplay(business.phone_primary)}
-          </span>
-        </a>
+        {isValidPkPhone(business.phone_primary) ? (
+          <a
+            href={buildTelUrl(business.phone_primary)}
+            onClick={() => trackBusinessEvent(business.id, 'call')}
+            className="flex-1 min-h-[42px] px-3 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-primary-container transition-colors"
+          >
+            <Phone className="w-3.5 h-3.5 shrink-0" />
+            <span dir="ltr" className="tabular-nums truncate">
+              {formatPkPhoneDisplay(business.phone_primary)}
+            </span>
+          </a>
+        ) : (
+          <Link
+            to={`/business/${business.slug}`}
+            className="flex-1 min-h-[42px] px-3 rounded-xl bg-surface-container text-on-surface text-xs font-bold flex items-center justify-center"
+          >
+            {t('action.viewDetails', 'View Details')}
+          </Link>
+        )}
 
         {canWhatsApp ? (
           <a
