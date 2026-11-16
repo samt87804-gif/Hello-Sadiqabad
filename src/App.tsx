@@ -194,6 +194,29 @@ function AdminScrollPersistence() {
   return null;
 }
 
+function ChunkLoadNotice() {
+  const location = useLocation();
+  const [hasChunkError, setHasChunkError] = React.useState(false);
+
+  useEffect(() => {
+    const onChunkError = () => setHasChunkError(true);
+    window.addEventListener('hs:chunk-load-error', onChunkError);
+    return () => window.removeEventListener('hs:chunk-load-error', onChunkError);
+  }, []);
+
+  if (!hasChunkError || !location.pathname.startsWith('/admin')) return null;
+
+  return (
+    <div role="alert" className="fixed bottom-4 inset-x-3 z-[1000] mx-auto max-w-xl rounded-2xl border border-amber-500/40 bg-surface p-4 shadow-2xl">
+      <p className="text-sm font-bold text-on-surface">A new website version is available for one or more sections.</p>
+      <p className="mt-1 text-xs text-on-surface-variant">Your current Admin page has not been reloaded. Save your work first. Refresh only when you choose.</p>
+      <div className="mt-3 flex justify-end">
+        <button type="button" onClick={() => window.location.reload()} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-on-primary">Refresh manually</button>
+      </div>
+    </div>
+  );
+}
+
 function PageLoader() {
   return (
     <div className="min-h-screen bg-surface p-6 max-w-5xl mx-auto space-y-4">
@@ -216,6 +239,7 @@ export default function App() {
             <ToastProvider>
               <BrowserRouter>
                 <AdminScrollPersistence />
+                <ChunkLoadNotice />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public Visitor Routes */}
