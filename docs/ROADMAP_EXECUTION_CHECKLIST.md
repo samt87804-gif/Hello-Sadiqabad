@@ -255,3 +255,15 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] GitHub Actions CI run 43956280854 passed.
 - [x] Cloudflare Pages deployment 017a7ca2-fe39-463d-9e46-631bba2e1fbe succeeded.
 - [x] Post-deployment browser-render checks confirmed both routes return HTTP 200, correct canonical URL, one H1, and `noindex,follow` while empty.
+
+
+## Batch 10 — Cross-workbook Places reconciliation review (17 November 2026)
+
+- [x] Reconcile the crawler export (374 rows) and New Seed Data (771 rows) by Google Place ID.
+- [x] Confirm 1,145 combined rows, 1,109 likely Sadiqabad records, 36 geographic-review rows, 1,028 unique nonblank Place IDs, and 117 repeated IDs across files (234 participating rows).
+- [x] Reconfirm live published-business completeness with read-only SQL: 223 published; 49 without area; 15 without primary phone; 7 without coordinates; 33 without address.
+- [x] Inspect live `public.businesses` schema; it has no Google Place ID column, so direct exact-ID matching to current production records is not yet possible.
+- [x] Generate the staged review workbook `Hello_Sadiqabad_Business_Data_Audit.xlsx`; no production records changed.
+- [x] Update `docs/LOCAL_SEO_DATA_QUALITY_AUDIT.md` and `docs/NEW_CHAT_HANDOFF.md` with the findings and matching limitation.
+- [ ] Complete read-only candidate matching against the 223 published businesses using normalized name, phone, address and coordinate proximity; manually review ambiguous cases.
+- [ ] Only after review, propose an import/correction batch. No production import or schema change is authorized by this audit.
