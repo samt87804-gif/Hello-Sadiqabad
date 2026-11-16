@@ -81,6 +81,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] No existing business, owner, ad or emergency contact rows deleted.
 - [x] Anonymous RLS check at Batch 4: five active authority rows visible; inactive rows not visible.
 - [x] Batch 6 anonymous RLS check: all four newly seeded police stations are visible as active rows; no private/inactive rows were exposed.
+- [x] Batch 6 anonymous RLS check: both newly seeded Government helplines are visible as active rows with source provenance.
 - [x] Owner write check: INSERT denied by RLS.
 - [x] Super Admin INSERT tested successfully in a rolled-back transaction.
 - [x] No RLS test records persisted.
@@ -92,6 +93,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 ### Government helplines
 - District Rahim Yar Khan Control Room (0800-33444) and Patrolling Police (1124): https://rykhan.punjab.gov.pk/contact_us
 - Suthra Punjab 1139: https://suthra.punjab.gov.pk/complaint.php
+- Pakistan Railways Enquiry 117 and WAPDA Electricity Helpline 118 (District Rahim Yar Khan official contact directory): https://rykhan.punjab.gov.pk/contact_us
 - Punjab Police IGP Complaint Center 1787: https://www.punjabpolice.gov.pk/contact_details
 - Punjab Women Helpline 1043: https://pcsw.punjab.gov.pk/system/files/PGPR-2023%20%26%202024-Web.pdf
 - Punjab LGCD 0800-02345: https://lgcd.punjab.gov.pk/facilities_available_for_obtaining_information
@@ -106,16 +108,16 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - Batch 4 approval: user approved on 16 November 2026.
 - Code status: implemented and deployed.
 - Database status: additive migration applied; RLS smoke checks passed.
-- Active records after Batch 6: six Government Helplines and nine Local Authorities.
+- Active records after Batch 6: eight Government-category helplines and nine Local Authorities.
 - Data caveat: older District Control Room number 068-9230389 was retained but deactivated because the current official district page did not confirm it; no existing rows were deleted.
 - CI status: final GitHub Actions run 43808174348 succeeded for commit 69ad062d984f6f4bcc5e59cc1ca3dc480febc2eb.
 - Cloudflare production deployment: b628632c-60c2-491b-bf5c-0025a67683c2 succeeded; preview URL https://b628632c.hello-sadiqabad-2bs.pages.dev and canonical site https://hello-sadiqabad-2bs.pages.dev.
 - Ads telemetry caveat: no ad campaigns currently exist in production, so the tracking code is deployed but real campaign clicks/impressions will be observed after an ad is activated.
 - Batch 6 approval: user authorized continuation on 16 November 2026.
-- Batch 6 implementation: four additional police-station records inserted additively into `public.local_authorities`; no existing rows were changed and no schema migration was needed.
-- Batch 6 source: official Punjab Police Sadiqabad Circle directory, https://punjabpolice.gov.pk/node/3549.
-- Batch 6 records: Ahmed Pur Lamma (068-5020028), Kot Sabzal (068-5020030), Bhong (068-5020029), and Machka (068-5020031).
-- Batch 6 verification: Supabase anonymous-role query returned all four active records with their source URLs and verification timestamps; existing active-only RLS remained effective.
+- Batch 6 implementation: four additional police-station records inserted additively into `public.local_authorities`, plus two official helpline records inserted into `public.emergency_contacts`; no existing rows were changed and no schema migration was needed.
+- Batch 6 sources: official Punjab Police Sadiqabad Circle directory, https://punjabpolice.gov.pk/node/3549; District Rahim Yar Khan official contact directory, https://rykhan.punjab.gov.pk/contact_us.
+- Batch 6 records: Ahmed Pur Lamma (068-5020028), Kot Sabzal (068-5020030), Bhong (068-5020029), Machka (068-5020031), Pakistan Railways Enquiry (117), and WAPDA Electricity Helpline (118).
+- Batch 6 verification: Supabase anonymous-role queries returned all six active records with their source URLs and verification timestamps; existing active-only RLS remained effective.
 - Batch 6 is data-only; no application code or Pages deployment was required.
 - Next: continue only with additional government contacts when a direct official source confirms them. Batch 5 chatbot live acceptance remains pending user testing.
 
