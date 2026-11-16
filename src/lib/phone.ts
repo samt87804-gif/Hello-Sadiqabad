@@ -74,7 +74,7 @@ export function buildWhatsAppUrl(
   prefillText?: string
 ): string {
   const norm = normalizePkPhone(phone);
-  if (!norm) return '#';
+  if (!isValidPkPhone(phone)) return '#';
   const waNumber = norm.startsWith('+') ? norm.slice(1) : norm;
   const query = prefillText ? `?text=${encodeURIComponent(prefillText)}` : '';
   return `https://wa.me/${waNumber}${query}`;
