@@ -24,6 +24,7 @@ import {
   Sparkles,
   Users,
   UserRoundPlus,
+  UserRound,
   Wrench,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
@@ -58,6 +59,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { tab: 'areas', label: 'Areas', icon: MapPin, superAdminOnly: true },
   { tab: 'emergency', label: 'Emergency Contacts', icon: PhoneCall, superAdminOnly: true },
   { tab: 'local-authorities', label: 'Local Authorities', icon: Landmark, superAdminOnly: true },
+  { tab: 'authority-profiles', label: 'Authority Profiles', icon: UserRound, superAdminOnly: true },
   { tab: 'announcements', label: 'Announcements', icon: Megaphone, requiredPerm: 'announcements.manage' },
   { tab: 'news', label: 'News Articles', icon: Newspaper, requiredPerm: 'announcements.manage' },
   { tab: 'staff', label: 'Staff & Roles', icon: Shield, superAdminOnly: true },
