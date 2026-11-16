@@ -4,7 +4,8 @@ import {
   buildTelUrl,
   buildWhatsAppUrl,
   formatPkPhoneDisplay,
-  isValidHttpsUrl,\n  isValidPkPhone,
+  isValidHttpsUrl,
+  isValidPkPhone,
   normalizePkPhone,
 } from './phone';
 
