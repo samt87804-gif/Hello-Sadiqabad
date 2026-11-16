@@ -87,31 +87,60 @@ export function TaxonomyManager({
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nameEn.trim() || !nameUr.trim()) return;
-    if (mode === 'categories') {
-      await upsertCategory({ name_en: nameEn.trim(), name_ur: nameUr.trim(), slug: slugify(nameEn) }, actorId);
-    } else if (mode === 'areas') {
-      await upsertArea({ name_en: nameEn.trim(), name_ur: nameUr.trim(), slug: slugify(nameEn) }, actorId);
-    } else {
-      if (emCat === 'government' && !sourceUrl.trim()) {
-        showToast('Government helplines require an official source URL.', 'error');
-        return;
-      }
-      if (sourceUrl.trim() && !isValidHttpsUrl(sourceUrl.trim())) {
-        showToast('Source URL must be a valid HTTPS link.', 'error');
-        return;
-      }
-      await upsertEmergencyContact(
-        { name_en: nameEn.trim(), name_ur: nameUr.trim(), phone: phone.trim(), category: emCat, source_url: sourceUrl.trim() || null, verified_at: sourceUrl.trim() ? new Date().toISOString() : null },
-        actorId
-      );
+    const englishName = nameEn.trim();
+    const urduName = nameUr.trim();
+    if (!englishName || !urduName) {
+      showToast('English aur Urdu dono naam darj karein.', 'error');
+      return;
     }
-    showToast('Saved taxonomy entry!', 'success');
-    setNameEn('');
-    setNameUr('');
-    setPhone('');
-    setSourceUrl('');
-    await onReload();
+
+    try {
+      if (mode === 'categories') {
+        await upsertCategory({ name_en: englishName, name_ur: urduName, slug: slugify(englishName) }, actorId);
+      } else if (mode === 'areas') {
+        const slug = slugify(englishName);
+        if (!slug) {
+          showToast('Area ke English naam se valid URL slug nahi ban saka.', 'error');
+          return;
+        }
+        await upsertArea({ name_en: englishName, name_ur: urduName, slug, is_active: true }, actorId);
+      } else {
+        if (emCat === 'government' && !sourceUrl.trim()) {
+          showToast('Government helplines require an official source URL.', 'error');
+          return;
+        }
+        if (sourceUrl.trim() && !isValidHttpsUrl(sourceUrl.trim())) {
+          showToast('Source URL must be a valid HTTPS link.', 'error');
+          return;
+        }
+        if (!phone.trim()) {
+          showToast('Helpline phone number is required.', 'error');
+          return;
+        }
+        await upsertEmergencyContact(
+          { name_en: englishName, name_ur: urduName, phone: phone.trim(), category: emCat, source_url: sourceUrl.trim() || null, verified_at: sourceUrl.trim() ? new Date().toISOString() : null },
+          actorId
+        );
+      }
+
+      showToast(mode === 'areas' ? 'Area Supabase mein save ho gaya.' : 'Saved taxonomy entry!', 'success');
+      setNameEn('');
+      setNameUr('');
+      setPhone('');
+      setSourceUrl('');
+      try {
+        await onReload();
+      } catch (reloadError) {
+        showToast(reloadError instanceof Error ? `Saved, lekin list refresh nahi hui: ${reloadError.message}` : 'Saved, lekin list refresh nahi hui. Dobara reload karein.', 'error');
+      }
+    } catch (error) {
+      const dbError = error as { code?: string; message?: string };
+      if (dbError?.code === '23505') {
+        showToast('Is naam ka area/slug pehle se mojood hai. Mukhtalif English naam istemal karein.', 'error');
+      } else {
+        showToast(dbError?.message || (error instanceof Error ? error.message : 'Entry save nahi ho saki.'), 'error');
+      }
+    }
   };
 
   const saveEditCategory = async (e: React.FormEvent) => {
@@ -137,16 +166,23 @@ export function TaxonomyManager({
   const saveEditArea = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editArea) return;
-    await upsertArea(
-      {
-        ...editArea,
-        slug: editArea.slug.trim() || slugify(editArea.name_en),
-      },
-      actorId
-    );
-    showToast('Area updated!', 'success');
-    setEditArea(null);
-    await onReload();
+    try {
+      await upsertArea(
+        {
+          ...editArea,
+          slug: editArea.slug.trim() || slugify(editArea.name_en),
+        },
+        actorId
+      );
+      showToast('Area updated!', 'success');
+      setEditArea(null);
+      await onReload();
+    } catch (error) {
+      const dbError = error as { code?: string; message?: string };
+      showToast(dbError?.code === '23505'
+        ? 'Yeh area URL slug isi city mein pehle se mojood hai.'
+        : dbError?.message || (error instanceof Error ? error.message : 'Area update nahi ho saka.'), 'error');
+    }
   };
 
   const saveEditEmergency = async (e: React.FormEvent) => {
