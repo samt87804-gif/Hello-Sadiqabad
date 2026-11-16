@@ -209,7 +209,6 @@ function AreaPicker({
           <span className="block text-sm font-bold text-on-surface truncate">{selected ? bilingualText(lang, selected.name_en, selected.name_ur) : (lang === 'ur' ? 'تمام علاقے' : 'All Sadiqabad Areas')}</span>
           <span className="block text-[10px] text-on-surface-variant">{selected ? (lang === 'ur' ? 'منتخب علاقہ' : 'Selected area') : `${areas.length} ${lang === 'ur' ? 'علاقے دستیاب' : 'areas available'}`}</span>
         </span>
-        {value && <span onClick={(event) => { event.stopPropagation(); choose(''); }} className="w-7 h-7 rounded-full bg-surface-container text-on-surface-variant hover:text-error flex items-center justify-center"><X className="w-3.5 h-3.5" /></span>}
         <ChevronDown className={`w-4 h-4 text-on-surface-variant shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
