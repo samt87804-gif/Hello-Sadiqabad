@@ -29,7 +29,7 @@ import {
   getCachedEmergencyContacts,
   getOrCreateSessionId,
 } from './offlineStorage';
-import { effectivePlanCode, filterAndRankBusinesses, normalizeDirectorySearchText } from './searchFilter';
+import { effectivePlanCode, filterAndRankBusinesses, matchesDirectoryBusinessQuery, normalizeDirectorySearchText } from './searchFilter';
 import { normalizePkPhone } from './phone';
 import { daysUntil, slugify } from './format';
 import { attachPublicOffers, getPakistanDateString, isOfferCurrentlyValid } from './offers';
@@ -591,13 +591,7 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
   return githubBusinessCache;
 }
 function matchesGitHubBusiness(business:BusinessPublicView,filters:Partial<SearchFiltersState>):boolean {
-  const query=normalizeDirectorySearchText(filters.q);
-  const searchableText=normalizeDirectorySearchText([
-    business.name_en,business.name_ur,business.address_en,business.address_ur,business.phone_primary,
-    business.description_en,business.description_ur,business.category?.name_en,business.category?.name_ur,
-    business.area?.name_en,business.area?.name_ur,...(business.tags||[]),...(business.services_en||[]),...(business.services_ur||[])
-  ].join(' '));
-  if(query&&!query.split(' ').every((token)=>searchableText.includes(token)))return false;
+  if(!matchesDirectoryBusinessQuery(business,filters.q))return false;
   if(filters.category&&business.category?.slug!==filters.category)return false;
   if(filters.area&&business.area?.slug!==filters.area)return false;
   if(filters.verified&&!business.is_verified)return false;
