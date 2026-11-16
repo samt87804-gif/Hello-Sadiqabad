@@ -1756,7 +1756,8 @@ export async function findDuplicateBusinesses(
     const addressMatch = candidateAddress.length > 0 && normalize(business.address_en ?? '') === candidateAddress;
     const nearMatch = lat != null && lng != null && business.lat != null && business.lng != null
       && Math.abs(business.lat - lat) <= 0.0004 && Math.abs(business.lng - lng) <= 0.0004;
-    return phoneMatch || (nameMatch && (business.area_id === (areaId ?? null) || addressMatch || nearMatch));
+    return (phoneMatch && (nameMatch || addressMatch)) ||
+      (nameMatch && (business.area_id === (areaId ?? null) || addressMatch || nearMatch));
   });
 }
 
