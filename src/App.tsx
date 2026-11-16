@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect, useRef } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './lib/theme';
 import { I18nProvider } from './lib/i18n';
 import { AuthProvider } from './lib/auth';
@@ -89,6 +89,113 @@ const AdminPortal = lazy(() =>
   import('./pages/admin/AdminPortal').then((m) => ({ default: m.AdminPortal }))
 );
 
+
+/**
+ * Browser-level scroll persistence for the admin workspace.
+ * This remains mounted while protected routes are checking the Supabase session,
+ * so it can restore the user's position even after Chrome discards a background tab.
+ */
+function AdminScrollPersistence() {
+  const location = useLocation();
+  const restoredForPath = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!location.pathname.startsWith('/admin')) return;
+
+    const key = `hs_admin_scroll_v2:${location.pathname}`;
+    const readPosition = () => {
+      try {
+        const sessionValue = sessionStorage.getItem(key);
+        const localValue = localStorage.getItem(key);
+        const value = sessionValue ?? localValue;
+        const parsed = Number(value ?? 0);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+      } catch {
+        return 0;
+      }
+    };
+
+    const savePosition = () => {
+      const value = String(Math.max(0, window.scrollY || window.pageYOffset || 0));
+      try {
+        sessionStorage.setItem(key, value);
+        localStorage.setItem(key, value);
+      } catch {
+        // Scroll restoration still works with browser-native history when storage is blocked.
+      }
+    };
+
+    let saveFrame = 0;
+    const onScroll = () => {
+      if (saveFrame) cancelAnimationFrame(saveFrame);
+      saveFrame = requestAnimationFrame(() => {
+        saveFrame = 0;
+        savePosition();
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pagehide', savePosition);
+    window.addEventListener('beforeunload', savePosition);
+    document.addEventListener('visibilitychange', savePosition);
+
+    const savedPosition = readPosition();
+    let restoreFrame = 0;
+    let restoreAttempts = 0;
+    const attemptRestore = () => {
+      if (restoredForPath.current === location.pathname || savedPosition <= 0) return;
+      const ready = document.querySelector('[data-admin-scroll-ready="true"]');
+      if (!ready) return;
+
+      const maxScroll = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight,
+        document.body.scrollHeight - window.innerHeight
+      );
+      // Wait until the admin content has enough height to reach the saved offset.
+      if (maxScroll + 4 < savedPosition && restoreAttempts < 180) {
+        restoreAttempts += 1;
+        restoreFrame = requestAnimationFrame(attemptRestore);
+        return;
+      }
+
+      window.scrollTo({ top: Math.min(savedPosition, maxScroll), left: 0, behavior: 'auto' });
+      restoredForPath.current = location.pathname;
+    };
+
+    const startRestore = () => {
+      if (restoredForPath.current === location.pathname) return;
+      restoreAttempts = 0;
+      if (restoreFrame) cancelAnimationFrame(restoreFrame);
+      restoreFrame = requestAnimationFrame(() => {
+        restoreFrame = requestAnimationFrame(attemptRestore);
+      });
+    };
+
+    const observer = new MutationObserver(startRestore);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    const resizeObserver = new ResizeObserver(startRestore);
+    resizeObserver.observe(document.documentElement);
+    window.addEventListener('pageshow', startRestore);
+    startRestore();
+
+    return () => {
+      savePosition();
+      if (saveFrame) cancelAnimationFrame(saveFrame);
+      if (restoreFrame) cancelAnimationFrame(restoreFrame);
+      observer.disconnect();
+      resizeObserver.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pagehide', savePosition);
+      window.removeEventListener('beforeunload', savePosition);
+      document.removeEventListener('visibilitychange', savePosition);
+      window.removeEventListener('pageshow', startRestore);
+    };
+  }, [location.pathname]);
+
+  return null;
+}
+
 function PageLoader() {
   return (
     <div className="min-h-screen bg-surface p-6 max-w-5xl mx-auto space-y-4">
@@ -110,6 +217,7 @@ export default function App() {
           <AuthProvider>
             <ToastProvider>
               <BrowserRouter>
+                <AdminScrollPersistence />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public Visitor Routes */}
