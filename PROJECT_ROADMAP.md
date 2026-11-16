@@ -13,7 +13,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- None
+- [ ] Batch 4 — Sponsor Ads enhancements, Government Helplines and Local Authorities. Code and additive Supabase migration are in place; final verification and production deployment are pending.
 
 ## User-requested improvements (16 November 2026)
 
@@ -32,12 +32,44 @@ Batch 3 — completed (16 November 2026):
 - [x] (8) Use the supplied Hello Sadiqabad logo in the site header, favicon, Apple touch icon and installable PWA manifest.
 - [x] (9) Center helpline names and phone numbers in the right 60% of 16:9 helpline cards and increase text size.
 
-## Remaining
+## Batch 4 — approved; implementation in progress (16 November 2026)
 
-- [ ] Sponsor Ads enhancements
-- [ ] Government Helpline module
-- [ ] Local Authorities module
-- [ ] Read-only, Roman Urdu-first AI chatbot
+### (10) Sponsor Ads enhancements
+- [x] Add admin campaign summary metrics: live campaigns, pending review, impressions, clicks and overall CTR.
+- [x] Add campaign search plus lifecycle-status and placement filters.
+- [x] Show creative preview, sponsoring business, placement, schedule and CTR on each campaign.
+- [x] Add Government Helplines and Local Authorities placements.
+- [x] Render civic placements through the shared AdBanner component and respect the global ads_enabled setting.
+- [x] Distinguish scheduled and date-expired campaigns without silently changing stored status.
+- [x] Make campaign updates preserve live impression/click counters instead of overwriting them with stale form data.
+- [x] Validate banner image HTTPS and allow only HTTPS external targets or safe same-site paths; reject protocol-relative //host redirects.
+- [x] Extend the ads placement and target URL database constraints for the two new civic placements and safe internal paths.
+- [ ] Verify final production deployment and live click/impression tracking.
+
+### (11) Government Helplines
+- [x] Preserve the existing emergency shortcodes and shared offline cache.
+- [x] Add a dedicated /government-helplines page and Government category without creating a duplicate helpline table.
+- [x] Add official source URL and verification timestamp to emergency_contacts.
+- [x] Add Admin source URL management and require an official HTTPS source for Government-category records.
+- [x] Seed six government helpline entries with linked official sources: District Control Room (two numbers), Suthra Punjab 1139, Punjab Police IGP complaints 1787, Punjab Women 1043, and LGCD 0800-02345.
+- [x] Show source links and source-checked dates on public cards.
+- [ ] Verify final production route, offline cache behavior and public display.
+
+### (12) Local Authorities
+- [x] Add public.local_authorities with bilingual names, authority type, descriptions, phones, email, address, office hours, website/map links, source URL, verified_at, sort order and active flag.
+- [x] Enable RLS: anonymous visitors can read active rows only; only Super Admin can insert, update or delete.
+- [x] Add updated_at and audit-log triggers.
+- [x] Add public /local-authorities page with search and authority-type filters.
+- [x] Add call, email, website and map actions only when a corresponding field is present.
+- [x] Show official source and verification date on each authority card.
+- [x] Add Super Admin create/edit/activate/deactivate management and include the records in JSON backup export.
+- [x] Seed five Sadiqabad entries from official sources; omit unpublished phone/address fields rather than inventing them.
+- [ ] Verify final production route and Admin CRUD through the live application.
+
+## Remaining after Batch 4
+- [ ] Read-only, Roman Urdu-first AI chatbot — not started; requires approval as the next batch.
+- [ ] Expand Government Helplines only when additional numbers are confirmed by official sources.
+- [ ] Expand Local Authorities only when direct public contact details are officially published.
 
 ## Existing functionality to preserve
 
@@ -56,3 +88,4 @@ Batch 3 — completed (16 November 2026):
 2. Keep incomplete sub-work unchecked and clearly labelled.
 3. Commit roadmap updates to `main` alongside the completed task.
 4. Work through user-requested improvements in batches of three; update this checklist after each verified batch and ask before starting the next batch.
+5. Keep docs/ROADMAP_EXECUTION_CHECKLIST.md synchronized with detailed acceptance criteria, source register, migrations, test results and deployment references.
