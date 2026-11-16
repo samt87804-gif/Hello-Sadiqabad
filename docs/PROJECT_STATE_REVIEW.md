@@ -64,7 +64,7 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Sponsor Ads: campaign dashboard metrics and filters, schedule-aware status labels, creative preview, new civic placements, safe target URL validation, and campaign writes that do not overwrite impression/click counters.
 - Government Helplines: dedicated public route using the existing emergency_contacts store, source URLs and verification timestamps, six official-source helpline records, and Admin source management.
 - Local Authorities: additive RLS-protected table, five official-source Sadiqabad records, public search/filter route, Super Admin manager, audit triggers, and JSON backup export support.
-- Supabase migration: `20261116044916_enhance_ads_and_add_government_directories`.
+- Supabase migrations: `20261116044916_enhance_ads_and_add_government_directories` and `20261116051134_verify_official_government_helpline_sources`.
 - Security checks so far: anonymous SELECT sees active authority rows only; owner INSERT is denied; Super Admin INSERT was tested in a rolled-back transaction; no RLS test records persisted.
 - Source data caveat: Tehsil Council Sadiqabad is listed without a direct public phone because the cited official directory does not publish one. Municipal Committee Sadiqabad details use its official site; police numbers use the Punjab Police directory.
 - Final GitHub Actions run `43808174348` succeeded for commit `69ad062d984f6f4bcc5e59cc1ca3dc480febc2eb`.
