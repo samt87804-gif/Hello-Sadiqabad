@@ -24,6 +24,7 @@ import type {
   EmergencyCategory,
   EmergencyContactRow,
   LeadRow,
+  LocalAuthorityRow,
   PageRow,
   PermissionKey,
   ProfileRow,
@@ -1108,12 +1109,14 @@ export function BackupExportManager({
   categories,
   areas,
   emergencyContacts,
+  localAuthorities = [],
   leads = [],
 }: {
   businesses: BusinessPublicView[];
   categories: CategoryRow[];
   areas: AreaRow[];
   emergencyContacts: EmergencyContactRow[];
+  localAuthorities?: LocalAuthorityRow[];
   leads?: LeadRow[];
 }) {
   const { showToast } = useToast();
@@ -1138,11 +1141,13 @@ export function BackupExportManager({
         categories: categories.length,
         areas: areas.length,
         emergency_contacts: emergencyContacts.length,
+        local_authorities: localAuthorities.length,
         leads: leads.length,
       },
       categories,
       areas,
       emergency_contacts: emergencyContacts,
+      local_authorities: localAuthorities,
       leads,
       businesses,
     };
@@ -1216,7 +1221,7 @@ export function BackupExportManager({
           <Database className="w-5 h-5 text-primary" /> Directory Backups, CSV Exports &amp; Sitemap
         </h2>
         <p className="text-xs text-on-surface-variant">
-          Download full directory snapshots, CSV spreadsheets, leads, emergency records, and SEO sitemap XML.
+          Download full directory snapshots, CSV spreadsheets, civic helplines, local authorities, leads, and SEO sitemap XML.
         </p>
       </div>
 
@@ -1227,7 +1232,7 @@ export function BackupExportManager({
             <Badge variant="primary">{businesses.length} shops</Badge>
           </div>
           <p className="text-xs text-on-surface-variant">
-            Complete structured backup including all businesses, categories, areas, leads, and emergency helplines.
+            Complete structured backup including businesses, categories, areas, emergency and government helplines, local authorities, and leads.
           </p>
           <Button onClick={exportFullJson} leftIcon={<FileJson className="w-4 h-4" />}>
             Download Full JSON Backup
