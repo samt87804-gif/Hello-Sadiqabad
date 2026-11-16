@@ -27,9 +27,10 @@ Batch 2 — completed (16 November 2026):
 - [x] (5) Route owner-created and edited products, services and offers through database-enforced Admin approval before public display.
 - [x] (6) Let owners choose which of their published businesses appear on their public owner profile, with RLS-controlled public visibility.
 
-Batch 3 — pending:
-- [ ] (7) Move category listing quantity to the far right of each category card and make it larger/bolder, without changing the existing card layout.
-- [ ] (8) Use the supplied Hello Sadiqabad logo in the site header and as the installable PWA app icon.
+Batch 3 — completed (16 November 2026):
+- [x] (7) Move category listing quantity to the far right of homepage and All Categories cards and make it larger/bolder.
+- [x] (8) Use the supplied Hello Sadiqabad logo in the site header, favicon, Apple touch icon and installable PWA manifest.
+- [x] (9) Center helpline names and phone numbers in the right 60% of 16:9 helpline cards and increase text size.
 
 ## Remaining
 
