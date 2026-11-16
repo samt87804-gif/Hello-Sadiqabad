@@ -1,6 +1,6 @@
 # Hello Sadiqabad — Project Roadmap
 
-This is the live project checklist. Update it on `main` whenever a task is verified complete. A phase is checked only after implementation and verification.
+This is the live application project checklist. Update it on `main` whenever a task is verified complete. A phase is checked only after implementation and verification.\n\n**Domain, security and SEO work is tracked separately in [docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md). New-chat continuity and the website owner's Google/Supabase checklist are in [docs/NEW_CHAT_HANDOFF.md](docs/NEW_CHAT_HANDOFF.md).**
 
 ## Completed
 
