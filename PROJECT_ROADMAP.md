@@ -192,4 +192,4 @@ Batch 3 — completed (16 November 2026):
 - [x] Announcements route follows the same pattern for the currently selected announcement set; fetch failures and empty results remain noindex.
 - [x] GitHub Actions CI passed for code commit `bac9261c134bc782159db8d696026ff0979fdc4a`.
 - [x] Cloudflare Pages production deployment succeeded: `017a7ca2-fe39-463d-9e46-631bba2e1fbe`.
-- [ ] Browser-render recheck of the two post-deploy robots tags is pending because Cloudflare browser-rendering returned HTTP 429; prior live checks of both pages showed HTTP 200 and the empty state.
+- [x] Post-deploy browser-render checks confirmed both `/offers` and `/announcements` return HTTP 200, canonical URLs, one H1, and `noindex,follow` while their active datasets are empty.
