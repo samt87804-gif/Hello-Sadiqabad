@@ -80,3 +80,14 @@ You own the technical work:
 
 ### Immediate next task
 Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verified and Phase 1 foundation is deployed. Owner has submitted the live sitemap; Google processing remains pending. Owner has already submitted URL Inspection + Request Indexing for homepage and six priority public URLs. Continue the full internal-link, headings, image-alt, structured-data/content SEO audit and local SEO data-quality work; later review Search Console processing/index coverage when available. Do not repeat completed Auth URL or Google verification tasks, and do not claim indexing until Search Console confirms it.
+
+
+## Latest verified work — 17 November 2026
+
+- Owner confirmed all six priority Google Search Console URL inspection submissions; submission to priority crawl queue is not proof of indexing.
+- Read-only live Supabase + workbook audit completed and documented in `docs/LOCAL_SEO_DATA_QUALITY_AUDIT.md`.
+- Sitemap detail routes now include only 10 categories with published listings and 14 areas with at least three published businesses. Production sitemap browser-render verification: HTTP 200, 169 canonical `<loc>` entries, no search URLs. Sitemap cache key bumped to `?v=2` to prevent stale pre-filter sitemap responses.
+- Invalid/blank/zero/all-zero Pakistani phone numbers no longer produce call or WhatsApp links; invalid primary/secondary call actions are hidden on business cards and business profiles.
+- Production browser-render check for the Al Barkat Pulao and Tea Restaurant listing (blank phone): HTTP 200, correct canonical URL, no `tel:` links, no placeholder number, no Call action.
+- GitHub CI run 43954990190 passed for code commit `81e9378f681f9ad82e7af680ccf4735ad9256d6d`; Cloudflare Pages production deployment `c3c0e3ba-1729-4f9b-87f8-cbca75e60ed4` succeeded.
+- No production business, area, category or owner records were changed; no crawler workbook records were imported. Remaining tasks: full route crawl, Rich Results Test, candidate matching by place ID/address/coordinates, and verified owner-sourced data corrections.
