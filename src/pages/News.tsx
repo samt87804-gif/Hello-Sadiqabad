@@ -111,7 +111,7 @@ export function News() {
             <ArrowLeft className="w-4 h-4" /> {lang === 'ur' ? 'تمام خبریں' : 'All News'}
           </Link>
         ) : (
-          <SectionHeading title={title} titleUr="صادق آباد کی تازہ خبریں" subtitle="Local reporting, public-interest stories and community updates" />
+          <SectionHeading title={title} titleUr="صادق آباد کی تازہ خبریں" subtitle="Local reporting, public-interest stories and community updates" headingLevel="h1" />
         )}
         {loading ? (
           <div className="space-y-3"><Skeleton className="h-64 rounded-2xl" /><Skeleton className="h-28 rounded-2xl" /></div>
