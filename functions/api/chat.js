@@ -50,6 +50,64 @@ async function fetchTable(baseUrl, key, table, params) {
   return Array.isArray(data) ? data : [];
 }
 
+
+async function fetchBusinessMatches(env, query) {
+  const searchText = String(query || '').trim().slice(0, 120);
+  if (!searchText) return [];
+  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\\/+$/, '');
+  const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
+  if (!baseUrl.startsWith('https://') || !key) return [];
+
+  try {
+    const response = await fetch(`${baseUrl}/rest/v1/rpc/search_businesses`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ p_query: searchText, p_limit: 12, p_offset: 0, p_sort: 'relevance' }),
+    });
+    if (!response.ok) return [];
+    const rows = await response.json();
+    if (!Array.isArray(rows)) return [];
+    return rows.slice(0, 12).map((row) => ({
+      name: row.name_en,
+      name_ur: row.name_ur,
+      slug: row.slug,
+      category: row.category?.name_en || null,
+      category_ur: row.category?.name_ur || null,
+      area: row.area?.name_en || null,
+      area_ur: row.area?.name_ur || null,
+      address: typeof row.address_en === 'string' ? row.address_en.slice(0, 180) : null,
+      address_ur: typeof row.address_ur === 'string' ? row.address_ur.slice(0, 180) : null,
+      phone: row.phone_primary,
+      alternate_phone: row.phone_secondary,
+      whatsapp: row.whatsapp,
+      website: row.website_url,
+      description: typeof row.description_en === 'string' ? row.description_en.slice(0, 400) : null,
+      description_ur: typeof row.description_ur === 'string' ? row.description_ur.slice(0, 400) : null,
+      services: row.services_en,
+      services_ur: row.services_ur,
+      opening_hours: row.opening_hours,
+      open_24_hours: row.is_open_24h,
+      home_delivery: row.home_delivery,
+      verified: row.is_verified,
+      rating: row.rating_avg,
+      rating_count: row.rating_count,
+      active_offers: Array.isArray(row.active_offers) ? row.active_offers.slice(0, 3).map((offer) => ({
+        title: offer.title,
+        description: typeof offer.description === 'string' ? offer.description.slice(0, 240) : null,
+        valid_from: offer.valid_from,
+        valid_to: offer.valid_to,
+      })) : [],
+    }));
+  } catch {
+    return [];
+  }
+}
+
 async function fetchPublicContext(env, origin) {
   const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
@@ -203,6 +261,7 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const context = await fetchPublicContext(env, new URL(request.url).origin);
+    context.business_search_matches = await fetchBusinessMatches(env, messages[messages.length - 1].content);
     const result = await env.AI.run(
       MODEL,
       { messages: [{ role: 'system', content: buildSystemPrompt(context) }, ...messages], max_tokens: 450, temperature: 0.2 },
