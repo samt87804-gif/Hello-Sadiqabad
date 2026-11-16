@@ -22,10 +22,10 @@ Batch 1 — completed (16 November 2026):
 - [x] (2) Support multiple images and a YouTube video URL in each News article.
 - [x] (3) Standardize image-management previews as 16:9 cards with 40% image / 60% details; show name, phone and a Call action for helplines.
 
-Batch 2 — pending:
-- [ ] (4) Keep Admin edit sections and entered form data open when switching tabs or copying/pasting from another browser tab.
-- [ ] (5) Route owner-created products, services and offers through Admin approval before public display.
-- [ ] (6) Let owners choose which of their businesses appear on their public owner profile.
+Batch 2 — completed (16 November 2026):
+- [x] (4) Keep Admin edit sections and unsaved form state mounted when switching Admin tabs or refreshing dashboard data.
+- [x] (5) Route owner-created and edited products, services and offers through database-enforced Admin approval before public display.
+- [x] (6) Let owners choose which of their published businesses appear on their public owner profile, with RLS-controlled public visibility.
 
 Batch 3 — pending:
 - [ ] (7) Move category listing quantity to the far right of each category card and make it larger/bolder, without changing the existing card layout.

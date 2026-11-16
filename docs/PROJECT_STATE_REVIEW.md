@@ -24,6 +24,9 @@ Last reviewed: 16 November 2026
 - News module with bilingual public feed/article pages and Admin draft/publish workflow.
 - Enhanced Owner Portal, including My Businesses, owner request history and plan-upgrade submissions.
 - Owner Products & Services Catalogue, with database/UI limits and published-business visibility rules.
+- Admin editor state retention: visited Admin sections remain mounted while switching Admin tabs; dashboard refreshes no longer replace active editors with loading skeletons.
+- Owner content approval: owner product, service and offer create/update/delete actions create moderation submissions. Database RLS blocks direct owner writes; Admin approval applies changes and notifies the owner.
+- Owner-selected public profile businesses: owners choose up to 50 of their published listings. A separate RLS-protected mapping controls which selected listings are shown on the public owner profile.
 
 ## Important existing rules and data to preserve
 
@@ -44,10 +47,10 @@ The user asked for eight improvements, to be implemented in batches of three. Th
 2. Multiple images and a YouTube video URL per News article.
 3. Consistent 16:9 image-management preview cards (40% image / 60% details); helpline cards include name, phone and a Call action.
 
-### Batch 2
-4. Keep Admin edit panels and unsaved form state open when switching browser tabs or copying/pasting.
-5. Owner products, services and offers require Admin approval before becoming public.
-6. Owners choose which owned businesses appear on their public owner profile.
+### Batch 2 — completed
+4. Admin edit panels stay mounted across Admin tab changes and are not replaced by loading states during refresh.
+5. Owner products, services and offers are submitted to moderation; public data changes only after Admin approval.
+6. Owners select the published businesses shown on their public owner profile.
 
 ### Batch 3
 7. Move category listing count to the far right and make it larger/bolder without otherwise changing the category card design.
