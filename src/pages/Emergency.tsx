@@ -136,60 +136,47 @@ export function Emergency() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {visible.map((em) => (
-            <Card key={em.id} className="p-4 border-error/25 flex flex-col justify-between gap-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-error-container text-error flex items-center justify-center shrink-0 overflow-hidden">
-                    {directoryImageUrls.helplines[em.id] ? <ImageWithFallback src={directoryImageUrls.helplines[em.id]} alt={`${em.name_en} helpline`} className="w-full h-full rounded-2xl" /> : <CategoryIcon name={em.icon} className="w-5 h-5" />}
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-on-surface">
+            <Card key={em.id} className="overflow-hidden border-error/25">
+              <div className="aspect-video flex">
+                <div className="w-2/5 shrink-0 overflow-hidden bg-error-container flex items-center justify-center">
+                  {directoryImageUrls.helplines[em.id]
+                    ? <ImageWithFallback src={directoryImageUrls.helplines[em.id]} alt={`${em.name_en} helpline`} className="w-full h-full" />
+                    : <CategoryIcon name={em.icon} className="w-10 h-10 text-error" />}
+                </div>
+                <div className="w-3/5 min-w-0 p-3 sm:p-4 flex flex-col justify-between gap-2">
+                  <div className="min-w-0">
+                    <h2 className="text-sm sm:text-base font-bold text-on-surface line-clamp-2">
                       {bilingualText(lang, em.name_en, em.name_ur)}
                     </h2>
                     {lang === 'en' && urduHints && (
-                      <p className="font-urdu text-xs text-primary leading-[1.9]" dir="rtl">
+                      <p className="font-urdu text-xs text-primary leading-[1.8] mt-1 line-clamp-2" dir="rtl">
                         {em.name_ur}
                       </p>
                     )}
                     {(lang === 'ur' ? em.description_ur || em.description_en : em.description_en) && (
-                      <p className="text-xs text-on-surface-variant mt-1">
+                      <p className="text-[11px] text-on-surface-variant mt-1 line-clamp-2">
                         {lang === 'ur' ? em.description_ur || em.description_en : em.description_en}
                       </p>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <span className="block text-base sm:text-lg font-extrabold text-error tabular-nums" dir="ltr">{em.phone}</span>
+                    <div className="flex items-center gap-1.5">
+                      <a href={buildTelUrl(em.phone)}
+                        className="flex-1 min-h-9 px-2 rounded-lg bg-[#ba1a1a] dark:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:opacity-95">
+                        <PhoneCall className="w-3.5 h-3.5" />
+                        {lang === 'ur' ? 'کال کریں' : 'Call'}
+                      </a>
+                      {em.whatsapp && (
+                        <a href={buildWhatsAppUrl(em.whatsapp)} target="_blank" rel="noopener noreferrer"
+                          aria-label={lang === 'ur' ? 'واٹس ایپ' : 'WhatsApp'}
+                          className="min-h-9 px-2.5 rounded-lg bg-whatsapp text-white font-bold text-xs flex items-center justify-center">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <span className="text-lg font-extrabold text-error tabular-nums shrink-0" dir="ltr">
-                  {em.phone}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2 border-t border-outline-variant/25">
-                <a
-                  href={buildTelUrl(em.phone)}
-                  className="flex-1 min-h-[44px] px-4 rounded-xl bg-[#ba1a1a] dark:bg-[#b91c1c] text-white font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95"
-                >
-                  <PhoneCall className="w-4 h-4" />
-                  <span>
-                    {lang === 'ur' ? (
-                      <>
-                        کال کریں <span dir="ltr" className="tabular-nums">{em.phone}</span>
-                      </>
-                    ) : (
-                      <>Call {em.phone}</>
-                    )}
-                  </span>
-                </a>
-                {em.whatsapp && (
-                  <a
-                    href={buildWhatsAppUrl(em.whatsapp)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="min-h-[44px] px-4 rounded-xl bg-whatsapp text-white font-bold text-sm flex items-center justify-center gap-1.5"
-                  >
-                    <MessageCircle className="w-4 h-4" />{' '}
-                    {lang === 'ur' ? 'واٹس ایپ' : 'WhatsApp'}
-                  </a>
-                )}
               </div>
             </Card>
           ))}

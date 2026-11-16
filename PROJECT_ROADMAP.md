@@ -15,6 +15,22 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 - None
 
+## User-requested improvements (16 November 2026)
+
+Batch 1 — currently being implemented:
+- [ ] (1) Add News to the mobile bottom navigation.
+- [ ] (2) Support multiple images and a YouTube video URL in each News article.
+- [ ] (3) Standardize image-management previews as 16:9 cards with 40% image / 60% details; show name, phone and a Call action for helplines.
+
+Batch 2 — pending:
+- [ ] (4) Keep Admin edit sections and entered form data open when switching tabs or copying/pasting from another browser tab.
+- [ ] (5) Route owner-created products, services and offers through Admin approval before public display.
+- [ ] (6) Let owners choose which of their businesses appear on their public owner profile.
+
+Batch 3 — pending:
+- [ ] (7) Move category listing quantity to the far right of each category card and make it larger/bolder, without changing the existing card layout.
+- [ ] (8) Use the supplied Hello Sadiqabad logo in the site header and as the installable PWA app icon.
+
 ## Remaining
 
 - [ ] Sponsor Ads enhancements
@@ -38,4 +54,4 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 1. Mark a task `[x]` only after code, database/security checks (when applicable), build/tests, and deployment verification pass.
 2. Keep incomplete sub-work unchecked and clearly labelled.
 3. Commit roadmap updates to `main` alongside the completed task.
-4. Work on one phase at a time and ask before starting the next phase.
+4. Work through user-requested improvements in batches of three; update this checklist after each verified batch and ask before starting the next batch.

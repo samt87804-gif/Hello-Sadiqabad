@@ -8,8 +8,10 @@ import {
   ExternalLink,
   FileCode,
   FileJson,
+  Image as ImageIcon,
   Megaphone,
   Plus,
+  PhoneCall,
   Search,
   Shield,
   Wrench,
@@ -1442,9 +1444,9 @@ export function SettingsManager({
           <p className="text-xs text-on-surface-variant mt-1">Paste public Supabase Storage URLs. Save each image to publish it immediately on the website; leave a URL blank and save to remove that image.</p>
         </div>
         {([
-          { kind: 'categories' as const, title: 'Category Cards', items: categories.map((item) => ({ key: item.slug, label: item.name_en, detail: item.name_ur })) },
-          { kind: 'areas' as const, title: 'Area & Bazaar Cards', items: areas.map((item) => ({ key: item.slug, label: item.name_en, detail: item.name_ur })) },
-          { kind: 'helplines' as const, title: 'Government & Emergency Helplines', items: emergencyContacts.map((item) => ({ key: item.id, label: item.name_en, detail: item.phone })) },
+          { kind: 'categories' as const, title: 'Category Cards', items: categories.map((item) => ({ key: item.slug, label: item.name_en, detail: item.name_ur, phone: '' })) },
+          { kind: 'areas' as const, title: 'Area & Bazaar Cards', items: areas.map((item) => ({ key: item.slug, label: item.name_en, detail: item.name_ur, phone: '' })) },
+          { kind: 'helplines' as const, title: 'Government & Emergency Helplines', items: emergencyContacts.map((item) => ({ key: item.id, label: item.name_en, detail: item.name_ur, phone: item.phone })) },
         ]).map((section) => (
           <div key={section.kind} className="space-y-3">
             <div className="flex items-center justify-between gap-2">
@@ -1468,7 +1470,30 @@ export function SettingsManager({
                         </div>
                         <span className={`text-[10px] font-bold ${savedUrl ? 'text-primary' : 'text-on-surface-variant'}`}>{savedUrl ? 'Image set' : 'Icon fallback'}</span>
                       </div>
-                      {value && <img src={value} alt={`${item.label} preview`} className="w-full h-28 object-cover rounded-lg bg-surface-container" />}
+                      <div className="w-full aspect-video rounded-lg overflow-hidden border border-outline-variant/40 bg-surface-container-low flex">
+                        <div className="w-2/5 shrink-0 bg-surface-container flex items-center justify-center overflow-hidden">
+                          {value
+                            ? <img src={value} alt={`${item.label} preview`} className="w-full h-full object-cover" loading="lazy" />
+                            : <ImageIcon className="w-8 h-8 text-outline" />}
+                        </div>
+                        <div className="w-3/5 min-w-0 p-3 flex flex-col justify-between">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm font-bold text-on-surface line-clamp-2">{item.label}</p>
+                            <p className="text-[11px] text-on-surface-variant mt-1 line-clamp-2">{item.detail}</p>
+                          </div>
+                          {item.phone ? (
+                            <div className="space-y-1.5">
+                              <p className="text-sm font-extrabold text-error tabular-nums" dir="ltr">{item.phone}</p>
+                              <a href={`tel:${item.phone.replace(/[^\d+]/g, '')}`}
+                                className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-error px-3 text-[11px] font-bold text-white">
+                                <PhoneCall className="w-3.5 h-3.5" /> Call
+                              </a>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] font-semibold text-primary">16:9 preview · 40/60</span>
+                          )}
+                        </div>
+                      </div>
                       <input
                         type="url"
                         value={value}

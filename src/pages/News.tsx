@@ -11,6 +11,25 @@ import { EmptyState, Skeleton } from '../components/ui/Feedback';
 import { Button } from '../components/ui/Button';
 import { Card, Container, SectionHeading } from '../components/ui/Surface';
 
+function getYouTubeEmbedUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    let videoId = '';
+    if (host === 'youtu.be') {
+      videoId = url.pathname.split('/').filter(Boolean)[0] ?? '';
+    } else if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host)) {
+      videoId = url.searchParams.get('v') ?? url.pathname.match(/^\/(?:embed|shorts)\/([^/?]+)/)?.[1] ?? '';
+    }
+    return /^[A-Za-z0-9_-]{11}$/.test(videoId)
+      ? `https://www.youtube-nocookie.com/embed/${videoId}`
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function News() {
   const { slug } = useParams();
   const { lang, urduHints } = useI18n();
@@ -42,6 +61,8 @@ export function News() {
   }, [slug, retry]);
 
   const title = lang === 'ur' ? 'صادق آباد کی خبریں' : 'Sadiqabad News';
+  const galleryImages = article?.image_urls?.filter((url) => url && url !== article.cover_image_url) ?? [];
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(article?.youtube_url);
   return (
     <AppShell>
       <Container size="lg" className="py-6 space-y-5">
@@ -65,6 +86,27 @@ export function News() {
         ) : article ? (
           <article className="max-w-3xl mx-auto space-y-4">
             {article.cover_image_url && <img src={article.cover_image_url} alt="" className="w-full max-h-[420px] object-cover rounded-2xl" loading="lazy" />}
+            {galleryImages.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {galleryImages.map((url, index) => (
+                  <img key={url + index} src={url} alt={`Article image ${index + 1}`}
+                    className="w-full aspect-video object-cover rounded-xl border border-outline-variant/30" loading="lazy" />
+                ))}
+              </div>
+            )}
+            {youtubeEmbedUrl && (
+              <div className="aspect-video overflow-hidden rounded-2xl bg-black">
+                <iframe
+                  src={youtubeEmbedUrl}
+                  title={bilingualText(lang, article.title_en, article.title_ur) + ' — YouTube video'}
+                  className="w-full h-full"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <p className="text-xs text-on-surface-variant inline-flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" /> {formatDateShort(article.published_at ?? article.created_at, lang)}</p>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface">{bilingualText(lang, article.title_en, article.title_ur)}</h1>

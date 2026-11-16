@@ -2722,6 +2722,32 @@ export async function upsertNewsArticle(
   if (article.cover_image_url && !/^https:\/\//i.test(article.cover_image_url.trim())) {
     throw new Error('Cover image URL must use HTTPS.');
   }
+  const imageUrls = (article.image_urls ?? []).map((url) => url.trim()).filter(Boolean);
+  if (imageUrls.length > 12) throw new Error('An article can contain a maximum of 12 additional images.');
+  for (const imageUrl of imageUrls) {
+    let parsedImageUrl: URL;
+    try { parsedImageUrl = new URL(imageUrl); } catch {
+      throw new Error('Every article image must be a valid HTTPS URL.');
+    }
+    if (parsedImageUrl.protocol !== 'https:' || imageUrl.length > 500) {
+      throw new Error('Every article image must be a valid HTTPS URL of 500 characters or fewer.');
+    }
+  }
+  const youtubeUrl = article.youtube_url?.trim() || null;
+  if (youtubeUrl) {
+    let parsedYouTubeUrl: URL;
+    try { parsedYouTubeUrl = new URL(youtubeUrl); } catch {
+      throw new Error('Enter a valid YouTube video URL.');
+    }
+    const host = parsedYouTubeUrl.hostname.toLowerCase();
+    const allowedHosts = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be'];
+    const videoId = host === 'youtu.be'
+      ? parsedYouTubeUrl.pathname.split('/').filter(Boolean)[0] ?? ''
+      : parsedYouTubeUrl.searchParams.get('v') ?? parsedYouTubeUrl.pathname.match(/^\/(?:embed|shorts)\/([^/?]+)/)?.[1] ?? '';
+    if (parsedYouTubeUrl.protocol !== 'https:' || !allowedHosts.includes(host) || !/^[A-Za-z0-9_-]{11}$/.test(videoId) || youtubeUrl.length > 500) {
+      throw new Error('Enter a valid HTTPS YouTube watch, short, or embed URL.');
+    }
+  }
   const client = getSupabaseClient();
   if (!client) throw new Error('News publishing requires the connected database.');
   const status = article.status ?? 'draft';
@@ -2731,6 +2757,8 @@ export async function upsertNewsArticle(
     status,
     published_at: status === 'published' ? (article.published_at ?? nowIso()) : null,
     cover_image_url: article.cover_image_url?.trim() || null,
+    image_urls: imageUrls,
+    youtube_url: youtubeUrl,
     created_by: article.created_by ?? actorId,
     updated_by: actorId,
     updated_at: nowIso(),

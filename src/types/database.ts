@@ -422,6 +422,8 @@ export interface NewsArticleRow {
   content_en: string;
   content_ur: string;
   cover_image_url: string | null;
+  image_urls: string[];
+  youtube_url: string | null;
   status: 'draft' | 'published';
   is_featured: boolean;
   published_at: string | null;

@@ -9,7 +9,7 @@ import { useToast } from '../ui/Toast';
 
 const emptyForm = {
   slug: '', title_en: '', title_ur: '', excerpt_en: '', excerpt_ur: '',
-  content_en: '', content_ur: '', cover_image_url: '',
+  content_en: '', content_ur: '', cover_image_url: '', image_urls: '', youtube_url: '',
 };
 
 function makeSlug(value: string): string {
@@ -57,6 +57,8 @@ export function NewsManager({ actorId }: { actorId: string }) {
         ...(editingId ? { id: editingId } : {}),
         ...form,
         cover_image_url: form.cover_image_url || null,
+        image_urls: form.image_urls.split(/\r?\n|,/).map((url) => url.trim()).filter(Boolean),
+        youtube_url: form.youtube_url.trim() || null,
         status,
         is_featured: featured,
         published_at: publishedAt,
@@ -82,6 +84,8 @@ export function NewsManager({ actorId }: { actorId: string }) {
       content_en: item.content_en,
       content_ur: item.content_ur,
       cover_image_url: item.cover_image_url ?? '',
+      image_urls: (item.image_urls ?? []).join('\n'),
+      youtube_url: item.youtube_url ?? '',
     });
     setStatus(item.status);
     setFeatured(item.is_featured);
@@ -109,6 +113,12 @@ export function NewsManager({ actorId }: { actorId: string }) {
               onChange={(e) => setForm(v => ({ ...v, slug: makeSlug(e.target.value) }))} />
             <Input label="Cover Image URL (HTTPS)" type="url" value={form.cover_image_url}
               onChange={(e) => setForm(v => ({ ...v, cover_image_url: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Textarea label="Additional Article Images (one HTTPS URL per line, maximum 12)" rows={4} value={form.image_urls}
+              onChange={(e) => setForm(v => ({ ...v, image_urls: e.target.value }))} />
+            <Input label="YouTube Video URL (optional)" type="url" dir="ltr" placeholder="https://youtu.be/..." value={form.youtube_url}
+              onChange={(e) => setForm(v => ({ ...v, youtube_url: e.target.value }))} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Textarea label="Short Summary (English)" required rows={3} maxLength={500} value={form.excerpt_en}
