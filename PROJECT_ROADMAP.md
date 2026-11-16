@@ -175,7 +175,9 @@ Batch 3 — completed (16 November 2026):
 - [x] Sitemap now includes category detail pages only when they have at least one published business, and area detail pages only when they have at least three published businesses. The current live-data snapshot produces 10 category detail URLs and 14 area detail URLs; no business or area records were deleted or hidden from the directory.
 - [x] Add regression tests for sitemap taxonomy eligibility.
 - [x] Reject blank/placeholder Pakistani phone values when creating tel: or WhatsApp links; hide invalid call actions on business cards and business profiles, including the sticky mobile action and secondary phone line.
-- [x] Final CI passed (run 43954510510) and Cloudflare Pages production deployment succeeded (deployment 642660b9-02e8-4b77-b1a3-2fc2301896c6, commit b31b27e0dca53f3d330e5e848ab7fcbfafcf7855).
-- [ ] Complete full route-by-route live browser audit, including invalid-phone business profile visual check; one browser-render request was rate-limited and not retried prematurely.
+- [x] Version the sitemap edge-cache key so the previously cached pre-filter sitemap cannot continue serving stale area URLs.
+- [x] Final CI passed (run 43954510510) and Cloudflare Pages production deployment succeeded (deployment c3c0e3ba-1729-4f9b-87f8-cbca75e60ed4, commit 81e9378f681f9ad82e7af680ccf4735ad9256d6d).
+- [x] Browser-render the production invalid-phone business profile: HTTP 200, correct canonical URL, no tel: link, no placeholder phone display, and no Call action.
+- [ ] Complete the remaining full route-by-route live browser audit and Google Rich Results Test.
 - [ ] Review candidate Google Places records against current business records by place ID/address/coordinates before any import. No production import, merge, rename, or deletion has been performed.
 - [ ] Resolve data-quality gaps only from verified sources or owner/business submissions; no phone, address, image, or description has been invented.
