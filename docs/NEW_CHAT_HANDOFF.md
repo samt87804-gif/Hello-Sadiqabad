@@ -61,7 +61,7 @@ I will do only the tasks that require my Google/Supabase dashboard or real-world
 5. DNS TXT verification is already present and verified. Do not add duplicates or remove the record.
 6. Search Console Verify already succeeded.
 7. Owner submitted `https://hellosadiqabad.com/sitemap.xml` on 17 November 2026; Search Console confirmed successful submission and says Google will process it periodically. Processing/index coverage is not yet confirmed.
-8. Owner's next manual task: check sitemap processing/status, then use URL Inspection on homepage and priority public URLs and request indexing once per URL; share any discovered errors/statuses. Assistant continues the technical SEO audit.
+8. Owner confirmed URL Inspection + Request Indexing submissions for homepage and six priority URLs (`/categories`, `/emergency`, `/map`, `/news`, `/offers`, `/announcements`) on 17 November 2026. These are crawl-queue submissions, not proof of indexing. Assistant continues technical SEO and local data-quality audits; owner can later share sitemap processing and Page Indexing/URL Inspection outcomes.
 9. I will share Search Console reports/screenshots/exports when asked, and provide accurate local business information, official sources, corrections and authorized photos.
 10. I will encourage genuine local businesses to claim their own eligible Google Business Profiles and share their directory pages naturally. I will not buy searches, clicks, reviews or backlinks.
 
@@ -79,4 +79,4 @@ You own the technical work:
 - Do not promise top rankings or a fixed time. Do not use fake searches, bots, click farms, fake reviews or purchased backlinks.
 
 ### Immediate next task
-Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verified and Phase 1 foundation is deployed. Owner has submitted the live sitemap; Google processing remains pending. Ask owner next to perform URL Inspection on homepage and priority public URLs and request indexing, then share status/errors. Continue the full internal-link, headings, image-alt, structured-data/content SEO audit and local SEO work. Do not repeat completed Auth URL or Google verification tasks, and do not claim indexing until Search Console confirms it.
+Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verified and Phase 1 foundation is deployed. Owner has submitted the live sitemap; Google processing remains pending. Owner has already submitted URL Inspection + Request Indexing for homepage and six priority public URLs. Continue the full internal-link, headings, image-alt, structured-data/content SEO audit and local SEO data-quality work; later review Search Console processing/index coverage when available. Do not repeat completed Auth URL or Google verification tasks, and do not claim indexing until Search Console confirms it.
