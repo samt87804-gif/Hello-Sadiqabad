@@ -105,6 +105,49 @@ Phase 1 is complete only when all applicable checks below pass:
 13. **No unapproved external services.** Do not send user/search data to a third party or add paid services without approval.
 14. **Keep this document current.** Update checkboxes and add a short dated progress note after each completed batch.
 
+
+## Code audit — 2026-11-16
+
+### Confirmed existing implementation
+
+- `src/pages/Home.tsx` already has a homepage search input, 250 ms debounced autocomplete, and navigation to `/search?q=...`.
+- `src/pages/Search.tsx` already has a business directory search page, a 300 ms debounce, URL-synced filters, abort handling, stale-response protection, pagination, and error/retry UI.
+- `src/pages/Categories.tsx` already filters categories locally as the user types.
+- `src/components/directory/SearchFilters.tsx` already includes a searchable area selector.
+- `src/pages/CategoryDetail.tsx` filters businesses by category/area/open status but its audited state has no free-text query input.
+- `src/pages/Emergency.tsx` has category chips but no text search input.
+- `src/pages/News.tsx` loads published articles but the listing view has no text search input.
+- `src/pages/admin/AdminPortal.tsx` has an admin quick-jump input, but it is not a general per-section live search. It currently routes the entered text into the businesses tab.
+- `src/pages/owner/OwnerPortalPages.tsx` contains multiple list-based sections (businesses, submissions, products, offers, reviews, inquiries, notifications); the audit found no shared page-level search facility. Each section needs targeted review before adding controls.
+- `src/lib/searchFilter.ts` already provides normalized multi-token matching/ranking for business directory records.
+- `src/lib/api.ts` `searchBusinesses()` currently loads the business directory source and filters businesses; `fetchSearchSuggestions()` currently searches categories, areas, and businesses only. It does not include news or emergency contacts.
+- `src/lib/api.ts` already has separate public-news and emergency-contact fetchers. Public news fetch is status/publish-date constrained. Admin news fetch is separate and includes non-public workflow states.
+
+### Audit risks / design decisions
+
+- The current business directory search path calls `fetchGitHubBusinesses()` and filters its returned collection in application code. Do not expand this into a whole-database scan for all global content.
+- Global search should use separate bounded public data sources for businesses, active categories/areas, published news, and active emergency contacts. Each source must retain its own public visibility rules and route mapping.
+- Search must not use admin-only fetchers to populate public results.
+- Admin portal components are composed by tab and some managers have their own local state. A generic wrapper cannot safely filter all manager views without inspecting each manager's data model and action flow.
+- Owner portal has list and editor pages mixed together; add search only to genuine collections, not profile/forms or analytics charts.
+- The existing homepage autocomplete is a useful baseline, but its current suggestion types and source coverage need expansion or a dedicated global result route.
+- No code changes to search behavior have been made in this audit batch. No database schema/RLS changes have been made.
+
+### Audit progress
+
+- [x] Route and page inventory from `src/App.tsx`
+- [x] Homepage and current directory search inspection
+- [x] Category, category-detail, news, and emergency page inspection
+- [x] Owner Portal list-section inventory (initial)
+- [x] Admin Portal tab routing and quick-search inspection (initial)
+- [x] Search API source coverage and public-news/helpline fetcher inspection
+- [ ] Inspect individual Admin manager components and their list data/filters
+- [ ] Inspect remaining public list pages (offers, announcements, areas, favorites, authorities)
+- [ ] Finalize global-search result schema and routes
+- [ ] Implement Global Search
+- [ ] Implement page-level search rollout
+
+
 ## Progress log
 
 - [x] 2026-11-16 — Phase 1 scope, page inventory targets, acceptance criteria, and working rules documented in the repository.
