@@ -744,6 +744,61 @@ export async function fetchLocalAuthoritiesAdmin(): Promise<LocalAuthorityRow[]>
   return [...(loadDemoDb().local_authorities ?? [])].sort((a, b) => a.sort_order - b.sort_order);
 }
 
+export async function fetchAuthorityProfiles(): Promise<AuthorityProfileRow[]> {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  const { data, error } = await client.from('authority_profiles').select('*')
+    .eq('is_active', true).order('sort_order').order('name_en');
+  if (error) throw error;
+  return (data ?? []) as AuthorityProfileRow[];
+}
+
+export async function fetchAuthorityProfilesAdmin(): Promise<AuthorityProfileRow[]> {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  const { data, error } = await client.from('authority_profiles').select('*')
+    .order('sort_order').order('name_en');
+  if (error) throw error;
+  return (data ?? []) as AuthorityProfileRow[];
+}
+
+export async function upsertAuthorityProfile(
+  item: Partial<AuthorityProfileRow> & { name_en: string; slug: string },
+  actorId: string
+): Promise<AuthorityProfileRow> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Authority profile management requires the live database.');
+  const payload = {
+    ...item,
+    city_id: item.city_id ?? await getDefaultCityId(),
+    updated_by: actorId,
+    verified_at: item.source_url ? (item.verified_at ?? nowIso()) : null,
+    updated_at: nowIso(),
+  };
+  const { data, error } = await client.from('authority_profiles')
+    .upsert(payload).select().single();
+  if (error) throw error;
+  return data as AuthorityProfileRow;
+}
+
+export async function uploadAuthorityProfilePhoto(file: File): Promise<string> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Photo upload requires the live database.');
+  const allowedTypes: Record<string, string> = {
+    'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif',
+  };
+  const extension = allowedTypes[file.type];
+  if (!extension) throw new Error('Please upload a JPG, PNG, WebP or AVIF image.');
+  if (file.size > 5 * 1024 * 1024) throw new Error('Profile photo must be 5 MB or smaller.');
+  const path = `authority-profiles/${crypto.randomUUID()}.${extension}`;
+  const { data, error } = await client.storage.from('Hello Sadiqabad').upload(path, file, {
+    cacheControl: '3600', contentType: file.type, upsert: false,
+  });
+  if (error) throw error;
+  const { data: publicUrl } = client.storage.from('Hello Sadiqabad').getPublicUrl(data.path);
+  return publicUrl.publicUrl;
+}
+
 export async function fetchAnnouncements(activeOnly = true): Promise<AnnouncementRow[]> {
   const client = getSupabaseClient();
   if (client) {
