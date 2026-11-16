@@ -764,7 +764,7 @@ export function BusinessProfile() {
                   </a>
                   )}
 
-                  {business.phone_secondary && (
+                  {isValidPkPhone(business.phone_secondary) && (
                     <a
                       href={buildTelUrl(business.phone_secondary)}
                       onClick={() => trackBusinessEvent(business.id, 'call')}
