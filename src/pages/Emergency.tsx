@@ -6,6 +6,7 @@ import { bilingualText, formatDateShort } from '../lib/format';
 import { buildTelUrl, buildWhatsAppUrl } from '../lib/phone';
 import { updatePageSeo } from '../lib/seo';
 import type { EmergencyCategory, EmergencyContactRow } from '../types/database';
+import { AdPlacementSlot } from '../components/directory/AdBanner';
 import { AppShell } from '../components/layout/AppShell';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { Badge, Card, Container } from '../components/ui/Surface';
@@ -20,21 +21,22 @@ const CATEGORIES: Array<{ id: 'all' | EmergencyCategory; labelEn: string; labelU
   { id: 'ambulance', labelEn: 'Ambulance', labelUr: 'ایمبولینس' },
   { id: 'utility', labelEn: 'Utilities (Gas / Electricity)', labelUr: 'گیس اور بجلی' },
   { id: 'general', labelEn: 'Public Helplines', labelUr: 'عوامی ہیلپ لائنز' },
+  { id: 'government', labelEn: 'Government Helplines', labelUr: 'سرکاری ہیلپ لائنز' },
 ];
 
-export function Emergency() {
+export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all' | EmergencyCategory }) {
   const { lang, urduHints } = useI18n();
   const [contacts, setContacts] = useState<EmergencyContactRow[]>([]);
   const [directoryImageUrls, setDirectoryImageUrls] = useState<DirectoryImageUrls>(EMPTY_DIRECTORY_IMAGE_URLS);
-  const [filter, setFilter] = useState<'all' | EmergencyCategory>('all');
+  const [filter, setFilter] = useState<'all' | EmergencyCategory>(initialCategory);
   const [fromCache, setFromCache] = useState(false);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
 
   useEffect(() => {
     updatePageSeo({
-      title: '24/7 Emergency Contacts Sadiqabad — Rescue 1122, Police 15, Fire 16',
-      description: 'Offline-ready 24/7 emergency helpline directory for Sadiqabad, District Rahim Yar Khan.',
-      canonicalPath: '/emergency',
+      title: initialCategory === 'government' ? 'Government Helplines Sadiqabad — District Control Room, 1139, 1787' : '24/7 Emergency Contacts Sadiqabad — Rescue 1122, Police 15, Fire 16',
+      description: initialCategory === 'government' ? 'Verified Government of Punjab and District Rahim Yar Khan public helplines for Sadiqabad.' : 'Offline-ready 24/7 emergency helpline directory for Sadiqabad, District Rahim Yar Khan.',
+      canonicalPath: initialCategory === 'government' ? '/government-helplines' : '/emergency',
     });
     Promise.all([fetchEmergencyContacts(), fetchPublicSiteSettings()]).then(([res, settings]) => {
       setContacts(res.items);
@@ -44,20 +46,20 @@ export function Emergency() {
     });
   }, []);
 
-  const priorityTop = contacts.filter((c) => ['1122', '15', '16', '115'].includes(c.phone)).slice(0, 4);
+  const priorityTop = initialCategory === 'government' ? [] : contacts.filter((c) => ['1122', '15', '16', '115'].includes(c.phone)).slice(0, 4);
   const visible = contacts.filter((c) => filter === 'all' || c.category === filter);
 
   return (
     <AppShell>
       <Container className="py-6 space-y-6">
-        <div className="rounded-3xl bg-[#ba1a1a] dark:bg-[#93000a] text-white p-6 shadow-md space-y-3">
+        <div className={`rounded-3xl ${initialCategory === 'government' ? 'bg-primary dark:bg-primary' : 'bg-[#ba1a1a] dark:bg-[#93000a]'} text-white p-6 shadow-md space-y-3`}>
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2.5">
               <ShieldAlert className="w-7 h-7" />
               <h1 className="text-2xl font-extrabold">
                 {lang === 'ur'
-                  ? 'صادق آباد 24/7 ایمرجنسی ہیلپ لائنز'
-                  : '24/7 Sadiqabad Emergency Helplines'}
+                  ? (initialCategory === 'government' ? 'صادق آباد سرکاری ہیلپ لائنز' : 'صادق آباد 24/7 ایمرجنسی ہیلپ لائنز')
+                  : (initialCategory === 'government' ? 'Sadiqabad Government Helplines' : '24/7 Sadiqabad Emergency Helplines')}
               </h1>
             </div>
             <Badge variant="neutral">
@@ -66,7 +68,7 @@ export function Emergency() {
           </div>
           {lang === 'en' && urduHints && (
             <p className="font-urdu text-sm text-white/95 leading-[2.0]" dir="rtl">
-              صادق آباد کے ہنگامی رابطہ نمبرز — انٹرنیٹ کے بغیر بھی دستیاب
+              {initialCategory === 'government' ? 'صادق آباد اور پنجاب کے سرکاری رابطہ نمبرز — سرکاری ذرائع کے ساتھ' : 'صادق آباد کے ہنگامی رابطہ نمبرز — انٹرنیٹ کے بغیر بھی دستیاب'}
             </p>
           )}
           <div className="p-3 rounded-2xl bg-black/20 text-xs flex items-start gap-2">
@@ -74,11 +76,11 @@ export function Emergency() {
             <span>
               {lang === 'ur' ? (
                 <>
-                  <strong>اہم ہدایت:</strong> یہاں صرف تصدیق شدہ قومی و پنجاب ٹول فری ہنگامی کوڈز شامل ہیں۔ کال کرتے وقت ہمیشہ اپنا درست علاقہ (جیسے ماڈل ٹاؤن، کلب روڈ، ریل بازار یا کے ایل پی روڈ) اور قریبی مشہور نشانی بتائیں۔
+                  <strong>{initialCategory === 'government' ? 'سرکاری رابطے:' : 'اہم ہدایت:'}</strong> {initialCategory === 'government' ? 'یہ نمبرز متعلقہ سرکاری ویب سائٹس اور ڈائریکٹریز سے لیے گئے ہیں۔ تازہ معلومات کے لیے متعلقہ ماخذ دیکھیں۔' : 'یہاں صرف تصدیق شدہ قومی و پنجاب ٹول فری ہنگامی کوڈز شامل ہیں۔ کال کرتے وقت اپنا درست علاقہ اور قریبی مشہور نشانی بتائیں۔'}
                 </>
               ) : (
                 <>
-                  <strong>Verified Shortcodes:</strong> These are verified Pakistan national and Punjab toll-free helplines. Always share your exact neighborhood (e.g., Model Town, Club Road, Rail Bazaar, or KLP Road) and nearest landmark when calling.
+                  <strong>{initialCategory === 'government' ? 'Official government contacts:' : 'Verified Shortcodes:'}</strong> {initialCategory === 'government' ? 'Numbers are taken from linked government websites and directories. Check the linked source for current details.' : 'These are verified Pakistan national and Punjab toll-free helplines. Always share your exact neighborhood and nearest landmark when calling.'}
                 </>
               )}
             </span>
@@ -94,7 +96,7 @@ export function Emergency() {
         </div>
 
         {/* Priority 1 Instant-Dial Grid */}
-        {priorityTop.length > 0 && (
+        {initialCategory === 'all' && priorityTop.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {priorityTop.map((p) => (
               <a
@@ -117,7 +119,7 @@ export function Emergency() {
         )}
 
         {/* Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        {initialCategory === 'all' && <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {CATEGORIES.map((c) => (
             <button
               key={c.id}
@@ -132,7 +134,9 @@ export function Emergency() {
               {lang === 'ur' ? c.labelUr : c.labelEn}
             </button>
           ))}
-        </div>
+        </div>}
+
+        <AdPlacementSlot placement="emergency_banner" />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {visible.map((em) => (
@@ -158,6 +162,7 @@ export function Emergency() {
                         {lang === 'ur' ? em.description_ur || em.description_en : em.description_en}
                       </p>
                     )}
+                    {em.source_url && <a href={em.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex text-[10px] font-bold text-primary underline mt-1">{lang === 'ur' ? 'سرکاری ماخذ' : 'Official source'}</a>}
                   </div>
                   <div className="w-full space-y-2">
                     <span className="block text-xl sm:text-2xl font-extrabold text-error tabular-nums" dir="ltr">{em.phone}</span>
@@ -184,4 +189,8 @@ export function Emergency() {
       </Container>
     </AppShell>
   );
+}
+
+export function GovernmentHelplines() {
+  return <Emergency initialCategory="government" />;
 }
