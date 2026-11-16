@@ -106,6 +106,33 @@ Batch 3 — completed (16 November 2026):
 - [ ] Expand Government Helplines further only when additional numbers are confirmed by official sources.
 - [ ] Expand Local Authorities further only when additional direct public contact details are officially published.
 
+## Batch 7 — Search, Areas UI & Authority Profiles (implementation in progress)
+
+### Search
+- [x] Normalize search terms and searchable business text using Unicode normalization and case folding.
+- [x] Search shop names, Urdu names, descriptions, addresses, categories, areas, tags and services without case-sensitive mismatch.
+- [x] Apply the same normalization to search suggestions.
+- [x] Add regression tests for uppercase/lowercase shop-name searches.
+
+### Areas dropdown
+- [x] Replace the native area filter with a responsive, searchable dropdown showing selected area, total available areas and matching count.
+- [x] Keep all existing area slugs and search-filter URL behavior intact.
+
+### Authority Profiles
+- [x] Preserve the existing official Local Authorities office/contact directory and its data.
+- [x] Add a separate Super Admin-managed Authority Profiles module for union chairmen, association leaders and government/public officers.
+- [x] Support name, portrait, designation, organization, current status, authority/responsibilities, bilingual biography, contact/social links and optional source.
+- [x] Let Admin select linked published businesses and independently control visibility of status, organization, authority, biography, contact and business sections.
+- [x] Add public authority-profile listing and individual profile routes.
+- [x] Upload portraits to the existing public storage bucket in a dedicated folder with Super Admin-only write policies.
+- [x] Include authority profiles in the Admin full JSON backup and the public directory sitemap.
+
+### Database and security
+- [x] Add `public.authority_profiles` with active-only public RLS, Super Admin CRUD policies, audit/update triggers and indexes.
+- [x] Add dedicated storage write policies for `authority-profiles/` in the existing public bucket.
+- [x] Grant only public SELECT and authenticated write privileges; no service-role key is used by the frontend.
+- [x] Keep the existing `public.local_authorities` rows and behavior unchanged.
+
 ## Existing functionality to preserve
 
 - The 14 legacy imported listings with more than 2 English service entries currently have no linked owner. They were not trimmed or deleted. Admin can review them now; once a listing is linked to its owner, that owner can reduce the list to 2. Unchanged legacy arrays remain intact during unrelated owner edits; changed owner service arrays are capped at 2.
