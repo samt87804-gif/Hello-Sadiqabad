@@ -213,6 +213,7 @@ export function BusinessManager({
   const [showAddArea, setShowAddArea] = useState(false);
   const [newAreaEn, setNewAreaEn] = useState('');
   const [newAreaUr, setNewAreaUr] = useState('');
+  const [areaSearch, setAreaSearch] = useState('');
   const [savingArea, setSavingArea] = useState(false);
 
   useEffect(() => {
@@ -354,8 +355,8 @@ export function BusinessManager({
     setModalOpen(true);
   };
 
-  const handleAddAreaInline = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddAreaInline = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     const nameEn = newAreaEn.trim();
     const nameUr = newAreaUr.trim();
     if (!nameEn || !nameUr) {
@@ -932,17 +933,30 @@ export function BusinessManager({
                   ))}
                 </Select>
                 <div className="space-y-2">
+                  <Input
+                    label="Search Area (English / Urdu)"
+                    value={areaSearch}
+                    onChange={(e) => setAreaSearch(e.target.value)}
+                    placeholder="Type area name in English or Urdu..."
+                  />
                   <Select
                     label="Area"
                     value={form.area_id}
                     onChange={(e) => setForm({ ...form, area_id: e.target.value })}
                   >
                     <option value="">Select Area</option>
-                    {areas.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name_en} {a.name_ur ? `— ${a.name_ur}` : ''}
-                      </option>
-                    ))}
+                    {areas
+                      .filter((area) => {
+                        const term = areaSearch.trim().toLocaleLowerCase();
+                        return !term ||
+                          area.name_en.toLocaleLowerCase().includes(term) ||
+                          (area.name_ur ?? '').includes(areaSearch.trim());
+                      })
+                      .map((area) => (
+                        <option key={area.id} value={area.id}>
+                          {area.name_en} {area.name_ur ? `— ${area.name_ur}` : ''}
+                        </option>
+                      ))}
                   </Select>
                   <button
                     type="button"
@@ -952,7 +966,7 @@ export function BusinessManager({
                     {showAddArea ? '− Cancel' : '+ Add new Area'}
                   </button>
                   {showAddArea && (
-                    <form onSubmit={handleAddAreaInline} className="rounded-xl border border-outline-variant bg-surface-container-low p-3 space-y-3">
+                    <div className="rounded-xl border border-outline-variant bg-surface-container-low p-3 space-y-3">
                       <p className="text-sm font-semibold text-on-surface">Add new area</p>
                       <Input
                         label="Area Name (English)"
@@ -966,10 +980,10 @@ export function BusinessManager({
                         onChange={(e) => setNewAreaUr(e.target.value)}
                         required
                       />
-                      <Button type="submit" size="sm" loading={savingArea} disabled={savingArea}>
+                      <Button type="button" size="sm" loading={savingArea} disabled={savingArea} onClick={() => void handleAddAreaInline()}>
                         Add Area & Select
                       </Button>
-                    </form>
+                    </div>
                   )}
                 </div>
               </div>
