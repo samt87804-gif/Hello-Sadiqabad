@@ -75,7 +75,7 @@ export function AuthorityProfiles() {
                   </div>
                   <div className="p-5 sm:p-7 space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      {profile.show_status && profile.status_label_en && <Badge variant="success">{profileText(lang, profile.status_label_en, profile.status_label_ur)}</Badge>}
+                      {profile.show_status && (profile.status_label_en || profile.status_label_ur) && <Badge variant="success">{profileText(lang, profile.status_label_en, profile.status_label_ur)}</Badge>}
                       <Badge variant="neutral">{lang === 'ur' ? 'صادق آباد' : 'Sadiqabad'}</Badge>
                     </div>
                     <h2 className="text-2xl sm:text-3xl font-extrabold text-on-surface">{profileText(lang, profile.name_en, profile.name_ur)}</h2>
@@ -105,7 +105,7 @@ export function AuthorityProfiles() {
               {profiles.map((item) => <Link key={item.id} to={`/authority-profiles/${item.slug}`} className="group rounded-2xl overflow-hidden border border-outline-variant/40 bg-surface-container-lowest shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
                 <div className="aspect-[16/10] bg-surface-container-low overflow-hidden">{item.photo_url ? <ImageWithFallback src={item.photo_url} alt={item.name_en} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform" /> : <div className="w-full h-full flex items-center justify-center"><UserRound className="w-16 h-16 text-outline" /></div>}</div>
                 <div className="p-4 space-y-1.5">
-                  {item.show_status && item.status_label_en && <Badge variant="success">{profileText(lang, item.status_label_en, item.status_label_ur)}</Badge>}
+                  {item.show_status && (item.status_label_en || item.status_label_ur) && <Badge variant="success">{profileText(lang, item.status_label_en, item.status_label_ur)}</Badge>}
                   <h2 className="font-extrabold text-base text-on-surface">{profileText(lang, item.name_en, item.name_ur)}</h2>
                   {(item.designation_en || item.designation_ur) && <p className="text-sm font-bold text-primary">{profileText(lang, item.designation_en, item.designation_ur)}</p>}
                   {item.show_organization && (item.organization_en || item.organization_ur) && <p className="text-xs text-on-surface-variant">{profileText(lang, item.organization_en, item.organization_ur)}</p>}
