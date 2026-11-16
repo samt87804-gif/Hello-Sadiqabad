@@ -39,3 +39,22 @@ test('buildSitemapXml de-duplicates paths and omits invalid lastmod values', () 
   assert.equal(xml.split('<loc>https://hellosadiqabad.com/news/community-update</loc>').length - 1, 1);
   assert.ok(xml.includes('<lastmod>2026-11-16</lastmod>'));
 });
+
+test('filterIndexableTaxonomy excludes empty categories and thin areas', async () => {
+  const { filterIndexableTaxonomy } = await import('./sitemap');
+  const categories = [{ id: 'cat-a' }, { id: 'cat-empty' }];
+  const areas = [{ id: 'area-a' }, { id: 'area-b' }, { id: 'area-thin' }];
+  const businesses = [
+    { category_id: 'cat-a', area_id: 'area-a' },
+    { category_id: 'cat-a', area_id: 'area-a' },
+    { category_id: 'cat-a', area_id: 'area-a' },
+    { category_id: 'cat-a', area_id: 'area-b' },
+    { category_id: 'cat-a', area_id: 'area-b' },
+    { category_id: 'cat-a', area_id: 'area-b' },
+    { category_id: 'cat-a', area_id: 'area-thin' },
+  ];
+
+  const filtered = filterIndexableTaxonomy(categories, areas, businesses);
+  assert.deepEqual(filtered.categories.map((item) => item.id), ['cat-a']);
+  assert.deepEqual(filtered.areas.map((item) => item.id), ['area-a', 'area-b']);
+});
