@@ -17,10 +17,10 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## User-requested improvements (16 November 2026)
 
-Batch 1 — currently being implemented:
-- [ ] (1) Add News to the mobile bottom navigation.
-- [ ] (2) Support multiple images and a YouTube video URL in each News article.
-- [ ] (3) Standardize image-management previews as 16:9 cards with 40% image / 60% details; show name, phone and a Call action for helplines.
+Batch 1 — completed (16 November 2026):
+- [x] (1) Add News to the mobile bottom navigation.
+- [x] (2) Support multiple images and a YouTube video URL in each News article.
+- [x] (3) Standardize image-management previews as 16:9 cards with 40% image / 60% details; show name, phone and a Call action for helplines.
 
 Batch 2 — pending:
 - [ ] (4) Keep Admin edit sections and entered form data open when switching tabs or copying/pasting from another browser tab.
