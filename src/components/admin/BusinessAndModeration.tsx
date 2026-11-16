@@ -29,7 +29,7 @@ import type {
   SubmissionRow,
 } from '../../types/database';
 import type { AdminDashboardCounts, BusinessPublicView } from '../../types/directory';
-import { formatDateShort } from '../../lib/format';
+import { formatDateShort, slugify } from '../../lib/format';
 import { isValidHttpsUrl } from '../../lib/phone';
 import {
   addBusinessNote,
@@ -40,6 +40,7 @@ import {
   moderateReview,
   reviewSubmission,
   updateInquiryStatus,
+  upsertArea,
 } from '../../lib/api';
 import { Badge, Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
@@ -205,6 +206,10 @@ export function BusinessManager({
   const [newNote, setNewNote] = useState('');
   const [duplicates, setDuplicates] = useState<BusinessRow[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showAddArea, setShowAddArea] = useState(false);
+  const [newAreaEn, setNewAreaEn] = useState('');
+  const [newAreaUr, setNewAreaUr] = useState('');
+  const [savingArea, setSavingArea] = useState(false);
 
   useEffect(() => {
     if (initialSearch) setSearch(initialSearch);
@@ -325,6 +330,43 @@ export function BusinessManager({
       is_featured: b.is_featured,
     });
     setModalOpen(true);
+  };
+
+  const handleAddAreaInline = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const nameEn = newAreaEn.trim();
+    const nameUr = newAreaUr.trim();
+    if (!nameEn || !nameUr) {
+      showToast('Area ka English aur Urdu dono naam darj karein.', 'error');
+      return;
+    }
+    const slug = slugify(nameEn);
+    if (!slug) {
+      showToast('English naam se valid area slug nahi ban saka.', 'error');
+      return;
+    }
+    setSavingArea(true);
+    try {
+      const createdArea = await upsertArea(
+        { name_en: nameEn, name_ur: nameUr, slug, is_active: true },
+        actorId
+      );
+      await onReload();
+      setForm((current) => ({ ...current, area_id: createdArea.id }));
+      setNewAreaEn('');
+      setNewAreaUr('');
+      setShowAddArea(false);
+      showToast('Naya area save ho gaya aur business ke liye select kar diya gaya.', 'success');
+    } catch (error) {
+      const dbError = error as { code?: string; message?: string };
+      if (dbError?.code === '23505') {
+        showToast('Ye area pehle se mojood hai. Koi doosra naam darj karein.', 'error');
+      } else {
+        showToast(dbError?.message || (error instanceof Error ? error.message : 'Area save nahi ho saka.'), 'error');
+      }
+    } finally {
+      setSavingArea(false);
+    }
   };
 
   const checkDuplicates = async () => {
@@ -818,18 +860,47 @@ export function BusinessManager({
                     </option>
                   ))}
                 </Select>
-                <Select
-                  label="Area"
-                  value={form.area_id}
-                  onChange={(e) => setForm({ ...form, area_id: e.target.value })}
-                >
-                  <option value="">Select Area</option>
-                  {areas.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name_en}
-                    </option>
-                  ))}
-                </Select>
+                <div className="space-y-2">
+                  <Select
+                    label="Area"
+                    value={form.area_id}
+                    onChange={(e) => setForm({ ...form, area_id: e.target.value })}
+                  >
+                    <option value="">Select Area</option>
+                    {areas.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name_en} {a.name_ur ? `— ${a.name_ur}` : ''}
+                      </option>
+                    ))}
+                  </Select>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddArea((visible) => !visible)}
+                    className="text-sm font-semibold text-primary hover:underline"
+                  >
+                    {showAddArea ? '− Cancel' : '+ Add new Area'}
+                  </button>
+                  {showAddArea && (
+                    <form onSubmit={handleAddAreaInline} className="rounded-xl border border-outline-variant bg-surface-container-low p-3 space-y-3">
+                      <p className="text-sm font-semibold text-on-surface">Add new area</p>
+                      <Input
+                        label="Area Name (English)"
+                        value={newAreaEn}
+                        onChange={(e) => setNewAreaEn(e.target.value)}
+                        required
+                      />
+                      <Input
+                        label="Area Name (Urdu)"
+                        value={newAreaUr}
+                        onChange={(e) => setNewAreaUr(e.target.value)}
+                        required
+                      />
+                      <Button type="submit" size="sm" loading={savingArea} disabled={savingArea}>
+                        Add Area & Select
+                      </Button>
+                    </form>
+                  )}
+                </div>
               </div>
               <Textarea
                 label="Description (English)"
