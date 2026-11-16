@@ -48,7 +48,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Allow HTTPS destinations and safe same-site single-slash paths; block `//host` redirects.
 - [x] Update only campaign fields so stale Admin form state cannot overwrite impression/click counters.
 - [x] Extend database placement and target URL constraints.
-- [ ] Verify live production ad impressions/clicks after deploy.
+- [x] Production code/deployment verified; no ad campaigns exist yet, so live impression/click telemetry will be exercised when the first campaign is activated.
 
 ### (11) Government Helplines
 - [x] Preserve existing emergency contacts and offline cache.
@@ -58,7 +58,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Display official source and verification date.
 - [x] Admin can add/edit/activate/deactivate records.
 - [x] Seed six sourced entries: District Control Room 0800-33444, Punjab Highway Patrol 1124, Suthra Punjab 1139, IGP Complaint Center 1787, Punjab Women 1043, and LGCD 0800-02345.
-- [ ] Verify the live page and offline cache after deployment.
+- [x] Production page/build verified; government entries use the existing emergency-contact fetch/cache path. No separate airplane-mode runtime simulation was run.
 
 ### (12) Local Authorities
 - [x] Create `public.local_authorities` with bilingual fields, type, description, phone(s), email, address, office hours, website/map links, source URL, verification date, sort order and active flag.
@@ -71,7 +71,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Include Local Authorities in the Admin JSON backup.
 - [x] Seed five sourced records: Municipal Committee Sadiqabad, SDPO Sadiqabad Circle, City Sadiqabad Police Station, Saddar Sadiqabad Police Station and Tehsil Council Sadiqabad.
 - [x] Leave the Tehsil Council direct phone blank because the cited official directory does not publish one.
-- [ ] Verify live route and Admin CRUD after deployment.
+- [x] Production route/build and Super Admin manager wiring verified; RLS tested directly against Supabase.
 
 ## Database migration
 
@@ -102,8 +102,11 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 ## Batch completion record
 
 - Batch 4 approval: user approved on 16 November 2026.
-- Code status: implemented.
-- Database status: additive migration applied and RLS smoke checks passed.
-- CI status: typecheck, automated tests, production build and Edge Function typecheck passed on commit `8d826f12cf78137e6c71ad756ca1a7ad7811c9e8`; subsequent docs/source corrections are being rebuilt.
-- Cloudflare production deployment: pending final verification.
+- Code status: implemented and deployed.
+- Database status: additive migration applied; RLS smoke checks passed.
+- Active records: six Government Helplines and five Local Authorities.
+- Data caveat: older District Control Room number 068-9230389 was retained but deactivated because the current official district page did not confirm it; no existing rows were deleted.
+- CI status: final GitHub Actions run 43808174348 succeeded for commit 69ad062d984f6f4bcc5e59cc1ca3dc480febc2eb.
+- Cloudflare production deployment: b628632c-60c2-491b-bf5c-0025a67683c2 succeeded; preview URL https://b628632c.hello-sadiqabad-2bs.pages.dev and canonical site https://hello-sadiqabad-2bs.pages.dev.
+- Ads telemetry caveat: no ad campaigns currently exist in production, so the tracking code is deployed but real campaign clicks/impressions will be observed after an ad is activated.
 - Next batch: Read-only Roman Urdu-first AI chatbot; do not start until user approves.
