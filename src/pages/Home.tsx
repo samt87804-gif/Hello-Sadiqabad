@@ -474,8 +474,8 @@ export function Home() {
                       <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0 p-3 sm:p-4 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
+                  <div className="flex-1 min-w-0 p-3 sm:p-4 flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
                       <h3 className="text-sm sm:text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
                         {bilingualText(lang, cat.name_en, cat.name_ur)}
                       </h3>
@@ -484,11 +484,16 @@ export function Home() {
                           {cat.name_ur}
                         </p>
                       )}
-                      <p className="text-[11px] text-on-surface-variant mt-1">
-                        {cat.listing_count ?? 0} {lang === 'ur' ? 'کاروبار' : 'listings'}
-                      </p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-outline group-hover:text-primary shrink-0 rtl:rotate-180" />
+                    <div className="shrink-0 min-w-[3.5rem] text-right">
+                      <p className="text-xl sm:text-2xl font-extrabold leading-none text-primary tabular-nums">
+                        {cat.listing_count ?? 0}
+                      </p>
+                      <p className="text-[10px] sm:text-xs font-bold text-on-surface-variant mt-1 whitespace-nowrap">
+                        {lang === 'ur' ? 'کاروبار' : 'listings'}
+                      </p>
+                    </div>
                   </div>
                 </Link>
               ))}
