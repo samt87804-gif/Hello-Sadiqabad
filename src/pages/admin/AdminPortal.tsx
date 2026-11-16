@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
 import { NewsManager } from '../../components/admin/NewsManager';
@@ -88,6 +88,7 @@ import { useToast } from '../../components/ui/Toast';
 
 export function AdminPortal() {
   const { tab = 'overview' } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPermission, isSuperAdmin } = usePermissions();
@@ -121,6 +122,63 @@ export function AdminPortal() {
   const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [visitedTabs, setVisitedTabs] = useState<string[]>([tab]);
+  const restoredScrollPath = useRef<string | null>(null);
+
+  // Browsers may discard a background tab to reclaim memory. When it is
+  // reopened, React starts from a fresh document and native scroll restoration
+  // can run before the admin data has rendered. Persist and restore the admin
+  // page's scroll position after its content is ready.
+  useEffect(() => {
+    const storageKey = `hs_admin_scroll:${location.pathname}`;
+    const savePosition = () => {
+      try {
+        sessionStorage.setItem(storageKey, String(window.scrollY));
+      } catch {
+        // Storage may be unavailable in private/restricted browsing modes.
+      }
+    };
+    let frame = 0;
+    const saveOnScroll = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        savePosition();
+      });
+    };
+    window.addEventListener('scroll', saveOnScroll, { passive: true });
+    window.addEventListener('pagehide', savePosition);
+    document.addEventListener('visibilitychange', savePosition);
+    return () => {
+      savePosition();
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', saveOnScroll);
+      window.removeEventListener('pagehide', savePosition);
+      document.removeEventListener('visibilitychange', savePosition);
+    };
+  }, [location.pathname]);
+
+  useLayoutEffect(() => {
+    if (loading || restoredScrollPath.current === location.pathname) return;
+    restoredScrollPath.current = location.pathname;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        try {
+          const saved = Number(sessionStorage.getItem(`hs_admin_scroll:${location.pathname}`) ?? 0);
+          if (Number.isFinite(saved) && saved > 0) {
+            window.scrollTo({ top: saved, left: 0, behavior: 'instant' });
+          }
+        } catch {
+          // Keep the browser's default position if storage is unavailable.
+        }
+      });
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+    };
+  }, [loading, location.pathname]);
 
   const reload = useCallback(async () => {
     setLoading(true);
