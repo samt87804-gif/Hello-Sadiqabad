@@ -269,7 +269,9 @@ export function TaxonomyManager({
             </Card>
           ))}
         {mode === 'areas' &&
-          areas.map((a) => (
+          [...areas]
+            .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+            .map((a) => (
             <Card key={a.id} className="p-3.5 flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
