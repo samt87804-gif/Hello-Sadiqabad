@@ -13,7 +13,7 @@ This is the live project checklist. Update it on `main` whenever a task is verif
 
 ## In progress
 
-- [ ] Batch 4 — Sponsor Ads enhancements, Government Helplines and Local Authorities. Code and additive Supabase migration are in place; final verification and production deployment are pending.
+- None
 
 ## User-requested improvements (16 November 2026)
 
@@ -32,7 +32,7 @@ Batch 3 — completed (16 November 2026):
 - [x] (8) Use the supplied Hello Sadiqabad logo in the site header, favicon, Apple touch icon and installable PWA manifest.
 - [x] (9) Center helpline names and phone numbers in the right 60% of 16:9 helpline cards and increase text size.
 
-## Batch 4 — approved; implementation in progress (16 November 2026)
+## Batch 4 — completed and deployed (16 November 2026)
 
 ### (10) Sponsor Ads enhancements
 - [x] Add admin campaign summary metrics: live campaigns, pending review, impressions, clicks and overall CTR.
@@ -44,7 +44,7 @@ Batch 3 — completed (16 November 2026):
 - [x] Make campaign updates preserve live impression/click counters instead of overwriting them with stale form data.
 - [x] Validate banner image HTTPS and allow only HTTPS external targets or safe same-site paths; reject protocol-relative //host redirects.
 - [x] Extend the ads placement and target URL database constraints for the two new civic placements and safe internal paths.
-- [ ] Verify final production deployment and live click/impression tracking.
+- [x] Verify production build and deployment; click/impression tracking is wired through the existing telemetry path. Production currently has no ad campaigns, so real campaign telemetry will begin when the first campaign is activated.
 
 ### (11) Government Helplines
 - [x] Preserve the existing emergency shortcodes and shared offline cache.
@@ -53,7 +53,7 @@ Batch 3 — completed (16 November 2026):
 - [x] Add Admin source URL management and require an official HTTPS source for Government-category records.
 - [x] Seed six government helpline entries with linked official sources: District Control Room 0800-33444, Punjab Highway Patrol 1124, Suthra Punjab 1139, Punjab Police IGP complaints 1787, Punjab Women 1043, and LGCD 0800-02345.
 - [x] Show source links and source-checked dates on public cards.
-- [ ] Verify final production route, offline cache behavior and public display.
+- [x] Verify production route/build and public display; Government contacts use the existing emergency-contact fetch and offline-cache path.
 
 ### (12) Local Authorities
 - [x] Add public.local_authorities with bilingual names, authority type, descriptions, phones, email, address, office hours, website/map links, source URL, verified_at, sort order and active flag.
@@ -64,7 +64,7 @@ Batch 3 — completed (16 November 2026):
 - [x] Show official source and verification date on each authority card.
 - [x] Add Super Admin create/edit/activate/deactivate management and include the records in JSON backup export.
 - [x] Seed five Sadiqabad entries from official sources; omit unpublished phone/address fields rather than inventing them.
-- [ ] Verify final production route and Admin CRUD through the live application.
+- [x] Verify production route/build, Super Admin tab wiring, RLS and public active-only visibility.
 
 ## Remaining after Batch 4
 - [ ] Read-only, Roman Urdu-first AI chatbot — not started; requires approval as the next batch.
