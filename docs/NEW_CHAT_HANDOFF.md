@@ -91,3 +91,11 @@ Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verifi
 - Production browser-render check for the Al Barkat Pulao and Tea Restaurant listing (blank phone): HTTP 200, correct canonical URL, no `tel:` links, no placeholder number, no Call action.
 - GitHub CI run 43954990190 passed for code commit `81e9378f681f9ad82e7af680ccf4735ad9256d6d`; Cloudflare Pages production deployment `c3c0e3ba-1729-4f9b-87f8-cbca75e60ed4` succeeded.
 - No production business, area, category or owner records were changed; no crawler workbook records were imported. Remaining tasks: full route crawl, Rich Results Test, candidate matching by place ID/address/coordinates, and verified owner-sourced data corrections.
+
+
+## Latest continuation — 17 November 2026
+
+- Implemented dynamic `noindex,follow` for empty/error Offers and Announcements routes. Both become indexable only after non-empty content is successfully fetched.
+- Code commit: `bac9261c134bc782159db8d696026ff0979fdc4a`; CI run 43956280854 passed; Cloudflare deployment 017a7ca2-fe39-463d-9e46-631bba2e1fbe succeeded.
+- Live post-deploy robots tag check was attempted but Cloudflare browser-rendering rate-limited with HTTP 429; retry only after the required wait. Do not claim visual verification.
+- Next safe data task: build a read-only Google Places candidate-matching review keyed by place ID/address/coordinates; do not import or alter production listings until manual review is complete.
