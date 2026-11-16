@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { effectivePlanCode, filterAndRankBusinesses } from './searchFilter';
+import { effectivePlanCode, filterAndRankBusinesses, normalizeDirectorySearchText } from './searchFilter';
 import type { AreaRow, CategoryRow, PlanRow } from '../types/database';
 import type { BusinessPublicView } from '../types/directory';
 
@@ -219,4 +219,16 @@ test('filters by open_now and verified', () => {
   );
   assert.equal(results.length, 1);
   assert.equal(results[0].slug, 'city-hospital');
+});
+
+test('directory search normalization ignores uppercase/lowercase and normalizes spacing', () => {
+  assert.equal(normalizeDirectorySearchText('  ABC   STORE '), 'abc store');
+  assert.equal(normalizeDirectorySearchText('AbC Store'), normalizeDirectorySearchText('abc store'));
+});
+
+test('business search returns the same shop for uppercase and lowercase query', () => {
+  const upper = filterAndRankBusinesses(sampleBusinesses, categories, areas, plans, { q: 'BASIC CLINIC' });
+  const lower = filterAndRankBusinesses(sampleBusinesses, categories, areas, plans, { q: 'basic clinic' });
+  assert.deepEqual(upper.map((item) => item.id), lower.map((item) => item.id));
+  assert.equal(upper[0]?.name_en, 'Basic Clinic');
 });
