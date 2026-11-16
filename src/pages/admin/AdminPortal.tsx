@@ -159,6 +159,7 @@ export function AdminPortal() {
         imp,
         em,
         auths,
+        authorityProfilesList,
         anns,
         anl,
         sett,
@@ -179,6 +180,7 @@ export function AdminPortal() {
         can('import.run') ? fetchImportBatches() : Promise.resolve([]),
         fetchEmergencyContactsAdmin(),
         isSuperAdmin ? fetchLocalAuthoritiesAdmin() : Promise.resolve([]),
+        isSuperAdmin ? fetchAuthorityProfilesAdmin() : Promise.resolve([]),
         fetchAnnouncements(can('announcements.manage') ? false : true),
         can('analytics.view') ? fetchAdminAnalytics(analyticsDays) : Promise.resolve(emptyAnalytics),
         can('settings.manage') ? fetchAllSiteSettingsAdmin() : Promise.resolve([]),
@@ -199,6 +201,7 @@ export function AdminPortal() {
       setBatches(imp);
       setEmergencyContacts(em);
       setLocalAuthorities(auths);
+      setAuthorityProfiles(authorityProfilesList);
       setAnnouncements(anns);
       setAnalytics(anl);
       setSettings(sett);
@@ -373,6 +376,8 @@ export function AdminPortal() {
         );
       case 'local-authorities':
         return isSuperAdmin ? <LocalAuthoritiesManager authorities={localAuthorities} actorId={actorId} onReload={reload} /> : <PermissionDenied />;
+      case 'authority-profiles':
+        return isSuperAdmin ? <AuthorityProfilesManager profiles={authorityProfiles} businesses={businesses} actorId={actorId} onReload={reload} /> : <PermissionDenied />;
       case 'plans':
         return hasPermission('tiers.manage') ? (
           <PlansManager
