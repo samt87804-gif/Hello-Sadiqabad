@@ -242,4 +242,6 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Cloudflare Pages deployment `c3c0e3ba-1729-4f9b-87f8-cbca75e60ed4` succeeded for commit `81e9378f681f9ad82e7af680ccf4735ad9256d6d` (includes sitemap cache-key version bump).
 - [x] Browser-rendered production sitemap verification returned HTTP 200 and 169 `<loc>` entries, including 14 `/area/` and 10 `/category/` entries.
 - [x] Browser-rendered production invalid-phone business profile returned HTTP 200 with canonical URL, no `tel:` links, no placeholder phone text, and no Call action.
+- [x] Browser-rendered `/categories`, `/emergency`, `/map`, `/news`, `/offers`, and `/announcements`: all returned HTTP 200, matching canonical URLs, populated titles/descriptions, an H1, and `index,follow` robots.
+- [ ] The offers and announcements datasets currently have zero active rows; they are omitted from the sitemap, but their empty routes still send `index,follow`. Add dynamic `noindex,follow` until active content exists.
 - [ ] Full public-route crawl and Google Rich Results Test remain pending.
