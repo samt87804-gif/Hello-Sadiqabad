@@ -88,9 +88,10 @@ export async function onRequestGet({ request, env }) {
     const today = nowIso.slice(0, 10);
 
     // Public publishable key + existing anon/RLS policies only.
-    // Never query private owner, admin, draft, or moderation records.
+    // Never query private owner-profile base tables, admin, draft, or moderation records.
+    // Only the redacted owner_public_profile_directory view is eligible.
     const [
-      categories, areas, businesses, news, pages, authorityProfiles,
+      categories, areas, businesses, news, pages, authorityProfiles, ownerProfiles,
       localAuthorities, emergencyContacts, offers, announcements,
     ] = await Promise.all([
       fetchPublicRows(baseUrl, publicKey, 'categories', 'slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
@@ -99,6 +100,7 @@ export async function onRequestGet({ request, env }) {
       fetchPublicRows(baseUrl, publicKey, 'news_articles', 'slug,published_at,updated_at', { status: 'eq.published', published_at: 'lte.' + nowIso }, 'slug.asc'),
       fetchPublicRows(baseUrl, publicKey, 'pages', 'slug,updated_at', { is_published: 'eq.true' }, 'slug.asc'),
       fetchPublicRows(baseUrl, publicKey, 'authority_profiles', 'slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
+      fetchPublicRows(baseUrl, publicKey, 'owner_public_profile_directory', 'owner_id', {}, 'owner_id.asc'),
       fetchPublicRows(baseUrl, publicKey, 'local_authorities', 'id,updated_at', { is_active: 'eq.true' }),
       fetchPublicRows(baseUrl, publicKey, 'emergency_contacts', 'id,category,updated_at', { is_active: 'eq.true' }),
       fetchPublicRows(baseUrl, publicKey, 'offers', 'id,valid_from,valid_to,updated_at', { status: 'eq.active', valid_from: 'lte.' + today, valid_to: 'gte.' + today }),
@@ -125,6 +127,11 @@ export async function onRequestGet({ request, env }) {
     addSlugEntries(entries, businesses, '/business');
     addSlugEntries(entries, news, '/news');
     addSlugEntries(entries, authorityProfiles, '/authority-profiles');
+    for (const profile of ownerProfiles) {
+      if (typeof profile.owner_id === 'string' && SAFE_UUID.test(profile.owner_id)) {
+        entries.push({ path: '/owner-profile/' + profile.owner_id });
+      }
+    }
 
     for (const page of pages) {
       if (typeof page.slug === 'string' && STATIC_PAGE_SLUGS.has(page.slug)) {
