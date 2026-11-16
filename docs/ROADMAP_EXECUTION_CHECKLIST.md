@@ -229,7 +229,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 ### Indexable local taxonomy
 - [x] Add a tested sitemap eligibility helper: categories require at least one published listing; area pages require at least three.
 - [x] Apply the eligibility filter to both taxonomy index routes and detail URL generation in the sitemap (not just the index-page check).
-- [x] Verify deployed sitemap responds 200 and contains 170 URLs in the current snapshot, including 10 category detail URLs and 14 area detail URLs; no search URL was present.
+- [x] Verify deployed production sitemap responds 200 and contains 169 URLs in the current snapshot, including 10 category detail URLs and 14 area detail URLs; no search URL was present.
 - [x] Existing area/category records remain available to directory filters and direct navigation; sitemap eligibility is not a database visibility or deletion rule.
 
 ### Contact data integrity
@@ -239,7 +239,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 
 ### Verification
 - [x] GitHub Actions CI run 43954510510 passed (TypeScript, automated tests, production build and Edge Function typecheck).
-- [x] Cloudflare Pages deployment `642660b9-02e8-4b77-b1a3-2fc2301896c6` succeeded for commit `b31b27e0dca53f3d330e5e848ab7fcbfafcf7855`.
-- [x] Browser-rendered sitemap verification returned HTTP 200 and 170 `<loc>` entries, including 14 `/area/` and 10 `/category/` entries.
-- [ ] Browser-rendered invalid-phone business-profile check remains pending due to a 429 rate limit; automated tests and production build passed.
+- [x] Cloudflare Pages deployment `c3c0e3ba-1729-4f9b-87f8-cbca75e60ed4` succeeded for commit `81e9378f681f9ad82e7af680ccf4735ad9256d6d` (includes sitemap cache-key version bump).
+- [x] Browser-rendered production sitemap verification returned HTTP 200 and 169 `<loc>` entries, including 14 `/area/` and 10 `/category/` entries.
+- [x] Browser-rendered production invalid-phone business profile returned HTTP 200 with canonical URL, no `tel:` links, no placeholder phone text, and no Call action.
 - [ ] Full public-route crawl and Google Rich Results Test remain pending.
