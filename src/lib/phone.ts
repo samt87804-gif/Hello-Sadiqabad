@@ -53,9 +53,19 @@ export function formatPkPhoneDisplay(input: string | null | undefined): string {
   return raw;
 }
 
+export function isValidPkPhone(phone: string | null | undefined): boolean {
+  const normalized = normalizePkPhone(phone);
+  if (!normalized) return false;
+  if (normalized.startsWith('+92')) {
+    const nationalNumber = normalized.slice(3);
+    return /^\d{9,10}$/.test(nationalNumber) && !/^0+$/.test(nationalNumber);
+  }
+  return /^\d{2,5}$/.test(normalized) && !/^0+$/.test(normalized);
+}
+
 export function buildTelUrl(phone: string | null | undefined): string {
   const norm = normalizePkPhone(phone);
-  if (!norm) return '#';
+  if (!isValidPkPhone(phone)) return '#';
   return `tel:${norm}`;
 }
 
