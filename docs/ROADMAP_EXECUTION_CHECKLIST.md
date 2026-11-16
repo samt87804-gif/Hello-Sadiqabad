@@ -57,7 +57,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Require an official HTTPS source URL for new Government-category records.
 - [x] Display official source and verification date.
 - [x] Admin can add/edit/activate/deactivate records.
-- [x] Seed six sourced entries: District Control Room 0800-33444, Punjab Highway Patrol 1124, Suthra Punjab 1139, IGP Complaint Center 1787, Punjab Women 1043, and LGCD 0800-02345.
+- [x] Seed six sourced entries: District Control Room 0800-33444, Patrolling Police 1124, Suthra Punjab 1139, IGP Complaint Center 1787, Punjab Women 1043, and LGCD 0800-02345.
 - [x] Production page/build verified; government entries use the existing emergency-contact fetch/cache path. No separate airplane-mode runtime simulation was run.
 
 ### (12) Local Authorities
