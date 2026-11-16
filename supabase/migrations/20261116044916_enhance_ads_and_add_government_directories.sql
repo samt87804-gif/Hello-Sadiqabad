@@ -118,7 +118,7 @@ create trigger trg_audit_record_local_authorities
 update public.emergency_contacts
 set source_url = 'https://www.punjabpolice.gov.pk/emergency_help',
     verified_at = now()
-where phone in ('1122','15','16','115')
+where phone in ('1122','15','16')
   and source_url is null;
 
 -- Verified provincial and district government helplines.
@@ -160,10 +160,10 @@ from public.cities c
 cross join (values
   ('Municipal Committee Sadiqabad','میونسپل کمیٹی صادق آباد','municipal',
    'Municipal services, sanitation, public complaints and local civic administration.','بلدیاتی خدمات، صفائی، عوامی شکایات اور شہری انتظام۔',
-   '068-5801444','0304-7283164','municipalcommitteesdk@gmail.com',
+   '0300 6710881','0304-7283164','municipalcommitteesdk@gmail.com',
    'Sadiqabad Tehsil, Rahim Yar Khan District, Punjab, Pakistan','تحصیل صادق آباد، ضلع رحیم یار خان، پنجاب، پاکستان',
-   'https://mcsadiqabad.lgpunjab.org.pk/contact-us/','https://lgcd.punjab.gov.pk/Bahawalpur_Division',
-   'Monday–Saturday 9:00 AM–4:00 PM; Friday 9:00 AM–1:00 PM','پیر تا ہفتہ صبح 9 تا شام 4؛ جمعہ صبح 9 تا دوپہر 1',1),
+   'https://mcsadiqabad.lgpunjab.org.pk/','https://mcsadiqabad.lgpunjab.org.pk/',
+   '09:00 AM–04:00 PM','صبح 9 بجے تا شام 4 بجے',1),
   ('SDPO Sadiqabad Circle','ایس ڈی پی او سرکل صادق آباد','police',
    'Police circle office contact listed in the official Punjab Police directory.','سرکل پولیس دفتر کا رابطہ، سرکاری پنجاب پولیس ڈائریکٹری کے مطابق۔',
    '068-5705445',null,null,
@@ -181,7 +181,14 @@ cross join (values
    '068-5020027',null,null,
    'Sadiqabad, Rahim Yar Khan District, Punjab, Pakistan','صادق آباد، ضلع رحیم یار خان، پنجاب، پاکستان',
    'https://www.punjabpolice.gov.pk/node/3549','https://www.punjabpolice.gov.pk/node/3549',
-   null,null,4)
+   null,null,4),
+  ('Tehsil Council Sadiqabad','تحصیل کونسل صادق آباد','revenue',
+   'Local government body listed by the Punjab Local Government and Community Development Department. A direct public phone number is not listed in the cited directory.',
+   'محکمہ بلدیات پنجاب کی سرکاری ڈائریکٹری میں درج مقامی حکومت کا ادارہ۔ حوالہ شدہ ڈائریکٹری میں براہ راست عوامی فون نمبر درج نہیں۔',
+   null,null,null,
+   'Sadiqabad Tehsil, Rahim Yar Khan District, Punjab, Pakistan','تحصیل صادق آباد، ضلع رحیم یار خان، پنجاب، پاکستان',
+   null,'https://lgcd.punjab.gov.pk/district-rahim-yar-khan',
+   null,null,5)
 ) as v(name_en,name_ur,authority_type,description_en,description_ur,phone,phone_secondary,email,address_en,address_ur,website_url,source_url,office_hours_en,office_hours_ur,sort_order)
 where c.slug = 'sadiqabad'
 on conflict (city_id,name_en) do nothing;
