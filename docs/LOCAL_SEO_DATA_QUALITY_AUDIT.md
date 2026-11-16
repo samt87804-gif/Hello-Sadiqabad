@@ -87,3 +87,28 @@ Repeated titles or phones are not automatically duplicate businesses: distinct G
 - Health advisor: no notices at the time of this audit.
 
 **No schema or RLS changes were made as part of this read-only audit.**
+
+
+## 7. Cross-workbook Place ID reconciliation — follow-up audit (17 November 2026)
+
+A second pass compared the two supplied Google Places exports against each other, rather than assessing each workbook in isolation:
+
+| Check | Result |
+|---|---:|
+| Combined source rows | 1,145 |
+| Likely Sadiqabad rows (city field or address text) | 1,109 |
+| Rows needing geographic relevance review | 36 |
+| Unique nonblank Place IDs across both workbooks | 1,028 |
+| Place IDs repeated across the combined source rows | 117 IDs |
+| Rows participating in repeated-Place-ID groups | 234 |
+| Area reference rows / unique area names | 204 / 204 |
+
+Each workbook has unique Place IDs within itself (crawler: 374; New Seed Data: 771), but 117 Place IDs overlap across the two workbooks. This means the two files are not independent lists and should be reconciled before treating their combined row count as a count of distinct candidate businesses.
+
+A review workbook was generated for owner/admin inspection: `Hello_Sadiqabad_Business_Data_Audit.xlsx`. It contains a summary, per-source quality counts, 1,109 likely-Sadiqabad candidate rows, repeated Place ID groups, rows participating in those repeated IDs, 36 geographic-review rows, the 204-row area master, and methodology/limitations.
+
+### Live database matching limitation
+
+The live `public.businesses` schema was inspected directly. It has no Google Place ID column. A fresh read-only aggregate query confirmed 223 published businesses, 49 without area, 15 without primary phone, 7 without coordinates, and 33 without address. Therefore, this pass has **not** labelled any source row as a confirmed live duplicate or confirmed new listing. A safe next matching pass needs normalized business name + phone + address + coordinate proximity, with ambiguous cases manually reviewed. Do not add a place-ID column or mutate business rows as part of this report-only task without a separate schema/data plan.
+
+No production records were inserted, updated, merged, renamed, deactivated, or deleted.
