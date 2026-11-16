@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Camera, ExternalLink, Link2, Plus, Search, ShieldCheck, UserRound, X } from 'lucide-react';
-import type { AuthorityProfileRow, BusinessRow } from '../../types/database';
+import { Camera, Link2, Plus, Search, ShieldCheck, UserRound } from 'lucide-react';
+import type { AuthorityProfileRow } from '../../types/database';
 import type { BusinessPublicView } from '../../types/directory';
 import { slugify } from '../../lib/format';
 import { isValidHttpsUrl } from '../../lib/phone';
