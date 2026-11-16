@@ -67,7 +67,9 @@ export function AppShell({
 
   const showFooter = !hideFooter;
   const showBottomNav = !hideBottomNav;
-  const showChatbot = !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/owner') &&
+  const isAdminPath = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
+  const isOwnerPortalPath = location.pathname === '/owner' || location.pathname.startsWith('/owner/');
+  const showChatbot = !isAdminPath && !isOwnerPortalPath &&
     !['/login', '/owner-register', '/forgot-password', '/reset-password', '/change-password'].includes(location.pathname);
 
   return (
