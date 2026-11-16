@@ -1011,9 +1011,9 @@ export async function fetchOwnerSubmissions(ownerId: string): Promise<Submission
   if (!client) return [];
   const { data, error } = await client
     .from('submissions')
-    .select('id,type,business_id,payload,status,created_at,updated_at')
+    .select('id,type,business_id,payload,contact_name,contact_phone,submitted_by,status,admin_note,created_at,updated_at')
     .eq('submitted_by', ownerId)
-    .in('type', ['new_business', 'claim', 'plan_upgrade'])
+    .in('type', ['new_business', 'claim', 'plan_upgrade', 'owner_product', 'owner_service', 'owner_offer'])
     .order('created_at', { ascending: false })
     .limit(50);
   if (error) throw error;
@@ -1083,6 +1083,8 @@ export async function updateOwnerBusiness(
     is_featured: _if,
     owner_id: _oid,
     status: requestedStatus,
+    services_en: requestedServicesEn,
+    services_ur: requestedServicesUr,
     ...safePatch
   } = patch;
 
@@ -1091,7 +1093,7 @@ export async function updateOwnerBusiness(
     const updatePayload: Record<string, unknown> = { ...safePatch, updated_at: nowIso() };
     const { data: curr, error: currentError } = await client
       .from('businesses')
-      .select('status')
+      .select('*')
       .eq('id', businessId)
       .single();
     if (currentError || !curr) {
@@ -1103,8 +1105,12 @@ export async function updateOwnerBusiness(
     ) {
       updatePayload.status = 'pending_approval';
     }
-    // The database trigger reads the private owner_edits_require_approval setting
-    // and moves published listings into moderation when required.
+    const servicesEn = requestedServicesEn ?? (curr.services_en as string[]);
+    const servicesUr = requestedServicesUr ?? (curr.services_ur as string[]);
+    const servicesChanged =
+      (requestedServicesEn !== undefined && JSON.stringify(requestedServicesEn) !== JSON.stringify(curr.services_en)) ||
+      (requestedServicesUr !== undefined && JSON.stringify(requestedServicesUr) !== JSON.stringify(curr.services_ur));
+    // Service changes are submitted separately and are not public until approved.
     const { data, error } = await client
       .from('businesses')
       .update(updatePayload)
@@ -1112,6 +1118,13 @@ export async function updateOwnerBusiness(
       .select()
       .single();
     if (error) throw error;
+    if (servicesChanged) {
+      const { error: requestError } = await client.rpc('submit_owner_content_request', {
+        p_business_id: businessId, p_type: 'owner_service',
+        p_payload: { action: 'upsert', services_en: servicesEn, services_ur: servicesUr },
+      });
+      if (requestError) throw requestError;
+    }
     return data as BusinessRow;
   }
 
@@ -1119,6 +1132,15 @@ export async function updateOwnerBusiness(
   const idx = db.businesses.findIndex((b) => b.id === businessId);
   if (idx === -1) throw new Error('Listing not found');
   const current = db.businesses[idx];
+  const servicesChanged =
+    (requestedServicesEn !== undefined && JSON.stringify(requestedServicesEn) !== JSON.stringify(current.services_en)) ||
+    (requestedServicesUr !== undefined && JSON.stringify(requestedServicesUr) !== JSON.stringify(current.services_ur));
+  if (servicesChanged) db.submissions.unshift({
+    id: uid('sub'), type: 'owner_service', business_id: businessId,
+    payload: { action: 'upsert', services_en: requestedServicesEn ?? current.services_en, services_ur: requestedServicesUr ?? current.services_ur },
+    contact_name: null, contact_phone: null, submitted_by: actorId, status: 'new',
+    assigned_to: null, admin_note: null, created_at: nowIso(), updated_at: nowIso(),
+  });
   const requiresApproval = parseSiteSettings(db.site_settings).owner_edits_require_approval;
   let nextStatus = current.status;
   if (
@@ -1147,6 +1169,26 @@ export async function updateOwnerBusiness(
   return updated;
 }
 
+export async function fetchOwnerPublicProfileBusinessIds(ownerId: string): Promise<string[]> {
+  const client = getSupabaseClient(); if (!client) return [];
+  const { data, error } = await client.from('owner_public_profile_businesses').select('business_id').eq('owner_id', ownerId);
+  if (error) throw error; return (data ?? []).map((row) => String(row.business_id));
+}
+export async function setOwnerPublicProfileBusinessIds(businessIds: string[]): Promise<void> {
+  const client = getSupabaseClient(); if (!client) throw new Error('Public profile settings are unavailable while offline.');
+  const { error } = await client.rpc('set_owner_public_profile_businesses', { p_business_ids: [...new Set(businessIds)] });
+  if (error) throw error;
+}
+export async function fetchPublicOwnerProfileBusinesses(ownerId: string): Promise<BusinessPublicView[]> {
+  const client = getSupabaseClient(); if (!client) return [];
+  const { data: selections, error: selectionError } = await client.from('owner_public_profile_businesses').select('business_id').eq('owner_id', ownerId);
+  if (selectionError) throw selectionError;
+  const ids = (selections ?? []).map((row) => String(row.business_id)); if (!ids.length) return [];
+  const { data, error } = await client.from('businesses').select('*, categories(*), areas(*), plans(*)').in('id', ids).eq('status', 'published');
+  if (error) throw error;
+  const db = loadDemoDb(); return ((data ?? []) as BusinessRow[]).map((business) => enrichBusiness(business, db));
+}
+
 export async function fetchBusinessProducts(businessId: string): Promise<ProductRow[]> {
   const client = getSupabaseClient();
   if (!client || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId)) {
@@ -1163,36 +1205,20 @@ export async function fetchBusinessProducts(businessId: string): Promise<Product
   return (data ?? []) as ProductRow[];
 }
 
-export async function upsertBusinessProduct(
-  product: Partial<ProductRow> & { business_id: string; name_en: string }
-): Promise<ProductRow> {
-  const client = getSupabaseClient();
-  if (!client) throw new Error('Product catalogue is unavailable while the app is offline.');
-  const payload = {
-    ...product,
-    name_en: product.name_en.trim(),
-    name_ur: product.name_ur?.trim() || null,
-    description_en: product.description_en?.trim() || null,
-    description_ur: product.description_ur?.trim() || null,
-    image_url: product.image_url?.trim() || null,
-    updated_at: nowIso(),
-  };
-  const { data, error } = await client
-    .from('business_products')
-    .upsert(payload)
-    .select()
-    .single();
+export async function upsertBusinessProduct(product: Partial<ProductRow> & { business_id: string; name_en: string }): Promise<void> {
+  const client = getSupabaseClient(); if (!client) throw new Error('Product catalogue is unavailable while the app is offline.');
+  const payload = { ...(product.id ? { id: product.id } : {}), name_en: product.name_en.trim(), name_ur: product.name_ur?.trim() || null,
+    description_en: product.description_en?.trim() || null, description_ur: product.description_ur?.trim() || null,
+    price: product.price ?? null, image_url: product.image_url?.trim() || null, is_active: product.is_active ?? true,
+    sort_order: product.sort_order ?? 0, action: 'upsert' };
+  const { error } = await client.rpc('submit_owner_content_request', { p_business_id: product.business_id, p_type: 'owner_product', p_payload: payload });
   if (error) throw error;
-  return data as ProductRow;
 }
-
 export async function deleteBusinessProduct(productId: string): Promise<void> {
-  const client = getSupabaseClient();
-  if (!client) throw new Error('Product catalogue is unavailable while the app is offline.');
-  const { error } = await client
-    .from('business_products')
-    .delete()
-    .eq('id', productId);
+  const client = getSupabaseClient(); if (!client) throw new Error('Product catalogue is unavailable while the app is offline.');
+  const { data, error: readError } = await client.from('business_products').select('id,business_id,name_en').eq('id', productId).single();
+  if (readError || !data) throw readError ?? new Error('Product not found.');
+  const { error } = await client.rpc('submit_owner_content_request', { p_business_id: data.business_id, p_type: 'owner_product', p_payload: { action: 'delete', id: data.id, name_en: data.name_en } });
   if (error) throw error;
 }
 
@@ -1210,21 +1236,16 @@ export async function fetchBusinessOffers(businessId: string): Promise<OfferRow[
   return loadDemoDb().offers.filter((o) => o.business_id === businessId);
 }
 
-export async function upsertOffer(
-  offer: Partial<OfferRow> & { business_id: string; title: string; valid_from: string; valid_to: string }
-): Promise<OfferRow> {
+export async function upsertOffer(offer: Partial<OfferRow> & { business_id: string; title: string; valid_from: string; valid_to: string }): Promise<OfferRow> {
   const client = getSupabaseClient();
   if (client) {
-    const payload = {
-      ...offer,
-      status: offer.status ?? 'active',
-      updated_at: nowIso(),
-    };
-    const { data, error } = await client.from('offers').upsert(payload).select().single();
+    const payload = { ...(offer.id ? { id: offer.id } : {}), title: offer.title.trim(), description: offer.description?.trim() || null,
+      image_url: offer.image_url?.trim() || null, valid_from: offer.valid_from, valid_to: offer.valid_to,
+      status: offer.status ?? 'active', action: 'upsert' };
+    const { error } = await client.rpc('submit_owner_content_request', { p_business_id: offer.business_id, p_type: 'owner_offer', p_payload: payload });
     if (error) throw error;
-    return data as OfferRow;
+    return { ...offer, id: offer.id ?? 'pending', status: offer.status ?? 'active' } as OfferRow;
   }
-
   const db = loadDemoDb();
   if (offer.id) {
     const idx = db.offers.findIndex((o) => o.id === offer.id);
@@ -1254,13 +1275,12 @@ export async function upsertOffer(
 export async function deleteOffer(offerId: string): Promise<void> {
   const client = getSupabaseClient();
   if (client) {
-    const { error } = await client.from('offers').delete().eq('id', offerId);
-    if (error) throw error;
-    return;
+    const { data, error: readError } = await client.from('offers').select('id,business_id,title').eq('id', offerId).single();
+    if (readError || !data) throw readError ?? new Error('Offer not found.');
+    const { error } = await client.rpc('submit_owner_content_request', { p_business_id: data.business_id, p_type: 'owner_offer', p_payload: { action: 'delete', id: data.id, title: data.title } });
+    if (error) throw error; return;
   }
-  const db = loadDemoDb();
-  db.offers = db.offers.filter((o) => o.id !== offerId);
-  saveDemoDb(db);
+  const db = loadDemoDb(); db.offers = db.offers.filter((o) => o.id !== offerId); saveDemoDb(db);
 }
 
 export async function fetchOwnerReviews(businessIds: string[]): Promise<ReviewRow[]> {

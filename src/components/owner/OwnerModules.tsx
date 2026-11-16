@@ -29,6 +29,7 @@ import type {
   PlanRow,
   ProductRow,
   ReviewRow,
+  SubmissionRow,
 } from '../../types/database';
 import type { BusinessPublicView, OwnerDashboardStats } from '../../types/directory';
 import { formatDateShort } from '../../lib/format';
@@ -52,15 +53,18 @@ import { submitPublicSuggestion } from '../../lib/api';
 export function ProductCatalogueManager({
   business,
   products,
+  requests,
   onSave,
   onDelete,
 }: {
   business: BusinessPublicView;
   products: ProductRow[];
+  requests: SubmissionRow[];
   onSave: (product: Partial<ProductRow> & { business_id: string; name_en: string }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const { showToast } = useToast();
+  const productRequests = requests.filter((request) => request.type === 'owner_product' && request.business_id === business.id).slice(0, 6);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -131,7 +135,7 @@ export function ProductCatalogueManager({
         is_active: isActive,
         sort_order: editing?.sort_order ?? products.length,
       });
-      showToast(editing ? 'Product updated.' : 'Product added to your catalogue.', 'success');
+      showToast('Product request sent to Admin for approval. It will appear publicly after approval.', 'success');
       setModalOpen(false);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Product could not be saved.', 'error');
@@ -145,7 +149,7 @@ export function ProductCatalogueManager({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-on-surface">Products Catalogue</h2>
-          <p className="text-xs text-on-surface-variant">Add up to 2 products for {business.name_en}</p>
+          <p className="text-xs text-on-surface-variant">Add up to 2 products for {business.name_en}. Every change needs Admin approval.</p>
           <p className="font-urdu text-xs text-primary mt-1" dir="rtl">ہر کاروبار کے لیے زیادہ سے زیادہ 2 مصنوعات</p>
         </div>
         <Button onClick={openNew} disabled={products.length >= 2} leftIcon={<Plus className="w-4 h-4" />}>
@@ -153,6 +157,7 @@ export function ProductCatalogueManager({
         </Button>
       </div>
 
+      {productRequests.length > 0 && <Card className="p-4 space-y-2 border border-secondary/30"><h3 className="text-sm font-bold text-on-surface">Product approval requests</h3>{productRequests.map((request)=><div key={request.id} className="flex items-center justify-between gap-3 text-xs border-t border-outline-variant/20 pt-2"><span className="min-w-0 truncate text-on-surface">{String(request.payload.name_en??request.payload.action??'Product change')}</span><Badge variant={request.status==='done'?'success':request.status==='rejected'?'danger':'warning'}>{request.status==='done'?'Approved':request.status==='rejected'?'Rejected':'Awaiting Admin'}</Badge></div>)}</Card>}
       {products.length === 0 ? (
         <Card className="p-8 text-center space-y-2">
           <Package className="w-9 h-9 mx-auto text-primary" />
@@ -182,7 +187,7 @@ export function ProductCatalogueManager({
                   onClick={async () => {
                     try {
                       await onSave({ ...product, is_active: !product.is_active });
-                      showToast(product.is_active ? 'Product hidden from public profile.' : 'Product is now visible.', 'success');
+                      showToast('Product visibility change submitted for Admin approval.', 'success');
                     } catch (error) {
                       showToast(error instanceof Error ? error.message : 'Product status could not be changed.', 'error');
                     }
@@ -202,13 +207,13 @@ export function ProductCatalogueManager({
         onClose={() => setConfirmDeleteId(null)}
         destructive
         title="Delete Product"
-        message="This will permanently remove this product from your business catalogue."
+        message="A deletion request will be sent to Admin. The product stays visible until the request is approved."
         confirmLabel="Delete Product"
         onConfirm={async () => {
           if (!confirmDeleteId) return;
           try {
             await onDelete(confirmDeleteId);
-            showToast('Product deleted.', 'success');
+            showToast('Product deletion request submitted for Admin approval.', 'success');
           } catch (error) {
             showToast(error instanceof Error ? error.message : 'Product could not be deleted.', 'error');
           } finally {
@@ -242,12 +247,14 @@ export function ProductCatalogueManager({
 export function OffersManager({
   business,
   offers,
+  requests,
   plan,
   onSaveOffer,
   onDeleteOffer,
 }: {
   business: BusinessPublicView;
   offers: OfferRow[];
+  requests: SubmissionRow[];
   plan: PlanRow | null;
   onSaveOffer: (
     offer: Partial<OfferRow> & { business_id: string; title: string; valid_from: string; valid_to: string }
@@ -255,6 +262,7 @@ export function OffersManager({
   onDeleteOffer: (id: string) => Promise<void>;
 }) {
   const { showToast } = useToast();
+  const offerRequests = requests.filter((request) => request.type === 'owner_offer' && request.business_id === business.id).slice(0, 6);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingStatus, setEditingStatus] = useState<'active' | 'paused'>('active');
@@ -357,7 +365,7 @@ export function OffersManager({
       });
 
       showToast(
-        editingId ? 'Offer updated successfully!' : 'Offer published successfully!',
+        'Offer request sent to Admin for approval. It will be visible publicly after approval.',
         'success'
       );
       setModalOpen(false);
@@ -375,7 +383,7 @@ export function OffersManager({
         ...offer,
         status: 'paused',
       });
-      showToast(`"${offer.title}" has been paused.`, 'info');
+      showToast(`Pause request for "${offer.title}" sent to Admin.`, 'info');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Failed to pause offer.', 'error');
     } finally {
@@ -404,7 +412,7 @@ export function OffersManager({
         ...offer,
         status: 'active',
       });
-      showToast(`"${offer.title}" is now active!`, 'success');
+      showToast(`Activation request for "${offer.title}" sent to Admin.`, 'success');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Failed to activate offer.', 'error');
     } finally {
@@ -417,7 +425,7 @@ export function OffersManager({
       {/* Header & Plan Summary */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-lg font-bold text-on-surface">Promotional Offers</h2>
+          <h2 className="text-lg font-bold text-on-surface">Promotional Offers</h2><p className="text-xs text-on-surface-variant">New offers and all changes are reviewed by Admin before going live.</p>
           <p className="text-xs text-on-surface-variant">
             <span className="font-bold text-primary tabular-nums">{activeCount}</span> /{' '}
             <span className="tabular-nums">{maxOffers}</span> active offers used on your current plan
@@ -432,6 +440,7 @@ export function OffersManager({
         </Button>
       </div>
 
+      {offerRequests.length > 0 && <Card className="p-4 space-y-2 border border-secondary/30"><h3 className="text-sm font-bold text-on-surface">Offer approval requests</h3>{offerRequests.map((request)=><div key={request.id} className="flex items-center justify-between gap-3 text-xs border-t border-outline-variant/20 pt-2"><span className="min-w-0 truncate text-on-surface">{String(request.payload.title??request.payload.action??'Offer change')}</span><Badge variant={request.status==='done'?'success':request.status==='rejected'?'danger':'warning'}>{request.status==='done'?'Approved':request.status==='rejected'?'Rejected':'Awaiting Admin'}</Badge></div>)}</Card>}
       {/* Plan Limit Notifications */}
       {maxOffers === 0 ? (
         <Card className="p-4 bg-tertiary-container/25 border border-tertiary/30 flex flex-wrap items-center justify-between gap-3">
@@ -573,7 +582,7 @@ export function OffersManager({
           if (confirmDeleteId) {
             try {
               await onDeleteOffer(confirmDeleteId);
-              showToast('Offer deleted successfully.', 'info');
+              showToast('Offer deletion request sent to Admin for approval.', 'info');
             } catch (err) {
               showToast(err instanceof Error ? err.message : 'Failed to delete offer.', 'error');
             }

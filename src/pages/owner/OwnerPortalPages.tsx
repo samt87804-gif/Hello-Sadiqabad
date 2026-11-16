@@ -33,6 +33,9 @@ import {
   fetchNotifications,
   fetchOwnerDashboardStats,
   fetchOwnerInquiries,
+  fetchOwnerSubmissions,
+  fetchOwnerPublicProfileBusinessIds,
+  setOwnerPublicProfileBusinessIds,
   fetchOwnerListings,
   fetchOwnerReviews,
   fetchOwnerSubmissions,
@@ -100,6 +103,8 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
+  const [profileBusinessIds, setProfileBusinessIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -112,18 +117,17 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
     if (!user) return;
     setLoading(true);
     try {
-      const [owned, cats, ar, pls, notifs] = await Promise.all([
-        fetchOwnerListings(user.id),
-        fetchAllCategories(),
-        fetchAllAreas(),
-        fetchPlans(),
-        fetchNotifications(user.id),
+      const [owned, cats, ar, pls, notifs, ownerRequests, profileSelection] = await Promise.all([
+        fetchOwnerListings(user.id), fetchAllCategories(), fetchAllAreas(), fetchPlans(),
+        fetchNotifications(user.id), fetchOwnerSubmissions(user.id), fetchOwnerPublicProfileBusinessIds(user.id),
       ]);
       setListings(owned);
       setCategories(cats);
       setAreas(ar);
       setPlans(pls);
       setNotifications(notifs);
+      setSubmissions(ownerRequests);
+      setProfileBusinessIds(profileSelection);
 
       let persistedId = '';
       try {
@@ -203,6 +207,8 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
     reviews,
     inquiries,
     notifications,
+    submissions,
+    profileBusinessIds,
     unreadCount,
     loading,
     reload,
@@ -899,7 +905,9 @@ export function OwnerListing() {
       loading={data.loading}
     >
       {biz && user ? (
-        <ListingEditor
+        <>
+          {data.submissions.filter((request) => request.type === 'owner_service' && request.business_id === biz.id && (request.status === 'new' || request.status === 'in_review')).map((request) => <Card key={request.id} className="p-3 border border-secondary/40 bg-secondary-container/20 text-sm"><p className="font-bold text-on-surface">Service changes awaiting Admin approval</p><p className="text-xs text-on-surface-variant mt-1">Your submitted services will appear publicly after approval.</p></Card>)}
+          <ListingEditor
           business={biz}
           categories={data.categories}
           areas={data.areas}
@@ -909,6 +917,7 @@ export function OwnerListing() {
             await data.reload();
           }}
         />
+        </>
       ) : (
         <Card className="p-6 text-center text-sm text-on-surface-variant">
           No business listing selected or assigned yet.
@@ -934,6 +943,7 @@ export function OwnerProducts() {
         <ProductCatalogueManager
           business={business}
           products={data.products}
+          requests={data.submissions}
           onSave={async (product) => {
             await upsertBusinessProduct(product);
             await data.reload();
@@ -970,6 +980,7 @@ export function OwnerOffers() {
         <OffersManager
           business={biz}
           offers={data.offers}
+          requests={data.submissions}
           plan={plan}
           onSaveOffer={async (offer) => {
             await upsertOffer(offer);
@@ -1210,6 +1221,23 @@ export function OwnerProfile() {
       </div>
     </OwnerShell>
   );
+}
+
+export function OwnerPublicProfileSettings() {
+  const data = useOwnerPortalData(); const { user } = useAuth(); const { showToast } = useToast();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]); const [saving, setSaving] = useState(false);
+  useEffect(() => { setSelectedIds(data.profileBusinessIds); }, [data.profileBusinessIds]);
+  const publishedListings = data.listings.filter((business) => business.status === 'published');
+  const toggleBusiness = (id: string) => setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current,id]);
+  const saveSelection = async () => { if (!user) return; setSaving(true); try { await setOwnerPublicProfileBusinessIds(selectedIds); await data.reload(); showToast('Public profile business selection saved.','success'); } catch (error) { showToast(error instanceof Error ? error.message : 'Business selection could not be saved.','error'); } finally { setSaving(false); } };
+  return <OwnerShell unreadCount={data.unreadCount} listings={data.listings} selectedId={data.selectedId} onSelect={data.setSelectedId} loading={data.loading} showSwitcher={false}>
+    <Card className="p-5 sm:p-6 space-y-4">
+      <div><h1 className="text-lg font-bold text-on-surface">Public Owner Profile — My Businesses</h1><p className="text-sm text-on-surface-variant mt-1">Choose which of your published businesses should appear on your public owner profile. Unselected businesses remain in the public directory but will not be listed on your owner profile.</p><p className="font-urdu text-xs text-primary mt-2" dir="rtl">اپنی پبلک اونر پروفائل پر دکھانے کے لیے اپنے شائع شدہ کاروبار منتخب کریں۔</p></div>
+      {publishedListings.length===0 ? <p className="rounded-xl bg-surface-container-low p-4 text-sm text-on-surface-variant">You do not have any published businesses to select yet.</p> : <div className="space-y-2">{publishedListings.map((business)=><label key={business.id} className="flex items-start gap-3 rounded-xl border border-outline-variant/40 p-3 cursor-pointer hover:border-primary/50"><input type="checkbox" checked={selectedIds.includes(business.id)} onChange={()=>toggleBusiness(business.id)} className="mt-1 w-4 h-4 accent-primary"/><span className="min-w-0"><span className="block text-sm font-bold text-on-surface">{business.name_en}</span>{business.name_ur&&<span className="block text-xs font-urdu text-primary" dir="rtl">{business.name_ur}</span>}<span className="block text-xs text-on-surface-variant mt-1">{business.category?.name_en??'Business'} · {business.area?.name_en??'Sadiqabad'}</span></span></label>)}</div>}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/30 pt-3"><span className="text-xs text-on-surface-variant">{selectedIds.length} business(es) selected · maximum 50</span><Button onClick={saveSelection} loading={saving} disabled={selectedIds.length>50}>Save Selection</Button></div>
+      <p className="text-xs text-on-surface-variant">Your Admin must also enable your public owner profile before visitors can see it. This selection does not change your business listing visibility.</p>
+    </Card>
+  </OwnerShell>;
 }
 
 export function OwnerNotifications() {

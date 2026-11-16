@@ -52,7 +52,10 @@ export type SubmissionType =
   | 'phone_suggestion'
   | 'report'
   | 'broken_image'
-  | 'plan_upgrade';
+  | 'plan_upgrade'
+  | 'owner_product'
+  | 'owner_service'
+  | 'owner_offer';
 export type SubmissionStatus = 'new' | 'in_review' | 'done' | 'rejected';
 export type BusinessEventType =
   | 'view'
@@ -378,6 +381,7 @@ export interface SubmissionRow {
   payload: Record<string, unknown>;
   contact_name: string | null;
   contact_phone: string | null;
+  submitted_by?: string | null;
   status: SubmissionStatus;
   assigned_to: string | null;
   admin_note: string | null;
