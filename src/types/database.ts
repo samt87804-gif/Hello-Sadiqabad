@@ -40,7 +40,8 @@ export type EmergencyCategory =
   | 'ambulance'
   | 'hospital'
   | 'utility'
-  | 'general';
+  | 'general'
+  | 'government';
 
 export type OfferStatus = 'active' | 'paused' | 'expired';
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';
@@ -83,7 +84,9 @@ export type AdPlacement =
   | 'homepage_top'
   | 'search_sidebar'
   | 'category_banner'
-  | 'popup';
+  | 'popup'
+  | 'emergency_banner'
+  | 'authorities_banner';
 export type AdStatus = 'pending' | 'active' | 'paused' | 'expired' | 'rejected';
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
@@ -294,6 +297,35 @@ export interface EmergencyContactRow {
   description_en?: string | null;
   description_ur?: string | null;
   whatsapp?: string | null;
+  source_url?: string | null;
+  verified_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type LocalAuthorityType = 'municipal' | 'police' | 'revenue' | 'district' | 'sanitation' | 'other';
+
+export interface LocalAuthorityRow {
+  id: string;
+  city_id: string;
+  name_en: string;
+  name_ur: string;
+  authority_type: LocalAuthorityType;
+  description_en: string | null;
+  description_ur: string | null;
+  phone: string | null;
+  phone_secondary: string | null;
+  email: string | null;
+  address_en: string | null;
+  address_ur: string | null;
+  website_url: string | null;
+  map_url: string | null;
+  office_hours_en: string | null;
+  office_hours_ur: string | null;
+  source_url: string;
+  verified_at: string;
+  sort_order: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
