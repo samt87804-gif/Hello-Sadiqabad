@@ -78,6 +78,9 @@ const OwnerProfile = lazy(() =>
 const OwnerNotifications = lazy(() =>
   import('./pages/owner/OwnerPortalPages').then((m) => ({ default: m.OwnerNotifications }))
 );
+const OwnerPublicProfileSettings = lazy(() =>
+  import('./pages/owner/OwnerPortalPages').then((m) => ({ default: m.OwnerPublicProfileSettings }))
+);
 
 const AdminPortal = lazy(() =>
   import('./pages/admin/AdminPortal').then((m) => ({ default: m.AdminPortal }))
@@ -258,6 +261,7 @@ export default function App() {
                         </RequireAuth>
                       }
                     />
+                    <Route path="/owner/public-profile" element={<RequireAuth><RequireRole roles={['owner']}><OwnerPublicProfileSettings /></RequireRole></RequireAuth>} />
                     <Route
                       path="/owner/notifications"
                       element={

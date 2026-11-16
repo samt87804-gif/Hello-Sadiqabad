@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Mail, MapPin, Phone, ShieldCheck, Store } from 'lucide-react';
-import { fetchPublicOwnerProfile, searchBusinesses } from '../lib/api';
+import { fetchPublicOwnerProfile, fetchPublicOwnerProfileBusinesses } from '../lib/api';
 import type { BusinessPublicView, OwnerPublicProfileView } from '../types/directory';
 import { updatePageSeo } from '../lib/seo';
 import { AppShell } from '../components/layout/AppShell';
@@ -35,9 +35,9 @@ export function OwnerPublicProfile() {
           description: 'Public business owner profile and approved Sadiqabad business listings.',
           canonicalPath: `/owner-profile/${ownerId}`,
         });
-        const result = await searchBusinesses({}, { page: 1, limit: 1000, logSearch: false });
+        const selectedBusinesses = await fetchPublicOwnerProfileBusinesses(ownerId);
         if (!active) return;
-        setBusinesses(result.items.filter((business) => business.owner_id === ownerId));
+        setBusinesses(selectedBusinesses);
       } catch {
         if (active) setFailed(true);
       } finally {

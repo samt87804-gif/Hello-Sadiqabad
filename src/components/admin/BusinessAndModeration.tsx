@@ -1064,7 +1064,8 @@ type SubmissionFilterGroup =
   | 'corrections'
   | 'claim'
   | 'plan_upgrade'
-  | 'reports';
+  | 'reports'
+  | 'owner_content';
 
 export function ModerationManager({
   reviews,
@@ -1096,6 +1097,7 @@ export function ModerationManager({
       return s.type === 'correction' || s.type === 'phone_suggestion';
     if (typeFilter === 'claim') return s.type === 'claim';
     if (typeFilter === 'plan_upgrade') return s.type === 'plan_upgrade';
+    if (typeFilter === 'owner_content') return s.type === 'owner_product' || s.type === 'owner_service' || s.type === 'owner_offer';
     return s.type === 'report' || s.type === 'broken_image';
   });
 
@@ -1153,6 +1155,10 @@ export function ModerationManager({
                   label: `Plan Upgrades (${openSubs.filter((s) => s.type === 'plan_upgrade').length})`,
                 },
                 {
+                  id: 'owner_content',
+                  label: `Owner Products / Services / Offers (${openSubs.filter((s) => ['owner_product','owner_service','owner_offer'].includes(s.type)).length})`,
+                },
+                {
                   id: 'reports',
                   label: `Reports / Photos (${
                     openSubs.filter((s) => s.type === 'report' || s.type === 'broken_image').length
@@ -1193,7 +1199,7 @@ export function ModerationManager({
                       <Badge variant="warning">{sub.type}</Badge>
                       <span className="font-bold text-sm text-on-surface">
                         {targetBiz?.name_en ??
-                          String(payload.name_en ?? 'New Submission')}
+                          String(payload.name_en ?? payload.title ?? (sub.type === 'owner_service' ? 'Service changes' : 'Owner content request'))}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1234,9 +1240,10 @@ export function ModerationManager({
                       {Object.entries(payload).map(([k, v]) => (
                         <div key={k}>
                           <strong className="text-on-surface">{k}:</strong>{' '}
-                          <span className="text-on-surface-variant">{String(v)}</span>
+                          <span className="text-on-surface-variant">{Array.isArray(v) ? v.map(String).join(', ') : typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}</span>
                         </div>
                       ))}
+                      {typeof payload.image_url === 'string' && payload.image_url.startsWith('https://') && <img src={payload.image_url} alt="Submitted content preview" className="w-32 h-20 rounded-lg object-cover border border-outline-variant/30" loading="lazy" />}
                       {sub.contact_name && (
                         <div>
                           <strong>Reporter:</strong> {sub.contact_name} ({sub.contact_phone})

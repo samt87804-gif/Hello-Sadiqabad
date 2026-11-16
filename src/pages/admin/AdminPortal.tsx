@@ -112,6 +112,7 @@ export function AdminPortal() {
   const [pages, setPages] = useState<PageRow[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visitedTabs, setVisitedTabs] = useState<string[]>([tab]);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -206,6 +207,10 @@ export function AdminPortal() {
     reload();
   }, [reload]);
 
+  useEffect(() => {
+    setVisitedTabs((current) => current.includes(tab) ? current : [...current, tab]);
+  }, [tab]);
+
   const actorId = user?.id ?? 'user-admin-1';
 
   const handleGlobalJump = (e: React.FormEvent) => {
@@ -215,12 +220,12 @@ export function AdminPortal() {
     navigate('/admin/businesses');
   };
 
-  const renderTab = () => {
-    if (loading || !counts) {
+  const renderTab = (tabKey: string) => {
+    if (loading && !counts) {
       return <Skeleton className="h-72 rounded-2xl" />;
     }
 
-    switch (tab) {
+    switch (tabKey) {
       case 'overview':
         return <AdminDashboard counts={counts} />;
       case 'analytics':
@@ -360,7 +365,7 @@ export function AdminPortal() {
       case 'emergency':
         return isSuperAdmin ? (
           <TaxonomyManager
-            mode={tab}
+            mode={tabKey}
             categories={categories}
             areas={areas}
             emergencyContacts={emergencyContacts}
@@ -572,7 +577,7 @@ export function AdminPortal() {
             })()}
           </div>
 
-          {renderTab()}
+          {visitedTabs.map((visitedTab) => <div key={visitedTab} hidden={visitedTab !== tab} aria-hidden={visitedTab !== tab}>{renderTab(visitedTab)}</div>)}
         </main>
       </div>
       <AppFooter variant="portal" withBottomNavOffset={false} />

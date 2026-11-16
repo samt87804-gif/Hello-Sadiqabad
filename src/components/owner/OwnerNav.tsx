@@ -15,6 +15,7 @@ import {
   Store,
   Tag,
   UserCircle,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
@@ -34,6 +35,7 @@ export function OwnerNav({ unreadCount = 0 }: { unreadCount?: number }) {
     { to: '/owner/plan', label: 'Plan & Benefits', icon: Crown },
     { to: '/owner/notifications', label: 'Notifications', icon: Bell, badge: unreadCount },
     { to: '/owner/profile', label: 'Profile', icon: UserCircle },
+    { to: '/owner/public-profile', label: 'Public Profile', icon: UserCheck },
   ];
 
   return (
