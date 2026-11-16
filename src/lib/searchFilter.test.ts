@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { effectivePlanCode, filterAndRankBusinesses, normalizeDirectorySearchText } from './searchFilter';
+import { effectivePlanCode, filterAndRankBusinesses, matchesDirectoryBusinessQuery, normalizeDirectorySearchText } from './searchFilter';
 import type { AreaRow, CategoryRow, PlanRow } from '../types/database';
 import type { BusinessPublicView } from '../types/directory';
 
@@ -231,4 +231,11 @@ test('business search returns the same shop for uppercase and lowercase query', 
   const lower = filterAndRankBusinesses(sampleBusinesses, categories, areas, plans, { q: 'basic clinic' });
   assert.deepEqual(upper.map((item) => item.id), lower.map((item) => item.id));
   assert.equal(upper[0]?.name_en, 'Basic Clinic');
+});
+
+test('shared public business matcher ignores case for shop names', () => {
+  assert.equal(matchesDirectoryBusinessQuery(sampleBusinesses[0], 'BASIC CLINIC'), true);
+  assert.equal(matchesDirectoryBusinessQuery(sampleBusinesses[0], 'basic clinic'), true);
+  assert.equal(matchesDirectoryBusinessQuery(sampleBusinesses[0], 'Basic Clinic'), true);
+  assert.equal(matchesDirectoryBusinessQuery(sampleBusinesses[0], 'unrelated shop'), false);
 });
