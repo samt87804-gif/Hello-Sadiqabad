@@ -71,7 +71,7 @@ function addSlugEntries(entries, rows, prefix) {
 }
 
 export async function onRequestGet({ request, env }) {
-  const cacheKey = new Request(SITE_ORIGIN + '/sitemap.xml');
+  const cacheKey = new Request(SITE_ORIGIN + '/sitemap.xml?v=2');
   try {
     const cached = await caches.default.match(cacheKey);
     if (cached) return cached;
