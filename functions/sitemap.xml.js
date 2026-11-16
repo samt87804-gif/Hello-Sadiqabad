@@ -124,8 +124,8 @@ export async function onRequestGet({ request, env }) {
     if (news.length > 0) entries.push({ path: '/news' });
     if (authorityProfiles.length > 0) entries.push({ path: '/authority-profiles' });
 
-    addSlugEntries(entries, categories, '/category');
-    addSlugEntries(entries, areas, '/area');
+    addSlugEntries(entries, indexableTaxonomy.categories, '/category');
+    addSlugEntries(entries, indexableTaxonomy.areas, '/area');
     addSlugEntries(entries, businesses, '/business');
     addSlugEntries(entries, news, '/news');
     addSlugEntries(entries, authorityProfiles, '/authority-profiles');
