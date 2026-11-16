@@ -11,6 +11,7 @@ import {
   Search,
   ShieldAlert,
   Star,
+  Trash2,
   XCircle,
 } from 'lucide-react';
 import type {
@@ -35,6 +36,7 @@ import {
   addBusinessNote,
   adminUpsertBusiness,
   bulkUpdateBusinesses,
+  deleteBusinessPermanently,
   fetchBusinessNotes,
   findDuplicateBusinesses,
   moderateReview,
@@ -197,6 +199,8 @@ export function BusinessManager({
   const [bulkStaffId, setBulkStaffId] = useState('');
   const [confirmBulkArchive, setConfirmBulkArchive] = useState(false);
   const [confirmSuspendBiz, setConfirmSuspendBiz] = useState<BusinessPublicView | null>(null);
+  const [confirmDeleteBiz, setConfirmDeleteBiz] = useState<BusinessPublicView | null>(null);
+  const [deletingBiz, setDeletingBiz] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<'core' | 'location' | 'hours' | 'media'>('core');
@@ -216,6 +220,7 @@ export function BusinessManager({
   }, [initialSearch]);
 
   const staffAssignees = profiles.filter((p) => p.role === 'staff' || p.role === 'super_admin');
+  const canDeleteBusiness = profiles.some((profile) => profile.id === actorId && profile.role === 'super_admin');
 
   const emptyForm = (): AdminBusinessForm => ({
     name_en: '',
@@ -289,6 +294,23 @@ export function BusinessManager({
       await onReload();
     } finally {
       setBulkBusy(false);
+    }
+  };
+
+  const handleDeleteBusiness = async () => {
+    if (!confirmDeleteBiz || !canDeleteBusiness) return;
+    const target = confirmDeleteBiz;
+    setDeletingBiz(true);
+    try {
+      await deleteBusinessPermanently(target.id, actorId);
+      setConfirmDeleteBiz(null);
+      setSelectedIds((current) => current.filter((id) => id !== target.id));
+      showToast(`"${target.name_en}" permanently delete ho gaya.`, 'success');
+      await onReload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Business delete nahi ho saka.', 'error');
+    } finally {
+      setDeletingBiz(false);
     }
   };
 
@@ -713,6 +735,17 @@ export function BusinessManager({
                         <Button size="sm" variant="outline" onClick={() => openEdit(b)}>
                           Edit
                         </Button>
+                        {canDeleteBusiness && (
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => setConfirmDeleteBiz(b)}
+                            leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                            aria-label={`Delete ${b.name_en}`}
+                          >
+                            Delete
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
@@ -796,6 +829,16 @@ export function BusinessManager({
                 <Button size="sm" variant="outline" onClick={() => openEdit(b)}>
                   Edit
                 </Button>
+                {canDeleteBusiness && (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => setConfirmDeleteBiz(b)}
+                    leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                  >
+                    Delete
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -1138,6 +1181,17 @@ export function BusinessManager({
           setConfirmSuspendBiz(null);
           await quickStatus(target, 'suspended');
         }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(confirmDeleteBiz)}
+        onClose={() => !deletingBiz && setConfirmDeleteBiz(null)}
+        destructive
+        loading={deletingBiz}
+        title="Permanently Delete Business?"
+        message={`Delete "${confirmDeleteBiz?.name_en ?? ''}" permanently? Related offers, reviews, inquiries, notes, products, ads and statistics will also be deleted. This cannot be undone.`}
+        confirmLabel="Delete Permanently"
+        onConfirm={handleDeleteBusiness}
       />
 
       <ConfirmDialog
