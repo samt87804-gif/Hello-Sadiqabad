@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
 import { NewsManager } from '../../components/admin/NewsManager';
+import { LocalAuthoritiesManager } from '../../components/admin/LocalAuthoritiesManager';
 import { useAuth } from '../../lib/auth';
 import { usePermissions } from '../../lib/permissions';
 import {
@@ -21,6 +22,7 @@ import {
   fetchAuditLogs,
   fetchEmergencyContactsAdmin,
   fetchImportBatches,
+  fetchLocalAuthoritiesAdmin,
   fetchLeads,
   fetchPlans,
   fetchProfilesAdmin,
@@ -32,6 +34,7 @@ import type {
   AuditLogRow,
   CategoryRow,
   EmergencyContactRow,
+  LocalAuthorityRow,
   ImportBatchRow,
   InquiryRow,
   LeadRow,
@@ -106,6 +109,7 @@ export function AdminPortal() {
   const [ads, setAds] = useState<AdRow[]>([]);
   const [batches, setBatches] = useState<ImportBatchRow[]>([]);
   const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContactRow[]>([]);
+  const [localAuthorities, setLocalAuthorities] = useState<LocalAuthorityRow[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
   const [analytics, setAnalytics] = useState<AdminAnalyticsData | null>(null);
   const [settings, setSettings] = useState<SiteSettingRow[]>([]);
@@ -150,6 +154,7 @@ export function AdminPortal() {
         adList,
         imp,
         em,
+        auths,
         anns,
         anl,
         sett,
@@ -169,6 +174,7 @@ export function AdminPortal() {
         can('ads.review') ? fetchAllAdsAdmin() : Promise.resolve([]),
         can('import.run') ? fetchImportBatches() : Promise.resolve([]),
         fetchEmergencyContactsAdmin(),
+        isSuperAdmin ? fetchLocalAuthoritiesAdmin() : Promise.resolve([]),
         fetchAnnouncements(can('announcements.manage') ? false : true),
         can('analytics.view') ? fetchAdminAnalytics(analyticsDays) : Promise.resolve(emptyAnalytics),
         can('settings.manage') ? fetchAllSiteSettingsAdmin() : Promise.resolve([]),
@@ -188,6 +194,7 @@ export function AdminPortal() {
       setAds(adList);
       setBatches(imp);
       setEmergencyContacts(em);
+      setLocalAuthorities(auths);
       setAnnouncements(anns);
       setAnalytics(anl);
       setSettings(sett);
@@ -359,6 +366,8 @@ export function AdminPortal() {
         ) : (
           <PermissionDenied />
         );
+      case 'local-authorities':
+        return isSuperAdmin ? <LocalAuthoritiesManager authorities={localAuthorities} actorId={actorId} onReload={reload} /> : <PermissionDenied />;
       case 'plans':
         return hasPermission('tiers.manage') ? (
           <PlansManager
