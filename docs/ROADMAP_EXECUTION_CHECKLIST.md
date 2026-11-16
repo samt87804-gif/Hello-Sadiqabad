@@ -90,7 +90,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 ### Government helplines
 - District Rahim Yar Khan Control Room (0800-33444) and Punjab Highway Patrol (1124): https://rykhan.punjab.gov.pk/contact_us
 - Suthra Punjab 1139: https://suthra.punjab.gov.pk/complaint.php
-- Punjab Police IGP Complaint Center 1787: https://www.punjabpolice.gov.pk/IGP-Complaint-Cell
+- Punjab Police IGP Complaint Center 1787: https://www.punjabpolice.gov.pk/contact_details
 - Punjab Women Helpline 1043: https://pcsw.punjab.gov.pk/system/files/PGPR-2023%20%26%202024-Web.pdf
 - Punjab LGCD 0800-02345: https://lgcd.punjab.gov.pk/facilities_available_for_obtaining_information
 
