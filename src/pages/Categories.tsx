@@ -48,6 +48,7 @@ export function Categories() {
       <Container className="py-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <SectionHeading
+            headingLevel="h1"
             title={lang === 'ur' ? 'تمام کاروباری شعبہ جات' : 'All Directory Categories'}
             titleUr="تمام کاروباری شعبہ جات"
             subtitle={

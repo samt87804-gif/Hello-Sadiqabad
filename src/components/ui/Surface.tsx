@@ -79,21 +79,24 @@ export function SectionHeading({
   subtitle,
   action,
   className = '',
+  headingLevel = 'h2',
 }: {
   title: string;
   titleUr?: string;
   subtitle?: string;
   action?: React.ReactNode;
   className?: string;
+  headingLevel?: 'h1' | 'h2';
 }) {
   const { lang, urduHints } = useI18n();
+  const HeadingTag = headingLevel;
   const showUr = Boolean(titleUr && titleUr.trim() !== title.trim() && (lang === 'en' ? urduHints : false));
 
   return (
     <div className={`flex items-end justify-between gap-4 ${className}`}>
       <div className="min-w-0">
         <div className="flex items-center gap-2.5 flex-wrap">
-          <h2 className="text-lg sm:text-xl font-bold text-on-surface tracking-tight">{title}</h2>
+          <HeadingTag className="text-lg sm:text-xl font-bold text-on-surface tracking-tight">{title}</HeadingTag>
           {showUr && (
             <span className="font-urdu text-sm font-semibold text-primary" dir="rtl">
               {titleUr}

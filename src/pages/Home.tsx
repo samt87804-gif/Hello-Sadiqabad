@@ -223,6 +223,7 @@ export function Home() {
   return (
     <AppShell>
       <div className="space-y-8 py-5 sm:py-7">
+        <h1 className="sr-only">Sadiqabad Local Business Directory and 24/7 Helplines</h1>
         <section aria-label="Project collaboration">
           <Container>
             <p className="text-center text-sm sm:text-base font-medium text-on-surface-variant">

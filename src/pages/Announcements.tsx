@@ -43,6 +43,7 @@ export function Announcements() {
       <Container size="md" className="py-6 space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <SectionHeading
+            headingLevel="h1"
             title="Sadiqabad Civic Notices & Events"
             titleUr="صادق آباد کے عوامی اعلانات"
             subtitle="Verified traffic advisories, medical camps, and municipal updates"

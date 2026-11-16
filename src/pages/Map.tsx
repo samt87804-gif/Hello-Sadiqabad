@@ -301,6 +301,7 @@ export function Map() {
       <Container className="py-4 sm:py-6 space-y-4 sm:space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionHeading
+            headingLevel="h1"
             title={lang === 'ur' ? 'صادق آباد انٹرایکٹو نقشہ' : 'Sadiqabad City Map Explorer'}
             titleUr={lang === 'en' ? 'صادق آباد کا انٹرایکٹو نقشہ' : undefined}
             subtitle={

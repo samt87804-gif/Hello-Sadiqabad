@@ -61,6 +61,7 @@ export function Offers() {
     <AppShell>
       <Container className="py-6 space-y-6">
         <SectionHeading
+          headingLevel="h1"
           title={lang === 'ur' ? 'خصوصی رعایت اور ڈیلز' : 'Local Offers & Deals'}
           titleUr={lang === 'en' ? 'صادق آباد میں خصوصی رعایت اور ڈیلز' : undefined}
           subtitle={
