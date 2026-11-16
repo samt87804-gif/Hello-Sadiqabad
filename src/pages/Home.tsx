@@ -216,12 +216,12 @@ export function Home() {
         {/* Hero Search Section */}
         <section>
           <Container>
-            <div className="overflow-hidden rounded-3xl border border-outline-variant/35 bg-surface-container-lowest shadow-lg">
+            <div className="overflow-visible rounded-3xl border border-outline-variant/35 bg-surface-container-lowest shadow-lg">
               {/* Exact approved banner hosted in the public Supabase Storage bucket. */}
               <img
                 src={heroBannerUrl}
                 alt="Sadiqabad Phone Directory — Jahaz Chowk banner"
-                className="block h-auto w-full"
+                className="block h-auto w-full rounded-t-3xl"
                 fetchPriority="high"
                 decoding="async"
               />
