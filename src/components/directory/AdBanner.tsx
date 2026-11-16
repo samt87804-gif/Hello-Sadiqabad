@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Award, ExternalLink, X } from 'lucide-react';
-import type { AdRow } from '../../types/database';
+import type { AdPlacement, AdRow } from '../../types/database';
 import { ImageWithFallback } from '../ui/ImageWithFallback';
 import {
   fetchActiveAds,
@@ -74,6 +74,20 @@ export function AdBanner({ ad }: { ad: AdRow }) {
       {inner}
     </a>
   );
+}
+
+export function AdPlacementSlot({ placement }: { placement: AdPlacement }) {
+  const [ad, setAd] = useState<AdRow | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchActiveAds(placement)
+      .then((items) => { if (active) setAd(items[0] ?? null); })
+      .catch(() => { if (active) setAd(null); });
+    return () => { active = false; };
+  }, [placement]);
+
+  return ad ? <AdBanner ad={ad} /> : null;
 }
 
 export function PopupAdModal() {
