@@ -107,8 +107,9 @@ This is the single source of truth for the domain-hardening and SEO work that fo
 - [x] Add `noindex,follow` for search, favorites, add-business, auth, Admin/Owner and unknown routes; search noindex was browser-tested. Authentication/RLS remains the actual access control.
 - [x] Core public image-alt audit completed: business/category/area/authority/emergency/offer/home images have descriptive alt text; decorative icons remain empty-alt; News cover, gallery and listing images now use article-title-based alt text.
 - [x] Visible breadcrumbs exist on category and area pages; business pages now link Home → category → business; News articles link back to the News listing.
+- [x] Added semantic primary H1 headings to homepage, category index, city map, offers and announcements pages; shared SectionHeading supports explicit H1/H2 semantics.
 - [ ] Full route-by-route heading hierarchy and remaining internal-link audit remains to be completed.
-- [x] Targeted live browser validation: sitemap 200/516 unique URLs/no private URLs; robots 200; search noindex; canonical and JSON-LD spot-checks on home, news, business and category; mobile viewport business breadcrumb (390×844); News image alt text. Full-site crawl and Google Rich Results Test remain pending.
+- [x] Targeted live browser validation: sitemap 200/516 unique URLs/no private URLs; robots 200; search noindex; canonical and JSON-LD spot-checks on home, news, business and category; mobile viewport business breadcrumb (390×844); News image alt text. Semantic H1 code changes for five primary public routes passed CI and deployed; follow-up browser check was rate-limited and remains pending. Full-site crawl and Google Rich Results Test remain pending.
 - [x] GitHub CI (npm ci, dependency advisory gate, TypeScript, automated tests, production build and Edge Function typecheck) passed; Cloudflare Pages deployment `0b25073c-b7f2-4600-a8b4-0fe7fa3583a7` for commit `2d966202510c4d63d668780ce84a2e4237af6287` succeeded.
 
 ### Owner actions

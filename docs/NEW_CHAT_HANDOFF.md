@@ -38,7 +38,7 @@ Use the connected GitHub, Cloudflare and Supabase tools where available. Read th
 - Owner confirmed Google Search Console Domain property `hellosadiqabad.com` is verified. Matching TXT record is present in Cloudflare DNS.
 - Dynamic `/sitemap.xml` is live: browser-verified HTTP 200 XML, 516 unique canonical URLs, zero duplicates/private URLs; owner profiles are included only through the redacted public view when opted in.
 - `www.hellosadiqabad.com` is intentionally unsupported; apex domain is the only active Pages custom domain.
-- `robots.txt` points to sitemap; homepage, search noindex, news, business and category metadata/JSON-LD were browser spot-checked. Mobile 390×844 business breadcrumb and News image alt text were browser-tested. News images now have descriptive alt text; business pages have visible Home → category → business breadcrumbs. No full-site crawl or Google Rich Results Test has been performed.
+- `robots.txt` points to sitemap; homepage, search noindex, news, business and category metadata/JSON-LD were browser spot-checked. Mobile 390×844 business breadcrumb and News image alt text were browser-tested. News images now have descriptive alt text; business pages have visible Home → category → business breadcrumbs. Semantic H1 headings were added to homepage, categories, map, offers and announcements; CI and deployment passed. Browser re-check for this latest commit hit Cloudflare browser-rendering rate limit, so those H1s are code/CI/deploy verified but not browser-verified yet. No full-site crawl or Google Rich Results Test has been performed.
 - Cloudflare rate-limit rule active on POST `/api/chat`: 30 requests/10 seconds per IP+colo, 10-second block with JSON 429.
 
 ### Mandatory working rules (owner-confirmed 17 November 2026)
