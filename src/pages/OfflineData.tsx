@@ -22,6 +22,7 @@ type OfflineReadinessReport = {
   serviceWorkerSupported: boolean;
   indexedDbWriteReadPassed: boolean;
   indexedDbAbortRollbackPassed: boolean;
+  indexedDbConcurrentTransactionsPassed: boolean;
   activeWorker: boolean;
   waitingWorker: boolean;
   appShellCached: boolean;
@@ -37,9 +38,10 @@ type OfflineReadinessReport = {
 async function runNativeIndexedDbProbe(): Promise<{
   writeReadPassed: boolean;
   abortRollbackPassed: boolean;
+  concurrentTransactionsPassed: boolean;
 }> {
   if (typeof indexedDB === 'undefined') {
-    return { writeReadPassed: false, abortRollbackPassed: false };
+    return { writeReadPassed: false, abortRollbackPassed: false, concurrentTransactionsPassed: false };
   }
 
   const databaseName = 'hs-offline-readiness-probe-' +
@@ -92,12 +94,37 @@ async function runNativeIndexedDbProbe(): Promise<{
       request.onerror = () => reject(request.error ?? new Error('IndexedDB abort verification failed.'));
     });
 
+    const writeConcurrentRecord = (id: string) => new Promise<void>((resolve, reject) => {
+      const transaction = database!.transaction('probe', 'readwrite');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error ?? new Error('Concurrent IndexedDB write failed.'));
+      transaction.onabort = () => reject(transaction.error ?? new Error('Concurrent IndexedDB write aborted.'));
+      transaction.objectStore('probe').put({ id, value: id });
+    });
+    await Promise.all([
+      writeConcurrentRecord('concurrent-a'),
+      writeConcurrentRecord('concurrent-b'),
+    ]);
+    const concurrentValues = await Promise.all(['concurrent-a', 'concurrent-b'].map((id) =>
+      new Promise<unknown>((resolve, reject) => {
+        const transaction = database!.transaction('probe', 'readonly');
+        const request = transaction.objectStore('probe').get(id);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error ?? new Error('Concurrent IndexedDB read failed.'));
+      })
+    ));
+    const concurrentTransactionsPassed = concurrentValues.every((value, index) =>
+      Boolean(value && typeof value === 'object' && (value as { value?: unknown }).value ===
+        (index === 0 ? 'concurrent-a' : 'concurrent-b'))
+    );
+
     return {
       writeReadPassed,
       abortRollbackPassed: abortEventObserved && abortedValue === undefined,
+      concurrentTransactionsPassed,
     };
   } catch {
-    return { writeReadPassed: false, abortRollbackPassed: false };
+    return { writeReadPassed: false, abortRollbackPassed: false, concurrentTransactionsPassed: false };
   } finally {
     database?.close();
     await new Promise<void>((resolve) => {
@@ -198,6 +225,7 @@ export function OfflineData() {
           serviceWorkerSupported: false,
           indexedDbWriteReadPassed: idbProbe.writeReadPassed,
           indexedDbAbortRollbackPassed: idbProbe.abortRollbackPassed,
+          indexedDbConcurrentTransactionsPassed: idbProbe.concurrentTransactionsPassed,
           activeWorker: false,
           waitingWorker: false,
           appShellCached: false,
@@ -248,6 +276,7 @@ export function OfflineData() {
         serviceWorkerSupported: true,
         indexedDbWriteReadPassed: idbProbe.writeReadPassed,
         indexedDbAbortRollbackPassed: idbProbe.abortRollbackPassed,
+        indexedDbConcurrentTransactionsPassed: idbProbe.concurrentTransactionsPassed,
         activeWorker: Boolean(registration.active),
         waitingWorker: Boolean(registration.waiting),
         appShellCached: Boolean(appShell),
@@ -265,6 +294,7 @@ export function OfflineData() {
         serviceWorkerSupported: 'serviceWorker' in navigator && 'caches' in window,
         indexedDbWriteReadPassed: idbProbe.writeReadPassed,
         indexedDbAbortRollbackPassed: idbProbe.abortRollbackPassed,
+        indexedDbConcurrentTransactionsPassed: idbProbe.concurrentTransactionsPassed,
         activeWorker: false,
         waitingWorker: false,
         appShellCached: false,
@@ -498,6 +528,10 @@ export function OfflineData() {
               <p className="text-on-surface-variant">
                 {isUrdu ? 'ٹرانزیکشن منسوخی کا ٹیسٹ: ' : 'Transaction abort rollback test: '}
                 <strong>{readiness.indexedDbAbortRollbackPassed ? (isUrdu ? 'کامیاب' : 'Passed') : (isUrdu ? 'ناکام' : 'Failed')}</strong>
+              </p>
+              <p className="text-on-surface-variant">
+                {isUrdu ? 'متوازی ٹرانزیکشنز کا ٹیسٹ: ' : 'Concurrent transactions test: '}
+                <strong>{readiness.indexedDbConcurrentTransactionsPassed ? (isUrdu ? 'کامیاب' : 'Passed') : (isUrdu ? 'ناکام' : 'Failed')}</strong>
               </p>
               <p className="text-on-surface-variant">
                 {isUrdu ? 'ایپ کا مرکزی صفحہ: ' : 'App shell: '}
