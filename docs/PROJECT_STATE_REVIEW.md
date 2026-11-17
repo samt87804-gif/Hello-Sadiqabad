@@ -187,3 +187,10 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - GitHub Actions run '44164115526': TypeScript, 92 tests, production build and Edge Function checks passed. Overall CI remains failed only at npm audit due 3 high findings in picomatch/tinyglobby/Vite; no audit suppression or forced downgrade.
 - Four Supabase migrations are applied and verified: '20261117193404', '20261117194321', '20261117194905', '20261117195404'. Public new-business approvals now ignore visitor-provided logo/cover URLs.
 - Authenticated Admin upload, compressed file size observation, Cache Storage image count and physical-device offline reload remain pending. Phase 1/2 device acceptance is not complete.
+
+### Storage upload RLS correction — 18 November 2026
+
+- Investigated the real failed mobile upload using Supabase Storage logs: authenticated `super_admin`, correct `site-media/<uid>/directory/...` path, but Storage rejected the new object at the `storage.objects` INSERT RLS check.
+- The `site_media_admin_insert` policy's extra `metadata.mimetype` / `metadata.size` predicates were removed because those metadata checks were not satisfied reliably at INSERT time. The live policy still requires `authenticated`, bucket `Hello Sadiqabad`, first folder `site-media`, second folder equal to `auth.uid()`, and Super Admin or the existing approved staff permission checks.
+- Browser-side uploader continues to accept only supported image formats, convert to WebP, resize and enforce the 8 MiB compressed limit. This size/type validation is client-side; the Storage RLS policy no longer independently enforces MIME/size. No public or owner insert policy was added, and existing media/records were not modified.
+- Applied migration `20261118110000_fix_site_media_admin_insert_rls`; verified the live policy definition. Real UI upload still requires owner confirmation after this fix.
