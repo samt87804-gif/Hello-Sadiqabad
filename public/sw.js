@@ -3,14 +3,32 @@
 const CACHE_NAME = 'hs-sadiqabad-shell-v3';
 const APP_SHELL_URL = '/';
 const OFFLINE_URL = '/offline.html';
+const PRECACHE_MANIFEST_URL = '/offline-precache.json';
 
-// Keep the emergency fallback and the SPA entry document available. Route
-// chunks are cached on successful visits below, rather than guessed at build time.
+// Keep the emergency fallback, SPA entry document and fingerprinted route assets
+// available. The build generates a manifest from the actual Vite output; this avoids
+// guessing chunk names and supports public deep links after the first offline visit.
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.add(OFFLINE_URL).catch(() => undefined);
     await cache.add(APP_SHELL_URL).catch(() => undefined);
+
+    // Pre-cache every fingerprinted JS/CSS bundle emitted by this build. These are
+    // application assets only (not API responses or user data). Failures are
+    // best-effort so a constrained device can still install the emergency shell.
+    try {
+      const manifestResponse = await fetch(PRECACHE_MANIFEST_URL, { cache: 'no-store' });
+      if (manifestResponse.ok) {
+        const manifest = await manifestResponse.json();
+        const assets = Array.isArray(manifest)
+          ? manifest.filter((path) => typeof path === 'string' && /^\\/assets\\/.+-[A-Za-z0-9_-]{6,}\\.(?:js|css)$/.test(path))
+          : [];
+        await Promise.allSettled(assets.map((path) => cache.add(path)));
+      }
+    } catch {
+      // Keep installation resilient; missing chunks will still use normal network fetches.
+    }
   })());
   // Deliberately do not call skipWaiting(): an existing tab may still depend
   // on the previous deployment's runtime and hashed chunks.
