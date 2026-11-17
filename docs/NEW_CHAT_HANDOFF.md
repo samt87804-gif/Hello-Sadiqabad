@@ -237,3 +237,10 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Added a highlighted **Offline** item with a download icon to the persistent mobile bottom navigation; it links directly to `/offline-data`. Urdu app language displays the Urdu label. Existing footer link and offline download logic are preserved.
 - This is a navigation-only change: no changes to IndexedDB contents, public data access, Service Worker lifecycle, caching rules, Supabase, or private data.
 - Awaiting CI and production deployment verification; mobile-device appearance is still to be checked as part of Phase 1 physical-device acceptance.
+
+
+## Mobile offline shortcut deployment verification — 17 November 2026
+
+- Commit `76ba1eee2e579aa9c5deaf9d5e3150185d1f1d3a` deployed successfully to Cloudflare Pages production as deployment `057d8d2b-6e48-44df-acea-13974115c885`; canonical alias `https://hellosadiqabad.com` is attached.
+- GitHub Actions run `44154044236`: TypeScript, automated tests, production build and Edge Function checks passed. The overall run remains failed only at the existing npm audit high-severity advisory gate; it was not suppressed or force-fixed.
+- The mobile shortcut is deployed. Physical-device visual/usability acceptance is still pending.

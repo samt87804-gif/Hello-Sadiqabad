@@ -156,3 +156,10 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Added a highlighted Offline destination to the persistent mobile bottom navigation, linking directly to the existing `/offline-data` page. The Urdu interface uses an Urdu label; the existing footer shortcut remains intact.
 - The change is limited to public navigation and does not alter offline storage, Service Worker behavior, Supabase access, or any business/user data.
 - Production CI/deployment and physical-device layout acceptance remain pending until verified.
+
+
+## 17 November 2026 — Mobile offline shortcut deployment
+
+- Commit `76ba1eee2e579aa9c5deaf9d5e3150185d1f1d3a` is deployed to Cloudflare Pages production; deployment `057d8d2b-6e48-44df-acea-13974115c885` succeeded with canonical alias `https://hellosadiqabad.com`.
+- TypeScript, tests, production build and Edge Function checks passed in CI run `44154044236`; overall CI remains blocked only by the pre-existing npm audit high-severity advisory gate.
+- Physical-device visual/usability check for the seven-item bottom navigation remains pending.

@@ -253,4 +253,5 @@ Batch 3 — completed (16 November 2026):
 ## Mobile offline-download shortcut — 17 November 2026
 
 - [x] Add a dedicated, clearly highlighted **Offline** destination to the persistent mobile bottom navigation so browser and installed-PWA users can reach `/offline-data` from any public route; retain the existing footer link and download workflow.
-- [ ] Verify the updated seven-item mobile navigation in production after CI and Cloudflare Pages deployment; include physical-device visual acceptance in the remaining Phase 1 device test.
+- [x] TypeScript, automated tests and production build passed; Cloudflare Pages deployment `057d8d2b-6e48-44df-acea-13974115c885` succeeded for commit `76ba1eee2e579aa9c5deaf9d5e3150185d1f1d3a`. The overall CI run `44154044236` remains blocked only by the pre-existing high-severity npm audit advisory; do not suppress or force-downgrade dependencies.
+- [ ] Check the seven-item mobile navigation visually on a physical phone as part of the remaining Phase 1 device acceptance.
