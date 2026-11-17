@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
       if (manifestResponse.ok) {
         const manifest = await manifestResponse.json();
         const assets = Array.isArray(manifest)
-          ? manifest.filter((path) => typeof path === 'string' && /^\\/assets\\/.+-[A-Za-z0-9_-]{6,}\\.(?:js|css)$/.test(path))
+          ? manifest.filter((path) => typeof path === 'string' && /^\/assets\/.+-[A-Za-z0-9_-]{6,}\.(?:js|css)$/.test(path))
           : [];
         await Promise.allSettled(assets.map((path) => cache.add(path)));
       }
