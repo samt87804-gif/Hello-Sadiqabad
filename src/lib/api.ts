@@ -605,7 +605,7 @@ export async function fetchBusinessesForOfflineDownload(): Promise<BusinessPubli
     throw new Error('Published business records could not be verified. No new offline package was saved.');
   }
 
-  const businesses = await fetchGitHubBusinesses();
+  const businesses = await loadGitHubBusinesses();
   const liveCount = businesses.filter((business) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(business.id)
   ).length;
