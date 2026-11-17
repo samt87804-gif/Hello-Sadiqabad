@@ -1,9 +1,9 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 
-function offlinePrecacheManifest() {
+function offlinePrecacheManifest(): Plugin {
   return {
     name: 'offline-public-route-precache',
     apply: 'build' as const,
@@ -11,7 +11,7 @@ function offlinePrecacheManifest() {
       const assets = Object.values(bundle)
         .filter((item) => item.type === 'chunk' || item.type === 'asset')
         .map((item) => item.fileName)
-        .filter((fileName) => /^assets\/.+-[A-Za-z0-9_-]{6,}\\.(?:js|css)$/.test(fileName))
+        .filter((fileName) => /^assets\/.+-[A-Za-z0-9_-]{6,}\.(?:js|css)$/.test(fileName))
         .map((fileName) => `/${fileName}`);
       this.emitFile({
         type: 'asset',
