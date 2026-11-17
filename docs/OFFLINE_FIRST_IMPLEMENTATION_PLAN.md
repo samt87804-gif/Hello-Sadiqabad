@@ -73,7 +73,7 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - [x] Add links/status to project roadmap and new-chat handoff in this documentation update.
 
 ### Phase 1 — Safe offline foundation and core directory package
-**Status: not started.**
+**Status: in progress — initial IndexedDB storage core is implemented; download, app integration and acceptance testing remain.**
 
 1. Design a versioned IndexedDB schema for public directory snapshots and download metadata. Keep current localStorage favorites/recent-history keys compatible.
 2. Add a download manager reachable from the existing public app (a dedicated offline-data screen plus a clear entry point). It must show an honest size estimate/actual bytes, progress, cancellation, success/failure and last successful download.
@@ -143,3 +143,13 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - Confirmed public businesses are sourced from static JSON chunks plus current published Supabase rows; live public rows replace snapshot copies and are subject to existing anonymous RLS visibility.
 - No application code, Supabase schema/data, Cloudflare settings, public records or user data changed during Phase 0.
 - GitHub Actions CI run `44108049876` passed for commit `04c87b0c89e746f0a1da66f38a4bddfeabf4bc82` (both `build` and `edge-functions` jobs succeeded). Cloudflare Pages production deployment `a5fbb764-e91c-4c0f-aee0-cb5d1a5e83d3` completed successfully; the deployment alias is `https://hellosadiqabad.com`. This was a documentation-only commit; application code and visitor behavior were unchanged.
+
+### 17 November 2026 — Phase 1 storage foundation (in progress)
+
+- Added `src/lib/offlineDirectory.ts` with a versioned IndexedDB store for public directory snapshots, active-generation metadata, validated snapshot reads, atomic generation activation and post-commit cleanup.
+- Added explicit mappers for published businesses, active categories/areas and active emergency contacts. Owner/account identifiers, email, internal assignment/claim fields and other private keys are excluded; validation rejects forbidden fields and unpublished business rows.
+- Added `src/lib/offlineDirectory.test.ts` covering public-field sanitization, schema validation, duplicate identifiers, unpublished records and inactive-category rejection.
+- GitHub Actions CI run `44112311265` passed for commit `0460ecb3c6506d25f233bf17a316fb774a632b36`: TypeScript check, automated tests, production build and Edge Function typecheck all succeeded.
+- Cloudflare Pages production deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` completed successfully for that commit. The new module is not yet imported by the application, so this deployment does not enable offline directory behavior.
+- No Supabase schema/data, business/user records, Cloudflare settings, Service Worker behavior or online visitor workflows were changed.
+- Still required in Phase 1: browser-level IndexedDB transaction/quota/concurrency tests, public data download manager, progress/cancellation, offline data-source integration, app-shell/lazy-chunk caching, online-only write guards and full acceptance checks.

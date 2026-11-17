@@ -1,6 +1,6 @@
 # Hello Sadiqabad — Current Project State
 
-Last reviewed: 16 November 2026
+Last reviewed: 17 November 2026
 
 ## Source-of-truth order
 
@@ -85,4 +85,6 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - The initial read-only audit is recorded in `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`.
 - Permanent engineering and production-safety rules are recorded in `docs/PROJECT_WORKING_RULES.md`.
 - Current PWA installation is already configured. Full offline support is not implemented: the Service Worker only caches the offline fallback page; favorites/recent views/emergency contacts have limited local storage; complete public directory/content/media are not cached.
-- Phase 0 documentation is the only change in this update. No application code, database schema/data, user/business records, Cloudflare settings or online visitor behavior changed.
+- Phase 0 was documentation-only. Phase 1 now includes an initial validated IndexedDB snapshot store and explicit public-field mappers in `src/lib/offlineDirectory.ts`, plus automated tests in `src/lib/offlineDirectory.test.ts`.
+- Commit `0460ecb3c6506d25f233bf17a316fb774a632b36` passed GitHub Actions CI run `44112311265` (TypeScript, tests, production build and Edge Function checks); Cloudflare Pages deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` succeeded.
+- The module is not imported into the application yet. The app shell, public directory reads, download manager, online-only write guards and full offline testing remain incomplete. No Supabase schema/data, user/business records, Service Worker behavior, Cloudflare settings or online visitor workflows were changed.

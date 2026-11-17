@@ -209,7 +209,9 @@ Batch 3 — completed (16 November 2026):
 - [x] Phase 0 audit and documentation plan drafted: current PWA install prompt/manifest already exist; current Service Worker only caches `offline.html`; emergency contacts have a limited local cache; complete directory data/media are not yet available offline.
 - [x] Permanent owner-confirmed engineering and production-safety rules recorded in [`docs/PROJECT_WORKING_RULES.md`](docs/PROJECT_WORKING_RULES.md).
 - [ ] Phase 1 core offline data package + app-shell caching + public directory offline reads + online-only write guards.
+  - [x] Initial IndexedDB snapshot store, explicit public-field mappers and snapshot validation added; GitHub CI (run 44112311265) and Pages deployment (6d404e0a-299b-4fb1-bb09-9891cb261cf2) succeeded.
+  - [ ] Browser-level IndexedDB transaction/quota tests, download manager, data-source integration, offline shell/chunk caching, write guards and Phase 1 acceptance checks remain.
 - [ ] Phase 2 remaining public content and cacheable media.
 - [ ] Phase 3 safe updates, storage/quota handling and recovery.
 - [ ] Phase 4 Android/iOS/desktop and airplane-mode acceptance testing.
-- **Safety status:** documentation only so far. No app code, database, user/business data, Cloudflare settings or live website behavior changed in Phase 0.
+- **Safety status:** Phase 0 was documentation-only. Phase 1 now has an initial IndexedDB storage module and tests on `main`, but the module is not connected to the UI or public data flow. CI and Pages deployment passed. No Supabase schema/data, user/business records, Cloudflare settings, Service Worker behavior or live visitor workflows were changed.

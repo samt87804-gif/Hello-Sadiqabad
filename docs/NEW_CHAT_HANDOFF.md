@@ -80,8 +80,10 @@ You own the technical work:
 - Be transparent: distinguish completed, deployed, verified and waiting for my action. Never claim browser testing unless you performed it.
 - Do not promise top rankings or a fixed time. Do not use fake searches, bots, click farms, fake reviews or purchased backlinks.
 
-### Immediate next task
-Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verified and Phase 1 foundation is deployed. Owner has submitted the live sitemap; Google processing remains pending. Owner has already submitted URL Inspection + Request Indexing for homepage and six priority public URLs. Continue the full internal-link, headings, image-alt, structured-data/content SEO audit and local SEO data-quality work; later review Search Console processing/index coverage when available. Do not repeat completed Auth URL or Google verification tasks, and do not claim indexing until Search Console confirms it.
+### Immediate next task — Offline-first PWA Phase 1
+Continue the active offline-first implementation from `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`, following `docs/PROJECT_WORKING_RULES.md` on every change. Phase 0 is complete. Phase 1 has an initial IndexedDB public-snapshot store and explicit public-field mappers on `main` (commit `0460ecb3c6506d25f233bf17a316fb774a632b36`). CI run `44112311265` passed TypeScript, automated tests, production build and Edge Function checks; Pages deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` succeeded. The module is not yet connected to the application, so full offline behavior is not enabled.
+
+Next implement the download manager, safe data assembly through existing anonymous-RLS public reads, offline directory read fallbacks, versioned app-shell/lazy-chunk caching and explicit online-only write guards. Add browser-level IndexedDB transaction, cancellation, quota and concurrent-tab tests. Do not mark Phase 1 complete until every acceptance gate passes. The Domain/SEO workstream remains documented in `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`; do not silently discard it, but keep offline-first as the current active task.
 
 
 ## Latest verified work — 17 November 2026
@@ -140,10 +142,19 @@ The owner requested full offline support for the public Hello Sadiqabad website 
 
 - Existing PWA manifest and install prompt already work as the current install mechanism; do not rebuild or remove them.
 - Current `public/sw.js` caches only `/offline.html`; it does not cache the React shell or lazy-loaded hashed assets.
-- `src/lib/offlineStorage.ts` contains favorites, recently viewed and a limited emergency-contact cache; there is no full directory IndexedDB snapshot yet.
+- `src/lib/offlineStorage.ts` still contains favorites, recently viewed and a limited emergency-contact cache. `src/lib/offlineDirectory.ts` now provides the initial validated IndexedDB snapshot store and public-field mappers, but no download manager or app read integration exists yet.
 - Public business data is assembled from static JSON chunks and current published Supabase rows. Preserve the existing publication filtering, RLS and crawl-only supplemental rules.
 - Offline map tiles are not included unless the provider's current terms permit bulk offline storage.
 
 ### Required next action
 
 Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-inspecting current main. Implement the public data snapshot, atomic IndexedDB download, visible download manager, offline data fallbacks, safe versioned app-shell/lazy-chunk caching and explicit online-only write guards. Keep all Admin/Owner/auth/private data and all server writes out of offline caches. Do not mark Phase 1 complete until its listed acceptance checks pass. Do not change Supabase schema or existing production data for this feature without a proven need and owner approval.
+
+
+## Latest offline-first implementation — 17 November 2026
+
+- Added the initial IndexedDB snapshot persistence module and automated sanitization/validation tests.
+- Commit: `0460ecb3c6506d25f233bf17a316fb774a632b36`; CI run `44112311265` passed all jobs.
+- Cloudflare Pages production deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` succeeded. The new module is not imported by the live application yet; no offline directory functionality has been released.
+- No database migration, production data mutation, Service Worker change or Cloudflare settings change was made.
+- Resume with the download manager and public data integration; keep all writes online-only and never store private owner/admin/auth data offline.
