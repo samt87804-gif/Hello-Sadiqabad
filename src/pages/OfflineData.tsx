@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, HardDrive, Wifi, WifiOff, XCircle } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { fetchAllAreas, fetchAllCategories, fetchBusinessesForOfflineDownload, fetchEmergencyContacts } from '../lib/api';
+import { fetchAllAreas, fetchAllCategories, fetchBusinessBySlug, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, searchBusinesses } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import {
   getOfflineDirectoryMetadata,
@@ -31,9 +31,65 @@ type OfflineReadinessReport = {
   cachedAssetCount: number;
   missingAssets: string[];
   directoryPackageSaved: boolean;
+  offlineReadAdaptersPassed: boolean;
+  offlineReadCounts?: {
+    businesses: number;
+    categories: number;
+    areas: number;
+    emergencyContacts: number;
+  };
   error?: string;
   checkedAt: string;
 };
+
+async function runOfflineReadAdapterProbe(): Promise<{
+  passed: boolean;
+  counts: { businesses: number; categories: number; areas: number; emergencyContacts: number };
+}> {
+  const empty = { businesses: 0, categories: 0, areas: 0, emergencyContacts: 0 };
+  const originalDescriptor = Object.getOwnPropertyDescriptor(navigator, 'onLine');
+  let overrideApplied = false;
+
+  try {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false });
+    overrideApplied = navigator.onLine === false;
+    if (!overrideApplied) return { passed: false, counts: empty };
+
+    const [searchResult, categories, areas, emergency] = await Promise.all([
+      searchBusinesses({}, { page: 1, limit: 1, logSearch: false }),
+      fetchAllCategories(),
+      fetchAllAreas(),
+      fetchEmergencyContacts(),
+    ]);
+    const firstBusiness = searchResult.items[0];
+    const businessDetail = firstBusiness ? await fetchBusinessBySlug(firstBusiness.slug) : null;
+    const metadata = await getOfflineDirectoryMetadata();
+    const counts = {
+      businesses: searchResult.total,
+      categories: categories.length,
+      areas: areas.length,
+      emergencyContacts: emergency.items.length,
+    };
+
+    return {
+      passed: Boolean(metadata) &&
+        counts.businesses === metadata.counts.businesses &&
+        counts.categories === metadata.counts.categories &&
+        counts.areas === metadata.counts.areas &&
+        counts.emergencyContacts === metadata.counts.emergency_contacts &&
+        (!firstBusiness || businessDetail?.id === firstBusiness.id),
+      counts,
+    };
+  } catch {
+    return { passed: false, counts: empty };
+  } finally {
+    if (originalDescriptor) {
+      Object.defineProperty(navigator, 'onLine', originalDescriptor);
+    } else if (overrideApplied) {
+      delete (navigator as unknown as { onLine?: boolean }).onLine;
+    }
+  }
+}
 
 async function runNativeIndexedDbProbe(): Promise<{
   writeReadPassed: boolean;
@@ -234,6 +290,7 @@ export function OfflineData() {
           cachedAssetCount: 0,
           missingAssets: [],
           directoryPackageSaved: Boolean(await getOfflineDirectoryMetadata().catch(() => null)),
+          offlineReadAdaptersPassed: false,
           error: 'This browser does not expose Service Worker and Cache Storage APIs.',
           checkedAt: new Date().toISOString(),
         });
@@ -270,6 +327,9 @@ export function OfflineData() {
       const missingAssets = manifestAssets.filter((path) => !cachedPaths.has(path));
       const savedMetadata = await getOfflineDirectoryMetadata().catch(() => null);
       const idbProbe = await runNativeIndexedDbProbe();
+      const offlineReadProbe = savedMetadata
+        ? await runOfflineReadAdapterProbe()
+        : { passed: false, counts: { businesses: 0, categories: 0, areas: 0, emergencyContacts: 0 } };
 
       setMetadata(savedMetadata);
       setReadiness({
@@ -285,6 +345,8 @@ export function OfflineData() {
         cachedAssetCount: manifestAssets.length - missingAssets.length,
         missingAssets,
         directoryPackageSaved: Boolean(savedMetadata),
+        offlineReadAdaptersPassed: offlineReadProbe.passed,
+        offlineReadCounts: offlineReadProbe.counts,
         checkedAt: new Date().toISOString(),
       });
       await refreshStorageEstimate();
@@ -303,6 +365,7 @@ export function OfflineData() {
         cachedAssetCount: 0,
         missingAssets: [],
         directoryPackageSaved: Boolean(await getOfflineDirectoryMetadata().catch(() => null)),
+        offlineReadAdaptersPassed: false,
         error: error instanceof Error ? error.message : 'Offline readiness could not be checked.',
         checkedAt: new Date().toISOString(),
       });
@@ -310,12 +373,6 @@ export function OfflineData() {
       setCheckingReadiness(false);
     }
   };
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('offline-check') === '1') {
-      void runReadinessCheck();
-    }
-  }, []);
 
   const startDownload = async () => {
     if (controllerRef.current) return;
@@ -399,6 +456,18 @@ export function OfflineData() {
       controllerRef.current = null;
     }
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('offline-download-check') === '1') {
+      void (async () => {
+        await startDownload();
+        await runReadinessCheck();
+      })();
+    } else if (params.get('offline-check') === '1') {
+      void runReadinessCheck();
+    }
+  }, []);
 
   const cancelDownload = () => controllerRef.current?.abort();
 
@@ -550,6 +619,15 @@ export function OfflineData() {
                 {isUrdu ? 'ڈائریکٹری ڈیٹا: ' : 'Directory data: '}
                 <strong>{readiness.directoryPackageSaved ? (isUrdu ? 'محفوظ ہے' : 'Saved') : (isUrdu ? 'ڈاؤن لوڈ نہیں ہوا' : 'Not downloaded')}</strong>
               </p>
+              {readiness.directoryPackageSaved && (
+                <p className="text-on-surface-variant">
+                  {isUrdu ? 'آف لائن سرچ اور ڈائریکٹری ریڈ ٹیسٹ: ' : 'Offline search and directory read test: '}
+                  <strong>{readiness.offlineReadAdaptersPassed ? (isUrdu ? 'کامیاب' : 'Passed') : (isUrdu ? 'ناکام' : 'Failed')}</strong>
+                  {readiness.offlineReadCounts && (
+                    <span> · {readiness.offlineReadCounts.businesses} {isUrdu ? 'کاروبار' : 'businesses'}, {readiness.offlineReadCounts.categories} {isUrdu ? 'کیٹیگریز' : 'categories'}, {readiness.offlineReadCounts.areas} {isUrdu ? 'علاقے' : 'areas'}, {readiness.offlineReadCounts.emergencyContacts} {isUrdu ? 'ایمرجنسی رابطے' : 'emergency contacts'}</span>
+                  )}
+                </p>
+              )}
               {readiness.missingAssets.length > 0 && (
                 <p className="text-error">
                   {isUrdu ? 'غائب فائلز: ' : 'Missing app files: '}
