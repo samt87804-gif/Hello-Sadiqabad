@@ -73,14 +73,14 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - [x] Add links/status to project roadmap and new-chat handoff in this documentation update.
 
 ### Phase 1 — Safe offline foundation and core directory package
-**Status: in progress — IndexedDB storage, download manager, public offline read adapters and online-only public write guards are implemented; app-shell caching and acceptance testing remain.**
+**Status: in progress — IndexedDB storage, download manager, public offline read adapters, offline write guards and an initial conservative Service Worker shell/lazy-chunk cache are implemented. Browser/device acceptance, full stale-chunk/rollback tests and IndexedDB failure-path tests remain.**
 
 1. Design a versioned IndexedDB schema for public directory snapshots and download metadata. Keep current localStorage favorites/recent-history keys compatible.
 2. Add a download manager reachable from the existing public app (a dedicated offline-data screen plus a clear entry point). It must show an honest size estimate/actual bytes, progress, cancellation, success/failure and last successful download.
 3. Download data through the existing public, anonymous-RLS-approved read paths. Include the complete current published business set plus crawl-only supplemental records, categories, areas and emergency contacts. Use an explicit public-field allow-list.
 4. Write into a staging generation and switch the active generation only after every required dataset has passed validation. An interrupted/failed download must leave the previous verified offline package untouched.
 5. [x] Public business search, filters, business details, categories, areas, homepage directory sections, favorites/recent lookups and emergency contacts now select the verified IndexedDB snapshot when the browser reports offline. Preserve the existing online Supabase source-of-truth path. Public read adapters restore only explicitly stored public fields.
-6. Add offline shell asset caching for the React app and its lazy-loaded route chunks. Generate the asset manifest at build time or use another deterministic approach. Preserve current update notification behavior; never force reload an active visitor. Retain old asset caches safely until no active client depends on them; test rollback and stale chunk cases.
+6. Initial runtime caching is implemented in `public/sw.js`: cache the SPA entry document and existing emergency fallback during install; use network-first navigation with the cached SPA shell as fallback for app routes; cache successful fingerprinted Vite JS/CSS chunks on first use. The Service Worker does not call `skipWaiting()` or `clients.claim()` and does not delete older caches. It deliberately reuses the existing `hs-sadiqabad-shell-v3` cache key because the currently deployed v3 worker deletes every other cache on activation; this preserves compatibility if the old worker is served again during rollback. This is a conservative first step, not proof that every lazy route has been cached. Browser tests must still cover fresh install, update waiting, rollback, old chunks and offline deep links.
 7. [x] Public review, inquiry and suggestion API submissions fail with an explicit not-sent message while offline. Search/business/ad telemetry is skipped. No form payloads are saved or queued. Extend this explicit guard to any newly added public write path before release.
 8. Add unit tests for IndexedDB versioning, snapshot validation/atomic activation, stale-data metadata, cancellation, quota errors, online-vs-offline data selection and offline write guards.
 
@@ -168,3 +168,16 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded. Production browser-render check: `/offline-data` HTTP 200; download manager UI present.
 - Not verified yet: airplane-mode read flows, reload/deep-link, IndexedDB quota/transaction/concurrent-tab failure cases. App-shell and hashed lazy-chunk caching are still pending. The Service Worker was not modified.
 - No Supabase schema/data/RLS/migrations, existing business/user records, Cloudflare settings or live visitor workflows were changed.
+
+
+### 17 November 2026 — Phase 1 initial Service Worker caching
+
+- Audited the live registration path in `src/main.tsx`, the existing install prompt, React Router lazy imports, Vite output conventions and the deployed `public/sw.js`.
+- Found the prior worker used `skipWaiting()`, `clients.claim()` and deleted every Cache Storage entry except its own v3 cache. Those behaviors could activate over open tabs and erase assets required by an older page.
+- Updated `public/sw.js` conservatively: pre-cache `/` and `/offline.html`; use network-first navigation; fall back to the cached SPA shell for app routes while keeping `/offline` mapped to the emergency fallback; cache only successful same-origin fingerprinted JS/CSS script/style requests after first use; leave API, function, Supabase and non-fingerprinted requests out of the runtime cache.
+- Removed forced activation and cache cleanup. Reused the existing `hs-sadiqabad-shell-v3` cache key rather than creating v4 because the still-deployed v3 worker's activation cleanup would delete a new v4 cache during rollback. Old cache entries are retained; safe pruning and storage limits remain future work.
+- Code commits: `5b83a8c16fb9a0a828236e70420fb2399b399cfa` and rollback-compatibility follow-up `5cb77a8bf47089f6c755cf03bb8df82f1ed814ff`.
+- GitHub Actions CI runs `44120063673` and `44120165303` both passed, including TypeScript, automated tests, production build and Edge Function checks.
+- Cloudflare Pages production deployment for final commit `5cb77a8bf47089f6c755cf03bb8df82f1ed814ff`: `4c4647d1-e582-4250-8704-a258e15c3089`; build and deploy stages succeeded; production alias remains `https://hellosadiqabad.com`.
+- Not yet verified: real browser Service Worker lifecycle, cache contents, offline reload/deep-link, previously visited lazy routes, stale chunk behavior across an update, rollback, airplane mode or physical-device behavior. Do not mark Phase 1 complete or claim complete offline browsing.
+- No Supabase schema/data/RLS/migrations, Cloudflare account settings, manifest/install prompt, authentication, owner/admin routes or production business/user records were changed.
