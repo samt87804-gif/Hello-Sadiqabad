@@ -28,7 +28,7 @@ const business: OfflineBusiness = {
 };
 const emergency: OfflineEmergencyContact = {
   id: 'emergency-1', name_en: 'Rescue', name_ur: 'ریسکیو', phone: '1122',
-  category: 'emergency', icon: 'phone', sort_order: 1, description_en: null,
+  category: 'rescue', icon: 'phone', sort_order: 1, description_en: null,
   description_ur: null, whatsapp: null, source_url: null, verified_at: null,
 };
 
