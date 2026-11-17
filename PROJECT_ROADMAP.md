@@ -280,3 +280,11 @@ Batch 3 — completed (16 November 2026):
 - [x] Cloudflare Pages production deployment '70ad68bf-c6b4-4505-85c4-19d07f075a2f' succeeded for commit '2aa09779c1993dd3dde4a3734e06b86e2ca23e4d'; canonical domain alias remains attached.
 - [ ] Overall CI remains failed only at the pre-existing npm audit gate (3 high findings: picomatch, tinyglobby and Vite). No suppression or unsafe major-version downgrade was made.
 - [ ] Authenticated Admin upload, compression-size observation, media Cache Storage count and physical-device airplane-mode/reload tests are still pending.
+
+### Storage upload RLS correction — 18 November 2026
+
+- [x] Investigated the actual failed upload in Supabase Storage logs: active Super Admin session and correct `site-media/<uid>/...` path; rejection occurred at `storage.objects` INSERT RLS.
+- [x] Removed unreliable `metadata.mimetype` / `metadata.size` checks from `site_media_admin_insert`; retained authenticated-only access, exact bucket, `site-media` prefix, own UID folder and existing Super Admin/staff permission predicates.
+- [x] Applied migration `20261118110000_fix_site_media_admin_insert_rls` and verified the live policy.
+- [x] Client-side WebP conversion, resizing and 8 MiB compressed-file limit remain in `adminMedia.ts`. MIME/size are no longer independently enforced by Storage RLS.
+- [ ] Owner to confirm a successful upload in the live Admin UI; then verify image URL persistence and `/offline-data` media caching. Public visitors and business owners remain unable to upload.
