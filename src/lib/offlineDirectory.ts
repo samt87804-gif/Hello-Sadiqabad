@@ -502,6 +502,21 @@ export async function getActiveOfflineDirectorySnapshot(): Promise<OfflineDirect
   return active?.snapshot ?? null;
 }
 
+let fallbackGenerationCounter = 0;
+
+function createOfflineGenerationId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    return 'offline-' + Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+  fallbackGenerationCounter += 1;
+  return 'offline-' + Date.now().toString(36) + '-' +
+    fallbackGenerationCounter.toString(36) + '-' + Math.random().toString(36).slice(2);
+}
+
 export async function saveOfflineDirectorySnapshot(
   snapshot: OfflineDirectorySnapshot
 ): Promise<OfflineSnapshotMetadata> {
@@ -510,9 +525,7 @@ export async function saveOfflineDirectorySnapshot(
   }
 
   const database = await openDatabase();
-  const generation = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : 'offline-' + Date.now().toString(36);
+  const generation = createOfflineGenerationId();
   const stored: StoredSnapshot = { ...snapshot, generation };
   const transaction = database.transaction([META_STORE, SNAPSHOT_STORE], 'readwrite');
   const done = transactionDone(transaction);
