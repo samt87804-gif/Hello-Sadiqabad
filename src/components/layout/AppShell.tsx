@@ -130,7 +130,7 @@ export function AppShell({
       {showFooter && <AppFooter withBottomNavOffset={showBottomNav} />}
       {showBottomNav && <AppBottomNav />}
       <PwaUpdateToast />
-      <PopupAdModal />
+      {!hideHeader && <PopupAdModal />}
       {showChatbot && <ChatbotWidget />}
     </div>
   );
