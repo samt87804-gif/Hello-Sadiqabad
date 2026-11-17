@@ -18,6 +18,20 @@ import {
 
 type DownloadStatus = 'idle' | 'downloading' | 'saving' | 'success' | 'error' | 'cancelled';
 
+type OfflineReadinessReport = {
+  serviceWorkerSupported: boolean;
+  activeWorker: boolean;
+  waitingWorker: boolean;
+  appShellCached: boolean;
+  emergencyFallbackCached: boolean;
+  manifestAssetCount: number;
+  cachedAssetCount: number;
+  missingAssets: string[];
+  directoryPackageSaved: boolean;
+  error?: string;
+  checkedAt: string;
+};
+
 function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '—';
   if (bytes < 1024) return bytes + ' B';
@@ -56,6 +70,8 @@ export function OfflineData() {
   const [estimatedBytes, setEstimatedBytes] = useState(0);
   const [storageUsage, setStorageUsage] = useState<{ usage: number; quota: number } | null>(null);
   const [metadata, setMetadata] = useState<OfflineSnapshotMetadata | null>(null);
+  const [readiness, setReadiness] = useState<OfflineReadinessReport | null>(null);
+  const [checkingReadiness, setCheckingReadiness] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -95,6 +111,95 @@ export function OfflineData() {
       setStorageUsage(null);
     }
   };
+
+  const runReadinessCheck = async () => {
+    setCheckingReadiness(true);
+    try {
+      if (!('serviceWorker' in navigator) || !('caches' in window)) {
+        setReadiness({
+          serviceWorkerSupported: false,
+          activeWorker: false,
+          waitingWorker: false,
+          appShellCached: false,
+          emergencyFallbackCached: false,
+          manifestAssetCount: 0,
+          cachedAssetCount: 0,
+          missingAssets: [],
+          directoryPackageSaved: Boolean(await getOfflineDirectoryMetadata().catch(() => null)),
+          error: 'This browser does not expose Service Worker and Cache Storage APIs.',
+          checkedAt: new Date().toISOString(),
+        });
+        return;
+      }
+
+      let registration = await navigator.serviceWorker.getRegistration('/');
+      if (!registration) registration = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+
+      const cache = await caches.open('hs-sadiqabad-shell-v3');
+      const [appShell, emergencyFallback] = await Promise.all([
+        cache.match(new URL('/', window.location.origin).href),
+        cache.match(new URL('/offline.html', window.location.origin).href),
+      ]);
+
+      let manifestResponse = await cache.match(new URL('/offline-precache.json', window.location.origin).href);
+      if (!manifestResponse) {
+        const networkManifest = await fetch('/offline-precache.json', { cache: 'no-store' });
+        if (!networkManifest.ok) throw new Error('The app asset manifest is not available in this browser.');
+        manifestResponse = networkManifest;
+      }
+
+      const manifestValue: unknown = await manifestResponse.json();
+      const manifestAssets = Array.isArray(manifestValue)
+        ? manifestValue.filter((path): path is string =>
+            typeof path === 'string' &&
+            path.startsWith('/assets/') &&
+            /-[A-Za-z0-9_-]{6,}\\.(?:js|css)$/.test(path)
+          )
+        : [];
+      const cachedRequests = await cache.keys();
+      const cachedPaths = new Set(cachedRequests.map((request) => new URL(request.url).pathname));
+      const missingAssets = manifestAssets.filter((path) => !cachedPaths.has(path));
+      const savedMetadata = await getOfflineDirectoryMetadata().catch(() => null);
+
+      setMetadata(savedMetadata);
+      setReadiness({
+        serviceWorkerSupported: true,
+        activeWorker: Boolean(registration.active),
+        waitingWorker: Boolean(registration.waiting),
+        appShellCached: Boolean(appShell),
+        emergencyFallbackCached: Boolean(emergencyFallback),
+        manifestAssetCount: manifestAssets.length,
+        cachedAssetCount: manifestAssets.length - missingAssets.length,
+        missingAssets,
+        directoryPackageSaved: Boolean(savedMetadata),
+        checkedAt: new Date().toISOString(),
+      });
+      await refreshStorageEstimate();
+    } catch (error) {
+      setReadiness({
+        serviceWorkerSupported: 'serviceWorker' in navigator && 'caches' in window,
+        activeWorker: false,
+        waitingWorker: false,
+        appShellCached: false,
+        emergencyFallbackCached: false,
+        manifestAssetCount: 0,
+        cachedAssetCount: 0,
+        missingAssets: [],
+        directoryPackageSaved: Boolean(await getOfflineDirectoryMetadata().catch(() => null)),
+        error: error instanceof Error ? error.message : 'Offline readiness could not be checked.',
+        checkedAt: new Date().toISOString(),
+      });
+    } finally {
+      setCheckingReadiness(false);
+    }
+  };
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('offline-check') === '1') {
+      void runReadinessCheck();
+    }
+  }, []);
 
   const startDownload = async () => {
     if (controllerRef.current) return;
@@ -269,6 +374,69 @@ export function OfflineData() {
               {isUrdu ? 'محفوظ کیے جانے والے ڈیٹا کا تخمینہ: ' : 'Estimated package size: '}
               <strong>{formatBytes(estimatedBytes)}</strong>
             </p>
+          )}
+        </section>
+
+        <section className="rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:p-7 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <h2 className="text-base font-extrabold text-on-surface">
+                {isUrdu ? 'آف لائن تیاری چیک کریں' : 'Offline readiness check'}
+              </h2>
+              <p className="text-xs leading-5 text-on-surface-variant">
+                {isUrdu ? 'ایپ فائلز، ایمرجنسی صفحہ اور محفوظ ڈائریکٹری کی دستیابی چیک کریں۔' : 'Check that app files, the emergency fallback and your saved directory are available in this browser.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={runReadinessCheck}
+              disabled={checkingReadiness}
+              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-outline-variant px-4 py-2 text-xs font-bold text-primary hover:bg-surface-container disabled:opacity-50"
+            >
+              {checkingReadiness
+                ? (isUrdu ? 'چیک ہو رہا ہے…' : 'Checking…')
+                : (isUrdu ? 'تیاری چیک کریں' : 'Check readiness')}
+            </button>
+          </div>
+          {readiness && (
+            <div data-testid="offline-readiness-report" aria-live="polite" className="rounded-2xl bg-surface-container p-4 space-y-2 text-xs">
+              <p className="font-bold text-on-surface">
+                {readiness.serviceWorkerSupported
+                  ? (readiness.activeWorker ? (isUrdu ? 'سروس ورکر فعال ہے' : 'Service Worker is active') : (isUrdu ? 'سروس ورکر فعال نہیں' : 'Service Worker is not active'))
+                  : (isUrdu ? 'یہ براؤزر سروس ورکر کو سپورٹ نہیں کرتا' : 'Service Worker is not supported')}
+              </p>
+              <p className="text-on-surface-variant">
+                {isUrdu ? 'ایپ کا مرکزی صفحہ: ' : 'App shell: '}
+                <strong>{readiness.appShellCached ? (isUrdu ? 'محفوظ' : 'Cached') : (isUrdu ? 'غائب' : 'Missing')}</strong>
+              </p>
+              <p className="text-on-surface-variant">
+                {isUrdu ? 'ایمرجنسی صفحہ: ' : 'Emergency fallback: '}
+                <strong>{readiness.emergencyFallbackCached ? (isUrdu ? 'محفوظ' : 'Cached') : (isUrdu ? 'غائب' : 'Missing')}</strong>
+              </p>
+              <p className="text-on-surface-variant">
+                {isUrdu ? 'ایپ فائلز: ' : 'App files: '}
+                <strong>{readiness.cachedAssetCount}/{readiness.manifestAssetCount}</strong>
+                {readiness.waitingWorker && <span> · {isUrdu ? 'اپ ڈیٹ منتظر ہے' : 'An update is waiting'}</span>}
+              </p>
+              <p className="text-on-surface-variant">
+                {isUrdu ? 'ڈائریکٹری ڈیٹا: ' : 'Directory data: '}
+                <strong>{readiness.directoryPackageSaved ? (isUrdu ? 'محفوظ ہے' : 'Saved') : (isUrdu ? 'ڈاؤن لوڈ نہیں ہوا' : 'Not downloaded')}</strong>
+              </p>
+              {readiness.missingAssets.length > 0 && (
+                <p className="text-error">
+                  {isUrdu ? 'غائب فائلز: ' : 'Missing app files: '}
+                  {readiness.missingAssets.slice(0, 4).join(', ')}
+                  {readiness.missingAssets.length > 4 ? '…' : ''}
+                </p>
+              )}
+              {readiness.error && <p className="text-error">{readiness.error}</p>}
+              <p className="text-[10px] text-on-surface-variant">
+                {isUrdu ? 'چیک کا وقت: ' : 'Checked: '}{new Date(readiness.checkedAt).toLocaleString()}
+              </p>
+              <p className="text-[10px] text-on-surface-variant">
+                {isUrdu ? 'یہ چیک حقیقی ایئرپلین موڈ ری لوڈ کی جگہ نہیں لیتا۔' : 'This check does not replace a real airplane-mode reload test.'}
+              </p>
+            </div>
           )}
         </section>
 
