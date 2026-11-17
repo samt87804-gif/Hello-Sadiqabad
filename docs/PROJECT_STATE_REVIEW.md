@@ -173,3 +173,9 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Offline downloader and Service Worker now include a separate public media cache for referenced Supabase bucket images and the existing Google image proxy; optional news/authority/ad/product sources do not block the core offline directory package if unavailable.
 - Migrations applied and checked: '20261117193404', '20261117194321', '20261117194905'. No existing business/user records or Storage objects were deleted or bulk-mutated.
 - CI/build/deployment and production browser acceptance are pending. Phase 1 device and Phase 2 media acceptance remain incomplete.
+
+
+### Additional security hardening — public business submissions
+
+- Public visitors do not have image upload or image URL fields in the Add Business form. The live approval RPC now explicitly inserts NULL for logo and cover URLs from public new-business submissions, so a crafted public payload cannot set either image. Admin adds images after approval.
+- This final migration is applied as '20261117195404_public_submission_images_admin_only'. Existing businesses and image URLs were not changed.

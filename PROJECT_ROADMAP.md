@@ -265,3 +265,9 @@ Batch 3 — completed (16 November 2026):
 - [x] Owner image URL editing removed from business listing/product/offer forms; database triggers/RPCs reject owner attempts to change business, product or offer images while preserving existing images.
 - [x] Offline download now prefetches referenced public business, product, offer, directory, hero, campaign, news and authority images into a separate Cache Storage namespace; Service Worker intercept is restricted to the public Supabase image bucket and existing same-origin Google image proxy.
 - [ ] TypeScript/tests/build, GitHub CI, Cloudflare Pages deployment and production upload/offline-image acceptance remain pending. Do not mark complete until verified; actual device offline reload and existing Phase 1 acceptance are still outstanding.
+
+
+### Additional security hardening — public business submissions
+
+- Public visitors do not have image upload or image URL fields in the Add Business form. The live approval RPC now explicitly inserts NULL for logo and cover URLs from public new-business submissions, so a crafted public payload cannot set either image. Admin adds images after approval.
+- This final migration is applied as '20261117195404_public_submission_images_admin_only'. Existing businesses and image URLs were not changed.

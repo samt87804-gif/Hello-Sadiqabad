@@ -254,3 +254,9 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Owner Portal image URL editing was removed for business logo/cover/gallery and product/offer images. The live business trigger blocks owner changes to 'owner_photo_url', 'logo_url', 'cover_url' and 'gallery_urls'; owner product/offer request RPCs only accept the currently stored image unchanged. Existing media and records were not deleted or bulk-updated.
 - Offline downloader now collects referenced images from public businesses, products, offers, directory/hero settings, active ads, published News and active Authority profiles; it caches supported public Supabase Storage images and the existing Google image proxy with bounded concurrency. Service Worker media cache is separate from the shell cache and does not include private data/API responses.
 - Current code and docs changes are being prepared for CI/deployment. Verify latest commit, CI and matching Pages deployment before calling this live. Image upload, production download count, browser Cache Storage and physical-device airplane-mode behavior still require acceptance testing. Existing npm audit gate remains an independent known CI blocker until a safe upstream fix is confirmed.
+
+
+### Additional security hardening — public business submissions
+
+- Public visitors do not have image upload or image URL fields in the Add Business form. The live approval RPC now explicitly inserts NULL for logo and cover URLs from public new-business submissions, so a crafted public payload cannot set either image. Admin adds images after approval.
+- This final migration is applied as '20261117195404_public_submission_images_admin_only'. Existing businesses and image URLs were not changed.

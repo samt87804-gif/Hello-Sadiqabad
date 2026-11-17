@@ -1508,7 +1508,7 @@ export function SettingsManager({
             className="min-w-0 flex-1 h-10 rounded-xl border border-outline-variant bg-surface px-3 text-xs"
           />
           <AdminImageUpload purpose="banner" onUploaded={async (url) => { setDraftValues((previous) => ({ ...previous, hero_banner_url: url })); await saveHeroBanner(url); }} />
-          <Button onClick={saveHeroBanner} disabled={!heroBannerDraft.trim()}>Save Banner</Button>
+          <Button onClick={() => { void saveHeroBanner(); }} disabled={!heroBannerDraft.trim()}>Save Banner</Button>
         </div>
       </Card>
       <Card className="p-5 space-y-4">
