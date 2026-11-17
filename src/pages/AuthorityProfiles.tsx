@@ -56,7 +56,7 @@ export function AuthorityProfiles() {
       <Container className={presentationMode ? 'min-h-screen py-6 sm:py-10 px-4 sm:px-8 space-y-6' : 'py-6 space-y-5'}>
         <header className={presentationMode ? 'rounded-3xl bg-gradient-to-br from-slate-950 via-primary to-slate-900 text-white p-6 sm:p-10 space-y-5 shadow-2xl' : 'rounded-3xl bg-primary text-on-primary p-5 sm:p-7 space-y-3'}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2"><ShieldCheck className="w-7 h-7" /><h1 className="text-xl sm:text-2xl font-extrabold">{profile ? profileText(lang, profile.name_en, profile.name_ur) : heading}</h1></div>
+            <div className="flex items-center gap-2"><ShieldCheck className="w-7 h-7" /><h1 className="text-xl sm:text-2xl font-extrabold">{presentationMode ? (lang === 'ur' ? 'ہیلو صادق آباد — عوامی پروفائل' : 'Hello Sadiqabad · Public Profile') : profile ? profileText(lang, profile.name_en, profile.name_ur) : heading}</h1></div>
             {profile && <div className="flex flex-wrap items-center gap-2">
               <button type="button" onClick={() => setPresentationMode((value) => !value)} className="inline-flex items-center gap-1.5 rounded-xl bg-white/15 hover:bg-white/25 px-3 py-2 text-xs font-bold text-white">
                 {presentationMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -70,7 +70,7 @@ export function AuthorityProfiles() {
           </div>
           {!profile && <p className="text-sm text-white/85">{lang === 'ur' ? 'پریس کلب، وکلا، غلہ منڈی، آٹو یونین اور سرکاری شعبوں کے نمائندوں کے عوامی تعارف۔' : 'Public profiles of union chairmen, association presidents, civic representatives and government officers serving Sadiqabad.'}</p>}
           <div className="flex flex-wrap gap-2">
-            <Link to="/local-authorities" className="rounded-xl bg-white/15 hover:bg-white/25 px-3 py-2 text-xs font-bold">{lang === 'ur' ? 'سرکاری دفاتر کے رابطے' : 'Government office directory'}</Link>
+            {!presentationMode && <Link to="/local-authorities" className="rounded-xl bg-white/15 hover:bg-white/25 px-3 py-2 text-xs font-bold">{lang === 'ur' ? 'سرکاری دفاتر کے رابطے' : 'Government office directory'}</Link>}
             {!profile && <span className="rounded-xl bg-white/15 px-3 py-2 text-xs font-bold">{profiles.length} {lang === 'ur' ? 'پروفائلز' : 'public profiles'}</span>}
           </div>
         </header>
