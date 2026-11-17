@@ -285,6 +285,6 @@ Batch 3 — completed (16 November 2026):
 
 - [x] Investigated the actual failed upload in Supabase Storage logs: active Super Admin session and correct `site-media/<uid>/...` path; rejection occurred at `storage.objects` INSERT RLS.
 - [x] Removed unreliable `metadata.mimetype` / `metadata.size` checks from `site_media_admin_insert`; retained authenticated-only access, exact bucket, `site-media` prefix, own UID folder and existing Super Admin/staff permission predicates.
-- [x] Applied migration `20261118110000_fix_site_media_admin_insert_rls` and verified the live policy.
+- [x] Applied migration `20261117204927_fix_site_media_admin_insert_rls` and verified the live policy.
 - [x] Client-side WebP conversion, resizing and 8 MiB compressed-file limit remain in `adminMedia.ts`. MIME/size are no longer independently enforced by Storage RLS.
 - [ ] Owner to confirm a successful upload in the live Admin UI; then verify image URL persistence and `/offline-data` media caching. Public visitors and business owners remain unable to upload.
