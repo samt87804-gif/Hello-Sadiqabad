@@ -331,7 +331,7 @@ export default function App() {
                     <Route path="/add-business" element={<AddBusiness />} />
                     <Route path="/map" element={<MapPage />} />
                     <Route path="/favorites" element={<Favorites />} />
-                    <Route path="/offline" element={<OfflineData />} />
+                    <Route path="/offline-data" element={<OfflineData />} />
                     <Route path="/emergency" element={<Emergency />} />
                     <Route path="/government-helplines" element={<GovernmentHelplines />} />
                     <Route path="/local-authorities" element={<LocalAuthorities />} />
