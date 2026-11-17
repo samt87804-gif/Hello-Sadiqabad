@@ -239,3 +239,10 @@ Batch 3 — completed (16 November 2026):
   - [x] Show browser storage usage/quota where supported and clarify that some photos/news/live content may still need internet. Production /offline-data UI verified with Browser Rendering.
   - [ ] Resolve the independent high/critical npm audit CI gate. TypeScript, tests, production build and Edge Function checks passed on run 44143421511, but overall CI remains failed at npm audit --audit-level=high; exact advisory needs investigation before dependency changes.
   - [ ] Actual IndexedDB quota/transaction/concurrent-tab tests and real-browser Service Worker Cache Storage/offline deep-link/stale-chunk/rollback acceptance remain pending.
+
+  - [x] Add offline readiness diagnostics for Service Worker, app shell, emergency fallback, all fingerprinted assets, native IndexedDB write/read/abort/concurrency and saved directory data.
+  - [x] Production isolated-browser end-to-end download: 655 public businesses, 19 categories, 303 areas, 12 emergency contacts saved; offline public search/detail/category/area/emergency adapters passed with matching counts.
+  - [x] Add regression test proving offline public reviews/inquiries/suggestions are not sent/saved and analytics telemetry creates no session or queued write.
+  - [ ] Physical device airplane-mode reload/deep-link and Service Worker update/rollback acceptance remains. Online smoke checks for every public route and real quota-exhaustion testing also remain.
+  - [ ] CI security audit remains blocked by GHSA-fc5q-39xc-vjpf (picomatch ReDoS through 4.0.7); npm audit offers only force-downgrading Vite to 6.2.7. Do not suppress the audit or apply a breaking downgrade; await a safe upstream fix.
+  - [x] Cloudflare Pages production deployment 6d482311-18fe-47f6-bed0-382c0422dae7 succeeded for commit b80e6b470390fc80fba26c0111574a2e46c21a38.
