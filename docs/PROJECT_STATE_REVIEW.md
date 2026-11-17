@@ -108,3 +108,13 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded. Production browser-render check confirmed `/offline-data` returns HTTP 200 and renders the download manager.
 - Still incomplete: Service Worker app-shell and lazy-chunk caching, browser-level IndexedDB transaction/quota/concurrency tests, offline reload/deep-link and airplane-mode verification. The current Service Worker still caches only `offline.html`.
 - No Supabase schema, data, RLS, migration, Service Worker, Cloudflare setting or existing visitor workflow was changed in this batch.
+
+
+## Offline-first Phase 1 — initial Service Worker caching — 17 November 2026
+
+- Updated `public/sw.js` to cache the SPA entry document and emergency fallback, use network-first navigation, fall back to the cached SPA entry for app routes, and cache successful fingerprinted Vite JS/CSS chunks after first use.
+- `/offline` retains the existing emergency fallback behavior. API/function/Supabase traffic and non-fingerprinted assets are not cached.
+- The new worker does not force activation, claim open clients or delete old caches. It reuses the existing `hs-sadiqabad-shell-v3` cache key because the currently deployed v3 worker's cleanup would delete a newly named cache during rollback.
+- Commits: `5b83a8c16fb9a0a828236e70420fb2399b399cfa`, then compatibility follow-up `5cb77a8bf47089f6c755cf03bb8df82f1ed814ff`.
+- CI runs `44120063673` and `44120165303` passed. Final Cloudflare Pages deployment `4c4647d1-e582-4250-8704-a258e15c3089` succeeded for `5cb77a8bf47089f6c755cf03bb8df82f1ed814ff`.
+- Browser/device Service Worker lifecycle, actual cache contents, offline reload/deep-link, stale chunk/update/rollback and IndexedDB quota/concurrency tests remain unverified. Phase 1 remains in progress; no full-offline claim is made.
