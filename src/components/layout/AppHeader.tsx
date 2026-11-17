@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Moon, PlusCircle, Search, ShieldCheck, Sun, User } from 'lucide-react';
+import { ChevronDown, Landmark, Moon, PlusCircle, Search, ShieldCheck, Sun, User, UsersRound } from 'lucide-react';
 import { useTheme } from '../../lib/theme';
 import { useI18n } from '../../lib/i18n';
 import { useAuth } from '../../lib/auth';
@@ -13,6 +13,7 @@ export function AppHeader() {
   const { lang, urduHints, t } = useI18n();
   const { user, role } = useAuth();
   const navigate = useNavigate();
+  const [civicMenuOpen, setCivicMenuOpen] = useState(false);
 
   const portalLink = user
     ? role === 'owner'
@@ -100,6 +101,29 @@ export function AppHeader() {
               {item.label}
             </NavLink>
           ))}
+          <div className="relative">
+            <button
+              type="button"
+              aria-expanded={civicMenuOpen}
+              aria-haspopup="true"
+              onClick={() => setCivicMenuOpen((open) => !open)}
+              className="px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors"
+            >
+              Civic Services <ChevronDown className={`w-3.5 h-3.5 transition-transform ${civicMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {civicMenuOpen && (
+              <div className="absolute end-0 top-full mt-2 w-64 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-2 shadow-xl z-50">
+                <NavLink to="/local-authorities" onClick={() => setCivicMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-on-surface hover:bg-surface-container-low">
+                  <Landmark className="w-5 h-5 text-primary" />
+                  <span><span className="block">Local Authorities</span><span className="block text-[11px] font-normal text-on-surface-variant">Government offices & public contacts</span></span>
+                </NavLink>
+                <NavLink to="/authority-profiles" onClick={() => setCivicMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-on-surface hover:bg-surface-container-low">
+                  <UsersRound className="w-5 h-5 text-primary" />
+                  <span><span className="block">Authority Profiles</span><span className="block text-[11px] font-normal text-on-surface-variant">People, office-holders & representatives</span></span>
+                </NavLink>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Actions */}
