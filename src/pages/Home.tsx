@@ -92,9 +92,9 @@ export function Home() {
 
   useEffect(() => {
     updatePageSeo({
-      title: 'Hello Sadiqabad — Local Business Directory & 24/7 Helplines',
+      title: 'Sadiqabad Business Directory & Emergency Helplines — Hello Sadiqabad',
       description:
-        'Find shops, doctors, hospitals, pharmacies, and 24/7 emergency contacts in Sadiqabad, District Rahim Yar Khan, Punjab.',
+        'Find shops, doctors, hospitals, pharmacies, restaurants and local services in Sadiqabad, Punjab. Browse business listings, area guides and 24/7 emergency helplines.',
       canonicalPath: '/',
       jsonLd: {
         '@context': 'https://schema.org',
@@ -104,7 +104,7 @@ export function Home() {
             '@id': 'https://hellosadiqabad.com/#organization',
             name: 'Hello Sadiqabad',
             url: 'https://hellosadiqabad.com/',
-            logo: 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/186747.png',
+            logo: { '@type': 'ImageObject', url: 'https://hellosadiqabad.com/site-logo.png', width: 512, height: 512 },
           },
           {
             '@type': 'WebSite',
@@ -223,7 +223,7 @@ export function Home() {
   return (
     <AppShell>
       <div className="space-y-8 py-5 sm:py-7">
-        <h1 className="sr-only">Sadiqabad Local Business Directory and 24/7 Helplines</h1>
+        
         <section aria-label="Project collaboration">
           <Container>
             <p className="text-center text-sm sm:text-base font-medium text-on-surface-variant">
@@ -257,6 +257,16 @@ export function Home() {
               />
 
               <div className="max-w-3xl space-y-4 p-5 sm:p-8">
+                <div className="space-y-1">
+                  <h1 className="text-xl font-extrabold tracking-tight text-on-surface sm:text-2xl">
+                    {lang === 'ur' ? 'صادق آباد کی کاروباری ڈائریکٹری' : 'Sadiqabad Business Directory'}
+                  </h1>
+                  <p className="text-sm leading-relaxed text-on-surface-variant">
+                    {lang === 'ur'
+                      ? 'صادق آباد کی دکانیں، ڈاکٹرز، ہسپتال، فارمیسیز، ریسٹورنٹس اور مقامی سروسز تلاش کریں۔'
+                      : 'Find local shops, doctors, hospitals, pharmacies, restaurants and services across Sadiqabad.'}
+                  </p>
+                </div>
                 <InstallAppButton />
 
                 {/* Search Input & Autocomplete */}

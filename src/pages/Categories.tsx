@@ -21,8 +21,8 @@ export function Categories() {
 
   useEffect(() => {
     updatePageSeo({
-      title: 'All Categories — Hello Sadiqabad',
-      description: 'Browse every business category and local service sector in Sadiqabad.',
+      title: 'Shops, Doctors & Services in Sadiqabad — Hello Sadiqabad',
+      description: 'Browse Sadiqabad business categories including shops, doctors, clinics, restaurants, pharmacies and local services.',
       canonicalPath: '/categories',
     });
     Promise.all([fetchCategoriesWithCounts(), fetchPublicSiteSettings()]).then(([items, settings]) => {

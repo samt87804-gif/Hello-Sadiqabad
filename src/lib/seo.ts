@@ -42,7 +42,7 @@ export function updatePageSeo(opts: {
   setMeta('meta[name="twitter:title"]', fullTitle);
   setMeta('meta[name="twitter:description"]', desc);
   setMeta('meta[property="og:type"]', opts.ogType ?? 'website');
-  const socialImage = opts.image || 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/186747.png';
+  const socialImage = opts.image || 'https://hellosadiqabad.com/site-logo.png';
   setMeta('meta[property="og:image"]', socialImage);
   setMeta('meta[property="og:image:alt"]', fullTitle);
   setMeta('meta[name="twitter:image"]', socialImage);
