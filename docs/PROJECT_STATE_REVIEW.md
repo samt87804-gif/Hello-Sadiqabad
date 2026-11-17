@@ -87,7 +87,7 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Current PWA installation is already configured. Full offline support is not implemented: the Service Worker only caches the offline fallback page; favorites/recent views/emergency contacts have limited local storage; complete public directory/content/media are not cached.
 - Phase 0 was documentation-only. Phase 1 now includes an initial validated IndexedDB snapshot store and explicit public-field mappers in `src/lib/offlineDirectory.ts`, plus automated tests in `src/lib/offlineDirectory.test.ts`.
 - Commit `0460ecb3c6506d25f233bf17a316fb774a632b36` passed GitHub Actions CI run `44112311265` (TypeScript, tests, production build and Edge Function checks); Cloudflare Pages deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` succeeded.
-- The storage module is now used by the public `/offline-data` download manager, which has been deployed and browser-render verified. The saved package is not yet consumed by public pages when offline. App-shell/lazy-chunk caching, offline read fallbacks, online-only write guards and browser-level IndexedDB tests remain incomplete. No Supabase schema/data, user/business records, Service Worker behavior, Cloudflare settings or online directory workflows were changed.
+- The storage module is used by the public `/offline-data` download manager and public API read adapters. When the browser reports offline, business directory/search/profile reads, active categories/areas and emergency contacts use the verified IndexedDB snapshot. Public reviews, inquiries and suggestions are rejected offline; telemetry is skipped. App-shell/lazy-chunk caching and browser-level IndexedDB transaction/quota/concurrency tests remain incomplete, so offline reload/deep-link use is not yet verified. No Supabase schema/data, user/business records, Service Worker behavior or Cloudflare settings were changed.
 
 
 ## Offline-first Phase 1 download manager — 17 November 2026
@@ -97,3 +97,14 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - The `/offline` path remains the pre-existing emergency fallback page. Browser-render checks confirmed `/offline-data` shows the download UI and `/offline` retains emergency call links.
 - CI run `44114620453` passed; Cloudflare deployment `ba819f2f-2881-44d8-9606-54285abe6dbd` succeeded. CI run `44114989998` for the route correction was pending at this review.
 - Full offline directory browsing is not yet implemented because public pages do not read the saved snapshot while offline, and the Service Worker still caches only `offline.html`.
+
+
+## Offline-first Phase 1 — public snapshot read integration — 17 November 2026
+
+- Added public adapters in `src/lib/offlineDirectoryAdapters.ts` for business, category, area and emergency-contact records. The adapters restore only fields already included in the offline allow-list; owner ID, email and private account fields are not restored.
+- Updated public API selection so offline browsers read businesses, categories, areas and emergency contacts from the verified IndexedDB snapshot. Homepage uses safe public seed settings and omits non-essential ads/news suggestions/product previews where those sources are not cached.
+- Public reviews, inquiries and suggestions now return an explicit connection-required/not-sent result while offline. Business/ad telemetry and search logging are skipped; no offline submission queue is created.
+- CI run `44118681086` passed TypeScript, automated tests, production build and Supabase Edge Function checks for commit `76805d80a18c81257d5758aacf29ad6970dd5d18`.
+- Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded. Production browser-render check confirmed `/offline-data` returns HTTP 200 and renders the download manager.
+- Still incomplete: Service Worker app-shell and lazy-chunk caching, browser-level IndexedDB transaction/quota/concurrency tests, offline reload/deep-link and airplane-mode verification. The current Service Worker still caches only `offline.html`.
+- No Supabase schema, data, RLS, migration, Service Worker, Cloudflare setting or existing visitor workflow was changed in this batch.

@@ -73,15 +73,15 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - [x] Add links/status to project roadmap and new-chat handoff in this documentation update.
 
 ### Phase 1 — Safe offline foundation and core directory package
-**Status: in progress — IndexedDB storage and the public download manager are implemented; offline read integration, app-shell caching and acceptance testing remain.**
+**Status: in progress — IndexedDB storage, download manager, public offline read adapters and online-only public write guards are implemented; app-shell caching and acceptance testing remain.**
 
 1. Design a versioned IndexedDB schema for public directory snapshots and download metadata. Keep current localStorage favorites/recent-history keys compatible.
 2. Add a download manager reachable from the existing public app (a dedicated offline-data screen plus a clear entry point). It must show an honest size estimate/actual bytes, progress, cancellation, success/failure and last successful download.
 3. Download data through the existing public, anonymous-RLS-approved read paths. Include the complete current published business set plus crawl-only supplemental records, categories, areas and emergency contacts. Use an explicit public-field allow-list.
 4. Write into a staging generation and switch the active generation only after every required dataset has passed validation. An interrupted/failed download must leave the previous verified offline package untouched.
-5. Make public business search, filters, business details, categories, areas, homepage directory sections, favorites/recent items and emergency contacts read the verified IndexedDB snapshot when offline. Preserve the existing online Supabase source-of-truth path.
+5. [x] Public business search, filters, business details, categories, areas, homepage directory sections, favorites/recent lookups and emergency contacts now select the verified IndexedDB snapshot when the browser reports offline. Preserve the existing online Supabase source-of-truth path. Public read adapters restore only explicitly stored public fields.
 6. Add offline shell asset caching for the React app and its lazy-loaded route chunks. Generate the asset manifest at build time or use another deterministic approach. Preserve current update notification behavior; never force reload an active visitor. Retain old asset caches safely until no active client depends on them; test rollback and stale chunk cases.
-7. Ensure write actions fail clearly while offline and never show a success state. Do not queue review/inquiry/claim/correction/business submissions.
+7. [x] Public review, inquiry and suggestion API submissions fail with an explicit not-sent message while offline. Search/business/ad telemetry is skipped. No form payloads are saved or queued. Extend this explicit guard to any newly added public write path before release.
 8. Add unit tests for IndexedDB versioning, snapshot validation/atomic activation, stale-data metadata, cancellation, quota errors, online-vs-offline data selection and offline write guards.
 
 **Acceptance gate:** clean CI (typecheck, tests, production build and existing Deno checks); online smoke checks for homepage/search/business profile/category/area/emergency; offline reload and search using a verified snapshot; offline write attempts show a clear connection-required message and create no local pending submission; existing install/update behavior remains intact. No production rollout if stale chunks, missing core routes, data leakage or online regressions are observed.
@@ -156,4 +156,15 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - Added a strict preflight count using the anonymous public Supabase role and refreshes the business source for each download. If the visible published-business count cannot be matched, the package is not saved. Emergency-contact cache fallback is also rejected for a new package.
 - The original `/offline` path renders the existing emergency fallback page, so the new download manager was moved to `/offline-data`. Live browser-render checks confirmed `/offline-data` returns the new app page (HTTP 200) and `/offline` still returns the emergency fallback with its direct-call links (HTTP 200).
 - GitHub Actions CI run `44114620453` passed for the strict business-source helper. Cloudflare Pages production deployment `ba819f2f-2881-44d8-9606-54285abe6dbd` succeeded for the `/offline-data` route fix. The final route commit's GitHub CI run `44114989998` was still pending at the time of this log update; Cloudflare's production build/deploy and live route checks succeeded.
-- Still required in Phase 1: browser-level IndexedDB transaction/quota/concurrency tests, offline read fallbacks for directory pages, app-shell/lazy-chunk caching, online-only write guards and full acceptance checks. The stored package is not yet consumed by public pages while offline; do not claim complete offline browsing.
+- Public read integration and initial public write guards are implemented. Still required in Phase 1: versioned app-shell/lazy-chunk caching with safe old-cache retention; browser-level IndexedDB transaction/quota/concurrency tests; offline reload/deep-link and airplane-mode acceptance; and verification of all online-only forms. The Service Worker still caches only `offline.html`, so do not claim complete offline browsing.
+
+
+### 17 November 2026 — Phase 1 public snapshot read integration
+
+- Added public adapters in `src/lib/offlineDirectoryAdapters.ts` for offline business/category/area/emergency records. Private account and owner fields are not reconstructed.
+- Public API reads now select the verified IndexedDB snapshot when `navigator.onLine` is false: businesses and related listings, categories, areas, emergency contacts, search/filter data and homepage directory sections. Safe public seed settings are used offline; uncached ads/news suggestions/product previews are omitted.
+- Public review, inquiry and suggestion submissions are explicitly rejected offline with a not-sent response. Business/ad telemetry and search logging are skipped. No local submission queue exists.
+- GitHub Actions CI run `44118681086` passed TypeScript, automated tests, production build and Edge Function checks for commit `76805d80a18c81257d5758aacf29ad6970dd5d18`.
+- Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded. Production browser-render check: `/offline-data` HTTP 200; download manager UI present.
+- Not verified yet: airplane-mode read flows, reload/deep-link, IndexedDB quota/transaction/concurrent-tab failure cases. App-shell and hashed lazy-chunk caching are still pending. The Service Worker was not modified.
+- No Supabase schema/data/RLS/migrations, existing business/user records, Cloudflare settings or live visitor workflows were changed.

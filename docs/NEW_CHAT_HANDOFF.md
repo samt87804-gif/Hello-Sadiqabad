@@ -81,9 +81,9 @@ You own the technical work:
 - Do not promise top rankings or a fixed time. Do not use fake searches, bots, click farms, fake reviews or purchased backlinks.
 
 ### Immediate next task — Offline-first PWA Phase 1
-Continue the active offline-first implementation from `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`, following `docs/PROJECT_WORKING_RULES.md` on every change. Phase 0 is complete. Phase 1 has an initial IndexedDB public-snapshot store and explicit public-field mappers on `main` (commit `0460ecb3c6506d25f233bf17a316fb774a632b36`). CI run `44112311265` passed TypeScript, automated tests, production build and Edge Function checks; Pages deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` succeeded. The module is not yet connected to the application, so full offline behavior is not enabled.
+Continue the active offline-first implementation from `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`, following `docs/PROJECT_WORKING_RULES.md` on every change. Phase 0 is complete. Phase 1 now includes the IndexedDB public-snapshot store, `/offline-data` download manager, public read adapters and offline write guards. CI run `44118681086` passed TypeScript, automated tests, production build and Edge Function checks for commit `76805d80a18c81257d5758aacf29ad6970dd5d18`; Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded and the download manager route was browser-render verified HTTP 200.
 
-Next connect the saved snapshot to public directory reads, implement versioned app-shell/lazy-chunk caching and explicit online-only write guards. Add browser-level IndexedDB transaction, cancellation, quota and concurrent-tab tests. The `/offline-data` download manager is deployed and verified; `/offline` remains the existing emergency fallback route. Do not mark Phase 1 complete until every acceptance gate passes. The Domain/SEO workstream remains documented in `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`; do not silently discard it, but keep offline-first as the current active task.
+Public business search/details, categories, areas, emergency contacts and homepage directory sections now select the saved snapshot when the browser is offline. Public reviews, inquiries and suggestions are explicitly rejected offline; telemetry is skipped and nothing is queued. Online behavior still uses Supabase as the source of truth. The next task is safe versioned app-shell/lazy-chunk caching, followed by browser-level IndexedDB transaction/quota/concurrency tests and real offline reload/deep-link acceptance. The `/offline` route remains the existing emergency fallback. Do not mark Phase 1 complete until every acceptance gate passes. The Domain/SEO workstream remains documented in `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`; do not silently discard it, but keep offline-first as the current active task.
 
 
 ## Latest verified work — 17 November 2026
@@ -167,3 +167,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Route correction: `/offline` is the existing emergency fallback and remains untouched; the new download manager is `/offline-data`.
 - CI run `44114620453` passed for the strict business-source helper. Cloudflare deployment `ba819f2f-2881-44d8-9606-54285abe6dbd` succeeded. Browser-render verification: `/offline-data` HTTP 200 with the download UI; `/offline` HTTP 200 with emergency call links. CI run `44114989998` for the final route-string commit was pending at this update.
 - Remaining Phase 1 work: wire saved data into offline public routes, app-shell/lazy-chunk caching, online-only write guards and browser-level IndexedDB tests. Do not call the site fully offline yet.
+
+
+### Offline-first continuation — public snapshot read integration (17 November 2026)
+
+- Added `src/lib/offlineDirectoryAdapters.ts` to reconstruct the existing public UI row shapes from the explicit offline allow-list. Owner IDs, email and private account fields remain null/absent.
+- Updated `src/lib/api.ts`: when `navigator.onLine` is false, public business reads, active categories/areas and emergency contacts use the verified IndexedDB snapshot. Homepage public settings fall back to safe seed defaults; non-essential ads/news suggestions and product previews are omitted offline.
+- Public review, inquiry and suggestion submissions return a clear not-sent result while offline. Business/ad telemetry and search logging are skipped. No payloads are stored or queued.
+- CI run `44118681086` passed TypeScript, automated tests, production build, and Edge Function checks. Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded for commit `76805d80a18c81257d5758aacf29ad6970dd5d18`. Browser-render check confirmed `/offline-data` HTTP 200 and the download manager UI.
+- Not yet verified: true airplane-mode browsing, offline reload/deep-links, browser-level IndexedDB failure/quota/concurrency behavior. The Service Worker still caches only `offline.html`; app-shell and hashed lazy-chunk caching is the next task.
+- No Supabase schema, migration, row, RLS policy, Cloudflare setting or Service Worker behavior was changed.
