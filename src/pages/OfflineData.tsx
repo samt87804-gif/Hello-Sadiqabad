@@ -54,6 +54,7 @@ export function OfflineData() {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState('');
   const [estimatedBytes, setEstimatedBytes] = useState(0);
+  const [storageUsage, setStorageUsage] = useState<{ usage: number; quota: number } | null>(null);
   const [metadata, setMetadata] = useState<OfflineSnapshotMetadata | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -65,6 +66,7 @@ export function OfflineData() {
 
     if (isOfflineDirectorySupported()) {
       getOfflineDirectoryMetadata().then(setMetadata).catch(() => setMetadata(null));
+      void refreshStorageEstimate();
     }
 
     return () => {
@@ -77,7 +79,25 @@ export function OfflineData() {
   const busy = status === 'downloading' || status === 'saving';
   const supported = isOfflineDirectorySupported();
 
+  const refreshStorageEstimate = async () => {
+    if (typeof navigator === 'undefined' || !navigator.storage?.estimate) {
+      setStorageUsage(null);
+      return;
+    }
+    try {
+      const estimate = await navigator.storage.estimate();
+      if (typeof estimate.usage === 'number' && typeof estimate.quota === 'number' && estimate.quota > 0) {
+        setStorageUsage({ usage: estimate.usage, quota: estimate.quota });
+      } else {
+        setStorageUsage(null);
+      }
+    } catch {
+      setStorageUsage(null);
+    }
+  };
+
   const startDownload = async () => {
+    if (controllerRef.current) return;
     if (!isOnline) {
       setStatus('error');
       setMessage(isUrdu ? 'آف لائن ڈیٹا ڈاؤن لوڈ کرنے کے لیے پہلے انٹرنیٹ سے منسلک ہوں۔' : 'Connect to the internet before downloading the offline directory.');
@@ -118,6 +138,8 @@ export function OfflineData() {
       if (!emergency.items.length) throw new Error('No active emergency contacts were returned. The previous offline package was kept.');
       setProgress(80);
 
+      if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
+
       const snapshot = {
         schema_version: OFFLINE_DIRECTORY_SCHEMA_VERSION,
         downloaded_at: new Date().toISOString(),
@@ -137,8 +159,10 @@ export function OfflineData() {
       setMessage(isUrdu ? 'ڈیٹا کی تصدیق مکمل؛ محفوظ کیا جا رہا ہے…' : 'Data validated. Saving the new offline package…');
       setStatus('saving');
 
+      if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
       const saved = await saveOfflineDirectorySnapshot(snapshot);
       setMetadata(saved);
+      await refreshStorageEstimate();
       setProgress(100);
       setStatus('success');
       setMessage(isUrdu ? 'آف لائن ڈائریکٹری کامیابی سے محفوظ ہو گئی۔' : 'Your offline directory was saved successfully.');
@@ -170,8 +194,8 @@ export function OfflineData() {
           </h1>
           <p className="text-sm leading-6 text-on-surface-variant">
             {isUrdu
-              ? 'ایک بار عوامی ڈائریکٹری ڈاؤن لوڈ کریں، پھر محفوظ شدہ بنیادی معلومات انٹرنیٹ کے بغیر بھی دستیاب ہوں گی۔'
-              : 'Download the public directory once while online. The saved core directory package will be available for offline browsing after offline support is connected to the public pages.'}
+              ? 'ایک بار عوامی ڈائریکٹری ڈاؤن لوڈ کریں، پھر محفوظ شدہ بنیادی کاروباری معلومات انٹرنیٹ کے بغیر بھی دیکھی جا سکیں گی۔ کچھ تصاویر اور تازہ مواد کے لیے انٹرنیٹ درکار ہو سکتا ہے۔'
+              : 'Download the public directory once while online. Saved core listing data can then be browsed without internet; some photos, news and other live content may still need a connection.'}
           </p>
         </header>
 
@@ -230,6 +254,16 @@ export function OfflineData() {
             )}
           </div>
 
+          {storageUsage && (
+            <p className="text-xs text-on-surface-variant">
+              {isUrdu ? 'اس براؤزر کا استعمال شدہ اسٹوریج: ' : 'Browser storage currently used: '}
+              <strong>{formatBytes(storageUsage.usage)}</strong>
+              {' / '}
+              <strong>{formatBytes(storageUsage.quota)}</strong>
+              <span> ({Math.round((storageUsage.usage / storageUsage.quota) * 100)}%)</span>
+            </p>
+          )}
+
           {estimatedBytes > 0 && (
             <p className="text-xs text-on-surface-variant">
               {isUrdu ? 'محفوظ کیے جانے والے ڈیٹا کا تخمینہ: ' : 'Estimated package size: '}
@@ -270,8 +304,8 @@ export function OfflineData() {
           <strong className="text-on-surface">{isUrdu ? 'اہم حفاظتی وضاحت' : 'Important privacy and usage note'}</strong>
           <p>
             {isUrdu
-              ? 'صرف عوامی کاروباری فہرستیں، فعال کیٹیگریز، علاقے اور ایمرجنسی نمبرز محفوظ ہوتے ہیں۔ ایڈمن، مالک اکاؤنٹس، لاگ اِن سیشنز، نجی پروفائلز اور فارم جمع کرانے کا ڈیٹا محفوظ نہیں ہوتا۔ فارم جمع کرانے کے لیے انٹرنیٹ ضروری رہے گا۔'
-              : 'Only public business listings, active categories, areas and emergency contacts are included. Admin/owner portal data, login sessions, private profiles and form submissions are never stored in this package. Submissions will continue to require an internet connection.'}
+              ? 'صرف عوامی کاروباری فہرستیں، فعال کیٹیگریز، علاقے اور ایمرجنسی نمبرز محفوظ ہوتے ہیں۔ تصاویر اور کچھ تازہ مواد آف لائن دستیاب نہ بھی ہوں۔ ایڈمن، مالک اکاؤنٹس، لاگ اِن سیشنز، نجی پروفائلز اور فارم جمع کرانے کا ڈیٹا محفوظ نہیں ہوتا۔ فارم جمع کرانے کے لیے انٹرنیٹ ضروری رہے گا۔'
+              : 'Only public business listings, active categories, areas and emergency contacts are included. Some photos and live content may remain unavailable offline. Admin/owner portal data, login sessions, private profiles and form submissions are never stored in this package. Submissions will continue to require an internet connection.'}
           </p>
         </aside>
       </div>
