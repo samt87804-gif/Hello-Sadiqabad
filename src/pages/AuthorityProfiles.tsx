@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Building2, ExternalLink, Facebook, Instagram, Mail, MapPin, Phone, ShieldCheck, UserRound } from 'lucide-react';
+import { ArrowLeft, Building2, ExternalLink, Facebook, Instagram, Mail, MapPin, Maximize2, Minimize2, Phone, Printer, ShieldCheck, UserRound } from 'lucide-react';
 import type { AuthorityProfileRow } from '../types/database';
 import type { BusinessPublicView } from '../types/directory';
 import { fetchAuthorityProfiles, fetchBusinessesByIds } from '../lib/api';
@@ -21,6 +21,7 @@ export function AuthorityProfiles() {
   const [profiles, setProfiles] = useState<AuthorityProfileRow[]>([]);
   const [businesses, setBusinesses] = useState<BusinessPublicView[]>([]);
   const [loading, setLoading] = useState(true);
+  const [presentationMode, setPresentationMode] = useState(false);
   const profile = useMemo(() => profiles.find((item) => item.slug === slug), [profiles, slug]);
 
   useEffect(() => {
@@ -51,12 +52,21 @@ export function AuthorityProfiles() {
   const heading = lang === 'ur' ? 'صادق آباد کی شخصیات اور اتھارٹی پروفائلز' : 'Sadiqabad Authority Profiles';
 
   return (
-    <AppShell>
-      <Container className="py-6 space-y-5">
-        <header className="rounded-3xl bg-primary text-on-primary p-5 sm:p-7 space-y-3">
+    <AppShell hideHeader={presentationMode} hideFooter={presentationMode} hideBottomNav={presentationMode}>
+      <Container className={presentationMode ? 'min-h-screen py-6 sm:py-10 px-4 sm:px-8 space-y-6' : 'py-6 space-y-5'}>
+        <header className={presentationMode ? 'rounded-3xl bg-gradient-to-br from-slate-950 via-primary to-slate-900 text-white p-6 sm:p-10 space-y-5 shadow-2xl' : 'rounded-3xl bg-primary text-on-primary p-5 sm:p-7 space-y-3'}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2"><ShieldCheck className="w-7 h-7" /><h1 className="text-xl sm:text-2xl font-extrabold">{profile ? profileText(lang, profile.name_en, profile.name_ur) : heading}</h1></div>
-            {profile && <Link to="/authority-profiles" className="text-xs font-bold underline inline-flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5" />{lang === 'ur' ? 'تمام پروفائلز' : 'All profiles'}</Link>}
+            {profile && <div className="flex flex-wrap items-center gap-2">
+              <button type="button" onClick={() => setPresentationMode((value) => !value)} className="inline-flex items-center gap-1.5 rounded-xl bg-white/15 hover:bg-white/25 px-3 py-2 text-xs font-bold text-white">
+                {presentationMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                {presentationMode ? (lang === 'ur' ? 'عام منظر پر واپس' : 'Exit presentation') : (lang === 'ur' ? 'پریزنٹیشن موڈ' : 'Presentation mode')}
+              </button>
+              {!presentationMode && <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-1.5 rounded-xl bg-white/15 hover:bg-white/25 px-3 py-2 text-xs font-bold text-white">
+                <Printer className="w-4 h-4" />{lang === 'ur' ? 'پرنٹ / PDF' : 'Print / Save PDF'}
+              </button>}
+              {!presentationMode && <Link to="/authority-profiles" className="text-xs font-bold underline inline-flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5" />{lang === 'ur' ? 'تمام پروفائلز' : 'All profiles'}</Link>}
+            </div>}
           </div>
           {!profile && <p className="text-sm text-white/85">{lang === 'ur' ? 'پریس کلب، وکلا، غلہ منڈی، آٹو یونین اور سرکاری شعبوں کے نمائندوں کے عوامی تعارف۔' : 'Public profiles of union chairmen, association presidents, civic representatives and government officers serving Sadiqabad.'}</p>}
           <div className="flex flex-wrap gap-2">
@@ -68,20 +78,20 @@ export function AuthorityProfiles() {
         {loading ? <Card className="p-8 text-center text-sm text-on-surface-variant">{lang === 'ur' ? 'پروفائلز لوڈ ہو رہی ہیں…' : 'Loading authority profiles…'}</Card> :
           profile ? (
             <div className="space-y-4">
-              <Card className="overflow-hidden">
-                <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
-                  <div className="bg-surface-container-low min-h-[260px] md:min-h-[340px]">
-                    {profile.photo_url ? <ImageWithFallback src={profile.photo_url} alt={profile.name_en} className="w-full h-full min-h-[260px] md:min-h-[340px] object-cover" /> : <div className="w-full h-full min-h-[260px] flex items-center justify-center"><UserRound className="w-20 h-20 text-outline" /></div>}
+              <Card className={presentationMode ? 'overflow-hidden shadow-2xl border-0' : 'overflow-hidden'}>
+                <div className={presentationMode ? 'grid grid-cols-1 lg:grid-cols-[minmax(320px,38%)_1fr]' : 'grid grid-cols-1 md:grid-cols-[280px_1fr]'}>
+                  <div className={presentationMode ? 'bg-surface-container-low min-h-[320px] lg:min-h-[68vh]' : 'bg-surface-container-low min-h-[260px] md:min-h-[340px]'}>
+                    {profile.photo_url ? <ImageWithFallback src={profile.photo_url} alt={profile.name_en} className={presentationMode ? 'w-full h-full min-h-[320px] lg:min-h-[68vh] object-cover' : 'w-full h-full min-h-[260px] md:min-h-[340px] object-cover'} /> : <div className={presentationMode ? 'w-full h-full min-h-[320px] flex items-center justify-center' : 'w-full h-full min-h-[260px] flex items-center justify-center'}><UserRound className="w-20 h-20 text-outline" /></div>}
                   </div>
-                  <div className="p-5 sm:p-7 space-y-3">
+                  <div className={presentationMode ? 'p-6 sm:p-10 lg:p-12 space-y-5 flex flex-col justify-center' : 'p-5 sm:p-7 space-y-3'}>
                     <div className="flex flex-wrap items-center gap-2">
                       {profile.show_status && (profile.status_label_en || profile.status_label_ur) && <Badge variant="success">{profileText(lang, profile.status_label_en, profile.status_label_ur)}</Badge>}
                       <Badge variant="neutral">{lang === 'ur' ? 'صادق آباد' : 'Sadiqabad'}</Badge>
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-on-surface">{profileText(lang, profile.name_en, profile.name_ur)}</h2>
-                    {(profile.designation_en || profile.designation_ur) && <p className="text-base font-bold text-primary">{profileText(lang, profile.designation_en, profile.designation_ur)}</p>}
+                    <h2 className={presentationMode ? 'text-3xl sm:text-5xl lg:text-6xl font-extrabold text-on-surface leading-tight' : 'text-2xl sm:text-3xl font-extrabold text-on-surface'}>{profileText(lang, profile.name_en, profile.name_ur)}</h2>
+                    {(profile.designation_en || profile.designation_ur) && <p className={presentationMode ? 'text-xl sm:text-2xl font-bold text-primary' : 'text-base font-bold text-primary'}>{profileText(lang, profile.designation_en, profile.designation_ur)}</p>}
                     {profile.show_organization && (profile.organization_en || profile.organization_ur) && <p className="flex items-center gap-2 text-sm text-on-surface-variant"><Building2 className="w-4 h-4 shrink-0" />{profileText(lang, profile.organization_en, profile.organization_ur)}</p>}
-                    {profile.show_authority && (profile.authority_en || profile.authority_ur) && <section className="pt-2"><h3 className="text-sm font-extrabold mb-1">{lang === 'ur' ? 'اختیارات اور ذمہ داریاں' : 'Authority & responsibilities'}</h3><p className="text-sm leading-7 text-on-surface-variant whitespace-pre-line">{profileText(lang, profile.authority_en, profile.authority_ur)}</p></section>}
+                    {profile.show_authority && (profile.authority_en || profile.authority_ur) && <section className="pt-2"><h3 className="text-sm font-extrabold mb-1">{lang === 'ur' ? 'اختیارات اور ذمہ داریاں' : 'Authority & responsibilities'}</h3><p className={presentationMode ? 'text-base sm:text-lg leading-8 text-on-surface-variant whitespace-pre-line' : 'text-sm leading-7 text-on-surface-variant whitespace-pre-line'}>{profileText(lang, profile.authority_en, profile.authority_ur)}</p></section>}
                     {profile.show_bio && (profile.bio_en || profile.bio_ur) && <section className="pt-1"><h3 className="text-sm font-extrabold mb-1">{lang === 'ur' ? 'تعارف' : 'Profile introduction'}</h3><p className="text-sm leading-7 text-on-surface-variant whitespace-pre-line">{profileText(lang, profile.bio_en, profile.bio_ur)}</p></section>}
                     {profile.show_contact && <div className="flex flex-wrap gap-2 pt-2">
                       {profile.phone && <a href={buildTelUrl(profile.phone)} className="rounded-xl bg-primary text-on-primary px-3 py-2 text-xs font-bold inline-flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />{profile.phone}</a>}
@@ -90,10 +100,12 @@ export function AuthorityProfiles() {
                       {profile.facebook_url && <a href={profile.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="rounded-xl bg-surface-container p-2.5"><Facebook className="w-4 h-4" /></a>}
                       {profile.instagram_url && <a href={profile.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="rounded-xl bg-surface-container p-2.5"><Instagram className="w-4 h-4" /></a>}
                     </div>}
+                    {profile.verified_at && <p className="text-[11px] text-on-surface-variant">{lang === 'ur' ? 'ماخذ کی آخری تصدیق' : 'Source last checked'}: {new Date(profile.verified_at).toLocaleDateString(lang === 'ur' ? 'ur-PK' : 'en-PK')}</p>}
                     {profile.source_url && <a href={profile.source_url} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary underline inline-flex items-center gap-1"><ExternalLink className="w-3 h-3" />{lang === 'ur' ? 'حوالہ / ماخذ' : 'Reference source'}</a>}
                   </div>
                 </div>
               </Card>
+              {presentationMode && <p className="text-center text-xs text-on-surface-variant">{lang === 'ur' ? 'عوامی معلومات — تازہ ترین تفصیل کے لیے متعلقہ ادارے کے سرکاری ماخذ سے رجوع کریں۔' : 'Public information profile · Please refer to the linked official source for the latest details.'}</p>}
               {profile.show_businesses && businesses.length > 0 && <section className="space-y-3"><h2 className="text-lg font-extrabold">{lang === 'ur' ? 'منسلک کاروبار' : 'Associated businesses'}</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{businesses.map((business) => <Link key={business.id} to={`/business/${business.slug}`} className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-3 flex items-center gap-3 hover:border-primary/50 transition-colors"><div className="w-14 h-14 rounded-xl overflow-hidden bg-surface-container shrink-0"><ImageWithFallback src={business.logo_url || business.cover_url} alt={business.name_en} className="w-full h-full object-cover" /></div><div className="min-w-0"><p className="text-sm font-bold truncate">{business.name_en}</p><p className="text-xs text-on-surface-variant truncate"><MapPin className="inline w-3 h-3" /> {business.area?.name_en || 'Sadiqabad'}</p></div></Link>)}</div></section>}
             </div>
           ) : slug ? (
