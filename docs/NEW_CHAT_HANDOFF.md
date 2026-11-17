@@ -83,7 +83,7 @@ You own the technical work:
 ### Immediate next task — Offline-first PWA Phase 1
 Continue the active offline-first implementation from `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`, following `docs/PROJECT_WORKING_RULES.md` on every change. Phase 0 is complete. Phase 1 now includes the IndexedDB public-snapshot store, `/offline-data` download manager, public read adapters and offline write guards. CI run `44118681086` passed TypeScript, automated tests, production build and Edge Function checks for commit `76805d80a18c81257d5758aacf29ad6970dd5d18`; Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded and the download manager route was browser-render verified HTTP 200.
 
-Public business search/details, categories, areas, emergency contacts and homepage directory sections now select the saved snapshot when the browser is offline. Public reviews, inquiries and suggestions are explicitly rejected offline; telemetry is skipped and nothing is queued. Online behavior still uses Supabase as the source of truth. The next task is safe versioned app-shell/lazy-chunk caching, followed by browser-level IndexedDB transaction/quota/concurrency tests and real offline reload/deep-link acceptance. The `/offline` route remains the existing emergency fallback. Do not mark Phase 1 complete until every acceptance gate passes. The Domain/SEO workstream remains documented in `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`; do not silently discard it, but keep offline-first as the current active task.
+Public business search/details, categories, areas, emergency contacts and homepage directory sections now select the saved snapshot when the browser is offline. Public reviews, inquiries and suggestions are explicitly rejected offline; telemetry is skipped and nothing is queued. Online behavior still uses Supabase as the source of truth. The initial conservative Service Worker shell/lazy-chunk runtime caching is now implemented and deployed (details below). Next: browser-level IndexedDB transaction/quota/concurrency tests, actual offline reload/deep-link and cache inspection, plus stale-chunk/update/rollback acceptance. The `/offline` route remains the existing emergency fallback. Do not mark Phase 1 complete until every acceptance gate passes. The Domain/SEO workstream remains documented in `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`; do not silently discard it, but keep offline-first as the current active task.
 
 
 ## Latest verified work — 17 November 2026
@@ -177,3 +177,15 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - CI run `44118681086` passed TypeScript, automated tests, production build, and Edge Function checks. Cloudflare Pages deployment `e3d48ab7-b202-43a2-8184-385ec0520686` succeeded for commit `76805d80a18c81257d5758aacf29ad6970dd5d18`. Browser-render check confirmed `/offline-data` HTTP 200 and the download manager UI.
 - Not yet verified: true airplane-mode browsing, offline reload/deep-links, browser-level IndexedDB failure/quota/concurrency behavior. The Service Worker still caches only `offline.html`; app-shell and hashed lazy-chunk caching is the next task.
 - No Supabase schema, migration, row, RLS policy, Cloudflare setting or Service Worker behavior was changed.
+
+
+## Latest offline-first continuation — Service Worker caching (17 November 2026)
+
+- Re-read permanent rules and the offline implementation plan; audited `public/sw.js`, `src/main.tsx`, `index.html`, manifest, install prompt and React Router lazy routes before editing.
+- `public/sw.js` now pre-caches the SPA entry and existing emergency fallback, uses network-first navigation, falls back to the cached SPA entry for app routes, and caches successful fingerprinted same-origin Vite JS/CSS chunks on first use.
+- API/function/Supabase traffic and non-fingerprinted assets remain outside the runtime cache. `/offline` keeps the existing emergency fallback.
+- No `skipWaiting()`, `clients.claim()` or cache deletion. The worker deliberately reuses `hs-sadiqabad-shell-v3` because the currently deployed v3 worker deletes every other cache key on activation; a new cache key would be unsafe on rollback.
+- Commits: `5b83a8c16fb9a0a828236e70420fb2399b399cfa` and `5cb77a8bf47089f6c755cf03bb8df82f1ed814ff`.
+- CI runs `44120063673` and `44120165303` passed all configured checks. Final Cloudflare Pages production deployment `4c4647d1-e582-4250-8704-a258e15c3089` succeeded.
+- Not verified yet: browser/device Service Worker lifecycle, actual cache contents, offline reload/deep-link, previously visited lazy route, stale chunk/update/rollback, IndexedDB quota/concurrency and airplane-mode acceptance. Phase 1 remains in progress; do not claim full offline browsing.
+- No Supabase schema/data/RLS/migrations, Cloudflare settings, install manifest/prompt, auth/owner/admin workflow or production business/user records were changed.
