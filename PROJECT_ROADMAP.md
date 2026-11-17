@@ -233,3 +233,9 @@ Batch 3 — completed (16 November 2026):
 - [x] Keep normal waiting-worker lifecycle: no `skipWaiting()`, no `clients.claim()`, and no old-cache deletion. Reuse current v3 cache key because the deployed previous worker deletes all other cache keys during rollback.
 - [x] CI runs 44120063673 and 44120165303 passed; final production Pages deployment 4c4647d1-e582-4250-8704-a258e15c3089 succeeded.
 - [ ] Browser-level offline reload/deep-link, cache inspection, stale chunk, worker update/rollback and IndexedDB quota/concurrency acceptance tests.
+
+  - [x] Generate a build-time fingerprinted JS/CSS manifest and pre-cache the actual Vite app bundles on Service Worker install to support direct public-route offline navigation. Production manifest endpoint verified HTTP 200 with 75 assets (73 JS, 2 CSS); Pages deployment 9c5e9413-98d1-4568-9b3f-fe912c3e1638 succeeded.
+  - [x] Strengthen offline package validation for malformed nested rows, business-offer ownership, emergency-contact field types and nested private fields; add regression tests.
+  - [x] Show browser storage usage/quota where supported and clarify that some photos/news/live content may still need internet. Production /offline-data UI verified with Browser Rendering.
+  - [ ] Resolve the independent high/critical npm audit CI gate. TypeScript, tests, production build and Edge Function checks passed on run 44143421511, but overall CI remains failed at npm audit --audit-level=high; exact advisory needs investigation before dependency changes.
+  - [ ] Actual IndexedDB quota/transaction/concurrent-tab tests and real-browser Service Worker Cache Storage/offline deep-link/stale-chunk/rollback acceptance remain pending.
