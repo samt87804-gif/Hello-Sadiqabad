@@ -4,6 +4,7 @@ const CACHE_NAME = 'hs-sadiqabad-shell-v3';
 const APP_SHELL_URL = '/';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_MANIFEST_URL = '/offline-precache.json';
+const PRECACHE_CONCURRENCY = 4;
 
 // Keep the emergency fallback, SPA entry document and fingerprinted route assets
 // available. The build generates a manifest from the actual Vite output; this avoids
@@ -24,7 +25,10 @@ self.addEventListener('install', (event) => {
         const assets = Array.isArray(manifest)
           ? manifest.filter((path) => typeof path === 'string' && /^\/assets\/.+-[A-Za-z0-9_-]{6,}\.(?:js|css)$/.test(path))
           : [];
-        await Promise.allSettled(assets.map((path) => cache.add(path)));
+        for (let index = 0; index < assets.length; index += PRECACHE_CONCURRENCY) {
+          const batch = assets.slice(index, index + PRECACHE_CONCURRENCY);
+          await Promise.allSettled(batch.map((path) => cache.add(path)));
+        }
       }
     } catch {
       // Keep installation resilient; missing chunks will still use normal network fetches.
