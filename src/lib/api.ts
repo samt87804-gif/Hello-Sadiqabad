@@ -1,5 +1,15 @@
 import { getSupabaseClient, supabaseConfig } from './supabase';
 import {
+  getActiveOfflineDirectorySnapshot,
+  type OfflineDirectorySnapshot,
+} from './offlineDirectory';
+import {
+  offlineAreaToRow,
+  offlineBusinessToPublicView,
+  offlineCategoryToRow,
+  offlineEmergencyContactToRow,
+} from './offlineDirectoryAdapters';
+import {
   SEED_ADS,
   SEED_ANNOUNCEMENTS,
   SEED_AREAS,
@@ -84,6 +94,16 @@ import type {
 } from '../types/directory';
 
 const DEMO_DB_KEY = 'hs_demo_db_v2';
+
+function isBrowserOffline(): boolean {
+  return typeof navigator !== 'undefined' && !navigator.onLine;
+}
+
+async function requireOfflineSnapshot(): Promise<OfflineDirectorySnapshot> {
+  const snapshot = await getActiveOfflineDirectorySnapshot();
+  if (!snapshot) throw new Error('No saved offline directory is available on this device. Connect to the internet and download it first.');
+  return snapshot;
+}
 
 export interface DemoDbState {
   city: CityRow;
@@ -301,6 +321,7 @@ function appendAuditDemo(
 // ---------------------------------------------------------------------------
 
 export async function fetchSiteSettings(): Promise<SiteSettingsMap> {
+  if (isBrowserOffline()) return parseSiteSettings(SEED_SITE_SETTINGS);
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('site_settings').select('*').eq('is_public', true);
@@ -342,6 +363,11 @@ export async function fetchCategoriesWithCounts(): Promise<CategoryWithChildren[
 }
 
 export async function fetchAllCategories(includeInactive = false): Promise<CategoryRow[]> {
+  if (isBrowserOffline()) {
+    if (includeInactive) throw new Error('Inactive categories are not part of the public offline directory.');
+    const snapshot = await requireOfflineSnapshot();
+    return snapshot.categories.map(offlineCategoryToRow).sort((a, b) => a.sort_order - b.sort_order || a.name_en.localeCompare(b.name_en));
+  }
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('categories').select('*').order('sort_order');
@@ -359,6 +385,11 @@ export async function fetchAllCategories(includeInactive = false): Promise<Categ
 }
 
 export async function fetchAllAreas(includeInactive = false): Promise<AreaRow[]> {
+  if (isBrowserOffline()) {
+    if (includeInactive) throw new Error('Inactive areas are not part of the public offline directory.');
+    const snapshot = await requireOfflineSnapshot();
+    return snapshot.areas.map(offlineAreaToRow).sort((a, b) => a.name_en.localeCompare(b.name_en));
+  }
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('areas').select('*').order('name_en');
@@ -442,6 +473,10 @@ function isDirectoryBusinessOpenNow(business:BusinessPublicView):boolean {
   return previousRanges.some((range)=>toMinutes(range.close)<toMinutes(range.open)&&minuteNow<toMinutes(range.close));
 }
 async function fetchGitHubBusinesses():Promise<BusinessPublicView[]> {
+  if (isBrowserOffline()) {
+    const snapshot = await requireOfflineSnapshot();
+    return snapshot.businesses.map(offlineBusinessToPublicView);
+  }
   if(githubBusinessCache)return githubBusinessCache;
   if(!githubBusinessRequest)githubBusinessRequest=loadGitHubBusinesses();
   try{return await githubBusinessRequest;}finally{githubBusinessRequest=null;}
@@ -637,7 +672,7 @@ export async function searchBusinesses(
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
   const combined=allBusinesses.filter((business)=>matchesGitHubBusiness(business,filters));
   const client=getSupabaseClient();
-  if(client&&options.logSearch!==false){
+  if(client&&!isBrowserOffline()&&options.logSearch!==false){
     const term=filters.q?.trim()||(filters.category?'category:'+filters.category:filters.area?'area:'+filters.area:'browse');
     void client.functions.invoke('track-event',{body:{event_type:'search',query:term.slice(0,120),
       filters:{category:filters.category??null,area:filters.area??null,open:Boolean(filters.open),verified:Boolean(filters.verified),
@@ -664,7 +699,9 @@ export async function fetchSearchSuggestions(query:string,options:{signal?:Abort
   const term=normalizeDirectorySearchText(query);if(term.length<2)return [];
   const rawTerm=query.trim().toLocaleLowerCase();
   const [categories,areas,businesses,news,emergency]=await Promise.all([
-    fetchAllCategories(),fetchAllAreas(),fetchGitHubBusinesses(),fetchPublishedNewsArticles(24),fetchEmergencyContacts(),
+    fetchAllCategories(),fetchAllAreas(),fetchGitHubBusinesses(),
+    isBrowserOffline() ? Promise.resolve([] as NewsArticleRow[]) : fetchPublishedNewsArticles(24),
+    fetchEmergencyContacts(),
   ]);
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
   const results:SearchSuggestionItem[]=[];
@@ -710,6 +747,10 @@ export async function fetchPublicOwnerProfile(ownerId: string): Promise<import('
 }
 
 export async function fetchEmergencyContacts(): Promise<{ items: EmergencyContactRow[]; fromCache: boolean; cachedAt: string | null }> {
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    if (snapshot) return { items: snapshot.emergency_contacts.map(offlineEmergencyContactToRow), fromCache: true, cachedAt: snapshot.downloaded_at };
+  }
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('emergency_contacts').select('*').order('sort_order');
@@ -855,6 +896,7 @@ export async function fetchAnnouncements(activeOnly = true): Promise<Announcemen
 }
 
 export async function fetchActiveAds(placement?: AdPlacement): Promise<AdRow[]> {
+  if (isBrowserOffline()) return [];
   const today = todayDateStr();
   const client = getSupabaseClient();
   if (client) {
@@ -898,6 +940,7 @@ export async function trackBusinessEvent(
   adId?: string
 ): Promise<void> {
   const sessionId = getOrCreateSessionId();
+  if (isBrowserOffline()) return;
   const client = getSupabaseClient();
   const isDatabaseBusinessId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId);
   if (client && isDatabaseBusinessId) {
@@ -935,6 +978,7 @@ export async function trackBusinessEvent(
 
 export async function trackAdImpression(adId: string): Promise<void> {
   if (!adId) return;
+  if (isBrowserOffline()) return;
   const client = getSupabaseClient();
   if (client) {
     try {
@@ -962,6 +1006,7 @@ export async function submitPublicReview(input: {
   website_hp?: string;
 }): Promise<EdgeFunctionResult> {
   if (input.website_hp) return { ok: true }; // honeypot silent ignore
+  if (isBrowserOffline()) return { ok: false, error: 'Connect to the internet before submitting. Your information has not been sent or saved.' };
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.functions.invoke('submit-review', {
@@ -1023,6 +1068,7 @@ export async function submitPublicInquiry(input: {
   website_hp?: string;
 }): Promise<EdgeFunctionResult> {
   if (input.website_hp) return { ok: true };
+  if (isBrowserOffline()) return { ok: false, error: 'Connect to the internet before submitting. Your information has not been sent or saved.' };
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.functions.invoke('submit-inquiry', {
@@ -1074,6 +1120,7 @@ export async function submitPublicSuggestion(input: {
   website_hp?: string;
 }): Promise<EdgeFunctionResult> {
   if (input.website_hp) return { ok: true };
+  if (isBrowserOffline()) return { ok: false, error: 'Connect to the internet before submitting. Your information has not been sent or saved.' };
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.functions.invoke('submit-suggestion', {
@@ -1308,6 +1355,7 @@ export async function fetchPublicOwnerProfileBusinesses(ownerId: string): Promis
 }
 
 export async function fetchBusinessProducts(businessId: string): Promise<ProductRow[]> {
+  if (isBrowserOffline()) return [];
   const client = getSupabaseClient();
   if (!client || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId)) {
     return [];
