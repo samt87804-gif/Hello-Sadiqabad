@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertCircle, Copy, MoonStar, Plus, Trash2 } from 'lucide-react';
 import type { DayKey, OpeningHoursJson } from '../../types/database';
 import {
@@ -24,12 +24,17 @@ export function HoursEditor({
   isOpen24h,
   onChange,
   onChange24h,
+  showApplyToAll = false,
 }: {
   value: OpeningHoursJson;
   isOpen24h: boolean;
   onChange: (next: OpeningHoursJson) => void;
   onChange24h: (val: boolean) => void;
+  showApplyToAll?: boolean;
 }) {
+  const [bulkOpen, setBulkOpen] = useState('09:00');
+  const [bulkClose, setBulkClose] = useState('22:00');
+  const [bulkError, setBulkError] = useState('');
   const rangeError = !isOpen24h ? validateOpeningHoursRanges(value) : null;
 
   const toggleDay = (day: DayKey, openDay: boolean) => {
@@ -117,6 +122,61 @@ export function HoursEditor({
         >
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{rangeError}</span>
+        </div>
+      )}
+
+      {!isOpen24h && showApplyToAll && (
+        <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+          <div>
+            <p className="text-sm font-bold text-on-surface">Set the same hours for all days</p>
+            <p className="text-xs text-on-surface-variant">Choose opening and closing time, then apply. You can still edit any day separately below.</p>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1 text-xs font-semibold text-on-surface">
+              Opening time
+              <input
+                type="time"
+                value={bulkOpen}
+                onChange={(e) => { setBulkOpen(e.target.value); setBulkError(''); }}
+                className="h-10 px-3 rounded-lg border border-outline-variant bg-surface text-sm tabular-nums"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs font-semibold text-on-surface">
+              Closing time
+              <input
+                type="time"
+                value={bulkClose}
+                onChange={(e) => { setBulkClose(e.target.value); setBulkError(''); }}
+                className="h-10 px-3 rounded-lg border border-outline-variant bg-surface text-sm tabular-nums"
+              />
+            </label>
+            <Button
+              size="sm"
+              disabled={!bulkOpen || !bulkClose || bulkOpen >= bulkClose}
+              onClick={() => {
+                if (!bulkOpen || !bulkClose || bulkOpen >= bulkClose) {
+                  setBulkError('Closing time must be later than opening time.');
+                  return;
+                }
+                const range = { open: bulkOpen, close: bulkClose };
+                onChange({
+                  ...value,
+                  mon: [{ ...range }],
+                  tue: [{ ...range }],
+                  wed: [{ ...range }],
+                  thu: [{ ...range }],
+                  fri: [{ ...range }],
+                  sat: [{ ...range }],
+                  sun: [{ ...range }],
+                  is_24_7: false,
+                });
+                setBulkError('');
+              }}
+            >
+              Apply to All
+            </Button>
+          </div>
+          {bulkError && <p role="alert" className="text-xs font-semibold text-error">{bulkError}</p>}
         </div>
       )}
 
