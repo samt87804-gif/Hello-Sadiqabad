@@ -44,12 +44,13 @@ class FakeTransaction {
       this.releaseQueue = resolve;
     });
     previous.then(() => {
-      this.staged = new Map(
-        [...database.stores.entries()].map(([name, store]) => [
-          name,
-          { keyPath: store.keyPath, records: new Map(store.records) },
-        ]),
-      );
+      this.staged = new Map<string, StoreState>();
+      for (const [name, store] of database.stores.entries()) {
+        this.staged.set(name, {
+          keyPath: store.keyPath,
+          records: new Map(store.records),
+        });
+      }
       this.started = true;
       this.pump();
     });
