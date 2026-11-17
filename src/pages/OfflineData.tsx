@@ -154,7 +154,7 @@ export function OfflineData() {
         ? manifestValue.filter((path): path is string =>
             typeof path === 'string' &&
             path.startsWith('/assets/') &&
-            /-[A-Za-z0-9_-]{6,}\\.(?:js|css)$/.test(path)
+            /-[A-Za-z0-9_-]{6,}\.(?:js|css)$/.test(path)
           )
         : [];
       const cachedRequests = await cache.keys();
