@@ -127,3 +127,13 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Added a presentation-focused view for individual public profiles and a Print / Save PDF action. The view uses only existing public profile fields; no achievements, current role, or personal details are fabricated.
 - No database records or photos were modified. First real profile content and portrait still need owner/office-sourced review before publication.
 - Source commits: `586023450879ad9e9e62f0b650920183ed7c02d7`, `9c4a2e0b2fcd3ef9d71982f92fec8ed5c5bac3e0`, `2e52d746def4a24b74bc3f55a0d3c875093783b0`, `3cad70829d57e7c5970378d6c3e27723d54830f7`, `ca87af6e77ba87bedb260267093531e73b0be431`.
+
+
+## 17 November 2026 — Offline-first Phase 1 hardening (evening)
+
+- Build-generated offline-precache.json now lists 75 fingerprinted app assets (73 JS, 2 CSS) and the Service Worker pre-caches them during install, best-effort. Production endpoint and app page were Browser-Rendering checked; actual Cache Storage contents/offline navigation remain unverified.
+- Offline snapshot validation and tests cover malformed nested fields, business-offer references, emergency-contact field types and nested private data.
+- Offline download page now reports browser storage usage/quota when available and describes remaining media/live-content limitations accurately.
+- TypeScript/tests/build and Edge Function checks passed in CI run 44143421511; overall CI failed at the high/critical npm audit gate. The gate remains active and must be investigated; no dependency changes made.
+- Pages deployment 9c5e9413-98d1-4568-9b3f-fe912c3e1638 succeeded for commit d607c987748476cb82c806a57dd26401084ba587.
+- Phase 1 remains in progress pending actual IndexedDB quota/transaction/concurrency tests, Service Worker cache/lifecycle and offline deep-link/stale-chunk/rollback acceptance, online regression/write guard checks, and device airplane-mode testing.
