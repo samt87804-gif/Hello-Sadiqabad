@@ -145,7 +145,8 @@ interface StoredMetadata {
 
 let databasePromise: Promise<IDBDatabase> | null = null;
 
-function cloneCategory(category: CategoryRow): OfflineCategory {
+export function toOfflineCategory(category: CategoryRow): OfflineCategory {
+  if (!category.is_active) throw new Error('Only active public categories can be saved offline.');
   return {
     id: category.id,
     name_en: category.name_en,
@@ -159,7 +160,8 @@ function cloneCategory(category: CategoryRow): OfflineCategory {
   };
 }
 
-function cloneArea(area: AreaRow): OfflineArea {
+export function toOfflineArea(area: AreaRow): OfflineArea {
+  if (!area.is_active) throw new Error('Only active public areas can be saved offline.');
   return {
     id: area.id,
     name_en: area.name_en,
@@ -169,6 +171,7 @@ function cloneArea(area: AreaRow): OfflineArea {
 }
 
 export function toOfflineBusiness(source: BusinessPublicView): OfflineBusiness {
+  if (source.status !== 'published') throw new Error('Only published businesses can be saved offline.');
   return {
     id: source.id,
     name_en: source.name_en,
@@ -213,8 +216,8 @@ export function toOfflineBusiness(source: BusinessPublicView): OfflineBusiness {
     rating_count: source.rating_count ?? 0,
     created_at: source.created_at,
     updated_at: source.updated_at,
-    category: source.category ? cloneCategory(source.category) : null,
-    area: source.area ? cloneArea(source.area) : null,
+    category: source.category ? toOfflineCategory(source.category) : null,
+    area: source.area ? toOfflineArea(source.area) : null,
     active_offers: (source.active_offers ?? []).map((offer: OfferRow) => ({
       id: offer.id,
       business_id: offer.business_id,
@@ -240,6 +243,7 @@ export function toOfflineBusiness(source: BusinessPublicView): OfflineBusiness {
 }
 
 export function toOfflineEmergencyContact(source: EmergencyContactRow): OfflineEmergencyContact {
+  if (!source.is_active) throw new Error('Only active public emergency contacts can be saved offline.');
   return {
     id: source.id,
     name_en: source.name_en,
@@ -262,7 +266,13 @@ const FORBIDDEN_OFFLINE_KEYS = new Set([
   'updated_by',
   'assigned_to',
   'claimed_at',
+  'owner_name',
+  'owner_photo_url',
   'user_id',
+  'password',
+  'raw_user_meta_data',
+  'raw_app_meta_data',
+  'private_profile',
   'email',
   'auth_token',
   'access_token',
@@ -377,25 +387,34 @@ function transactionDone(transaction: IDBTransaction): Promise<void> {
   });
 }
 
-export async function getActiveOfflineDirectorySnapshot(): Promise<OfflineDirectorySnapshot | null> {
+async function readActiveStoredSnapshot(): Promise<{ generation: string; snapshot: OfflineDirectorySnapshot } | null> {
   const database = await openDatabase();
-  const transaction = database.transaction([META_STORE, SNAPSHOT_STORE], 'readonly');
-  const done = transactionDone(transaction);
-  const metadata = await requestResult<StoredMetadata | undefined>(
-    transaction.objectStore(META_STORE).get(ACTIVE_SNAPSHOT_KEY)
-  );
-  if (!metadata?.generation) {
-    await done;
-    return null;
-  }
-  const stored = await requestResult<StoredSnapshot | undefined>(
-    transaction.objectStore(SNAPSHOT_STORE).get(metadata.generation)
-  );
-  await done;
-  if (!stored) return null;
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([META_STORE, SNAPSHOT_STORE], 'readonly');
+    let result: { generation: string; snapshot: OfflineDirectorySnapshot } | null = null;
+    transaction.oncomplete = () => resolve(result);
+    transaction.onerror = () => reject(transaction.error ?? new Error('Unable to read offline storage.'));
+    transaction.onabort = () => reject(transaction.error ?? new Error('Offline storage read was aborted.'));
 
-  const { generation: _generation, ...snapshot } = stored;
-  return validateOfflineDirectorySnapshot(snapshot) ? snapshot : null;
+    const metadataRequest = transaction.objectStore(META_STORE).get(ACTIVE_SNAPSHOT_KEY);
+    metadataRequest.onsuccess = () => {
+      const metadata = metadataRequest.result as StoredMetadata | undefined;
+      if (!metadata?.generation) return;
+
+      const snapshotRequest = transaction.objectStore(SNAPSHOT_STORE).get(metadata.generation);
+      snapshotRequest.onsuccess = () => {
+        const stored = snapshotRequest.result as StoredSnapshot | undefined;
+        if (!stored) return;
+        const { generation, ...snapshot } = stored;
+        if (validateOfflineDirectorySnapshot(snapshot)) result = { generation, snapshot };
+      };
+    };
+  });
+}
+
+export async function getActiveOfflineDirectorySnapshot(): Promise<OfflineDirectorySnapshot | null> {
+  const active = await readActiveStoredSnapshot();
+  return active?.snapshot ?? null;
 }
 
 export async function saveOfflineDirectorySnapshot(
@@ -416,14 +435,21 @@ export async function saveOfflineDirectorySnapshot(
   transaction.objectStore(META_STORE).put({ key: ACTIVE_SNAPSHOT_KEY, generation } satisfies StoredMetadata);
   await done;
 
-  // The new generation is active only after the atomic write has committed.
-  // Cleanup happens afterward, so a failed write cannot remove the previous copy.
-  const cleanup = database.transaction(SNAPSHOT_STORE, 'readwrite');
+  // Clean old generations only after the new snapshot commits. Re-read the active
+  // pointer inside the cleanup transaction so concurrent downloads cannot delete
+  // whichever generation became active most recently.
+  const cleanup = database.transaction([META_STORE, SNAPSHOT_STORE], 'readwrite');
   const cleanupDone = transactionDone(cleanup);
-  const keys = await requestResult<IDBValidKey[]>(cleanup.objectStore(SNAPSHOT_STORE).getAllKeys());
-  for (const key of keys) {
-    if (key !== generation) cleanup.objectStore(SNAPSHOT_STORE).delete(key);
-  }
+  const activeRequest = cleanup.objectStore(META_STORE).get(ACTIVE_SNAPSHOT_KEY);
+  activeRequest.onsuccess = () => {
+    const activeMetadata = activeRequest.result as StoredMetadata | undefined;
+    const keysRequest = cleanup.objectStore(SNAPSHOT_STORE).getAllKeys();
+    keysRequest.onsuccess = () => {
+      for (const key of keysRequest.result) {
+        if (key !== activeMetadata?.generation) cleanup.objectStore(SNAPSHOT_STORE).delete(key);
+      }
+    };
+  };
   await cleanupDone;
 
   return {
@@ -440,18 +466,11 @@ export async function saveOfflineDirectorySnapshot(
 }
 
 export async function getOfflineDirectoryMetadata(): Promise<OfflineSnapshotMetadata | null> {
-  const snapshot = await getActiveOfflineDirectorySnapshot();
-  if (!snapshot) return null;
-  const database = await openDatabase();
-  const transaction = database.transaction([META_STORE, SNAPSHOT_STORE], 'readonly');
-  const done = transactionDone(transaction);
-  const metadata = await requestResult<StoredMetadata | undefined>(
-    transaction.objectStore(META_STORE).get(ACTIVE_SNAPSHOT_KEY)
-  );
-  await done;
-  if (!metadata?.generation) return null;
+  const active = await readActiveStoredSnapshot();
+  if (!active) return null;
+  const snapshot = active.snapshot;
   return {
-    generation: metadata.generation,
+    generation: active.generation,
     schema_version: snapshot.schema_version,
     downloaded_at: snapshot.downloaded_at,
     counts: {
