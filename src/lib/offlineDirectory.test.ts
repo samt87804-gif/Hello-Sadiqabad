@@ -4,6 +4,7 @@ import type { BusinessPublicView } from '../types/directory';
 import {
   OFFLINE_DIRECTORY_SCHEMA_VERSION,
   toOfflineBusiness,
+  toOfflineCategory,
   validateOfflineDirectorySnapshot,
   type OfflineDirectorySnapshot,
 } from './offlineDirectory';
@@ -128,4 +129,31 @@ test('snapshot validation rejects unpublished businesses', () => {
   const snapshot = createSnapshot();
   (snapshot.businesses[0] as unknown as { status: string }).status = 'draft';
   assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
+});
+
+test('unpublished businesses cannot be mapped into the offline package', () => {
+  assert.throws(
+    () => toOfflineBusiness(createBusiness({ status: 'draft' })),
+    /Only published businesses/
+  );
+});
+
+test('inactive categories cannot be mapped into the offline package', () => {
+  assert.throws(
+    () => toOfflineCategory({
+      id: 'category-1',
+      name_en: 'Private draft category',
+      name_ur: '',
+      slug: 'private-draft-category',
+      parent_id: null,
+      icon: 'Store',
+      color: '#000000',
+      sort_order: 1,
+      synonyms: [],
+      is_active: false,
+      created_at: '',
+      updated_at: '',
+    }),
+    /Only active public categories/
+  );
 });
