@@ -298,7 +298,7 @@ export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnaps
 
   const categoryIds = new Set<string>();
   for (const category of snapshot.categories) {
-    if (!category || !category.id || !category.slug || !category.is_active && category.is_active !== undefined) return false;
+    if (!category || !category.id || !category.slug) return false;
     if (categoryIds.has(category.id)) return false;
     categoryIds.add(category.id);
   }
