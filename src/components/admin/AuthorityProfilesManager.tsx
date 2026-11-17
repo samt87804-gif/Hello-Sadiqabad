@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Camera, Link2, Plus, Search, ShieldCheck, UserRound } from 'lucide-react';
 import type { AuthorityProfileRow } from '../../types/database';
 import type { BusinessPublicView } from '../../types/directory';
@@ -163,6 +164,7 @@ export function AuthorityProfilesManager({
               <p className="text-[10px] text-outline">{profile.business_ids?.length ?? 0} linked businesses · /authority-profiles/{profile.slug}</p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button size="sm" variant="outline" onClick={() => edit(profile)}>Edit profile</Button>
+                <Link to={`/authority-profiles/${profile.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-lg border border-outline-variant px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-surface-container-low">Preview public profile</Link>
                 <Button size="sm" variant="outline" onClick={async () => {
                   try { await upsertAuthorityProfile({ ...profile, is_active: !profile.is_active }, actorId); await onReload(); }
                   catch (error) { showToast(error instanceof Error ? error.message : 'Could not update visibility.', 'error'); }
