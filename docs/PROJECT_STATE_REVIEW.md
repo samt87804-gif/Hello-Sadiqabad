@@ -118,3 +118,12 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Commits: `5b83a8c16fb9a0a828236e70420fb2399b399cfa`, then compatibility follow-up `5cb77a8bf47089f6c755cf03bb8df82f1ed814ff`.
 - CI runs `44120063673` and `44120165303` passed. Final Cloudflare Pages deployment `4c4647d1-e582-4250-8704-a258e15c3089` succeeded for `5cb77a8bf47089f6c755cf03bb8df82f1ed814ff`.
 - Browser/device Service Worker lifecycle, actual cache contents, offline reload/deep-link, stale chunk/update/rollback and IndexedDB quota/concurrency tests remain unverified. Phase 1 remains in progress; no full-offline claim is made.
+
+
+## 17 November 2026 — Authority profile usability follow-up
+
+- Added clear public discovery links for Local Authorities and the separate Authority Profiles route (desktop Civic Services menu and public footer links).
+- Added a direct public preview link from each Admin Authority Profile card.
+- Added a presentation-focused view for individual public profiles and a Print / Save PDF action. The view uses only existing public profile fields; no achievements, current role, or personal details are fabricated.
+- No database records or photos were modified. First real profile content and portrait still need owner/office-sourced review before publication.
+- Source commits: `586023450879ad9e9e62f0b650920183ed7c02d7`, `9c4a2e0b2fcd3ef9d71982f92fec8ed5c5bac3e0`, `2e52d746def4a24b74bc3f55a0d3c875093783b0`, `3cad70829d57e7c5970378d6c3e27723d54830f7`, `ca87af6e77ba87bedb260267093531e73b0be431`.
