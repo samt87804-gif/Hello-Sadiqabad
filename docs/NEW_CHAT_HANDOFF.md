@@ -11,6 +11,8 @@ We are continuing work on my existing project **Hello Sadiqabad**. Do not start 
 - `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` — main phased plan and current verified status.
 - `PROJECT_ROADMAP.md` — existing application roadmap and outstanding work.
 - `DEPLOYMENT.md` — production deployment instructions.
+- `docs/PROJECT_WORKING_RULES.md` — permanent owner-confirmed rules; follow them for every change.
+- `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` — offline-first PWA plan and phase status.
 - Relevant existing security/roadmap documents only when needed.
 
 ### Live infrastructure
@@ -124,3 +126,24 @@ Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verifi
 - `/offers` and `/announcements` intentionally return `noindex,follow` while there is no active content. Do not force-index empty pages.
 - `www.hellosadiqabad.com` is intentionally unsupported. Use the apex domain URL in Search Console.
 - Owner has not supplied the exact URL that Search Console rejected or the expanded Live Test diagnostic fields. The actual Google-side rejection reason is therefore not yet established; do not claim a fix or alter security settings blindly. Ask for the exact rejected URL and the values for Crawl allowed, Page fetch, Indexing allowed, and any issue detail. Matching user-agent browser rendering is not the same as a fetch from Google's infrastructure.
+
+
+## Offline-first PWA continuation — 17 November 2026
+
+The owner requested full offline support for the public Hello Sadiqabad website and its installable PWA. Read and follow these documents before implementation:
+
+- `docs/PROJECT_WORKING_RULES.md` — mandatory rules, especially protecting the live website and real visitors.
+- `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` — source of truth for offline scope, phase order, safety requirements and acceptance gates.
+- `PROJECT_ROADMAP.md` — live feature checklist.
+
+### Verified current state
+
+- Existing PWA manifest and install prompt already work as the current install mechanism; do not rebuild or remove them.
+- Current `public/sw.js` caches only `/offline.html`; it does not cache the React shell or lazy-loaded hashed assets.
+- `src/lib/offlineStorage.ts` contains favorites, recently viewed and a limited emergency-contact cache; there is no full directory IndexedDB snapshot yet.
+- Public business data is assembled from static JSON chunks and current published Supabase rows. Preserve the existing publication filtering, RLS and crawl-only supplemental rules.
+- Offline map tiles are not included unless the provider's current terms permit bulk offline storage.
+
+### Required next action
+
+Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-inspecting current main. Implement the public data snapshot, atomic IndexedDB download, visible download manager, offline data fallbacks, safe versioned app-shell/lazy-chunk caching and explicit online-only write guards. Keep all Admin/Owner/auth/private data and all server writes out of offline caches. Do not mark Phase 1 complete until its listed acceptance checks pass. Do not change Supabase schema or existing production data for this feature without a proven need and owner approval.

@@ -201,3 +201,15 @@ Batch 3 — completed (16 November 2026):
 - [x] Category index metadata now names local shop, doctor, clinic, restaurant and pharmacy intents; category and area detail pages retain dynamic location/category titles.
 - [x] Supplied logo is hosted on the site domain as favicon and social/PWA logo assets. CI run 44072068947 passed and production deployment 6202c970-d2b1-406e-a991-e5b5e736f88c succeeded.
 - [x] Live homepage, favicon, site-logo and manifest checks passed on production. Google Search Console recrawl request and later keyword/index coverage review remain pending; no ranking guarantee.
+
+
+## New feature — Offline-first PWA (owner-requested 17 November 2026)
+
+- [ ] Offline-first public directory and installed PWA. Detailed scope, safeguards, phases and acceptance gates: [`docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`](docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md).
+- [x] Phase 0 audit and documentation plan drafted: current PWA install prompt/manifest already exist; current Service Worker only caches `offline.html`; emergency contacts have a limited local cache; complete directory data/media are not yet available offline.
+- [x] Permanent owner-confirmed engineering and production-safety rules recorded in [`docs/PROJECT_WORKING_RULES.md`](docs/PROJECT_WORKING_RULES.md).
+- [ ] Phase 1 core offline data package + app-shell caching + public directory offline reads + online-only write guards.
+- [ ] Phase 2 remaining public content and cacheable media.
+- [ ] Phase 3 safe updates, storage/quota handling and recovery.
+- [ ] Phase 4 Android/iOS/desktop and airplane-mode acceptance testing.
+- **Safety status:** documentation only so far. No app code, database, user/business data, Cloudflare settings or live website behavior changed in Phase 0.

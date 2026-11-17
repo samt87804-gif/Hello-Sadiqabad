@@ -78,3 +78,11 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Validate user-supplied URLs and content in both frontend and database where applicable.
 - Run typecheck, tests and production build; verify Supabase behavior and Cloudflare deployment for the affected feature.
 - Update PROJECT_ROADMAP.md after each verified batch.
+
+## Offline-first PWA baseline — 17 November 2026
+
+- Owner requested that the public directory and installable PWA work offline after a visitor downloads public data once.
+- The initial read-only audit is recorded in `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`.
+- Permanent engineering and production-safety rules are recorded in `docs/PROJECT_WORKING_RULES.md`.
+- Current PWA installation is already configured. Full offline support is not implemented: the Service Worker only caches the offline fallback page; favorites/recent views/emergency contacts have limited local storage; complete public directory/content/media are not cached.
+- Phase 0 documentation is the only change in this update. No application code, database schema/data, user/business records, Cloudflare settings or online visitor behavior changed.
