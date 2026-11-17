@@ -1,5 +1,6 @@
-const CACHE_NAME = 'hs-sadiqabad-shell-v4';
-const CACHE_PREFIX = 'hs-sadiqabad-shell-';
+// Reuse v3 cache namespace: the currently deployed v3 worker deletes every
+// cache except this exact key on activation. Keeping it makes rollback compatible.
+const CACHE_NAME = 'hs-sadiqabad-shell-v3';
 const APP_SHELL_URL = '/';
 const OFFLINE_URL = '/offline.html';
 
