@@ -247,6 +247,6 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 ### Storage upload RLS correction — 18 November 2026
 
 - Supabase Storage logs confirmed a failed `site-media` INSERT from the active Super Admin session, with correct UID folder and `new row violates row-level security policy`. The failing policy included `metadata.mimetype` and `metadata.size` predicates that were not reliably true during Storage's initial INSERT check.
-- Applied `20261118110000_fix_site_media_admin_insert_rls` to remove only those metadata predicates. Admin-only authenticated role, `site-media` bucket/path scope, own-UID folder and approved Admin/Super Admin permission checks remain.
+- Applied `20261117204927_fix_site_media_admin_insert_rls` to remove only those metadata predicates. Admin-only authenticated role, `site-media` bucket/path scope, own-UID folder and approved Admin/Super Admin permission checks remain.
 - The shared browser uploader still converts images to WebP, resizes, rejects unsupported formats and limits compressed output to 8 MiB. MIME/size are currently enforced in the client, not independently by this Storage RLS policy; do not describe them as server-side enforcement.
 - Live policy definition verified. Actual browser upload and offline image caching remain pending owner/device acceptance.
