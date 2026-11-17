@@ -31,11 +31,16 @@ jobs:
           node -e "const a=require(process.env.RUNNER_TEMP + '/npm-audit.json'); const v=a.vulnerabilities || {}; console.log(JSON.stringify({summary:a.metadata?.vulnerabilities, packages:Object.entries(v).map(([name,item])=>({name,severity:item.severity,range:item.range,fixAvailable:item.fixAvailable}))}, null, 2));"
       - name: Block high and critical dependency advisories
         run: npm audit --audit-level=high
+      # Continue code diagnostics even when the separate npm audit gate fails.
+      # The audit step remains blocking and still makes the overall job fail.
       - name: TypeScript type check
+        if: always()
         run: npm run typecheck
       - name: Automated tests
+        if: always()
         run: npm test
       - name: Production build
+        if: always()
         run: npm run build
 
   edge-functions:
