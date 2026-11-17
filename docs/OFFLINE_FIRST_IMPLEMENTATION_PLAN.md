@@ -243,3 +243,10 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - Production code commit: '2aa09779c1993dd3dde4a3734e06b86e2ca23e4d'. Cloudflare Pages production deployment '70ad68bf-c6b4-4505-85c4-19d07f075a2f' succeeded and the canonical 'https://hellosadiqabad.com' alias is attached.
 - GitHub Actions run '44164115526': TypeScript, automated tests (92 passing), production build and Supabase Edge Function checks passed. Overall CI still fails only at the existing npm audit gate (three high-severity findings in picomatch/tinyglobby/Vite); no suppression or unsafe Vite downgrade was applied.
 - Live Admin upload, image compression output, Cache Storage media count and physical-device airplane-mode/reload acceptance have not yet been exercised. Keep these as pending; deployment success is not proof of those behaviors.
+
+### Storage upload RLS correction — 18 November 2026
+
+- Supabase Storage logs confirmed a failed `site-media` INSERT from the active Super Admin session, with correct UID folder and `new row violates row-level security policy`. The failing policy included `metadata.mimetype` and `metadata.size` predicates that were not reliably true during Storage's initial INSERT check.
+- Applied `20261118110000_fix_site_media_admin_insert_rls` to remove only those metadata predicates. Admin-only authenticated role, `site-media` bucket/path scope, own-UID folder and approved Admin/Super Admin permission checks remain.
+- The shared browser uploader still converts images to WebP, resizes, rejects unsupported formats and limits compressed output to 8 MiB. MIME/size are currently enforced in the client, not independently by this Storage RLS policy; do not describe them as server-side enforcement.
+- Live policy definition verified. Actual browser upload and offline image caching remain pending owner/device acceptance.
