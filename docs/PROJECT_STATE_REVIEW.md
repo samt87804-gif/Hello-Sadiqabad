@@ -137,3 +137,13 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - TypeScript/tests/build and Edge Function checks passed in CI run 44143421511; overall CI failed at the high/critical npm audit gate. The gate remains active and must be investigated; no dependency changes made.
 - Pages deployment 9c5e9413-98d1-4568-9b3f-fe912c3e1638 succeeded for commit d607c987748476cb82c806a57dd26401084ba587.
 - Phase 1 remains in progress pending actual IndexedDB quota/transaction/concurrency tests, Service Worker cache/lifecycle and offline deep-link/stale-chunk/rollback acceptance, online regression/write guard checks, and device airplane-mode testing.
+
+
+## 17 November 2026 — Offline Phase 1 browser package acceptance
+
+- Added readiness diagnostics to /offline-data. Production Browser Rendering confirmed active Service Worker, cached shell and emergency fallback, 75/75 app assets, native IndexedDB write/read, abort rollback and concurrent transactions.
+- Full public package download passed in an isolated browser: 655 businesses, 19 categories, 303 areas and 12 emergency contacts saved. Simulated navigator.onLine=false and verified search, business detail, categories, areas and emergency contacts read from IndexedDB with matching counts.
+- Added automated test for offline review/inquiry/suggestion not-sent responses and no analytics session/queued writes; test passed.
+- CI run 44148164258: TypeScript, tests, production build and Deno checks passed; overall CI still fails on three high npm audit findings for picomatch/tinyglobby/Vite. GHSA-fc5q-39xc-vjpf affects picomatch through 4.0.7; only npm audit force fix would downgrade Vite to 6.2.7. No suppression or breaking downgrade made.
+- Pages production deployment 6d482311-18fe-47f6-bed0-382c0422dae7 succeeded for b80e6b470390fc80fba26c0111574a2e46c21a38.
+- Remaining: real device airplane-mode reload/deep-link and SW update/rollback across tabs; actual quota exhaustion; complete online smoke checks. Isolated browser results do not verify user's own phone. Phase 1 remains in progress.
