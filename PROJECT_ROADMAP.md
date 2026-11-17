@@ -197,7 +197,7 @@ Batch 3 — completed (16 November 2026):
 
 ## Search keyword and favicon improvements — 17 November 2026
 
-- [ ] Homepage now targets “Sadiqabad Business Directory” with visible bilingual H1 and natural local-service copy; title/description updated.
-- [ ] Category index metadata now names local shop, doctor, clinic, restaurant and pharmacy intents; category and area detail pages retain dynamic location/category titles.
-- [ ] Supplied logo is hosted on the site domain as favicon and social/PWA logo assets to avoid relying on the external Storage image response.
-- [ ] Await CI, deployment and live endpoint/browser verification. Broader keyword visibility and Google favicon display remain dependent on Google crawling/indexing; no ranking guarantee.
+- [x] Homepage now targets “Sadiqabad Business Directory” with visible bilingual H1 and natural local-service copy; title/description updated.
+- [x] Category index metadata now names local shop, doctor, clinic, restaurant and pharmacy intents; category and area detail pages retain dynamic location/category titles.
+- [x] Supplied logo is hosted on the site domain as favicon and social/PWA logo assets. CI run 44072068947 passed and production deployment 6202c970-d2b1-406e-a991-e5b5e736f88c succeeded.
+- [x] Live homepage, favicon, site-logo and manifest checks passed on production. Google Search Console recrawl request and later keyword/index coverage review remain pending; no ranking guarantee.
