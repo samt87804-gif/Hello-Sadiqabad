@@ -6,6 +6,7 @@ import { Badge, Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/FormFields';
 import { useToast } from '../ui/Toast';
+import { AdminImageUpload } from './AdminImageUpload';
 
 const emptyForm = {
   slug: '', title_en: '', title_ur: '', excerpt_en: '', excerpt_ur: '',
@@ -111,12 +112,12 @@ export function NewsManager({ actorId }: { actorId: string }) {
               onChange={(e) => setForm(v => ({ ...v, title_ur: e.target.value }))} />
             <Input label="URL Slug" required value={form.slug}
               onChange={(e) => setForm(v => ({ ...v, slug: makeSlug(e.target.value) }))} />
-            <Input label="Cover Image URL (HTTPS)" type="url" value={form.cover_image_url}
-              onChange={(e) => setForm(v => ({ ...v, cover_image_url: e.target.value }))} />
+            <div className="space-y-2"><Input label="Cover Image URL (HTTPS)" type="url" value={form.cover_image_url}
+              onChange={(e) => setForm(v => ({ ...v, cover_image_url: e.target.value }))} /><AdminImageUpload purpose="news" onUploaded={(url) => setForm(v => ({ ...v, cover_image_url: url }))} /></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Textarea label="Additional Article Images (one HTTPS URL per line, maximum 12)" rows={4} value={form.image_urls}
-              onChange={(e) => setForm(v => ({ ...v, image_urls: e.target.value }))} />
+            <div className="space-y-2"><Textarea label="Additional Article Images (one HTTPS URL per line, maximum 12)" rows={4} value={form.image_urls}
+              onChange={(e) => setForm(v => ({ ...v, image_urls: e.target.value }))} /><AdminImageUpload purpose="gallery" disabled={form.image_urls.split(/\r?\n|,/).map((url) => url.trim()).filter(Boolean).length >= 12} onUploaded={(url) => setForm(v => ({ ...v, image_urls: [...v.image_urls.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean), url].slice(0, 12).join('\n') }))} label="Upload gallery image" /></div>
             <Input label="YouTube Video URL (optional)" type="url" dir="ltr" placeholder="https://youtu.be/..." value={form.youtube_url}
               onChange={(e) => setForm(v => ({ ...v, youtube_url: e.target.value }))} />
           </div>

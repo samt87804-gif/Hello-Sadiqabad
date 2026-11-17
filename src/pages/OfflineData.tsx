@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, HardDrive, Wifi, WifiOff, XCircle } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { fetchAllAreas, fetchAllCategories, fetchBusinessBySlug, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, searchBusinesses } from '../lib/api';
+import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchPublishedNewsArticles, fetchPublicBusinessProductImageUrls, fetchSiteSettings, searchBusinesses } from '../lib/api';
+import { cacheOfflineImages } from '../lib/offlineImages';
+import { DEFAULT_SITE_SETTINGS } from '../lib/siteSettings';
 import { useI18n } from '../lib/i18n';
 import {
   getOfflineDirectoryMetadata,
@@ -414,7 +416,24 @@ export function OfflineData() {
       const emergency = await raceWithAbort(fetchEmergencyContacts(), signal);
       if (emergency.fromCache) throw new Error('Emergency contacts could not be refreshed from the live public source. The previous offline package was kept.');
       if (!emergency.items.length) throw new Error('No active emergency contacts were returned. The previous offline package was kept.');
-      setProgress(80);
+      setProgress(78);
+
+      setMessage(isUrdu ? 'عوامی تصاویر اور بینرز حاصل کیے جا رہے ہیں…' : 'Collecting public images and banners…');
+      const optionalPublicRead = async <T,>(request: Promise<T>, fallback: T): Promise<T> => {
+        try {
+          return await raceWithAbort(request, signal);
+        } catch (error) {
+          if (signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw error;
+          return fallback;
+        }
+      };
+      const [siteSettings, publishedNews, authorityProfiles, activeAds, productImageUrls] = await Promise.all([
+        optionalPublicRead(fetchSiteSettings(), DEFAULT_SITE_SETTINGS),
+        optionalPublicRead(fetchPublishedNewsArticles(50), []),
+        optionalPublicRead(fetchAuthorityProfiles(), []),
+        optionalPublicRead(fetchActiveAds(), []),
+        optionalPublicRead(fetchPublicBusinessProductImageUrls(businesses.map((business) => business.id)), []),
+      ]);
 
       if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
 
@@ -431,10 +450,24 @@ export function OfflineData() {
         throw new Error('The downloaded public data did not pass validation. The previous offline package was kept.');
       }
 
-      const bytes = new Blob([JSON.stringify(snapshot)]).size;
+      const directoryImages = siteSettings.directory_image_urls;
+      const publicImageUrls = [
+        ...businesses.flatMap((business) => [business.logo_url, business.cover_url, ...(business.gallery_urls ?? []), ...(business.active_offers ?? []).map((offer) => offer.image_url)]),
+        ...productImageUrls,
+        siteSettings.hero_banner_url,
+        ...Object.values(directoryImages).flatMap((items) => Object.values(items ?? {})),
+        ...publishedNews.flatMap((article) => [article.cover_image_url, ...(article.image_urls ?? [])]),
+        ...authorityProfiles.map((profile) => profile.photo_url),
+        ...activeAds.map((ad) => ad.image_url),
+      ].filter((url): url is string => typeof url === 'string' && url.startsWith('https://'));
+      const imageResult = await cacheOfflineImages(publicImageUrls, signal, (completed, total) => {
+        if (total > 0) setProgress(78 + Math.round((completed / total) * 10));
+      });
+
+      const bytes = new Blob([JSON.stringify(snapshot)]).size + imageResult.bytes;
       setEstimatedBytes(bytes);
       setProgress(90);
-      setMessage(isUrdu ? 'ڈیٹا کی تصدیق مکمل؛ محفوظ کیا جا رہا ہے…' : 'Data validated. Saving the new offline package…');
+      setMessage(isUrdu ? 'ڈیٹا اور تصاویر کی تصدیق مکمل؛ محفوظ کیا جا رہا ہے…' : 'Directory and public images verified. Saving the offline package…');
       setStatus('saving');
 
       if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
@@ -443,7 +476,9 @@ export function OfflineData() {
       await refreshStorageEstimate();
       setProgress(100);
       setStatus('success');
-      setMessage(isUrdu ? 'آف لائن ڈائریکٹری کامیابی سے محفوظ ہو گئی۔' : 'Your offline directory was saved successfully.');
+      setMessage(isUrdu
+        ? `آف لائن ڈائریکٹری محفوظ ہو گئی۔ ${imageResult.downloaded + imageResult.alreadyCached} تصاویر دستیاب ہیں؛ ${imageResult.skipped} تصاویر ڈاؤن لوڈ نہیں ہو سکیں۔`
+        : `Offline directory saved. ${imageResult.downloaded + imageResult.alreadyCached} public images are cached; ${imageResult.skipped} could not be downloaded.`);
     } catch (error) {
       if (signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
         setStatus('cancelled');

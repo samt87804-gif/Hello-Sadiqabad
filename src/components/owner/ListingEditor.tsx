@@ -140,11 +140,9 @@ export function ListingEditor({
 
   const effPlanCode = effectivePlanCode(business.plan_code, business.plan_expires_at);
   const activePlan = plans.find((p) => p.code === effPlanCode) ?? plans[0];
-  const maxPhotos = activePlan?.limits.max_photos ?? 0;
   const maxVideos = activePlan?.limits.max_videos ?? 0;
   const maxSocialLinks = activePlan?.limits.social_links ?? 0;
   const canWhatsApp = activePlan?.features.whatsapp ?? false;
-  const canCover = activePlan?.features.cover ?? false;
   const canSocial = maxSocialLinks > 0;
 
   const update = (patch: Partial<BusinessRow>) => {
@@ -252,8 +250,6 @@ export function ListingEditor({
     }
 
     const httpsCheck = [
-      { label: 'Store Logo URL', val: form.logo_url },
-      { label: 'Cover Banner URL', val: form.cover_url },
       { label: 'Website URL', val: form.website_url },
       { label: 'Facebook URL', val: form.facebook_url },
       { label: 'Instagram URL', val: form.instagram_url },
@@ -312,9 +308,6 @@ export function ListingEditor({
         opening_hours: form.opening_hours ?? {},
         is_open_24h: Boolean(form.is_open_24h),
         home_delivery: Boolean(form.home_delivery),
-        logo_url: form.logo_url?.trim() || null,
-        cover_url: form.cover_url?.trim() || null,
-        gallery_urls: form.gallery_urls ?? [],
         video_urls: form.video_urls ?? [],
         facebook_url: form.facebook_url?.trim() || null,
         instagram_url: form.instagram_url?.trim() || null,
@@ -955,77 +948,40 @@ export function ListingEditor({
       {/* STEP 5: MEDIA, PREVIEW & SUBMIT */}
       {step === 'preview' && (
         <div className="space-y-5">
-          {/* Media & Cloud Hosting */}
-          <Card className="p-4 bg-secondary-fixed/50 text-on-secondary-fixed flex items-start gap-3">
-            <Cloud className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
-            <div className="space-y-0.5 text-xs">
-              <span className="font-extrabold text-secondary">Cloud-Hosted Media (HTTPS URLs)</span>
-              <p className="text-on-secondary-fixed-variant leading-relaxed">
-                Paste direct HTTPS image links for your logo, cover, and gallery.
+          <Card className="p-5 space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-base font-bold text-on-surface">Store Images &amp; Branding</h2>
+              <p className="text-xs text-on-surface-variant">
+                Business logo, cover and gallery images are managed by Hello Sadiqabad Admin to keep the directory consistent and safe. Contact Admin if an image needs to be added or changed.
               </p>
             </div>
-          </Card>
-
-          <Card className="p-5 space-y-5">
-            <h2 className="text-base font-bold text-on-surface">Store Branding &amp; Media</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-              <div className="space-y-2">
-                <Input
-                  label="Store Logo URL (HTTPS, 1:1)"
-                  dir="ltr"
-                  value={form.logo_url ?? ''}
-                  onChange={(e) => update({ logo_url: e.target.value })}
-                  placeholder="https://..."
-                />
-                {form.logo_url && (
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low">
-                    <ImageWithFallback
-                      src={form.logo_url}
-                      alt="Logo live preview"
-                      className="w-12 h-12 rounded-xl object-cover shrink-0 border border-outline-variant/40"
-                    />
-                    <span className="text-xs text-on-surface-variant">Live 1:1 Logo Preview</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Input
-                  label="Cover Banner URL (HTTPS, 16:9)"
-                  dir="ltr"
-                  disabled={!canCover}
-                  value={form.cover_url ?? ''}
-                  onChange={(e) => update({ cover_url: e.target.value })}
-                  placeholder="https://..."
-                />
-                {!canCover ? (
-                  <p className="text-xs text-secondary flex items-center gap-1">
-                    <Lock className="w-3.5 h-3.5" /> Custom cover requires Basic or Premium plan.
-                  </p>
-                ) : form.cover_url ? (
-                  <div className="relative h-28 rounded-xl overflow-hidden border border-outline-variant/40">
-                    <ImageWithFallback
-                      src={form.cover_url}
-                      alt="Cover live preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute bottom-2 start-2 px-2 py-0.5 rounded-full bg-black/70 text-white text-[10px] font-bold">
-                      Live Hero Preview
-                    </span>
-                  </div>
-                ) : null}
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {business.logo_url && (
+                <div className="rounded-xl border border-outline-variant/40 p-3 space-y-2">
+                  <p className="text-xs font-bold">Current business logo</p>
+                  <ImageWithFallback src={business.logo_url} alt={business.name_en + ' logo'} className="w-24 h-24 rounded-xl object-contain bg-surface-container-low" />
+                </div>
+              )}
+              {business.cover_url && (
+                <div className="rounded-xl border border-outline-variant/40 p-3 space-y-2">
+                  <p className="text-xs font-bold">Current cover image</p>
+                  <ImageWithFallback src={business.cover_url} alt={business.name_en + ' cover'} className="w-full h-28 rounded-lg object-cover" />
+                </div>
+              )}
             </div>
-
-            <UrlListEditor
-              title="Photo Gallery URLs"
-              urls={form.gallery_urls ?? []}
-              maxItems={maxPhotos}
-              kind="image"
-              onChange={(gallery_urls) => update({ gallery_urls })}
-            />
-
+            {(business.gallery_urls ?? []).length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-bold">Current photo gallery</p>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {(business.gallery_urls ?? []).map((url, index) => (
+                    <ImageWithFallback key={url + index} src={url} alt={business.name_en + ' gallery ' + (index + 1)} className="w-full aspect-square rounded-lg object-cover" />
+                  ))}
+                </div>
+              </div>
+            )}
+            {!business.logo_url && !business.cover_url && !(business.gallery_urls ?? []).length && (
+              <p className="text-xs text-on-surface-variant rounded-lg bg-surface-container-low p-3">No business images have been added yet. Please contact Admin for image management.</p>
+            )}
             <UrlListEditor
               title="Promotional Video URLs (YouTube / Vimeo)"
               urls={form.video_urls ?? []}

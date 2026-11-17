@@ -57,6 +57,7 @@ import { ConfirmDialog, Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
 import type { DirectoryImageUrls } from '../../lib/siteSettings';
+import { AdminImageUpload } from './AdminImageUpload';
 
 export function TaxonomyManager({
   mode,
@@ -1393,9 +1394,9 @@ export function SettingsManager({
   const heroBannerSetting = settings.find((setting) => setting.key === 'hero_banner_url');
   const heroBannerDraft = draftValues.hero_banner_url ?? String(heroBannerSetting?.value ?? '');
 
-  const saveDirectoryImage = async (kind: keyof DirectoryImageUrls, itemKey: string) => {
+  const saveDirectoryImage = async (kind: keyof DirectoryImageUrls, itemKey: string, uploadedUrl?: string) => {
     const draftKey = `${kind}:${itemKey}`;
-    const url = (directoryImageDrafts[draftKey] ?? directoryImages[kind][itemKey] ?? '').trim();
+    const url = (uploadedUrl ?? directoryImageDrafts[draftKey] ?? directoryImages[kind][itemKey] ?? '').trim();
     if (url) {
       let parsed: URL;
       try { parsed = new URL(url); } catch {
@@ -1423,8 +1424,8 @@ export function SettingsManager({
     await onReload();
   };
 
-  const saveHeroBanner = async () => {
-    const url = heroBannerDraft.trim();
+  const saveHeroBanner = async (uploadedUrl?: string) => {
+    const url = (uploadedUrl ?? heroBannerDraft).trim();
     let parsedUrl: URL;
     try { parsedUrl = new URL(url); } catch {
       showToast('Please enter a valid public image URL (https://...).', 'error');
@@ -1506,6 +1507,7 @@ export function SettingsManager({
             aria-label="Homepage hero banner image URL"
             className="min-w-0 flex-1 h-10 rounded-xl border border-outline-variant bg-surface px-3 text-xs"
           />
+          <AdminImageUpload purpose="banner" onUploaded={async (url) => { setDraftValues((previous) => ({ ...previous, hero_banner_url: url })); await saveHeroBanner(url); }} />
           <Button onClick={saveHeroBanner} disabled={!heroBannerDraft.trim()}>Save Banner</Button>
         </div>
       </Card>
@@ -1573,7 +1575,8 @@ export function SettingsManager({
                         aria-label={`${item.label} image URL`}
                         className="w-full h-9 px-2.5 rounded-lg border border-outline-variant bg-surface text-[11px] font-mono"
                       />
-                      <div className="flex justify-end">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <AdminImageUpload purpose="directory" onUploaded={async (url) => { setDirectoryImageDrafts((previous) => ({ ...previous, [draftKey]: url })); await saveDirectoryImage(section.kind, item.key, url); }} label="Upload image" />
                         <Button size="sm" variant="outline" onClick={() => saveDirectoryImage(section.kind, item.key)}>Save Image URL</Button>
                       </div>
                     </div>
@@ -1584,7 +1587,7 @@ export function SettingsManager({
           </div>
         ))}
         <div className="rounded-xl bg-surface-container-low p-3 text-[11px] text-on-surface-variant">
-          Business logo/cover images, offer images and sponsor-ad images continue to use their existing URL fields in their respective Admin editors. New News and Authority image fields can be added when those modules are built.
+          Business logo/cover images use their existing compressed upload flow. Gallery, News, Authority, Owner Profile and Sponsor Campaign image fields also support direct compressed uploads. External HTTPS URLs remain supported.
         </div>
       </Card>
       <Card className="p-5 space-y-3">

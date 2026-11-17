@@ -56,6 +56,7 @@ import { LocationPicker } from '../owner/LocationPicker';
 import { UrlListEditor } from '../owner/UrlListEditor';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
 import { compressBusinessImage, deleteBusinessImages, getBusinessMediaObjectPath, uploadBusinessImage, type BusinessMediaKind } from '../../lib/businessMedia';
+import { AdminImageUpload } from './AdminImageUpload';
 
 export function AdminDashboard({ counts }: { counts: AdminDashboardCounts }) {
   const cards = [
@@ -1287,6 +1288,7 @@ export function BusinessManager({
                 kind="image"
                 onChange={(gallery_urls) => setForm((p) => ({ ...p, gallery_urls }))}
               />
+              <AdminImageUpload purpose="gallery" disabled={form.gallery_urls.length >= 10} onUploaded={(url) => setForm((p) => ({ ...p, gallery_urls: [...p.gallery_urls, url].slice(0, 10) }))} label="Upload gallery photo" />
             </div>
           )}
 

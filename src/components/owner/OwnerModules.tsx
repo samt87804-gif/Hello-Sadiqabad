@@ -117,10 +117,6 @@ export function ProductCatalogueManager({
       showToast('Enter a valid non-negative price in PKR.', 'error');
       return;
     }
-    if (imageUrl.trim() && !isValidHttpsUrl(imageUrl.trim())) {
-      showToast('Product image URL must be a valid HTTPS link.', 'error');
-      return;
-    }
     setSaving(true);
     try {
       await onSave({
@@ -229,7 +225,7 @@ export function ProductCatalogueManager({
           <Textarea label="Description (English)" rows={3} value={descriptionEn} onChange={(event) => setDescriptionEn(event.target.value)} />
           <Textarea label="Description (Urdu)" rows={3} value={descriptionUr} onChange={(event) => setDescriptionUr(event.target.value)} />
           <Input label="Price in PKR (optional)" type="number" min="0" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} />
-          <Input label="Product Image URL (HTTPS, optional)" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." />
+          <div className="rounded-xl bg-surface-container-low p-3 space-y-2"><p className="text-xs font-semibold text-on-surface">Product image</p>{imageUrl ? <img src={imageUrl} alt={nameEn || 'Product image'} className="w-full max-h-36 rounded-lg object-cover" /> : <p className="text-xs text-on-surface-variant">Product images are managed by Hello Sadiqabad Admin. Existing images will remain unchanged when you edit product details.</p>}</div>
           <label className="flex items-center gap-2 text-sm text-on-surface">
             <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} className="accent-primary" />
             Show this product on my public business profile
@@ -322,10 +318,6 @@ export function OffersManager({
     }
     if (validTo < validFrom) {
       showToast('End date must be on or after start date.', 'error');
-      return;
-    }
-    if (imageUrl.trim() && !isValidHttpsUrl(imageUrl.trim())) {
-      showToast('Offer banner URL must start with https://', 'error');
       return;
     }
 
@@ -610,13 +602,7 @@ export function OffersManager({
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
           />
-          <Input
-            label="Promo Banner Image URL (HTTPS, optional)"
-            dir="ltr"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://..."
-          />
+          <div className="rounded-xl bg-surface-container-low p-3 space-y-2"><p className="text-xs font-semibold text-on-surface">Offer banner image</p>{imageUrl ? <img src={imageUrl} alt={title || 'Offer banner'} className="w-full max-h-36 rounded-lg object-cover" /> : <p className="text-xs text-on-surface-variant">Offer images are managed by Hello Sadiqabad Admin. Existing images will remain unchanged when you edit offer details.</p>}</div>
           <div className="grid grid-cols-2 gap-3">
             <Input
               label="Valid From"

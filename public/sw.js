@@ -1,6 +1,9 @@
 // Reuse v3 cache namespace: the currently deployed v3 worker deletes every
 // cache except this exact key on activation. Keeping it makes rollback compatible.
 const CACHE_NAME = 'hs-sadiqabad-shell-v3';
+const MEDIA_CACHE_NAME = 'hs-sadiqabad-public-media-v1';
+const SUPABASE_MEDIA_HOST = 'efwohfzqitevkuybnyif.supabase.co';
+const SUPABASE_MEDIA_PREFIX = '/storage/v1/object/public/Hello%20Sadiqabad/';
 const APP_SHELL_URL = '/';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_MANIFEST_URL = '/offline-precache.json';
@@ -70,6 +73,18 @@ async function networkFirstNavigation(request, url) {
   }
 }
 
+async function cachePublicMedia(request) {
+  const cache = await caches.open(MEDIA_CACHE_NAME);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  const contentType = (response.headers.get('content-type') || '').toLowerCase();
+  if (response.ok && contentType.startsWith('image/')) {
+    await cache.put(request, response.clone()).catch(() => undefined);
+  }
+  return response;
+}
+
 async function cacheFingerprintAsset(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
@@ -87,6 +102,18 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
+
+  // Cache only public image URLs from the known public Storage bucket and the
+  // existing same-origin Google image proxy. Never intercept private Storage paths.
+  const isPublicStorageImage = url.protocol === 'https:' &&
+    url.hostname === SUPABASE_MEDIA_HOST &&
+    url.pathname.startsWith(SUPABASE_MEDIA_PREFIX);
+  const isPublicImageProxy = url.origin === self.location.origin && url.pathname === '/image';
+  if (isPublicStorageImage || isPublicImageProxy) {
+    event.respondWith(cachePublicMedia(request));
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
 
   // Never intercept API/function calls, auth traffic, or non-fingerprinted

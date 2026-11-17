@@ -163,3 +163,13 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Commit `76ba1eee2e579aa9c5deaf9d5e3150185d1f1d3a` is deployed to Cloudflare Pages production; deployment `057d8d2b-6e48-44df-acea-13974115c885` succeeded with canonical alias `https://hellosadiqabad.com`.
 - TypeScript, tests, production build and Edge Function checks passed in CI run `44154044236`; overall CI remains blocked only by the pre-existing npm audit high-severity advisory gate.
 - Physical-device visual/usability check for the seven-item bottom navigation remains pending.
+
+
+## 18 November 2026 — Admin-only compressed image controls and offline media (implementation in progress)
+
+- Admin upload UI and shared WebP compressor implemented for existing Admin-managed image URL fields; existing business logo/cover uploader preserved.
+- Supabase Storage policy verified: 'site-media' insert is restricted to authenticated Admin/Super Admin permission holders, own UID folder, WebP MIME and <=8 MiB compressed file. Existing bucket remains public for public image delivery.
+- Owner business media editing is now removed in the Owner UI and blocked in the live business update trigger. Product/offer image URLs in owner content requests may remain unchanged but cannot be set/replaced/cleared by owners.
+- Offline downloader and Service Worker now include a separate public media cache for referenced Supabase bucket images and the existing Google image proxy; optional news/authority/ad/product sources do not block the core offline directory package if unavailable.
+- Migrations applied and checked: '20261117193404', '20261117194321', '20261117194905'. No existing business/user records or Storage objects were deleted or bulk-mutated.
+- CI/build/deployment and production browser acceptance are pending. Phase 1 device and Phase 2 media acceptance remain incomplete.

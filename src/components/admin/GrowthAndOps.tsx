@@ -59,6 +59,7 @@ import { ConfirmDialog, Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 import { getSupabaseClient } from '../../lib/supabase';
 import type { OwnerPublicProfileRow } from '../../types/database';
+import { AdminImageUpload } from './AdminImageUpload';
 
 export function LeadsManager({
   leads,
@@ -469,7 +470,7 @@ export function OwnersManager({
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input label="Public Display Name" maxLength={120} value={profileForm.display_name ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, display_name: e.target.value }))} />
-            <Input label="Admin-managed Profile Photo URL (HTTPS)" dir="ltr" value={profileForm.photo_url ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, photo_url: e.target.value }))} placeholder="https://..." />
+            <div className="space-y-2"><Input label="Admin-managed Profile Photo URL (HTTPS)" dir="ltr" value={profileForm.photo_url ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, photo_url: e.target.value }))} placeholder="https://..." /><AdminImageUpload purpose="profile" onUploaded={(url) => setProfileForm((p) => ({ ...p, photo_url: url }))} /></div>
             <Input label="Public Contact Phone" dir="ltr" maxLength={40} value={profileForm.phone ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))} />
             <Input label="Public Contact Email" type="email" dir="ltr" maxLength={254} value={profileForm.email ?? ''} onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))} />
           </div>
@@ -1203,7 +1204,7 @@ export function AdsManager({
             <option value="emergency_banner">Government Helplines Banner</option>
             <option value="authorities_banner">Local Authorities Banner</option>
           </Select>
-          <Input label="Banner Image URL (HTTPS)" required dir="ltr" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+          <div className="space-y-2"><Input label="Banner Image URL (HTTPS)" required dir="ltr" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} /><AdminImageUpload purpose="campaign" onUploaded={setImageUrl} /></div>
           {imageUrl && isValidHttpsUrl(imageUrl) && <img src={imageUrl} alt="Campaign preview" className="w-full max-h-44 object-cover rounded-xl border border-outline-variant" />}
           <Input label="Target URL (optional; defaults to business profile)" dir="ltr" placeholder="https://… or /business/slug" value={targetUrl} onChange={(e) => setTargetUrl(e.target.value)} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -255,3 +255,13 @@ Batch 3 — completed (16 November 2026):
 - [x] Add a dedicated, clearly highlighted **Offline** destination to the persistent mobile bottom navigation so browser and installed-PWA users can reach `/offline-data` from any public route; retain the existing footer link and download workflow.
 - [x] TypeScript, automated tests and production build passed; Cloudflare Pages deployment `057d8d2b-6e48-44df-acea-13974115c885` succeeded for commit `76ba1eee2e579aa9c5deaf9d5e3150185d1f1d3a`. The overall CI run `44154044236` remains blocked only by the pre-existing high-severity npm audit advisory; do not suppress or force-downgrade dependencies.
 - [ ] Check the seven-item mobile navigation visually on a physical phone as part of the remaining Phase 1 device acceptance.
+
+
+## Admin-only image uploads and offline media — 18 November 2026
+
+- [x] Shared Admin upload control added to existing Admin image fields: directory cards (categories, areas, helplines), homepage hero, Authority profiles, admin-managed owner profile photo, News cover/gallery, sponsor campaigns and business gallery. Existing compressed business logo/cover upload retained.
+- [x] New images are converted to WebP before upload with purpose-specific resizing; original file limit 15 MiB, compressed WebP limit 8 MiB. Existing Supabase public bucket reused; no new storage bucket or service-role credential.
+- [x] Storage RLS allows 'site-media' writes only for authenticated Admin/Super Admin staff with the required permissions and own UID path; final RLS check enforces WebP MIME and <=8 MiB.
+- [x] Owner image URL editing removed from business listing/product/offer forms; database triggers/RPCs reject owner attempts to change business, product or offer images while preserving existing images.
+- [x] Offline download now prefetches referenced public business, product, offer, directory, hero, campaign, news and authority images into a separate Cache Storage namespace; Service Worker intercept is restricted to the public Supabase image bucket and existing same-origin Google image proxy.
+- [ ] TypeScript/tests/build, GitHub CI, Cloudflare Pages deployment and production upload/offline-image acceptance remain pending. Do not mark complete until verified; actual device offline reload and existing Phase 1 acceptance are still outstanding.

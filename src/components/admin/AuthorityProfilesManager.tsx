@@ -5,7 +5,8 @@ import type { AuthorityProfileRow } from '../../types/database';
 import type { BusinessPublicView } from '../../types/directory';
 import { slugify } from '../../lib/format';
 import { isValidHttpsUrl } from '../../lib/phone';
-import { upsertAuthorityProfile, uploadAuthorityProfilePhoto } from '../../lib/api';
+import { upsertAuthorityProfile } from '../../lib/api';
+import { AdminImageUpload } from './AdminImageUpload';
 import { Badge, Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/FormFields';
@@ -83,20 +84,6 @@ export function AuthorityProfilesManager({
     const current = form.business_ids ?? [];
     update('business_ids', current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
   };
-  const uploadPhoto = async (file?: File) => {
-    if (!file) return;
-    setUploading(true);
-    try {
-      const url = await uploadAuthorityProfilePhoto(file);
-      update('photo_url', url);
-      showToast('Profile photo uploaded.', 'success');
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Photo upload failed.', 'error');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!form.name_en.trim()) {
@@ -185,9 +172,9 @@ export function AuthorityProfilesManager({
                 {form.photo_url ? <img src={form.photo_url} alt="Profile preview" className="w-full h-full object-cover" /> : <Camera className="w-7 h-7 text-outline" />}
               </div>
               <div className="min-w-0 flex-1 space-y-1">
-                <label className="text-xs font-bold text-on-surface">Profile photo (JPG, PNG, WebP or AVIF · max 5 MB)</label>
-                <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} onChange={(event) => { void uploadPhoto(event.target.files?.[0]); event.currentTarget.value = ''; }} className="block w-full text-xs text-on-surface file:me-2 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary" />
-                {uploading && <p className="text-xs text-primary">Uploading photo…</p>}
+                <label className="text-xs font-bold text-on-surface">Profile photo (auto-compressed WebP · max 15 MB original)</label>
+                <AdminImageUpload purpose="profile" disabled={saving} onUploadingChange={setUploading} onUploaded={(url) => update('photo_url', url)} label="Upload profile photo" />
+                {uploading && <p className="text-xs text-primary">Compressing and uploading photo…</p>}
               </div>
             </div>
             <Input label="Full name (English)" required value={form.name_en} onChange={(event) => { const value = event.target.value; update('name_en', value); if (!editingId || !form.slug) update('slug', slugify(value)); }} />

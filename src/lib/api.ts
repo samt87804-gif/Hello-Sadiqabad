@@ -1354,6 +1354,25 @@ export async function fetchPublicOwnerProfileBusinesses(ownerId: string): Promis
   const db = loadDemoDb(); return ((data ?? []) as BusinessRow[]).map((business) => enrichBusiness(business, db));
 }
 
+export async function fetchPublicBusinessProductImageUrls(businessIds: string[]): Promise<string[]> {
+  const client = getSupabaseClient();
+  if (!client || businessIds.length === 0) return [];
+  const uniqueIds = [...new Set(businessIds.filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)))];
+  const imageUrls: string[] = [];
+  for (let index = 0; index < uniqueIds.length; index += 100) {
+    const batch = uniqueIds.slice(index, index + 100);
+    const { data, error } = await client.from('business_products')
+      .select('image_url')
+      .eq('is_active', true)
+      .in('business_id', batch);
+    if (error) throw error;
+    for (const row of (data ?? []) as Array<{ image_url: string | null }>) {
+      if (row.image_url) imageUrls.push(row.image_url);
+    }
+  }
+  return imageUrls;
+}
+
 export async function fetchBusinessProducts(businessId: string): Promise<ProductRow[]> {
   if (isBrowserOffline()) return [];
   const client = getSupabaseClient();
