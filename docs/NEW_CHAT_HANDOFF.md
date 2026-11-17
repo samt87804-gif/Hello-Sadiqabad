@@ -229,3 +229,11 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Phase 1 remains in progress. Do not claim complete until the physical-device checks and audit blocker are resolved.
 
 - Additional production online smoke checks passed via Browser Rendering: home, search, a published crawl-only business profile (Shoe World), Restaurants category, Tibba Zahir Pir area, Emergency (1122/15), Local Authorities, Authority Profiles, /offline and /offline-data all returned rendered pages with expected page content. This validates key online public routes after the offline changes. A stale DB-backed static snapshot listing was correctly withheld when its live publication status could not be verified; no stale business data was force-shown.
+
+
+## Mobile offline-download shortcut — 17 November 2026
+
+- Owner requested a more obvious way for mobile visitors and installed-PWA users to reach offline setup.
+- Added a highlighted **Offline** item with a download icon to the persistent mobile bottom navigation; it links directly to `/offline-data`. Urdu app language displays the Urdu label. Existing footer link and offline download logic are preserved.
+- This is a navigation-only change: no changes to IndexedDB contents, public data access, Service Worker lifecycle, caching rules, Supabase, or private data.
+- Awaiting CI and production deployment verification; mobile-device appearance is still to be checked as part of Phase 1 physical-device acceptance.

@@ -212,3 +212,10 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - No Supabase schema/data/RLS/migrations, business/user records, private data, authentication flows or Cloudflare account settings were changed. The Service Worker still avoids forced activation/client claim/cache deletion and does not cache API/Supabase responses.
 
 - Additional production online smoke checks passed via Browser Rendering: home, search, a published crawl-only business profile (Shoe World), Restaurants category, Tibba Zahir Pir area, Emergency (1122/15), Local Authorities, Authority Profiles, /offline and /offline-data all returned rendered pages with expected page content. This validates key online public routes after the offline changes. A stale DB-backed static snapshot listing was correctly withheld when its live publication status could not be verified; no stale business data was force-shown.
+
+
+## Mobile offline-download entry point — 17 November 2026
+
+- Added a dedicated **Offline** shortcut to the persistent mobile bottom navigation. It is available throughout the public site and installed PWA and opens the existing `/offline-data` download/readiness page directly; it does not change the download flow, offline storage, Service Worker or data access.
+- The shortcut uses a distinct primary-tinted treatment and a download icon, with an Urdu label when the app language is Urdu. The existing footer link remains available as a second entry point.
+- Verification status: code and documentation committed together; production CI and Pages deployment must pass before this entry point is described as live. Physical-device layout/usability remains part of the existing Phase 1 device acceptance.

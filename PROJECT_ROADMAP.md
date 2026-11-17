@@ -248,3 +248,9 @@ Batch 3 — completed (16 November 2026):
   - [x] Cloudflare Pages production deployment 6d482311-18fe-47f6-bed0-382c0422dae7 succeeded for commit b80e6b470390fc80fba26c0111574a2e46c21a38.
 
 - Additional production online smoke checks passed via Browser Rendering: home, search, a published crawl-only business profile (Shoe World), Restaurants category, Tibba Zahir Pir area, Emergency (1122/15), Local Authorities, Authority Profiles, /offline and /offline-data all returned rendered pages with expected page content. This validates key online public routes after the offline changes. A stale DB-backed static snapshot listing was correctly withheld when its live publication status could not be verified; no stale business data was force-shown.
+
+
+## Mobile offline-download shortcut — 17 November 2026
+
+- [x] Add a dedicated, clearly highlighted **Offline** destination to the persistent mobile bottom navigation so browser and installed-PWA users can reach `/offline-data` from any public route; retain the existing footer link and download workflow.
+- [ ] Verify the updated seven-item mobile navigation in production after CI and Cloudflare Pages deployment; include physical-device visual acceptance in the remaining Phase 1 device test.

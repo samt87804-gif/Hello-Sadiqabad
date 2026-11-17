@@ -149,3 +149,10 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Remaining: real device airplane-mode reload/deep-link and SW update/rollback across tabs; actual quota exhaustion; complete online smoke checks. Isolated browser results do not verify user's own phone. Phase 1 remains in progress.
 
 - Additional production online smoke checks passed via Browser Rendering: home, search, a published crawl-only business profile (Shoe World), Restaurants category, Tibba Zahir Pir area, Emergency (1122/15), Local Authorities, Authority Profiles, /offline and /offline-data all returned rendered pages with expected page content. This validates key online public routes after the offline changes. A stale DB-backed static snapshot listing was correctly withheld when its live publication status could not be verified; no stale business data was force-shown.
+
+
+## 17 November 2026 — Mobile offline-download shortcut
+
+- Added a highlighted Offline destination to the persistent mobile bottom navigation, linking directly to the existing `/offline-data` page. The Urdu interface uses an Urdu label; the existing footer shortcut remains intact.
+- The change is limited to public navigation and does not alter offline storage, Service Worker behavior, Supabase access, or any business/user data.
+- Production CI/deployment and physical-device layout acceptance remain pending until verified.
