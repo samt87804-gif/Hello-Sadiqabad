@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   Star,
   Trash2,
+  UploadCloud,
   XCircle,
 } from 'lucide-react';
 import type {
@@ -54,6 +55,7 @@ import { HoursEditor } from '../owner/HoursEditor';
 import { LocationPicker } from '../owner/LocationPicker';
 import { UrlListEditor } from '../owner/UrlListEditor';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
+import { compressBusinessImage, deleteBusinessImages, getBusinessMediaObjectPath, uploadBusinessImage, type BusinessMediaKind } from '../../lib/businessMedia';
 
 export function AdminDashboard({ counts }: { counts: AdminDashboardCounts }) {
   const cards = [
@@ -210,6 +212,11 @@ export function BusinessManager({
   const [newNote, setNewNote] = useState('');
   const [duplicates, setDuplicates] = useState<BusinessRow[]>([]);
   const [saving, setSaving] = useState(false);
+  const [logoSource, setLogoSource] = useState<'upload' | 'url' | null>(null);
+  const [coverSource, setCoverSource] = useState<'upload' | 'url' | null>(null);
+  const [uploadingMedia, setUploadingMedia] = useState<BusinessMediaKind | null>(null);
+  const [pendingMediaDeletes, setPendingMediaDeletes] = useState<string[]>([]);
+  const [newlyUploadedMediaPaths, setNewlyUploadedMediaPaths] = useState<string[]>([]);
   const [showAddArea, setShowAddArea] = useState(false);
   const [newAreaEn, setNewAreaEn] = useState('');
   const [newAreaUr, setNewAreaUr] = useState('');
@@ -315,11 +322,74 @@ export function BusinessManager({
     }
   };
 
+  const closeBusinessModal = async () => {
+    if (newlyUploadedMediaPaths.length) {
+      try {
+        await deleteBusinessImages(newlyUploadedMediaPaths);
+      } catch (error) {
+        console.error('Temporary business image cleanup failed:', error);
+        showToast('Form band ho gaya, lekin temporary uploaded image Storage se remove nahi ho saki.', 'error');
+      }
+    }
+    setNewlyUploadedMediaPaths([]);
+    setPendingMediaDeletes([]);
+    setLogoSource(null);
+    setCoverSource(null);
+    setUploadingMedia(null);
+    setModalOpen(false);
+  };
+
+  const clearBusinessImage = (kind: BusinessMediaKind) => {
+    const url = kind === 'logo' ? form.logo_url : form.cover_url;
+    const objectPath = getBusinessMediaObjectPath(url);
+    if (objectPath) setPendingMediaDeletes((current) => [...new Set([...current, objectPath])]);
+    if (kind === 'logo') {
+      setForm((current) => ({ ...current, logo_url: '' }));
+      setLogoSource(null);
+    } else {
+      setForm((current) => ({ ...current, cover_url: '' }));
+      setCoverSource(null);
+    }
+  };
+
+  const handleBusinessImageUpload = async (kind: BusinessMediaKind, source: File) => {
+    setUploadingMedia(kind);
+    try {
+      const compressed = await compressBusinessImage(source, kind);
+      const uploaded = await uploadBusinessImage(compressed.file, kind);
+      const currentUrl = kind === 'logo' ? form.logo_url : form.cover_url;
+      const oldPath = getBusinessMediaObjectPath(currentUrl);
+      if (oldPath) setPendingMediaDeletes((current) => [...new Set([...current, oldPath])]);
+      setNewlyUploadedMediaPaths((current) => [...current, uploaded.path]);
+      if (kind === 'logo') {
+        setForm((current) => ({ ...current, logo_url: uploaded.publicUrl }));
+        setLogoSource('upload');
+      } else {
+        setForm((current) => ({ ...current, cover_url: uploaded.publicUrl }));
+        setCoverSource('upload');
+      }
+      const savedKb = Math.round(compressed.compressedBytes / 1024);
+      const originalKb = Math.round(compressed.originalBytes / 1024);
+      const reduction = compressed.originalBytes > 0
+        ? Math.max(0, Math.round((1 - compressed.compressedBytes / compressed.originalBytes) * 100))
+        : 0;
+      showToast(`${kind === 'logo' ? 'Logo' : 'Banner'} upload ho gaya: ${originalKb} KB se ${savedKb} KB (${reduction}% kam).`, 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Image upload nahi ho saki.', 'error');
+    } finally {
+      setUploadingMedia(null);
+    }
+  };
+
   const openCreate = () => {
     setEditing(null);
     setDuplicates([]);
     setModalTab('core');
     setForm(emptyForm());
+    setLogoSource(null);
+    setCoverSource(null);
+    setPendingMediaDeletes([]);
+    setNewlyUploadedMediaPaths([]);
     setModalOpen(true);
   };
 
@@ -327,6 +397,10 @@ export function BusinessManager({
     setEditing(b);
     setDuplicates([]);
     setModalTab('core');
+    setPendingMediaDeletes([]);
+    setNewlyUploadedMediaPaths([]);
+    setLogoSource(b.logo_url ? (getBusinessMediaObjectPath(b.logo_url) ? 'upload' : 'url') : null);
+    setCoverSource(b.cover_url ? (getBusinessMediaObjectPath(b.cover_url) ? 'upload' : 'url') : null);
     setForm({
       name_en: b.name_en,
       name_ur: b.name_ur ?? '',
@@ -458,6 +532,16 @@ export function BusinessManager({
         },
         actorId
       );
+      if (pendingMediaDeletes.length) {
+        try {
+          await deleteBusinessImages(pendingMediaDeletes);
+        } catch (cleanupError) {
+          console.error('Old business image cleanup failed:', cleanupError);
+          showToast('Business save ho gaya, lekin purani image Storage se delete nahi ho saki.', 'error');
+        }
+      }
+      setNewlyUploadedMediaPaths([]);
+      setPendingMediaDeletes([]);
       showToast(editing ? 'Business updated!' : 'Business created!', 'success');
       setModalOpen(false);
       await onReload();
@@ -876,7 +960,7 @@ export function BusinessManager({
 
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => void closeBusinessModal()}
         title={editing ? `Edit ${editing.name_en}` : 'Add New Business'}
         maxWidthClass="max-w-3xl"
       >
@@ -1103,21 +1187,77 @@ export function BusinessManager({
           )}
 
           {modalTab === 'media' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input
-                  label="Logo URL (HTTPS)"
-                  dir="ltr"
-                  value={form.logo_url}
-                  onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
-                />
-                <Input
-                  label="Cover URL (HTTPS)"
-                  dir="ltr"
-                  value={form.cover_url}
-                  onChange={(e) => setForm({ ...form, cover_url: e.target.value })}
-                />
-              </div>
+            <div className="space-y-5">
+              <p className="text-xs text-on-surface-variant">
+                Logo aur banner ke liye upload ya HTTPS URL mein se aik tareeqa select karein. Upload par image browser mein WebP format mein compress ho kar Supabase Storage mein save hoti hai.
+              </p>
+              {([
+                { kind: 'logo' as const, title: 'Business Logo', url: form.logo_url, source: logoSource, busy: uploadingMedia === 'logo' },
+                { kind: 'cover' as const, title: 'Banner / Cover Image', url: form.cover_url, source: coverSource, busy: uploadingMedia === 'cover' },
+              ]).map((item) => (
+                <section key={item.kind} className="rounded-2xl border border-outline-variant/60 bg-surface-container-low/50 p-3 sm:p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-bold text-on-surface">{item.title}</h3>
+                    {item.url && (
+                      <Button type="button" size="sm" variant="danger" onClick={() => clearBusinessImage(item.kind)}>
+                        <Trash2 className="w-3.5 h-3.5" /> Delete Photo
+                      </Button>
+                    )}
+                  </div>
+                  {item.url && (
+                    <div className={item.kind === 'logo' ? 'flex items-center gap-3' : 'space-y-2'}>
+                      <img
+                        src={item.url}
+                        alt={item.title}
+                        className={item.kind === 'logo'
+                          ? 'w-20 h-20 object-contain rounded-xl border border-outline-variant bg-white p-1'
+                          : 'w-full max-h-44 object-cover rounded-xl border border-outline-variant bg-white'}
+                      />
+                      <span className="text-[11px] text-on-surface-variant break-all">{item.source === 'upload' ? 'Supabase Storage upload' : 'External HTTPS URL'}</span>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label className={`flex flex-col gap-1.5 text-xs font-semibold ${item.source === 'url' || item.busy ? 'opacity-45' : 'text-on-surface'}`}>
+                      <span className="flex items-center gap-1.5"><UploadCloud className="w-4 h-4" /> Direct Upload (auto-compress)</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        disabled={item.source === 'url' || item.busy || Boolean(item.url)}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          event.target.value = '';
+                          if (file) void handleBusinessImageUpload(item.kind, file);
+                        }}
+                        className="w-full min-h-[44px] rounded-xl border border-outline-variant bg-surface-container-lowest px-2 py-2 text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-on-primary disabled:cursor-not-allowed"
+                      />
+                      <span className="font-normal text-on-surface-variant">Logo: max 640px · Banner: max 1800px · WebP quality optimized</span>
+                      {item.busy && <span className="text-primary">Compressing and uploading…</span>}
+                    </label>
+                    <div className="space-y-1.5">
+                      <Input
+                        label="Image URL (HTTPS)"
+                        dir="ltr"
+                        value={item.url && item.source === 'upload' ? '' : item.url}
+                        placeholder="https://example.com/image.jpg"
+                        disabled={item.source === 'upload' || item.busy || Boolean(item.url && item.source === 'upload')}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (item.kind === 'logo') {
+                            setForm((current) => ({ ...current, logo_url: value }));
+                            setLogoSource(value.trim() ? 'url' : null);
+                          } else {
+                            setForm((current) => ({ ...current, cover_url: value }));
+                            setCoverSource(value.trim() ? 'url' : null);
+                          }
+                        }}
+                      />
+                      <p className="text-[11px] text-on-surface-variant">
+                        {item.source === 'upload' ? 'Upload selected hai. URL use karne ke liye pehle Delete Photo karein.' : item.source === 'url' ? 'URL active hai. Upload use karne ke liye URL clear karein.' : 'URL enter karne par direct upload temporarily inactive ho jayega.'}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              ))}
               <UrlListEditor
                 title="Gallery Photo URLs"
                 urls={form.gallery_urls}
@@ -1142,7 +1282,7 @@ export function BusinessManager({
           )}
 
           <div className="flex justify-end gap-2 pt-2 border-t border-outline-variant/30">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={() => void closeBusinessModal()}>
               Cancel
             </Button>
             <Button type="submit" loading={saving}>
