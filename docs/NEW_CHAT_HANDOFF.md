@@ -215,3 +215,15 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Production Browser Rendering verified /offline-data, /offline-precache.json (HTTP 200, 75 hashed assets) and /sw.js (HTTP 200). Browser Rendering did not expose an interactive persistent context for Cache Storage inspection or airplane-mode testing.
 - Code commits: 631f31aa0fe54a2cbe8026078cb82e3dbde89e03, 16003b2ef031f27cafb2629681e8b231ba040438, 8687077a47f2da4be28d4e54e7f5890e888a3001, 218c5517b5654bb496bed5dd4f473f9ef62bdf0e, a363474e76afff9959b1199876d93d143ed2baed, 015306c55e235f9638404da18215c3208813d534, 07ccfa978422327a9f12fd8e5aef6c49d5e4d969, d607c987748476cb82c806a57dd26401084ba587.
 - Phase 1 is still not accepted. Remaining: audit advisory investigation; true IndexedDB transaction/quota/concurrency failure tests; real browser SW install/cache, offline reload/deep-link, stale chunk/update/rollback; online regression and write guard acceptance; device/airplane-mode test.
+
+
+## Offline-first Phase 1 — full browser package verification (17 November 2026)
+
+- /offline-data now includes a readiness check: active Service Worker, cached SPA shell, cached emergency fallback, manifest asset coverage, native IndexedDB write/read, abort rollback and concurrent transactions, plus saved public package metadata.
+- Browser Rendering on production passed: Service Worker active; SPA shell/emergency fallback cached; 75/75 fingerprinted JS/CSS assets cached; native IndexedDB write/read, abort rollback and concurrent transaction probes passed.
+- End-to-end public package download in an isolated Browser Rendering context succeeded: 655 businesses, 19 categories, 303 areas, 12 emergency contacts. The diagnostic temporarily set navigator.onLine=false and verified public search, business detail, categories, areas and emergency contacts all read from the saved snapshot with matching counts. navigator.onLine was restored afterwards. No Supabase data was written.
+- Added src/lib/api.offline.test.ts: offline review/inquiry/suggestion submissions return not-sent, and business/ad telemetry does not create an analytics session or queue writes. Test passed.
+- CI run 44148164258: TypeScript, automated tests, production build and Deno Edge Function checks passed. Overall CI remains failed only at npm audit: 3 high findings for picomatch/tinyglobby/Vite. GHSA-fc5q-39xc-vjpf affects picomatch through 4.0.7; npm audit offers only npm audit fix --force downgrading Vite to 6.2.7 (major). Do not suppress or force-downgrade; wait for a safe upstream patch.
+- Production deployment 6d482311-18fe-47f6-bed0-382c0422dae7 succeeded for b80e6b470390fc80fba26c0111574a2e46c21a38.
+- This Browser Rendering test used an isolated browser context; it does not mean the user's phone already has the package. Real airplane-mode reload/deep-link and Service Worker update/rollback across open tabs still require device/browser acceptance. Real quota exhaustion and comprehensive online route smoke checks also remain.
+- Phase 1 remains in progress. Do not claim complete until the physical-device checks and audit blocker are resolved.
