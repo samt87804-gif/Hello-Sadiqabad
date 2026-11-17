@@ -142,4 +142,4 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - Confirmed favorites/recent history/emergency contacts already use local browser storage, but no complete business/category/area offline snapshot exists.
 - Confirmed public businesses are sourced from static JSON chunks plus current published Supabase rows; live public rows replace snapshot copies and are subject to existing anonymous RLS visibility.
 - No application code, Supabase schema/data, Cloudflare settings, public records or user data changed during Phase 0.
-- CI/deployment for this docs-only update will be recorded after GitHub Actions and Cloudflare Pages report their result.
+- GitHub Actions CI run `44108049876` passed for commit `04c87b0c89e746f0a1da66f38a4bddfeabf4bc82` (both `build` and `edge-functions` jobs succeeded). Cloudflare Pages production deployment `a5fbb764-e91c-4c0f-aee0-cb5d1a5e83d3` completed successfully; the deployment alias is `https://hellosadiqabad.com`. This was a documentation-only commit; application code and visitor behavior were unchanged.
