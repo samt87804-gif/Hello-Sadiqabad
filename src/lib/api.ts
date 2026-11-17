@@ -590,6 +590,31 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
   githubBusinessCache = [...databaseBusinessViews, ...crawlOnlyBusinesses];
   return githubBusinessCache;
 }
+export async function fetchBusinessesForOfflineDownload(): Promise<BusinessPublicView[]> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('A live public database connection is required for a complete offline download.');
+
+  // Count the rows visible to the anonymous public role first. If the normal
+  // directory loader falls back to crawl-only records because its live query
+  // fails, the count comparison prevents saving an incomplete snapshot.
+  const { count, error } = await client
+    .from('businesses')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'published');
+  if (error || count === null) {
+    throw new Error('Published business records could not be verified. No new offline package was saved.');
+  }
+
+  const businesses = await fetchGitHubBusinesses();
+  const liveCount = businesses.filter((business) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(business.id)
+  ).length;
+  if (liveCount !== count) {
+    throw new Error('The complete published business set could not be verified. No new offline package was saved.');
+  }
+  return businesses;
+}
+
 function matchesGitHubBusiness(business:BusinessPublicView,filters:Partial<SearchFiltersState>):boolean {
   if(!matchesDirectoryBusinessQuery(business,filters.q))return false;
   if(filters.category&&business.category?.slug!==filters.category)return false;
