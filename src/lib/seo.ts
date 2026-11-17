@@ -46,7 +46,7 @@ export function updatePageSeo(opts: {
   setMeta('meta[property="og:image"]', socialImage);
   setMeta('meta[property="og:image:alt"]', fullTitle);
   setMeta('meta[name="twitter:image"]', socialImage);
-  setMeta('meta[name="twitter:card"]', opts.image ? 'summary_large_image' : 'summary');
+  setMeta('meta[name="twitter:card"]', 'summary_large_image');
 
   let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
   if (!canonical) {
