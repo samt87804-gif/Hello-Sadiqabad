@@ -116,3 +116,11 @@ Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verifi
 - Logo source: user-supplied square image at Supabase public Storage path `Hello Sadiqabad/186747.png`. It was returning `X-Robots-Tag: none`; same-domain assets `/favicon.png` (192×192) and `/site-logo.png` (512×512) are now added, with index, manifest, Organization schema and social image references updated.
 - Verified: CI run 44072068947 passed; production Pages deployment 6202c970-d2b1-406e-a991-e5b5e736f88c succeeded. Live custom-domain homepage metadata/H1/Organization logo, `/favicon.png` (192×192), `/site-logo.png` (512×512), and manifest were checked successfully.
 - Owner action still needed: re-submit the homepage URL Inspection / Request Indexing in Search Console to prompt a recrawl for the changed favicon and snippet. Google may take days/weeks to refresh; never claim keyword ranking/indexing until Search Console evidence exists.
+
+
+## Search Console indexing rejection audit — 17 November 2026
+- Rechecked live apex homepage with Google-InspectionTool smartphone user-agent via Cloudflare Browser Rendering: HTTP 200, visible H1, `index,follow`, self-canonical `https://hellosadiqabad.com/`.
+- `/robots.txt` and `/sitemap.xml` both returned HTTP 200; robots allows all and points to sitemap; sitemap is valid XML.
+- `/offers` and `/announcements` intentionally return `noindex,follow` while there is no active content. Do not force-index empty pages.
+- `www.hellosadiqabad.com` is intentionally unsupported. Use the apex domain URL in Search Console.
+- Owner has not supplied the exact URL that Search Console rejected or the expanded Live Test diagnostic fields. The actual Google-side rejection reason is therefore not yet established; do not claim a fix or alter security settings blindly. Ask for the exact rejected URL and the values for Crawl allowed, Page fetch, Indexing allowed, and any issue detail. Matching user-agent browser rendering is not the same as a fetch from Google's infrastructure.
