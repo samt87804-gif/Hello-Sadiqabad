@@ -157,3 +157,59 @@ test('inactive categories cannot be mapped into the offline package', () => {
     /Only active public categories/
   );
 });
+
+
+test('snapshot validation rejects malformed nested public rows', () => {
+  const snapshot = createSnapshot();
+  (snapshot.businesses[0] as unknown as { services_en: unknown }).services_en = 'not-an-array';
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
+});
+
+test('snapshot validation rejects an offer attached to another business', () => {
+  const snapshot = createSnapshot();
+  snapshot.businesses[0].active_offers.push({
+    id: 'offer-1',
+    business_id: 'another-business',
+    title: 'Public offer',
+    description: null,
+    image_url: null,
+    valid_from: '2026-11-01',
+    valid_to: '2026-11-30',
+  });
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
+});
+
+test('snapshot validation rejects malformed emergency contact records', () => {
+  const snapshot = createSnapshot();
+  (snapshot.emergency_contacts as unknown[]).push({
+    id: 'contact-1',
+    name_en: 'Emergency',
+    name_ur: 'ایمرجنسی',
+    phone: 1122,
+    category: 'rescue',
+    icon: 'phone',
+    sort_order: 1,
+    description_en: null,
+    description_ur: null,
+    whatsapp: null,
+    source_url: null,
+    verified_at: null,
+  });
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
+});
+
+test('snapshot validation rejects nested private fields in public content', () => {
+  const snapshot = createSnapshot();
+  (snapshot.businesses[0].approved_reviews as unknown as Record<string, unknown>[]).push({
+    id: 'review-1',
+    business_id: 'business-1',
+    author_name: 'Public visitor',
+    rating: 5,
+    comment: 'Good',
+    owner_reply: null,
+    owner_reply_at: null,
+    created_at: '2026-11-17T12:00:00.000Z',
+    email: 'private@example.com',
+  });
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
+});
