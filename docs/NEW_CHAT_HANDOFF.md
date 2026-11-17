@@ -107,3 +107,11 @@ Read `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`. Phase 0 technical work is verifi
 - Generated owner review workbook: `Hello_Sadiqabad_Business_Data_Audit.xlsx` (summary, source quality, Sadiqabad candidates, repeated Place IDs, geo review, 204-area master, methodology).
 - No source candidates have been declared a confirmed new business or live duplicate. No production records were changed.
 - Next technical step: read-only matching by normalized name, phone, address and coordinate proximity, then prepare an ambiguous-match review queue. Do not add schema columns or import data without an explicit reviewed plan.
+
+
+## Latest SEO/logo work (17 November 2026)
+
+- Owner reports branded “Hello Sadiqabad” Google results now appear prominently; broader keyword queries are not yet showing the site. Treat this as an observation, not proof of indexing/rank coverage.
+- Homepage H1 was screen-reader-only; changed to a visible bilingual “Sadiqabad Business Directory” heading and supporting local-services text. Updated homepage and Categories title/description with natural local search phrases. No meta-keywords stuffing.
+- Logo source: user-supplied square image at Supabase public Storage path `Hello Sadiqabad/186747.png`. It was returning `X-Robots-Tag: none`; same-domain assets `/favicon.png` (192×192) and `/site-logo.png` (512×512) are now added, with index, manifest, Organization schema and social image references updated.
+- Pending: CI + Pages deployment, live checks for `/favicon.png`, `/site-logo.png`, `/manifest.webmanifest`, homepage H1/title/schema, then Google recrawl. Google may take time to refresh its favicon and keyword rankings; never claim ranking/indexing until Search Console evidence exists.

@@ -193,3 +193,11 @@ Batch 3 — completed (16 November 2026):
 - [x] GitHub Actions CI passed for code commit `bac9261c134bc782159db8d696026ff0979fdc4a`.
 - [x] Cloudflare Pages production deployment succeeded: `017a7ca2-fe39-463d-9e46-631bba2e1fbe`.
 - [x] Post-deploy browser-render checks confirmed both `/offers` and `/announcements` return HTTP 200, canonical URLs, one H1, and `noindex,follow` while their active datasets are empty.
+
+
+## Search keyword and favicon improvements — 17 November 2026
+
+- [ ] Homepage now targets “Sadiqabad Business Directory” with visible bilingual H1 and natural local-service copy; title/description updated.
+- [ ] Category index metadata now names local shop, doctor, clinic, restaurant and pharmacy intents; category and area detail pages retain dynamic location/category titles.
+- [ ] Supplied logo is hosted on the site domain as favicon and social/PWA logo assets to avoid relying on the external Storage image response.
+- [ ] Await CI, deployment and live endpoint/browser verification. Broader keyword visibility and Google favicon display remain dependent on Google crawling/indexing; no ranking guarantee.
