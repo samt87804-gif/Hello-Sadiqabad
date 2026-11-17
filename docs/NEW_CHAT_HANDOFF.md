@@ -272,6 +272,6 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 ### Storage upload RLS correction — 18 November 2026
 
 - Diagnosed real failed `site-media` upload from Supabase Storage logs: authenticated active Super Admin, correct own-UID folder, but INSERT rejected by RLS because metadata MIME/size predicates were not reliably satisfied at insert time.
-- Applied and committed migration `20261118110000_fix_site_media_admin_insert_rls` to remove only the `metadata.mimetype` and `metadata.size` conditions. Retained `TO authenticated`, exact `Hello Sadiqabad` bucket, `site-media` prefix, own UID folder and Super Admin/approved staff permission checks.
+- Applied and committed migration `20261117204927_fix_site_media_admin_insert_rls` to remove only the `metadata.mimetype` and `metadata.size` conditions. Retained `TO authenticated`, exact `Hello Sadiqabad` bucket, `site-media` prefix, own UID folder and Super Admin/approved staff permission checks.
 - Browser uploader still converts to WebP and enforces supported image formats and 8 MiB compressed limit. This is client-side validation; Storage RLS no longer enforces MIME/size independently.
 - Live policy verified. Owner still needs to retry one image upload in Admin UI to confirm end-to-end persistence; then check offline media cache. No public/owner upload permission was added.
