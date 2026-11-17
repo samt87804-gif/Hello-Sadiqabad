@@ -21,6 +21,7 @@ self.addEventListener('install', (event) => {
     try {
       const manifestResponse = await fetch(PRECACHE_MANIFEST_URL, { cache: 'no-store' });
       if (manifestResponse.ok) {
+        await cache.put(PRECACHE_MANIFEST_URL, manifestResponse.clone()).catch(() => undefined);
         const manifest = await manifestResponse.json();
         const assets = Array.isArray(manifest)
           ? manifest.filter((path) => typeof path === 'string' && /^\/assets\/.+-[A-Za-z0-9_-]{6,}\.(?:js|css)$/.test(path))
