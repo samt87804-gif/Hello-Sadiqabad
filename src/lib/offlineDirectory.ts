@@ -450,7 +450,10 @@ export async function saveOfflineDirectorySnapshot(
       }
     };
   };
-  await cleanupDone;
+  // Cleanup is best-effort: activation already committed. If cleanup fails,
+  // keep the extra older generations rather than reporting a failed download
+  // when the new verified snapshot is already active.
+  await cleanupDone.catch(() => undefined);
 
   return {
     generation,
