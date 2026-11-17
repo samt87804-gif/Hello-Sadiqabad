@@ -20,6 +20,8 @@ type DownloadStatus = 'idle' | 'downloading' | 'saving' | 'success' | 'error' | 
 
 type OfflineReadinessReport = {
   serviceWorkerSupported: boolean;
+  indexedDbWriteReadPassed: boolean;
+  indexedDbAbortRollbackPassed: boolean;
   activeWorker: boolean;
   waitingWorker: boolean;
   appShellCached: boolean;
@@ -31,6 +33,81 @@ type OfflineReadinessReport = {
   error?: string;
   checkedAt: string;
 };
+
+async function runNativeIndexedDbProbe(): Promise<{
+  writeReadPassed: boolean;
+  abortRollbackPassed: boolean;
+}> {
+  if (typeof indexedDB === 'undefined') {
+    return { writeReadPassed: false, abortRollbackPassed: false };
+  }
+
+  const databaseName = 'hs-offline-readiness-probe-' +
+    Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+  let database: IDBDatabase | null = null;
+
+  try {
+    database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open(databaseName, 1);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore('probe', { keyPath: 'id' });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB open failed.'));
+      request.onblocked = () => reject(new Error('Temporary IndexedDB probe was blocked.'));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database!.transaction('probe', 'readwrite');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error ?? new Error('IndexedDB write failed.'));
+      transaction.onabort = () => reject(transaction.error ?? new Error('IndexedDB write aborted.'));
+      transaction.objectStore('probe').put({ id: 'committed', value: 'verified' });
+    });
+
+    const storedValue = await new Promise<unknown>((resolve, reject) => {
+      const transaction = database!.transaction('probe', 'readonly');
+      const request = transaction.objectStore('probe').get('committed');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB read failed.'));
+    });
+    const writeReadPassed = Boolean(
+      storedValue && typeof storedValue === 'object' &&
+      (storedValue as { value?: unknown }).value === 'verified'
+    );
+
+    const abortEventObserved = await new Promise<boolean>((resolve) => {
+      const transaction = database!.transaction('probe', 'readwrite');
+      transaction.onabort = () => resolve(true);
+      transaction.onerror = () => undefined;
+      transaction.oncomplete = () => resolve(false);
+      transaction.objectStore('probe').put({ id: 'aborted', value: 'must-not-persist' });
+      transaction.abort();
+    });
+
+    const abortedValue = await new Promise<unknown>((resolve, reject) => {
+      const transaction = database!.transaction('probe', 'readonly');
+      const request = transaction.objectStore('probe').get('aborted');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error('IndexedDB abort verification failed.'));
+    });
+
+    return {
+      writeReadPassed,
+      abortRollbackPassed: abortEventObserved && abortedValue === undefined,
+    };
+  } catch {
+    return { writeReadPassed: false, abortRollbackPassed: false };
+  } finally {
+    database?.close();
+    await new Promise<void>((resolve) => {
+      const request = indexedDB.deleteDatabase(databaseName);
+      request.onsuccess = () => resolve();
+      request.onerror = () => resolve();
+      request.onblocked = () => resolve();
+    });
+  }
+}
 
 function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '—';
@@ -116,8 +193,11 @@ export function OfflineData() {
     setCheckingReadiness(true);
     try {
       if (!('serviceWorker' in navigator) || !('caches' in window)) {
+        const idbProbe = await runNativeIndexedDbProbe();
         setReadiness({
           serviceWorkerSupported: false,
+          indexedDbWriteReadPassed: idbProbe.writeReadPassed,
+          indexedDbAbortRollbackPassed: idbProbe.abortRollbackPassed,
           activeWorker: false,
           waitingWorker: false,
           appShellCached: false,
@@ -161,10 +241,13 @@ export function OfflineData() {
       const cachedPaths = new Set(cachedRequests.map((request) => new URL(request.url).pathname));
       const missingAssets = manifestAssets.filter((path) => !cachedPaths.has(path));
       const savedMetadata = await getOfflineDirectoryMetadata().catch(() => null);
+      const idbProbe = await runNativeIndexedDbProbe();
 
       setMetadata(savedMetadata);
       setReadiness({
         serviceWorkerSupported: true,
+        indexedDbWriteReadPassed: idbProbe.writeReadPassed,
+        indexedDbAbortRollbackPassed: idbProbe.abortRollbackPassed,
         activeWorker: Boolean(registration.active),
         waitingWorker: Boolean(registration.waiting),
         appShellCached: Boolean(appShell),
@@ -177,8 +260,11 @@ export function OfflineData() {
       });
       await refreshStorageEstimate();
     } catch (error) {
+      const idbProbe = await runNativeIndexedDbProbe();
       setReadiness({
         serviceWorkerSupported: 'serviceWorker' in navigator && 'caches' in window,
+        indexedDbWriteReadPassed: idbProbe.writeReadPassed,
+        indexedDbAbortRollbackPassed: idbProbe.abortRollbackPassed,
         activeWorker: false,
         waitingWorker: false,
         appShellCached: false,
@@ -404,6 +490,14 @@ export function OfflineData() {
                 {readiness.serviceWorkerSupported
                   ? (readiness.activeWorker ? (isUrdu ? 'سروس ورکر فعال ہے' : 'Service Worker is active') : (isUrdu ? 'سروس ورکر فعال نہیں' : 'Service Worker is not active'))
                   : (isUrdu ? 'یہ براؤزر سروس ورکر کو سپورٹ نہیں کرتا' : 'Service Worker is not supported')}
+              </p>
+              <p className="text-on-surface-variant">
+                {isUrdu ? 'IndexedDB لکھنے/پڑھنے کا ٹیسٹ: ' : 'IndexedDB write/read test: '}
+                <strong>{readiness.indexedDbWriteReadPassed ? (isUrdu ? 'کامیاب' : 'Passed') : (isUrdu ? 'ناکام' : 'Failed')}</strong>
+              </p>
+              <p className="text-on-surface-variant">
+                {isUrdu ? 'ٹرانزیکشن منسوخی کا ٹیسٹ: ' : 'Transaction abort rollback test: '}
+                <strong>{readiness.indexedDbAbortRollbackPassed ? (isUrdu ? 'کامیاب' : 'Passed') : (isUrdu ? 'ناکام' : 'Failed')}</strong>
               </p>
               <p className="text-on-surface-variant">
                 {isUrdu ? 'ایپ کا مرکزی صفحہ: ' : 'App shell: '}
