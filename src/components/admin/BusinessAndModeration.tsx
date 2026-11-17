@@ -1098,6 +1098,7 @@ export function BusinessManager({
               isOpen24h={form.is_open_24h}
               onChange={(opening_hours) => setForm((p) => ({ ...p, opening_hours }))}
               onChange24h={(is_open_24h) => setForm((p) => ({ ...p, is_open_24h }))}
+              showApplyToAll
             />
           )}
 
