@@ -41,10 +41,12 @@ export function AppShell({
   children,
   hideFooter = false,
   hideBottomNav = false,
+  hideHeader = false,
 }: {
   children: React.ReactNode;
   hideFooter?: boolean;
   hideBottomNav?: boolean;
+  hideHeader?: boolean;
 }) {
   const location = useLocation();
   const isOnline = useOnlineStatus();
@@ -69,15 +71,15 @@ export function AppShell({
   const showBottomNav = !hideBottomNav;
   const isAdminPath = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
   const isOwnerPortalPath = location.pathname === '/owner' || location.pathname.startsWith('/owner/');
-  const showChatbot = !isAdminPath && !isOwnerPortalPath &&
+  const showChatbot = !hideHeader && !isAdminPath && !isOwnerPortalPath &&
     !['/login', '/owner-register', '/forgot-password', '/reset-password', '/change-password'].includes(location.pathname);
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-on-surface overflow-x-clip">
-      <AppHeader />
+      {!hideHeader && <AppHeader />}
 
       {/* Clearance for fixed AppHeader (~92px mobile / ~100px desktop) and frozen footer / bottom nav */}
-      <div className="pt-[93px] sm:pt-[102px]">
+      {!hideHeader && <div className="pt-[93px] sm:pt-[102px]">
         <DemoModeNotice />
         <AnnouncementBar />
 
@@ -107,7 +109,7 @@ export function AppShell({
             </div>
           </div>
         )}
-      </div>
+      </div>}
 
       <main
         className={`flex-1 w-full min-w-0 ${
