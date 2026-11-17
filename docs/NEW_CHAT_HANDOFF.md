@@ -268,3 +268,10 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - CI run '44164115526': TypeScript, 92 automated tests, production build and Edge Function type-check passed. Overall run remains failed only at npm audit (3 high findings: picomatch/tinyglobby/Vite); do not suppress or force-downgrade.
 - Public visitor submission hardening migration '20261117195404_public_submission_images_admin_only' is applied and included in the repository. The public approval RPC ignores visitor-supplied logo/cover URLs.
 - Still unverified: actual signed-in Admin upload from UI, resulting WebP sizes, offline media cache count, and physical phone airplane-mode/reload. Production deployment alone does not prove these acceptance tests.
+
+### Storage upload RLS correction — 18 November 2026
+
+- Diagnosed real failed `site-media` upload from Supabase Storage logs: authenticated active Super Admin, correct own-UID folder, but INSERT rejected by RLS because metadata MIME/size predicates were not reliably satisfied at insert time.
+- Applied and committed migration `20261118110000_fix_site_media_admin_insert_rls` to remove only the `metadata.mimetype` and `metadata.size` conditions. Retained `TO authenticated`, exact `Hello Sadiqabad` bucket, `site-media` prefix, own UID folder and Super Admin/approved staff permission checks.
+- Browser uploader still converts to WebP and enforces supported image formats and 8 MiB compressed limit. This is client-side validation; Storage RLS no longer enforces MIME/size independently.
+- Live policy verified. Owner still needs to retry one image upload in Admin UI to confirm end-to-end persistence; then check offline media cache. No public/owner upload permission was added.
