@@ -80,6 +80,7 @@ export async function uploadBusinessImage(
     upsert: false,
   });
   if (error) throw error;
+  if (!data?.path) throw new Error('Supabase Storage ne upload path return nahi kiya.');
   const { data: publicData } = client.storage.from(BUSINESS_MEDIA_BUCKET).getPublicUrl(data.path);
   return { path: data.path, publicUrl: publicData.publicUrl };
 }
