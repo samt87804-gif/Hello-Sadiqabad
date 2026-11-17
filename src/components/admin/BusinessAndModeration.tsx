@@ -323,6 +323,10 @@ export function BusinessManager({
   };
 
   const closeBusinessModal = async () => {
+    if (uploadingMedia) {
+      showToast('Image upload complete hone dein, phir form band karein.', 'error');
+      return;
+    }
     if (newlyUploadedMediaPaths.length) {
       try {
         await deleteBusinessImages(newlyUploadedMediaPaths);
@@ -1282,10 +1286,10 @@ export function BusinessManager({
           )}
 
           <div className="flex justify-end gap-2 pt-2 border-t border-outline-variant/30">
-            <Button variant="outline" onClick={() => void closeBusinessModal()}>
+            <Button variant="outline" disabled={Boolean(uploadingMedia)} onClick={() => void closeBusinessModal()}>
               Cancel
             </Button>
-            <Button type="submit" loading={saving}>
+            <Button type="submit" loading={saving} disabled={Boolean(uploadingMedia)}>
               Save Business
             </Button>
           </div>
