@@ -72,7 +72,7 @@ async function runOfflineReadAdapterProbe(): Promise<{
     };
 
     return {
-      passed: Boolean(metadata) &&
+      passed: metadata !== null &&
         counts.businesses === metadata.counts.businesses &&
         counts.categories === metadata.counts.categories &&
         counts.areas === metadata.counts.areas &&
