@@ -505,11 +505,12 @@ export async function getActiveOfflineDirectorySnapshot(): Promise<OfflineDirect
 let fallbackGenerationCounter = 0;
 
 function createOfflineGenerationId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID();
+  const cryptoApi = typeof crypto !== 'undefined' ? crypto : undefined;
+  if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+    return cryptoApi.randomUUID();
   }
-  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
+  if (cryptoApi && typeof cryptoApi.getRandomValues === 'function') {
+    const bytes = cryptoApi.getRandomValues(new Uint8Array(16));
     return 'offline-' + Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
   }
   fallbackGenerationCounter += 1;
