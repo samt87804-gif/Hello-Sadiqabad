@@ -148,6 +148,10 @@ Batch 3 — completed (16 November 2026):
 - [x] Keep the existing `public.local_authorities` rows and behavior unchanged.
 - [x] GitHub CI, typecheck, tests, production build and Cloudflare Pages deployment succeeded.
 - [ ] Super Admin to create the first real authority profile and confirm portrait upload; no real office-holder profile was fabricated or seeded.
+- [x] Add a clear desktop Civic Services menu linking separately to Local Authorities and Authority Profiles; add Authority Profiles to the public All Links footer for mobile and desktop visitors.
+- [x] Add a direct public-profile preview link to each Authority Profiles Admin card.
+- [x] Add an individual-profile Presentation Mode with a clean full-screen canvas, prominent portrait/name/designation, exit control and Print / Save PDF action.
+- [ ] Owner / relevant office-holder to review the first genuinely sourced profile content and portrait before public publishing; no real person or biography has been invented.
 
 ## Existing functionality to preserve
 
