@@ -289,6 +289,41 @@ function containsForbiddenKeys(value: unknown): boolean {
   );
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === 'string';
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+function isValidPublicCategory(value: unknown): value is OfflineCategory {
+  if (!value || typeof value !== 'object') return false;
+  const category = value as OfflineCategory;
+  return isNonEmptyString(category.id) &&
+    isNonEmptyString(category.slug) &&
+    typeof category.name_en === 'string' &&
+    typeof category.name_ur === 'string' &&
+    isNullableString(category.parent_id) &&
+    typeof category.icon === 'string' &&
+    typeof category.color === 'string' &&
+    Number.isFinite(category.sort_order) &&
+    isStringArray(category.synonyms);
+}
+
+function isValidPublicArea(value: unknown): value is OfflineArea {
+  if (!value || typeof value !== 'object') return false;
+  const area = value as OfflineArea;
+  return isNonEmptyString(area.id) &&
+    isNonEmptyString(area.slug) &&
+    typeof area.name_en === 'string' &&
+    typeof area.name_ur === 'string';
+}
+
 export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnapshot): boolean {
   if (!snapshot || typeof snapshot !== 'object') return false;
   if (snapshot.schema_version !== OFFLINE_DIRECTORY_SCHEMA_VERSION) return false;
@@ -298,32 +333,82 @@ export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnaps
   if (containsForbiddenKeys(snapshot)) return false;
 
   const businessIds = new Set<string>();
-  for (const business of snapshot.businesses) {
-    if (!business || typeof business.id !== 'string' || !business.id ||
-        typeof business.slug !== 'string' || !business.slug ||
-        typeof business.name_en !== 'string' || !business.name_en ||
-        business.status !== 'published' || businessIds.has(business.id)) return false;
+  for (const candidate of snapshot.businesses as unknown[]) {
+    if (!candidate || typeof candidate !== 'object') return false;
+    const business = candidate as OfflineBusiness;
+    if (!isNonEmptyString(business.id) ||
+        !isNonEmptyString(business.slug) ||
+        !isNonEmptyString(business.name_en) ||
+        business.status !== 'published' ||
+        businessIds.has(business.id) ||
+        !isNonEmptyString(business.category_id) ||
+        !isNullableString(business.area_id) ||
+        !isStringArray(business.services_en) ||
+        !isStringArray(business.services_ur) ||
+        !isStringArray(business.gallery_urls) ||
+        !isStringArray(business.video_urls) ||
+        !isStringArray(business.tags) ||
+        !Array.isArray(business.active_offers) ||
+        !Array.isArray(business.approved_reviews) ||
+        (business.category !== null && !isValidPublicCategory(business.category)) ||
+        (business.area !== null && !isValidPublicArea(business.area))) return false;
     businessIds.add(business.id);
+
+    for (const offer of business.active_offers) {
+      if (!offer || !isNonEmptyString(offer.id) ||
+          offer.business_id !== business.id ||
+          !isNonEmptyString(offer.title) ||
+          !isNonEmptyString(offer.valid_from) ||
+          !isNonEmptyString(offer.valid_to) ||
+          !isNullableString(offer.description) ||
+          !isNullableString(offer.image_url)) return false;
+    }
+
+    for (const review of business.approved_reviews) {
+      if (!review || !isNonEmptyString(review.id) ||
+          review.business_id !== business.id ||
+          !isNonEmptyString(review.author_name) ||
+          !Number.isInteger(review.rating) || review.rating < 1 || review.rating > 5 ||
+          typeof review.comment !== 'string' ||
+          !isNullableString(review.owner_reply) ||
+          !isNullableString(review.owner_reply_at) ||
+          !isNonEmptyString(review.created_at)) return false;
+    }
   }
 
   const categoryIds = new Set<string>();
-  for (const category of snapshot.categories) {
-    if (!category || !category.id || !category.slug) return false;
+  for (const candidate of snapshot.categories as unknown[]) {
+    if (!isValidPublicCategory(candidate)) return false;
+    const category = candidate as OfflineCategory;
     if (categoryIds.has(category.id)) return false;
     categoryIds.add(category.id);
   }
 
   const areaIds = new Set<string>();
-  for (const area of snapshot.areas) {
-    if (!area || !area.id || !area.slug) return false;
+  for (const candidate of snapshot.areas as unknown[]) {
+    if (!isValidPublicArea(candidate)) return false;
+    const area = candidate as OfflineArea;
     if (areaIds.has(area.id)) return false;
     areaIds.add(area.id);
   }
 
   const contactIds = new Set<string>();
-  for (const contact of snapshot.emergency_contacts) {
-    if (!contact || !contact.id || !contact.name_en || !contact.phone) return false;
-    if (contactIds.has(contact.id)) return false;
+  for (const candidate of snapshot.emergency_contacts as unknown[]) {
+    if (!candidate || typeof candidate !== 'object') return false;
+    const contact = candidate as OfflineEmergencyContact;
+    if (!isNonEmptyString(contact.id) ||
+        !isNonEmptyString(contact.name_en) ||
+        typeof contact.name_ur !== 'string' ||
+        !isNonEmptyString(contact.phone) ||
+        !isNonEmptyString(contact.category) ||
+        typeof contact.icon !== 'string' ||
+        !Number.isFinite(contact.sort_order) ||
+        !isNullableString(contact.description_en) ||
+        !isNullableString(contact.description_ur) ||
+        !isNullableString(contact.whatsapp) ||
+        !isNullableString(contact.source_url) ||
+        !isNullableString(contact.verified_at) ||
+        contactIds.has(contact.id)) return false;
     contactIds.add(contact.id);
   }
 
