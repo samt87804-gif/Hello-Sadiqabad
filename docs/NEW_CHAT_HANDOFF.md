@@ -202,3 +202,16 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - CI and production deployment status must be checked for the final commit before describing the work as live. Browser-level presentation rendering and print layout remain to be verified after deployment.
 
 - Final presentation polish: hide popup ads while presenting and replace the repeated person-name heading with a neutral Hello Sadiqabad public-profile heading. Commits: `3933c74f4c100b7aa98fa2af530106df2112134c`, `57f3509534e0245feff84ba2a5d47980d7766e9d`.
+
+
+## Offline-first Phase 1 continuation — 17 November 2026, evening
+
+- Re-read current project rules, state review, handoff and offline plan. Continue direct to main; preserve Supabase online source-of-truth, public-only offline package, no local write queue, and existing /offline emergency fallback.
+- Added a Vite build plugin that emits offline-precache.json with all fingerprinted JS/CSS bundles; Service Worker pre-caches these bundles on install (best-effort). Production manifest endpoint returned HTTP 200 with 75 assets (73 JS, 2 CSS), including public route chunks. This closes the previous first-visit-only JS/CSS caching gap at code/build level; actual Cache Storage and offline navigation still need real browser verification.
+- Hardened offline snapshot validation and added malformed nested data/private field regression tests.
+- /offline-data now clarifies media/live content limits, displays StorageManager usage/quota where supported, guards duplicate download starts and checks cancellation before activation.
+- CI run 44143421511: TypeScript, automated tests, production build and Edge Function checks passed. Overall CI remains failed because npm audit --audit-level=high reported a high/critical dependency gate failure. Do not suppress the gate or claim CI green; identify exact advisory before changing dependencies.
+- Cloudflare Pages production deployment 9c5e9413-98d1-4568-9b3f-fe912c3e1638 succeeded for commit d607c987748476cb82c806a57dd26401084ba587.
+- Production Browser Rendering verified /offline-data, /offline-precache.json (HTTP 200, 75 hashed assets) and /sw.js (HTTP 200). Browser Rendering did not expose an interactive persistent context for Cache Storage inspection or airplane-mode testing.
+- Code commits: 631f31aa0fe54a2cbe8026078cb82e3dbde89e03, 16003b2ef031f27cafb2629681e8b231ba040438, 8687077a47f2da4be28d4e54e7f5890e888a3001, 218c5517b5654bb496bed5dd4f473f9ef62bdf0e, a363474e76afff9959b1199876d93d143ed2baed, 015306c55e235f9638404da18215c3208813d534, 07ccfa978422327a9f12fd8e5aef6c49d5e4d969, d607c987748476cb82c806a57dd26401084ba587.
+- Phase 1 is still not accepted. Remaining: audit advisory investigation; true IndexedDB transaction/quota/concurrency failure tests; real browser SW install/cache, offline reload/deep-link, stale chunk/update/rollback; online regression and write guard acceptance; device/airplane-mode test.
