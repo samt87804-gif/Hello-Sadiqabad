@@ -189,3 +189,14 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - CI runs `44120063673` and `44120165303` passed all configured checks. Final Cloudflare Pages production deployment `4c4647d1-e582-4250-8704-a258e15c3089` succeeded.
 - Not verified yet: browser/device Service Worker lifecycle, actual cache contents, offline reload/deep-link, previously visited lazy route, stale chunk/update/rollback, IndexedDB quota/concurrency and airplane-mode acceptance. Phase 1 remains in progress; do not claim full offline browsing.
 - No Supabase schema/data/RLS/migrations, Cloudflare settings, install manifest/prompt, auth/owner/admin workflow or production business/user records were changed.
+
+
+## Latest authority navigation and presentation work — 17 November 2026
+
+- Public Local Authorities (`/local-authorities`) and individual Authority Profiles (`/authority-profiles/:slug`) remain separate routes and separate concepts. Local Authorities are offices/departments and public office contacts; Authority Profiles are people/office-holders.
+- Added a desktop `Civic Services` header menu with distinct links to both routes, plus an Authority Profiles entry in the public All Links footer (including mobile footer drawer).
+- Added `Preview public profile` to each Super Admin Authority Profiles manager card so an editor can open the public-facing profile directly in a new tab.
+- Added individual profile Presentation Mode: it hides the normal app header/footer/bottom navigation/chatbot, uses a larger portrait and typography, and provides an exit control. The regular profile view also has `Print / Save PDF`.
+- No profile records, photos, authority records, or Supabase data were created/edited. Real office-holder information must come from the person/office or a reliable official source; do not invent achievements, current status, or contact details. The first real profile still requires owner-sourced content and review.
+- Code commits: `586023450879ad9e9e62f0b650920183ed7c02d7`, `9c4a2e0b2fcd3ef9d71982f92fec8ed5c5bac3e0`, `2e52d746def4a24b74bc3f55a0d3c875093783b0`, `3cad70829d57e7c5970378d6c3e27723d54830f7`, `ca87af6e77ba87bedb260267093531e73b0be431`.
+- CI and production deployment status must be checked for the final commit before describing the work as live. Browser-level presentation rendering and print layout remain to be verified after deployment.
