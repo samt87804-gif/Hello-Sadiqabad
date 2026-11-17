@@ -70,9 +70,10 @@ class FakeTransaction {
         request.result = operation(store);
         request.onsuccess?.();
       } catch (error) {
-        request.error = error instanceof DOMException ? error : new DOMException(String(error), 'UnknownError');
+        const requestError = error instanceof DOMException ? error : new DOMException(String(error), 'UnknownError');
+        request.error = requestError;
         request.onerror?.();
-        this.abort(request.error);
+        this.abort(requestError);
       }
     });
     this.pump();
