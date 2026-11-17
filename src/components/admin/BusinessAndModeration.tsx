@@ -1237,9 +1237,9 @@ export function BusinessManager({
                       <Input
                         label="Image URL (HTTPS)"
                         dir="ltr"
-                        value={item.url && item.source === 'upload' ? '' : item.url}
+                        value={item.url}
                         placeholder="https://example.com/image.jpg"
-                        disabled={item.source === 'upload' || item.busy || Boolean(item.url && item.source === 'upload')}
+                        disabled={item.source === 'upload' || item.busy}
                         onChange={(event) => {
                           const value = event.target.value;
                           if (item.kind === 'logo') {
