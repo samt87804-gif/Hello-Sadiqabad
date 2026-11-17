@@ -194,6 +194,7 @@ export function BusinessManager({
   const { showToast } = useToast();
   const [search, setSearch] = useState(initialSearch);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkCategoryId, setBulkCategoryId] = useState(categories[0]?.id ?? '');
@@ -260,6 +261,7 @@ export function BusinessManager({
 
   const filtered = businesses.filter((b) => {
     if (statusFilter !== 'all' && b.status !== statusFilter) return false;
+    if (categoryFilter !== 'all' && b.category_id !== categoryFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
@@ -604,13 +606,21 @@ export function BusinessManager({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 items-center">
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search name, phone, area..."
           leftAdornment={<Search className="w-4 h-4" />}
         />
+        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <option value="all">All Categories</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name_en}
+            </option>
+          ))}
+        </Select>
         <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="all">All Statuses</option>
           <option value="published">Published</option>
