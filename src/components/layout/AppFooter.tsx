@@ -85,7 +85,7 @@ export function AppFooter({
                   <li><Link to="/map" className="hover:text-primary">City Map Explorer</Link></li>
                   <li><Link to="/announcements" className="hover:text-primary">City Notices</Link></li>
                   <li><Link to="/news" className="hover:text-primary">Local News</Link></li>
-                  <li><Link to="/offline" className="hover:text-primary">Download for Offline Use</Link></li>
+                  <li><Link to="/offline-data" className="hover:text-primary">Download for Offline Use</Link></li>
                   <li><Link to="/government-helplines" className="hover:text-primary">Government Helplines</Link></li>
                   <li><Link to="/local-authorities" className="hover:text-primary">Local Authorities</Link></li>
                   <li><Link to="/add-business" className="hover:text-primary font-semibold text-primary">Add Your Business</Link></li>
