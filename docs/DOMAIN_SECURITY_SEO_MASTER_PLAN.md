@@ -211,3 +211,13 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] Live custom-domain browser verification: homepage HTTP 200, updated title/canonical/description, visible bilingual H1, local favicon + Apple touch icon links, Open Graph/Twitter logo URL, and Organization JSON-LD logo all point to the domain-hosted asset.
 - [x] `/favicon.png` returned HTTP 200 `image/png` at 192×192; `/site-logo.png` returned HTTP 200 `image/png` at 512×512. `/manifest.webmanifest` returned HTTP 200 `application/manifest+json` and lists both same-domain icons.
 - [ ] Owner should re-submit homepage URL Inspection / Request Indexing in Search Console so Google can refresh the homepage favicon and updated snippets. Search Console crawl/index coverage and actual keyword positions remain pending; crawl submission is not indexing confirmation.
+
+
+## Search Console rejection re-audit — 17 November 2026
+
+- [x] Live production `https://hellosadiqabad.com/` returned HTTP 200 to Cloudflare Browser Rendering using the documented Google-InspectionTool smartphone user-agent string; the rendered page contained the visible Sadiqabad Business Directory H1, `index,follow` robots meta, and self-referencing apex canonical.
+- [x] `/robots.txt` returned HTTP 200 with `User-agent: *` / `Allow: /` and the canonical sitemap URL.
+- [x] `/sitemap.xml` returned HTTP 200 with `application/xml` and a valid sitemap URL set.
+- [x] `/offers` and `/announcements` were rendered with `noindex,follow` while their active datasets are empty. This is intentional; do not remove noindex or request indexing until those pages contain real active content.
+- [x] Confirmed `www.hellosadiqabad.com` remains intentionally unsupported; only `https://hellosadiqabad.com/` is the canonical homepage. Use the apex URL in Search Console.
+- [ ] Search Console's exact rejected URL and detailed Live Test fields have not been supplied. Do not change Cloudflare security controls or remove intentional noindex directives without the URL and the specific failing field. Browser Rendering with a matching user-agent is a useful spot-check, not proof that Google's own fetch from Google's infrastructure succeeded.
