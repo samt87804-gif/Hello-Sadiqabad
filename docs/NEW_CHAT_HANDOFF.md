@@ -200,3 +200,5 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - No profile records, photos, authority records, or Supabase data were created/edited. Real office-holder information must come from the person/office or a reliable official source; do not invent achievements, current status, or contact details. The first real profile still requires owner-sourced content and review.
 - Code commits: `586023450879ad9e9e62f0b650920183ed7c02d7`, `9c4a2e0b2fcd3ef9d71982f92fec8ed5c5bac3e0`, `2e52d746def4a24b74bc3f55a0d3c875093783b0`, `3cad70829d57e7c5970378d6c3e27723d54830f7`, `ca87af6e77ba87bedb260267093531e73b0be431`.
 - CI and production deployment status must be checked for the final commit before describing the work as live. Browser-level presentation rendering and print layout remain to be verified after deployment.
+
+- Final presentation polish: hide popup ads while presenting and replace the repeated person-name heading with a neutral Hello Sadiqabad public-profile heading. Commits: `3933c74f4c100b7aa98fa2af530106df2112134c`, `57f3509534e0245feff84ba2a5d47980d7766e9d`.
