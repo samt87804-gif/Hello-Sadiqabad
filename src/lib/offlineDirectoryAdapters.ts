@@ -45,7 +45,6 @@ export function offlineBusinessToPublicView(source: OfflineBusiness): BusinessPu
 export function offlineCategoryToRow(source: OfflineCategory): CategoryRow {
   return {
     ...source,
-    city_id: '',
     is_active: true,
     created_at: '',
     updated_at: '',
