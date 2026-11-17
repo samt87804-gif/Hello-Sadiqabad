@@ -209,7 +209,10 @@ Batch 3 — completed (16 November 2026):
 - [x] Phase 0 audit and documentation plan drafted: current PWA install prompt/manifest already exist; current Service Worker only caches `offline.html`; emergency contacts have a limited local cache; complete directory data/media are not yet available offline.
 - [x] Permanent owner-confirmed engineering and production-safety rules recorded in [`docs/PROJECT_WORKING_RULES.md`](docs/PROJECT_WORKING_RULES.md).
 - [ ] Phase 1 core offline data package + app-shell caching + public directory offline reads + online-only write guards.
+  - [x] Add the public `/offline-data` download manager and footer entry; it fetches and validates public businesses/categories/areas/emergency contacts, shows progress and estimated size, supports cancellation before activation, and preserves the previous snapshot on failure. Production route verified HTTP 200.
+  - [ ] Connect the saved snapshot to public directory reads, implement app-shell/lazy-chunk caching and online-only write guards; add browser-level IndexedDB transaction/quota/concurrency tests.
   - [x] Initial IndexedDB snapshot store, explicit public-field mappers and snapshot validation added; GitHub CI (run 44112311265) and Pages deployment (6d404e0a-299b-4fb1-bb09-9891cb261cf2) succeeded.
+  - [x] Strict public business-set verification and the download manager route are deployed; CI run 44114620453 passed for the data-source helper and Pages deployment  ba819f2f-2881-44d8-9606-54285abe6dbd succeeded. Latest route CI run 44114989998 was pending at this update.
   - [ ] Browser-level IndexedDB transaction/quota tests, download manager, data-source integration, offline shell/chunk caching, write guards and Phase 1 acceptance checks remain.
 - [ ] Phase 2 remaining public content and cacheable media.
 - [ ] Phase 3 safe updates, storage/quota handling and recovery.

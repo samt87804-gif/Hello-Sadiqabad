@@ -87,4 +87,13 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Current PWA installation is already configured. Full offline support is not implemented: the Service Worker only caches the offline fallback page; favorites/recent views/emergency contacts have limited local storage; complete public directory/content/media are not cached.
 - Phase 0 was documentation-only. Phase 1 now includes an initial validated IndexedDB snapshot store and explicit public-field mappers in `src/lib/offlineDirectory.ts`, plus automated tests in `src/lib/offlineDirectory.test.ts`.
 - Commit `0460ecb3c6506d25f233bf17a316fb774a632b36` passed GitHub Actions CI run `44112311265` (TypeScript, tests, production build and Edge Function checks); Cloudflare Pages deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` succeeded.
-- The module is not imported into the application yet. The app shell, public directory reads, download manager, online-only write guards and full offline testing remain incomplete. No Supabase schema/data, user/business records, Service Worker behavior, Cloudflare settings or online visitor workflows were changed.
+- The storage module is now used by the public `/offline-data` download manager, which has been deployed and browser-render verified. The saved package is not yet consumed by public pages when offline. App-shell/lazy-chunk caching, offline read fallbacks, online-only write guards and browser-level IndexedDB tests remain incomplete. No Supabase schema/data, user/business records, Service Worker behavior, Cloudflare settings or online directory workflows were changed.
+
+
+## Offline-first Phase 1 download manager — 17 November 2026
+
+- Public route `/offline-data` and a footer entry were added. It downloads only public business data, active categories/areas and fresh emergency contacts; validates before saving; and preserves the previous snapshot if the download fails or is cancelled before activation.
+- A strict anonymous-public row-count check prevents saving an incomplete published business set. Each download refreshes the data source rather than reusing the directory cache.
+- The `/offline` path remains the pre-existing emergency fallback page. Browser-render checks confirmed `/offline-data` shows the download UI and `/offline` retains emergency call links.
+- CI run `44114620453` passed; Cloudflare deployment `ba819f2f-2881-44d8-9606-54285abe6dbd` succeeded. CI run `44114989998` for the route correction was pending at this review.
+- Full offline directory browsing is not yet implemented because public pages do not read the saved snapshot while offline, and the Service Worker still caches only `offline.html`.

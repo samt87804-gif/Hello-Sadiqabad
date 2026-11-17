@@ -73,7 +73,7 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - [x] Add links/status to project roadmap and new-chat handoff in this documentation update.
 
 ### Phase 1 — Safe offline foundation and core directory package
-**Status: in progress — initial IndexedDB storage core is implemented; download, app integration and acceptance testing remain.**
+**Status: in progress — IndexedDB storage and the public download manager are implemented; offline read integration, app-shell caching and acceptance testing remain.**
 
 1. Design a versioned IndexedDB schema for public directory snapshots and download metadata. Keep current localStorage favorites/recent-history keys compatible.
 2. Add a download manager reachable from the existing public app (a dedicated offline-data screen plus a clear entry point). It must show an honest size estimate/actual bytes, progress, cancellation, success/failure and last successful download.
@@ -152,4 +152,8 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - GitHub Actions CI run `44112311265` passed for commit `0460ecb3c6506d25f233bf17a316fb774a632b36`: TypeScript check, automated tests, production build and Edge Function typecheck all succeeded.
 - Cloudflare Pages production deployment `6d404e0a-299b-4fb1-bb09-9891cb261cf2` completed successfully for that commit. The new module is not yet imported by the application, so this deployment does not enable offline directory behavior.
 - No Supabase schema/data, business/user records, Cloudflare settings, Service Worker behavior or online visitor workflows were changed.
-- Still required in Phase 1: browser-level IndexedDB transaction/quota/concurrency tests, public data download manager, progress/cancellation, offline data-source integration, app-shell/lazy-chunk caching, online-only write guards and full acceptance checks.
+- Added the public `/offline-data` page and footer entry. The download manager fetches published businesses, active categories, areas and fresh emergency contacts; it validates the public snapshot, estimates JSON package size, reports progress, supports cancellation before activation and displays the last successful download.
+- Added a strict preflight count using the anonymous public Supabase role and refreshes the business source for each download. If the visible published-business count cannot be matched, the package is not saved. Emergency-contact cache fallback is also rejected for a new package.
+- The original `/offline` path renders the existing emergency fallback page, so the new download manager was moved to `/offline-data`. Live browser-render checks confirmed `/offline-data` returns the new app page (HTTP 200) and `/offline` still returns the emergency fallback with its direct-call links (HTTP 200).
+- GitHub Actions CI run `44114620453` passed for the strict business-source helper. Cloudflare Pages production deployment `ba819f2f-2881-44d8-9606-54285abe6dbd` succeeded for the `/offline-data` route fix. The final route commit's GitHub CI run `44114989998` was still pending at the time of this log update; Cloudflare's production build/deploy and live route checks succeeded.
+- Still required in Phase 1: browser-level IndexedDB transaction/quota/concurrency tests, offline read fallbacks for directory pages, app-shell/lazy-chunk caching, online-only write guards and full acceptance checks. The stored package is not yet consumed by public pages while offline; do not claim complete offline browsing.
