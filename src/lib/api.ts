@@ -939,8 +939,8 @@ export async function trackBusinessEvent(
   eventType: BusinessEventType,
   adId?: string
 ): Promise<void> {
-  const sessionId = getOrCreateSessionId();
   if (isBrowserOffline()) return;
+  const sessionId = getOrCreateSessionId();
   const client = getSupabaseClient();
   const isDatabaseBusinessId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId);
   if (client && isDatabaseBusinessId) {
