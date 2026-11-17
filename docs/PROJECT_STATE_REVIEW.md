@@ -171,11 +171,19 @@ The supplied PWA logo is referenced directly from the public Supabase Storage UR
 - Supabase Storage policy verified: 'site-media' insert is restricted to authenticated Admin/Super Admin permission holders, own UID folder, WebP MIME and <=8 MiB compressed file. Existing bucket remains public for public image delivery.
 - Owner business media editing is now removed in the Owner UI and blocked in the live business update trigger. Product/offer image URLs in owner content requests may remain unchanged but cannot be set/replaced/cleared by owners.
 - Offline downloader and Service Worker now include a separate public media cache for referenced Supabase bucket images and the existing Google image proxy; optional news/authority/ad/product sources do not block the core offline directory package if unavailable.
-- Migrations applied and checked: '20261117193404', '20261117194321', '20261117194905'. No existing business/user records or Storage objects were deleted or bulk-mutated.
-- CI/build/deployment and production browser acceptance are pending. Phase 1 device and Phase 2 media acceptance remain incomplete.
+- Migrations applied and checked: '20261117193404', '20261117194321', '20261117194905', '20261117195404'. No existing business/user records or Storage objects were deleted or bulk-mutated.
+- TypeScript/tests/build/Edge Function checks passed and Cloudflare Pages deployed; overall CI remains blocked only by the known npm audit gate. Production upload/media-cache and physical-device acceptance remain incomplete.
 
 
 ### Additional security hardening — public business submissions
 
 - Public visitors do not have image upload or image URL fields in the Add Business form. The live approval RPC now explicitly inserts NULL for logo and cover URLs from public new-business submissions, so a crafted public payload cannot set either image. Admin adds images after approval.
 - This final migration is applied as '20261117195404_public_submission_images_admin_only'. Existing businesses and image URLs were not changed.
+
+
+### Verification update — 18 November 2026
+
+- Commit '2aa09779c1993dd3dde4a3734e06b86e2ca23e4d' is live on Cloudflare Pages; deployment '70ad68bf-c6b4-4505-85c4-19d07f075a2f' succeeded and canonical domain is attached.
+- GitHub Actions run '44164115526': TypeScript, 92 tests, production build and Edge Function checks passed. Overall CI remains failed only at npm audit due 3 high findings in picomatch/tinyglobby/Vite; no audit suppression or forced downgrade.
+- Four Supabase migrations are applied and verified: '20261117193404', '20261117194321', '20261117194905', '20261117195404'. Public new-business approvals now ignore visitor-provided logo/cover URLs.
+- Authenticated Admin upload, compressed file size observation, Cache Storage image count and physical-device offline reload remain pending. Phase 1/2 device acceptance is not complete.

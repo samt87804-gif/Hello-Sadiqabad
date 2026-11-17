@@ -253,10 +253,18 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Supabase migrations applied: '20261117193404_site_media_admin_upload_policy', '20261117194321_restrict_owner_image_updates', '20261117194905_enforce_site_media_webp_size'. RLS limits site-media writes to authenticated Admin/Super Admin staff with matching permissions, their own UID folder, WebP MIME and <=8 MiB. Public image reads use the already-public bucket.
 - Owner Portal image URL editing was removed for business logo/cover/gallery and product/offer images. The live business trigger blocks owner changes to 'owner_photo_url', 'logo_url', 'cover_url' and 'gallery_urls'; owner product/offer request RPCs only accept the currently stored image unchanged. Existing media and records were not deleted or bulk-updated.
 - Offline downloader now collects referenced images from public businesses, products, offers, directory/hero settings, active ads, published News and active Authority profiles; it caches supported public Supabase Storage images and the existing Google image proxy with bounded concurrency. Service Worker media cache is separate from the shell cache and does not include private data/API responses.
-- Current code and docs changes are being prepared for CI/deployment. Verify latest commit, CI and matching Pages deployment before calling this live. Image upload, production download count, browser Cache Storage and physical-device airplane-mode behavior still require acceptance testing. Existing npm audit gate remains an independent known CI blocker until a safe upstream fix is confirmed.
+- Code is deployed; see the verification update below. Actual signed-in Admin upload, WebP size, media Cache Storage count and physical-device airplane-mode/reload remain acceptance tests. Existing npm audit gate is still a separate CI blocker.
 
 
 ### Additional security hardening — public business submissions
 
 - Public visitors do not have image upload or image URL fields in the Add Business form. The live approval RPC now explicitly inserts NULL for logo and cover URLs from public new-business submissions, so a crafted public payload cannot set either image. Admin adds images after approval.
 - This final migration is applied as '20261117195404_public_submission_images_admin_only'. Existing businesses and image URLs were not changed.
+
+
+## Verification update — 18 November 2026
+
+- Production commit '2aa09779c1993dd3dde4a3734e06b86e2ca23e4d' deployed successfully to Cloudflare Pages deployment '70ad68bf-c6b4-4505-85c4-19d07f075a2f'; 'https://hellosadiqabad.com' remains attached.
+- CI run '44164115526': TypeScript, 92 automated tests, production build and Edge Function type-check passed. Overall run remains failed only at npm audit (3 high findings: picomatch/tinyglobby/Vite); do not suppress or force-downgrade.
+- Public visitor submission hardening migration '20261117195404_public_submission_images_admin_only' is applied and included in the repository. The public approval RPC ignores visitor-supplied logo/cover URLs.
+- Still unverified: actual signed-in Admin upload from UI, resulting WebP sizes, offline media cache count, and physical phone airplane-mode/reload. Production deployment alone does not prove these acceptance tests.

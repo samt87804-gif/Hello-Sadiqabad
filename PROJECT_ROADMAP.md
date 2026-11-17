@@ -264,10 +264,19 @@ Batch 3 — completed (16 November 2026):
 - [x] Storage RLS allows 'site-media' writes only for authenticated Admin/Super Admin staff with the required permissions and own UID path; final RLS check enforces WebP MIME and <=8 MiB.
 - [x] Owner image URL editing removed from business listing/product/offer forms; database triggers/RPCs reject owner attempts to change business, product or offer images while preserving existing images.
 - [x] Offline download now prefetches referenced public business, product, offer, directory, hero, campaign, news and authority images into a separate Cache Storage namespace; Service Worker intercept is restricted to the public Supabase image bucket and existing same-origin Google image proxy.
-- [ ] TypeScript/tests/build, GitHub CI, Cloudflare Pages deployment and production upload/offline-image acceptance remain pending. Do not mark complete until verified; actual device offline reload and existing Phase 1 acceptance are still outstanding.
+- [x] TypeScript, 92 automated tests, production build and Edge Function checks passed; Cloudflare Pages deployment succeeded.
+- [ ] Overall CI remains blocked only by the existing npm audit gate (3 high findings in picomatch/tinyglobby/Vite). Authenticated Admin upload, media cache count and physical-device offline reload remain unverified.
 
 
 ### Additional security hardening — public business submissions
 
 - Public visitors do not have image upload or image URL fields in the Add Business form. The live approval RPC now explicitly inserts NULL for logo and cover URLs from public new-business submissions, so a crafted public payload cannot set either image. Admin adds images after approval.
 - This final migration is applied as '20261117195404_public_submission_images_admin_only'. Existing businesses and image URLs were not changed.
+
+
+### Verification update — 18 November 2026
+
+- [x] TypeScript, automated tests (92 passing), production build and Supabase Edge Function checks passed in GitHub Actions run '44164115526'.
+- [x] Cloudflare Pages production deployment '70ad68bf-c6b4-4505-85c4-19d07f075a2f' succeeded for commit '2aa09779c1993dd3dde4a3734e06b86e2ca23e4d'; canonical domain alias remains attached.
+- [ ] Overall CI remains failed only at the pre-existing npm audit gate (3 high findings: picomatch, tinyglobby and Vite). No suppression or unsafe major-version downgrade was made.
+- [ ] Authenticated Admin upload, compression-size observation, media Cache Storage count and physical-device airplane-mode/reload tests are still pending.
