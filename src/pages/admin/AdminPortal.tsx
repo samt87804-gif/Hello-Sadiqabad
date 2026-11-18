@@ -323,6 +323,7 @@ export function AdminPortal() {
         return hasPermission('business.create') ? (
           <DataQualityManager
             businesses={businesses}
+            categories={categories}
             submissions={submissions}
             onJumpToBusiness={(name) => {
               setBusinessJumpQuery(name);

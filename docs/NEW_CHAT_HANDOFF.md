@@ -309,3 +309,12 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Cloudflare Pages image proxy now permits only the exact production Supabase host + public `Hello Sadiqabad` bucket path in addition to the pre-existing Google image host. Other buckets/hosts remain blocked.
 - Existing business card image rendering/download behavior is unchanged. No database changes, re-upload, data rewrite, RLS/Storage policy changes, or Service Worker cache namespace/version change.
 - Pending: CI and Cloudflare deployment, then user must perform one fresh offline directory download and confirm category/helpline cards in airplane mode.
+
+
+## Admin Data Quality category filter — 18 November 2026
+
+- Owner requested a category filter on Admin Portal > Data Quality while preserving all existing functionality.
+- Added a category dropdown sourced from the already-loaded admin category list, including counts, All Categories, and Unassigned Category options.
+- Existing issue chips, displayed issue counts, listing cards, and CSV export are scoped to the selected category. No filter selection changes data or writes to Supabase.
+- Passed the existing `categories` prop from AdminPortal into DataQualityManager. No schema, RLS, permission, business data or category data changes.
+- CI and production deployment verification pending.

@@ -971,10 +971,12 @@ export function AnalyticsView({
 
 export function DataQualityManager({
   businesses,
+  categories,
   submissions = [],
   onJumpToBusiness,
 }: {
   businesses: BusinessPublicView[];
+  categories: CategoryRow[];
   submissions?: SubmissionRow[];
   onJumpToBusiness: (query: string) => void;
 }) {
@@ -982,6 +984,7 @@ export function DataQualityManager({
   const [issueFilter, setIssueFilter] = useState<
     'all' | 'pin' | 'photo' | 'hours' | 'urdu' | 'phone' | 'category' | 'area' | 'broken_image'
   >('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   const brokenImageBizIds = new Set(
     submissions
@@ -1027,7 +1030,12 @@ export function DataQualityManager({
     };
   });
 
-  const withAnyIssue = audited.filter((item) => item.issues.length > 0);
+  const categoryScoped = audited.filter(({ b }) => {
+    if (categoryFilter === 'all') return true;
+    if (categoryFilter === 'unassigned') return !b.category_id && !b.category?.id;
+    return (b.category_id ?? b.category?.id) === categoryFilter;
+  });
+  const withAnyIssue = categoryScoped.filter((item) => item.issues.length > 0);
   const shown = withAnyIssue.filter((item) => {
     if (issueFilter === 'all') return true;
     if (issueFilter === 'pin') return item.missingPin;
@@ -1069,7 +1077,7 @@ export function DataQualityManager({
             <Wrench className="w-5 h-5 text-primary" /> Data Quality &amp; Missing Info Monitor
           </h2>
           <p className="text-xs text-on-surface-variant">
-            {withAnyIssue.length} of {businesses.length} listings need attention for complete bilingual &amp; map accuracy.
+            {withAnyIssue.length} of {categoryScoped.length} listings need attention for complete bilingual &amp; map accuracy.
           </p>
         </div>
         <Button
@@ -1081,6 +1089,25 @@ export function DataQualityManager({
         >
           Export Data Quality CSV
         </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex min-w-[220px] flex-col gap-1 text-xs font-semibold text-on-surface-variant">
+          Filter by category
+          <select
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
+            className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-sm font-medium text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="all">All Categories ({businesses.length})</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name_en} ({businesses.filter((business) => (business.category_id ?? business.category?.id) === category.id).length})
+              </option>
+            ))}
+            <option value="unassigned">Unassigned Category ({businesses.filter((business) => !business.category_id && !business.category?.id).length})</option>
+          </select>
+        </label>
       </div>
 
       <div className="flex flex-wrap gap-2">

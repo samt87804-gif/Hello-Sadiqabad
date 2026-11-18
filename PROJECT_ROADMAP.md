@@ -307,3 +307,11 @@ Batch 3 — completed (16 November 2026):
 - [x] Root cause identified: direct cross-origin Supabase Storage image URLs cannot be fulfilled by the site's Service Worker while offline, even if the response was separately stored in Cache Storage.
 - [x] Category and helpline cards now resolve approved public Storage images through the same-origin image proxy; offline download pre-caches those exact proxy URLs.
 - [ ] Verify production deployment and fresh-download airplane-mode rendering on a real device.
+
+
+## Admin Data Quality category filter — 18 November 2026
+
+- [x] Add a category dropdown to the existing Data Quality monitor, with per-category business counts, an All Categories option, and an Unassigned Category option.
+- [x] Existing issue chips, issue counts, listing cards, and CSV export now operate within the selected category scope; selecting All Categories preserves the previous overall view.
+- [ ] Verify GitHub CI and Cloudflare Pages deployment before marking this UI change production-verified.
+- No business records, category records, Supabase schema, RLS policies, or permissions were changed.
