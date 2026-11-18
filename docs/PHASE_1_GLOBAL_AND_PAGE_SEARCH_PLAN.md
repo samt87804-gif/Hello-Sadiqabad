@@ -2,7 +2,7 @@
 
 > Project: Hello Sadiqabad  
 > Repository: `samt87804-gif/Hello-Sadiqabad`  
-> Status: **Planning documented — implementation not yet started**  
+> Status: **Partial implementation — category-detail business search completed; remaining page-level rollout is still pending**  
 > Last updated: 2026-11-16
 
 ## Goal
@@ -36,7 +36,7 @@ This document is the source of truth for Phase 1 scope, progress, acceptance cri
 Add a search bar where a page/section presents a searchable list or collection. Search should be scoped to the current page/section unless the UI clearly says otherwise.
 
 - [ ] Categories and subcategories
-- [ ] Businesses within a category
+- [x] Businesses within a category
 - [ ] Business directory/listing pages
 - [ ] News listing (headline, content excerpt, category where available)
 - [ ] Emergency Helpline page (department, service, published phone/contact fields)
@@ -163,3 +163,11 @@ Phase 1 is complete only when all applicable checks below pass:
 ## Implementation notes
 
 Add dated notes here as work progresses. Record changed files, commit/PR references, test results, known limitations, and deployment URL. Do not mark a task complete merely because code was written.
+
+
+### Progress — 2026-11-18
+
+- [x] Category detail pages now have a dedicated live search bar scoped to the current category.
+- [x] Category search reuses the existing public business matcher and supports business name, Urdu text, phone, address, area, category synonyms/tags and services without changing database schema or RLS.
+- [x] Search is debounced by 300 ms and uses the existing abort/cancellation path so fast typing cannot let an older request overwrite the latest result.
+- [ ] Remaining page-level search rollout and full Phase 1 acceptance are still pending.

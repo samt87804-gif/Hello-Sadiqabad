@@ -275,3 +275,15 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Applied and committed migration `20261117204927_fix_site_media_admin_insert_rls` to remove only the `metadata.mimetype` and `metadata.size` conditions. Retained `TO authenticated`, exact `Hello Sadiqabad` bucket, `site-media` prefix, own UID folder and Super Admin/approved staff permission checks.
 - Browser uploader still converts to WebP and enforces supported image formats and 8 MiB compressed limit. This is client-side validation; Storage RLS no longer enforces MIME/size independently.
 - Live policy verified. Owner still needs to retry one image upload in Admin UI to confirm end-to-end persistence; then check offline media cache. No public/owner upload permission was added.
+
+
+## Category detail search update — 18 November 2026
+
+- Owner requested a search bar inside every category detail listing, scoped to that category, with keywords such as business/shop name, phone number, area and other useful directory fields.
+- Re-read docs/PROJECT_WORKING_RULES.md, docs/PHASE_1_GLOBAL_AND_PAGE_SEARCH_PLAN.md, the current CategoryDetail/search implementation, Supabase schema/migration state, and Cloudflare Pages configuration before editing.
+- Added the search UI directly to src/pages/CategoryDetail.tsx. It is live/debounced at 300 ms, supports clearing, has bilingual placeholders/labels, and remains scoped by the current category plus existing area/open filters.
+- Reused the existing public searchBusinesses() + matchesDirectoryBusinessQuery() path. No database migration, RLS change, data mutation, or new dependency was required.
+- Added regression coverage for phone, address, area, services and Urdu-text matching.
+- Direct commit to main is required by the permanent project rules. Cloudflare Pages is GitHub-integrated to main, so the commit should trigger a production deployment automatically.
+- Supabase production project remains Hello Sadiqabad (efwohfzqitevkuybnyif); no schema/data change is needed for this UI-only feature.
+- Before calling the feature deployed, verify GitHub CI, the matching Cloudflare Pages deployment for the new commit, and the affected public category route.

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, PhoneCall } from 'lucide-react';
+import { ArrowLeft, ChevronRight, PhoneCall, Search, X } from 'lucide-react';
 import {
   fetchActiveAds,
   fetchAllAreas,
@@ -10,6 +10,7 @@ import {
 import { useI18n } from '../lib/i18n';
 import { bilingualText } from '../lib/format';
 import { updatePageSeo } from '../lib/seo';
+import { useDebounce } from '../lib/hooks';
 import { getFavorites, toggleFavoriteId } from '../lib/offlineStorage';
 import type { AdRow, AreaRow, CategoryRow } from '../types/database';
 import type { BusinessPublicView } from '../types/directory';
@@ -29,6 +30,8 @@ export function CategoryDetail() {
   const [areas, setAreas] = useState<AreaRow[]>([]);
   const [selectedArea, setSelectedArea] = useState('');
   const [openOnly, setOpenOnly] = useState(false);
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 300);
   const [businesses, setBusinesses] = useState<BusinessPublicView[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -44,6 +47,7 @@ export function CategoryDetail() {
     let active = true;
     setPage(1);
     setSelectedArea('');
+    setQuery('');
     setMetaLoaded(false);
     setMetaError(false);
     Promise.all([
@@ -91,6 +95,7 @@ export function CategoryDetail() {
         category: slug,
         area: selectedArea,
         open: openOnly,
+        q: debouncedQuery,
       },
       { page, limit: 20, signal: controller.signal }
     )
@@ -112,7 +117,7 @@ export function CategoryDetail() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [slug, selectedArea, openOnly, page, searchRetryKey]);
+  }, [slug, selectedArea, openOnly, debouncedQuery, page, searchRetryKey]);
 
   const isMedical = /health|hospital|clinic|pharmac|doctor|medical/i.test(slug);
 
@@ -214,6 +219,43 @@ export function CategoryDetail() {
             </div>
           </div>
 
+          <div className="flex items-center bg-surface-container-lowest rounded-2xl border border-outline-variant/60 px-3 min-h-[48px] shadow-xs">
+            <Search className="w-5 h-5 text-outline shrink-0" aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => {
+                setPage(1);
+                setQuery(e.target.value);
+              }}
+              placeholder={
+                lang === 'ur'
+                  ? 'دکان، کاروبار، فون نمبر، علاقہ یا کوئی لفظ تلاش کریں...'
+                  : 'Search shop, business, phone, area or keyword...'
+              }
+              aria-label={
+                lang === 'ur'
+                  ? `${category?.name_ur ?? 'اس شعبے'} میں کاروبار تلاش کریں`
+                  : `Search businesses in ${category?.name_en ?? slug}`
+              }
+              autoComplete="off"
+              className="flex-1 bg-transparent border-0 outline-none px-2.5 text-sm text-on-surface min-w-0"
+            />
+            {query && (
+              <button
+                type="button"
+                aria-label={lang === 'ur' ? 'تلاش صاف کریں' : 'Clear category search'}
+                onClick={() => {
+                  setPage(1);
+                  setQuery('');
+                }}
+                className="p-1 text-outline hover:text-on-surface cursor-pointer shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
           {subcategories.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
               {subcategories.map((sub) => (
@@ -272,11 +314,19 @@ export function CategoryDetail() {
           </div>
         ) : businesses.length === 0 ? (
           <EmptyState
-            title={lang === 'ur' ? 'اس شعبے میں ابھی کوئی کاروبار موجود نہیں' : 'No listings in this category yet'}
+            title={
+              query.trim()
+                ? (lang === 'ur' ? 'آپ کی تلاش سے کوئی کاروبار نہیں ملا' : 'No businesses matched your search')
+                : (lang === 'ur' ? 'اس شعبے میں ابھی کوئی کاروبار موجود نہیں' : 'No listings in this category yet')
+            }
             description={
-              lang === 'ur'
-                ? 'اس شعبے کی کوئی دکان یا کلینک شامل کرنے کے لیے مفت رجسٹریشن استعمال کریں۔'
-                : 'Know a trusted shop or clinic in this sector? Add it to the Sadiqabad directory.'
+              query.trim()
+                ? (lang === 'ur'
+                    ? 'کاروبار کا نام، فون نمبر، علاقہ یا دوسرا لفظ آزما کر دوبارہ تلاش کریں۔'
+                    : 'Try another business name, phone number, area or keyword.')
+                : (lang === 'ur'
+                    ? 'اس شعبے کی کوئی دکان یا کلینک شامل کرنے کے لیے مفت رجسٹریشن استعمال کریں۔'
+                    : 'Know a trusted shop or clinic in this sector? Add it to the Sadiqabad directory.')
             }
           />
         ) : (

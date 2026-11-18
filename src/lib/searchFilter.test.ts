@@ -239,3 +239,23 @@ test('shared public business matcher ignores case for shop names', () => {
   assert.equal(matchesDirectoryBusinessQuery(sampleBusinesses[0], 'Basic Clinic'), true);
   assert.equal(matchesDirectoryBusinessQuery(sampleBusinesses[0], 'unrelated shop'), false);
 });
+
+
+test('category-scoped business search matches phone, address, area, services and Urdu text', () => {
+  const business = {
+    ...sampleBusinesses[0],
+    name_ur: 'بیسک کلینک',
+    address_en: 'Rail Bazaar Old KLP Road',
+    address_ur: 'ریل بازار',
+    services_en: ['Dental checkup'],
+    services_ur: ['دانتوں کا معائنہ'],
+    phone_secondary: '03009999999',
+  } as BusinessPublicView;
+
+  assert.equal(matchesDirectoryBusinessQuery(business, '03001111111'), true);
+  assert.equal(matchesDirectoryBusinessQuery(business, 'Old KLP Road'), true);
+  assert.equal(matchesDirectoryBusinessQuery(business, 'Rail Bazaar'), true);
+  assert.equal(matchesDirectoryBusinessQuery(business, 'Dental checkup'), true);
+  assert.equal(matchesDirectoryBusinessQuery(business, 'بیسک کلینک'), true);
+  assert.equal(matchesDirectoryBusinessQuery(business, 'unknown 03008888888'), false);
+});

@@ -29,6 +29,12 @@ This is the live application project checklist. Update it on `main` whenever a t
 
 - [ ] Batch 5 — Read-only, Roman Urdu-first AI Chatbot: implementation is on `main` and deployed; final end-to-end live chat verification is pending.
 
+## Search rollout — 18 November 2026
+
+- [x] Category detail pages now include a category-scoped live business search for name, Urdu text, phone, address, area, category synonyms/tags and services.
+- [x] Search uses the existing public business matcher with 300 ms debounce and request cancellation; no Supabase schema/RLS/data change was required.
+- [ ] Remaining page-level search rollout is still pending.
+
 ## User-requested improvements (16 November 2026)
 
 Batch 1 — completed (16 November 2026):
