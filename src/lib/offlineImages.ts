@@ -13,7 +13,9 @@ export function getOfflineImageCacheUrl(value: string, siteOrigin: string): stri
       source.hostname === SUPABASE_STORAGE_HOST &&
       source.pathname.startsWith(SUPABASE_PUBLIC_BUCKET_PREFIX)
     ) {
-      return source.toString();
+      const proxy = new URL('/image', siteOrigin);
+      proxy.searchParams.set('url', source.toString());
+      return proxy.toString();
     }
 
     if (GOOGLE_IMAGE_HOST.test(source.hostname)) {
@@ -25,6 +27,10 @@ export function getOfflineImageCacheUrl(value: string, siteOrigin: string): stri
   } catch {
     return null;
   }
+}
+
+export function getOfflineImageDisplayUrl(value: string, siteOrigin: string): string {
+  return getOfflineImageCacheUrl(value, siteOrigin) ?? value;
 }
 
 export async function cacheOfflineImages(

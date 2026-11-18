@@ -300,3 +300,10 @@ Batch 3 — completed (16 November 2026):
 
 - [x] Preserve public category and helpline image URL mappings in the existing offline IndexedDB snapshot so their already-cached images can render on category and emergency cards without connectivity.
 - [ ] Verify the new snapshot mapping path in CI and on a real browser/device with internet disabled; users with an older offline package must download the offline directory once again.
+
+
+## Offline category image delivery correction — 18 November 2026
+
+- [x] Root cause identified: direct cross-origin Supabase Storage image URLs cannot be fulfilled by the site's Service Worker while offline, even if the response was separately stored in Cache Storage.
+- [x] Category and helpline cards now resolve approved public Storage images through the same-origin image proxy; offline download pre-caches those exact proxy URLs.
+- [ ] Verify production deployment and fresh-download airplane-mode rendering on a real device.

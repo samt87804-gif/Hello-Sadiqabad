@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Download, HardDrive, Wifi, WifiOff, XCircle } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchPublishedNewsArticles, fetchPublicBusinessProductImageUrls, fetchSiteSettings, searchBusinesses } from '../lib/api';
-import { cacheOfflineImages } from '../lib/offlineImages';
+import { cacheOfflineImages, getOfflineImageDisplayUrl } from '../lib/offlineImages';
 import { DEFAULT_SITE_SETTINGS } from '../lib/siteSettings';
 import { useI18n } from '../lib/i18n';
 import {
@@ -457,6 +457,10 @@ export function OfflineData() {
         ...productImageUrls,
         siteSettings.hero_banner_url,
         ...Object.values(directoryImages).flatMap((items) => Object.values(items ?? {})),
+        // Pre-cache same-origin proxy URLs for category and helpline cards.
+        // Service Workers cannot intercept direct cross-origin Supabase image requests.
+        ...[...Object.values(directoryImages.categories), ...Object.values(directoryImages.helplines)]
+          .map((url) => getOfflineImageDisplayUrl(url, window.location.origin)),
         ...publishedNews.flatMap((article) => [article.cover_image_url, ...(article.image_urls ?? [])]),
         ...authorityProfiles.map((profile) => profile.photo_url),
         ...activeAds.map((ad) => ad.image_url),

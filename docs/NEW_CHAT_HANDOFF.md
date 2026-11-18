@@ -298,3 +298,14 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Added validation tests for HTTPS category/helpline mappings and rejection of insecure image URLs.
 - Reused existing Cache Storage media cache and Service Worker allowlist. No Supabase migration, data/RLS/Storage change, Cloudflare setting or image uploader change.
 - Verify CI and Cloudflare deployment, then test /categories and /emergency or /government-helplines offline on an actual browser/device.
+
+
+## Category image offline delivery correction — 18 November 2026
+
+- Owner reported business photos display offline but uploaded category photos still do not.
+- Read current permanent project rules and offline-first plan, checked current main implementation, and ran a read-only production query against public `site_settings.directory_image_urls`. Category mappings are present and use valid public URLs in the Supabase `Hello Sadiqabad` bucket (e.g. showroom, academy, college, schools, clothing, groceries and others).
+- Root cause: previous offline cache stored cross-origin Supabase image responses, but category cards continued using direct Supabase URLs. Service Workers cannot intercept cross-origin image requests; therefore a Cache Storage entry keyed by that external URL is not sufficient to serve the image offline.
+- Fix: added a display URL helper that rewrites only approved public Supabase bucket images (and existing Google-hosted images) to the same-origin `/image?url=` proxy. Category and helpline cards use it. The offline downloader explicitly pre-caches those same-origin proxy URLs for categories and helplines.
+- Cloudflare Pages image proxy now permits only the exact production Supabase host + public `Hello Sadiqabad` bucket path in addition to the pre-existing Google image host. Other buckets/hosts remain blocked.
+- Existing business card image rendering/download behavior is unchanged. No database changes, re-upload, data rewrite, RLS/Storage policy changes, or Service Worker cache namespace/version change.
+- Pending: CI and Cloudflare deployment, then user must perform one fresh offline directory download and confirm category/helpline cards in airplane mode.

@@ -12,6 +12,7 @@ import { EmptyState } from '../components/ui/Feedback';
 import { Card, Container, SectionHeading } from '../components/ui/Surface';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../lib/siteSettings';
+import { getOfflineImageDisplayUrl } from '../lib/offlineImages';
 
 export function Categories() {
   const { lang, urduHints } = useI18n();
@@ -102,7 +103,7 @@ export function Categories() {
                     style={{ color: cat.color }}
                   >
                     {directoryImageUrls.categories[cat.slug] ? (
-                      <ImageWithFallback src={directoryImageUrls.categories[cat.slug]} alt={`${cat.name_en} category`} className="w-full h-full" fallbackIcon={<CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />} />
+                      <ImageWithFallback src={getOfflineImageDisplayUrl(directoryImageUrls.categories[cat.slug], window.location.origin)} alt={`${cat.name_en} category`} className="w-full h-full" fallbackIcon={<CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />} />
                     ) : (
                       <CategoryIcon name={cat.icon} categoryKey={cat.slug} categoryLabel={cat.name_en} className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]" />
                     )}

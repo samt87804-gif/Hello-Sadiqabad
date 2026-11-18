@@ -1,9 +1,13 @@
 const ALLOWED_IMAGE_HOST = /(^|\.)googleusercontent\.com$/i;
+const SUPABASE_STORAGE_HOST = "efwohfzqitevkuybnyif.supabase.co";
+const SUPABASE_PUBLIC_BUCKET_PREFIX = "/storage/v1/object/public/Hello%20Sadiqabad/";
 export async function onRequestGet({request}) {
   const requestUrl=new URL(request.url),source=requestUrl.searchParams.get("url");
   if(!source)return new Response("Missing image URL",{status:400});
   let imageUrl;try{imageUrl=new URL(source);}catch{return new Response("Invalid image URL",{status:400});}
-  if(imageUrl.protocol!=="https:"||!ALLOWED_IMAGE_HOST.test(imageUrl.hostname))return new Response("Image host is not allowed",{status:403});
+  const isGoogleImage=ALLOWED_IMAGE_HOST.test(imageUrl.hostname);
+  const isSupabasePublicImage=imageUrl.hostname===SUPABASE_STORAGE_HOST&&imageUrl.pathname.startsWith(SUPABASE_PUBLIC_BUCKET_PREFIX);
+  if(imageUrl.protocol!=="https:"||(!isGoogleImage&&!isSupabasePublicImage))return new Response("Image host is not allowed",{status:403});
   const cacheKey=new Request(requestUrl.origin+requestUrl.pathname+"?url="+encodeURIComponent(imageUrl.toString()));
   const cached=await caches.default.match(cacheKey);if(cached)return cached;
   let upstream;

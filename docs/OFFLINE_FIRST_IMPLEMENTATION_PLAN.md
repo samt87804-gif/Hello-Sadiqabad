@@ -260,3 +260,13 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - Added snapshot validation tests for valid public category/helpline image maps and rejection of insecure image URLs.
 - No Supabase schema/data/RLS, Storage policy, Service Worker, image upload, business image path or Cloudflare setting change is required.
 - Pending verification: CI/typecheck/tests/build, production Pages deployment, and browser/device offline rendering of category and helpline card images. Existing offline snapshots from before this update need one fresh offline-directory download to save the image URL mappings.
+
+
+### 18 November 2026 — Supabase Storage image delivery correction
+
+- Production read-only inspection confirmed category image mappings exist in public `site_settings.directory_image_urls.categories` and point to the existing public `Hello Sadiqabad` Storage bucket.
+- Root cause: browser Service Workers only control same-origin requests. The earlier downloader cached direct Supabase URLs in Cache Storage, but category/helpline `img` elements still requested cross-origin Storage URLs. Those direct requests cannot be served from the site's Service Worker cache while offline.
+- Narrow correction: category and helpline cards now use the site's existing `/image?url=` same-origin proxy for approved public Supabase Storage images. The offline downloader explicitly pre-caches those same-origin proxy URLs for category and helpline images. Existing business image rendering and direct business image download paths remain unchanged.
+- Expanded `functions/image.js` allowlist only for the exact production Supabase host and public `Hello Sadiqabad` bucket prefix; all other Supabase hosts/buckets remain denied. Existing Google image proxy behavior remains.
+- No Supabase data/schema/RLS/Storage policy change, no image re-upload, no business data change, and no Service Worker cache-version change.
+- Acceptance still requires CI, production deployment, then a fresh offline-directory download and a physical offline check of category/helpline cards.

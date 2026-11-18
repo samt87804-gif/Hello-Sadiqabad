@@ -12,6 +12,7 @@ import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { Badge, Card, Container } from '../components/ui/Surface';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { EMPTY_DIRECTORY_IMAGE_URLS, type DirectoryImageUrls } from '../lib/siteSettings';
+import { getOfflineImageDisplayUrl } from '../lib/offlineImages';
 
 const CATEGORIES: Array<{ id: 'all' | EmergencyCategory; labelEn: string; labelUr: string }> = [
   { id: 'all', labelEn: 'All Helplines', labelUr: 'تمام ہیلپ لائنز' },
@@ -174,7 +175,7 @@ export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all'
               <div className="aspect-video flex">
                 <div className="w-2/5 shrink-0 overflow-hidden bg-error-container flex items-center justify-center">
                   {directoryImageUrls.helplines[em.id]
-                    ? <ImageWithFallback src={directoryImageUrls.helplines[em.id]} alt={`${em.name_en} helpline`} className="w-full h-full" />
+                    ? <ImageWithFallback src={getOfflineImageDisplayUrl(directoryImageUrls.helplines[em.id], window.location.origin)} alt={`${em.name_en} helpline`} className="w-full h-full" />
                     : <CategoryIcon name={em.icon} className="w-10 h-10 text-error" />}
                 </div>
                 <div className="w-3/5 min-w-0 p-3 sm:p-4 flex flex-col items-center justify-center text-center gap-2">

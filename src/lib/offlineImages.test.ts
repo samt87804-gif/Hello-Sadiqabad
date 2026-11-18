@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getOfflineImageCacheUrl } from './offlineImages';
+import { getOfflineImageCacheUrl, getOfflineImageDisplayUrl } from './offlineImages';
 
 const origin = 'https://hellosadiqabad.com';
 
 test('allows public images from the existing Supabase public bucket', () => {
   const url = 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/site-media/admin/banner.webp';
-  assert.equal(getOfflineImageCacheUrl(url, origin), url);
+  const cached = getOfflineImageCacheUrl(url, origin);
+  assert.ok(cached);
+  assert.equal(new URL(cached).origin, origin);
+  assert.equal(new URL(cached).pathname, '/image');
+  assert.equal(new URL(cached).searchParams.get('url'), url);
+  assert.equal(getOfflineImageDisplayUrl(url, origin), cached);
 });
 
 test('rejects other Supabase buckets and hosts', () => {
@@ -35,4 +40,16 @@ test('rejects insecure image URLs', () => {
     getOfflineImageCacheUrl('http://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/file.webp', origin),
     null
   );
+});
+
+
+test('does not proxy Supabase URLs outside the public Hello Sadiqabad bucket', () => {
+  const url = 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/private/file.webp';
+  assert.equal(getOfflineImageDisplayUrl(url, origin), url);
+  assert.equal(getOfflineImageCacheUrl(url, origin), null);
+});
+
+test('keeps unsupported external image hosts unchanged for display', () => {
+  const url = 'https://example.com/category.webp';
+  assert.equal(getOfflineImageDisplayUrl(url, origin), url);
 });
