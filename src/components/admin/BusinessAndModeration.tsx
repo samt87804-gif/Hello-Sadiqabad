@@ -160,6 +160,7 @@ interface AdminBusinessForm {
   status: BusinessStatus;
   rejection_reason: string;
   plan_code: PlanCode;
+  owner_id: string;
   is_verified: boolean;
   is_featured: boolean;
 }
@@ -231,6 +232,7 @@ export function BusinessManager({
   }, [initialSearch]);
 
   const staffAssignees = profiles.filter((p) => p.role === 'staff' || p.role === 'super_admin');
+  const ownerAssignees = profiles.filter((p) => p.role === 'owner' && (p.is_active !== false || p.id === editing?.owner_id));
   const canDeleteBusiness = profiles.some((profile) => profile.id === actorId && profile.role === 'super_admin');
 
   const emptyForm = (): AdminBusinessForm => ({
@@ -255,6 +257,7 @@ export function BusinessManager({
     status: canPublish ? 'published' : 'draft',
     rejection_reason: '',
     plan_code: 'free',
+    owner_id: '',
     is_verified: false,
     is_featured: false,
   });
@@ -433,6 +436,7 @@ export function BusinessManager({
       status: b.status,
       rejection_reason: b.rejection_reason ?? '',
       plan_code: b.plan_code,
+      owner_id: b.owner_id ?? '',
       is_verified: b.is_verified,
       is_featured: b.is_featured,
     });
@@ -528,6 +532,7 @@ export function BusinessManager({
         {
           id: editing?.id,
           ...form,
+          owner_id: form.owner_id || null,
           name_ur: form.name_ur || null,
           whatsapp: form.whatsapp || null,
           area_id: form.area_id || null,
@@ -1028,6 +1033,18 @@ export function BusinessManager({
                   value={form.whatsapp}
                   onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
                 />
+                <Select
+                  label="Business Owner"
+                  value={form.owner_id}
+                  onChange={(e) => setForm({ ...form, owner_id: e.target.value })}
+                >
+                  <option value="">No owner assigned</option>
+                  {ownerAssignees.map((owner) => (
+                    <option key={owner.id} value={owner.id}>
+                      {owner.full_name || owner.email || owner.id}{owner.is_active === false ? ' (Inactive — current assignment)' : ''}
+                    </option>
+                  ))}
+                </Select>
                 <Select
                   label="Category"
                   value={form.category_id}
