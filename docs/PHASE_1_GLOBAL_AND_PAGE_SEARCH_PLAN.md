@@ -180,4 +180,8 @@ Add dated notes here as work progresses. Record changed files, commit/PR referen
 - [x] `/search` cross-directory results include Authority Profiles while preserving business directory results.
 - [x] Matching covers English/Urdu names, designation, and only fields enabled for public display (organization, status, authority, bio, contact).
 - [x] Uses existing public authority-profile query and active-only RLS visibility; no schema, RLS, or permissions changed.
-- [ ] Typecheck, tests, production build, and deployment verification pending.
+- [x] TypeScript type check, automated tests, and production build passed in GitHub Actions.
+- [x] Cloudflare Pages production deployment for this commit completed successfully.
+- [ ] Full CI is not green because the existing dependency audit blocks on 3 high-severity advisories (picomatch, tinyglobby, vite); dependency upgrades are outside this focused search change.
+
+- [x] 2026-11-18 — Authority-profile search typecheck, automated tests, production build, and Cloudflare production deployment verified. GitHub CI remains blocked only by the existing high-severity dependency audit gate; no dependency files were changed.
