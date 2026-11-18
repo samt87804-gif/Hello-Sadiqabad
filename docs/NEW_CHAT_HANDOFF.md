@@ -347,3 +347,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Verified live function now has `prosecdef=true` and `search_path=""`.
 - Authenticated Super Admin transaction test updated the exact `MS Advertisement` listing for Muhammad Shaban successfully; transaction was rolled back, and a separate read confirmed owner_id remains NULL. This was a no-data-change regression test.
 - Pending: owner should retry Save Listings in production UI to confirm end-to-end Edge Function success. Existing listing data remains unchanged.
+
+
+## Inspire Business Academy listing enhancement — 18 November 2026
+
+- Owner confirmed the Adeel Bhatti Owner account has now been created. Production read-only query confirms the existing academy listing is assigned to Adeel Bhatti and `owner_public_profiles` has `is_public=true`, `show_name=true`, `show_photo=true` with an uploaded profile photo URL. The Business Profile UI already fetches and displays this public owner profile; no profile privacy bypass or duplicate owner account was needed.
+- Updated the existing listing only (ID `0d14d4af-6434-4b3c-aec3-3de0bb669a51`): detailed English description, services/course list, admission Rs. 2,000, monthly lab charges Rs. 5,040 inclusive of all 10 courses, six-month programme, batches, facilities, address, phone/WhatsApp, SEO metadata and daily 09:00–20:00 hours. Listing remains Premium and Featured. Gallery is still empty; existing Admin gallery supports multiple photos, so real academy images can be uploaded through that workflow.
+- Added two active categories in production: `computer-it-training-institute` and `education-training-academy`; business tags include both slugs. Verified each category currently matches exactly one published listing.
+- Committed `src/lib/api.ts` change `4d4815419ba9682cfc7956b587c07d1f71de8ef4`: secondary category slugs in business tags now count toward category listing counts and satisfy category search filters. Existing primary category behavior is retained.
+- CI run `44287820063`: TypeScript type check, automated tests and production build passed; overall run failed only at the existing npm audit gate (three high advisories in picomatch/tinyglobby/Vite). Edge-function check passed. No dependency downgrade, suppression or unrelated package change made.
+- Production Cloudflare Pages deployment and browser-level category/homepage verification are pending because the overall CI gate is not green. Do not claim the code change is live until the matching Pages deployment is verified.
