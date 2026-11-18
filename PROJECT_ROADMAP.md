@@ -333,3 +333,12 @@ Batch 3 — completed (16 November 2026):
 - [x] Enforce authenticated admin permission and refuse listings assigned to another owner.
 - [ ] Verify Edge Function deployment, GitHub CI and Cloudflare Pages release.
 - No schema or existing ownership data changes required.
+
+
+## Owner multi-listing assignment — database permission correction — 18 November 2026
+
+- [x] Production logs identified the precise failure: PostgreSQL SQLSTATE 42501, `permission denied for schema private`, inside `public.enforce_business_plan_limits()` during the authenticated admin's conditional business owner_id update.
+- [x] Applied additive migration `20261118100000_fix_business_plan_trigger_private_schema_permissions`: changed only this trigger function to SECURITY DEFINER, retained its empty search_path and existing super-admin/staff permission checks. No grants to private schema, RLS changes, or data changes.
+- [x] Verified the function owner is postgres and SECURITY DEFINER is active.
+- [x] Ran a transaction-level authenticated Super Admin update test for the exact selected MS Advertisement listing; trigger accepted the update. Rolled the transaction back and independently verified owner_id remains NULL.
+- [ ] Owner to retry Manage Listings in the live Admin UI and confirm the real Edge Function request succeeds. This remains the end-to-end acceptance check.

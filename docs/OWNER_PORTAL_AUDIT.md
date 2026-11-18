@@ -117,3 +117,12 @@ GitHub CI passed (npm ci, lint, tests, production build). Cloudflare Pages produ
 - No database schema, RLS, profile, auth user, or existing business ownership was changed during implementation. Actual assignment changes occur only when an admin explicitly saves the listing selection.
 - Demo mode supports the same multi-listing selection behavior.
 - Verify CI, Edge Function deployment, Cloudflare Pages deployment, and a read-only production check before declaring live.
+
+
+## Admin multi-listing assignment — trigger permission correction — 18 November 2026
+
+- Investigated the reported `Edge Function returned a non-2xx status code` using production Edge Function and PostgreSQL logs.
+- Exact root cause: `permission denied for schema private` (SQLSTATE 42501) inside `public.enforce_business_plan_limits()` when the Edge Function updated `businesses.owner_id`. The trigger ran SECURITY INVOKER, but the PostgREST authenticator had no USAGE on the private schema.
+- Applied migration `20261118100000_fix_business_plan_trigger_private_schema_permissions`, changing only this trigger to SECURITY DEFINER. It remains owned by postgres, retains an empty search_path and the original super-admin/staff permission checks. No schema grants, RLS policy changes, or existing owner/business data changes.
+- Verified the trigger now reports SECURITY DEFINER. An authenticated Super Admin transaction successfully exercised the owner_id update for MS Advertisement; the transaction was rolled back and owner_id was verified NULL afterwards.
+- Awaiting owner confirmation of the real Admin UI Save Listings flow after the fix.

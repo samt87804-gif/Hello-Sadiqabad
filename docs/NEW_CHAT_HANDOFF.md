@@ -337,3 +337,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Added API wrapper and demo fallback.
 - No existing ownership data changed. Save action is explicit.
 - Deployment and CI verification pending at handoff.
+
+
+## Manage Listings 409 root-cause fix — 18 November 2026
+
+- Production Supabase function logs showed two POST 409 responses from `admin-manage-owner-listings`; matching Postgres logs exposed SQLSTATE 42501: `permission denied for schema private` in `public.enforce_business_plan_limits()`, during the conditional `businesses.owner_id` update.
+- Live trigger function was SECURITY INVOKER while authenticator had no USAGE on private schema. Its existing code calls `private.is_super_admin()` / `private.staff_has_permission()`; this failed before the permission decision could complete.
+- Applied additive migration `20261118100000_fix_business_plan_trigger_private_schema_permissions`: set only `public.enforce_business_plan_limits()` to SECURITY DEFINER, retaining postgres ownership, empty search_path, schema-qualified references and existing authorization logic. No grants to private, no RLS changes.
+- Verified live function now has `prosecdef=true` and `search_path=""`.
+- Authenticated Super Admin transaction test updated the exact `MS Advertisement` listing for Muhammad Shaban successfully; transaction was rolled back, and a separate read confirmed owner_id remains NULL. This was a no-data-change regression test.
+- Pending: owner should retry Save Listings in production UI to confirm end-to-end Edge Function success. Existing listing data remains unchanged.
