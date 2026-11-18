@@ -349,8 +349,13 @@ export async function fetchCategoriesWithCounts(): Promise<CategoryWithChildren[
   const [categories, businesses] = await Promise.all([fetchAllCategories(), fetchGitHubBusinesses()]);
   const counts = new Map<string, number>();
   for (const business of businesses) {
-    const categorySlug = business.category?.slug;
-    if (categorySlug) counts.set(categorySlug, (counts.get(categorySlug) ?? 0) + 1);
+    const categorySlugs = new Set([
+      business.category?.slug,
+      ...(business.tags ?? []).filter((tag) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(tag)),
+    ].filter((slug): slug is string => Boolean(slug)));
+    for (const categorySlug of categorySlugs) {
+      counts.set(categorySlug, (counts.get(categorySlug) ?? 0) + 1);
+    }
   }
   return categories
     .filter((category) => !category.parent_id)
@@ -658,7 +663,7 @@ export async function fetchBusinessesForOfflineDownload(): Promise<BusinessPubli
 
 function matchesGitHubBusiness(business:BusinessPublicView,filters:Partial<SearchFiltersState>):boolean {
   if(!matchesDirectoryBusinessQuery(business,filters.q))return false;
-  if(filters.category&&business.category?.slug!==filters.category)return false;
+  if(filters.category&&business.category?.slug!==filters.category&&!(business.tags??[]).includes(filters.category))return false;
   if(filters.area&&business.area?.slug!==filters.area)return false;
   if(filters.verified&&!business.is_verified)return false;
   if(filters.open&&!isDirectoryBusinessOpenNow(business))return false;
