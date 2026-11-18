@@ -1113,14 +1113,14 @@ export function DataQualityManager({
       <div className="flex flex-wrap gap-2">
         {[
           { id: 'all' as const, label: `All Issues (${withAnyIssue.length})` },
-          { id: 'pin' as const, label: `Missing Pin (${audited.filter((x) => x.missingPin).length})` },
-          { id: 'photo' as const, label: `Missing Logo (${audited.filter((x) => x.missingPhoto).length})` },
-          { id: 'hours' as const, label: `Missing Hours (${audited.filter((x) => x.missingHours).length})` },
-          { id: 'urdu' as const, label: `Missing Urdu (${audited.filter((x) => x.missingUrdu).length})` },
-          { id: 'phone' as const, label: `Invalid Phone (${audited.filter((x) => x.invalidPhone).length})` },
-          { id: 'category' as const, label: `Missing Category (${audited.filter((x) => x.missingCategory).length})` },
-          { id: 'area' as const, label: `Missing Area (${audited.filter((x) => x.missingArea).length})` },
-          { id: 'broken_image' as const, label: `Broken Image Reports (${audited.filter((x) => x.hasBrokenImageReport).length})` },
+          { id: 'pin' as const, label: `Missing Pin (${categoryScoped.filter((x) => x.missingPin).length})` },
+          { id: 'photo' as const, label: `Missing Logo (${categoryScoped.filter((x) => x.missingPhoto).length})` },
+          { id: 'hours' as const, label: `Missing Hours (${categoryScoped.filter((x) => x.missingHours).length})` },
+          { id: 'urdu' as const, label: `Missing Urdu (${categoryScoped.filter((x) => x.missingUrdu).length})` },
+          { id: 'phone' as const, label: `Invalid Phone (${categoryScoped.filter((x) => x.invalidPhone).length})` },
+          { id: 'category' as const, label: `Missing Category (${categoryScoped.filter((x) => x.missingCategory).length})` },
+          { id: 'area' as const, label: `Missing Area (${categoryScoped.filter((x) => x.missingArea).length})` },
+          { id: 'broken_image' as const, label: `Broken Image Reports (${categoryScoped.filter((x) => x.hasBrokenImageReport).length})` },
         ].map((chip) => (
           <button
             key={chip.id}
