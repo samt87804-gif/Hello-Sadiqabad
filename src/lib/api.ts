@@ -2320,6 +2320,35 @@ export async function adminCreateUser(
   return { ok: true, data: { user_id: newId } };
 }
 
+export async function adminManageOwnerListings(
+  ownerId: string,
+  businessIds: string[],
+  actorId: string
+): Promise<EdgeFunctionResult<{ assigned_count: number }>> {
+  const client = getSupabaseClient();
+  if (client) {
+    const { data, error } = await client.functions.invoke('admin-manage-owner-listings', {
+      body: { owner_id: ownerId, business_ids: businessIds, actor_id: actorId },
+    });
+    if (error) return { ok: false, error: error.message };
+    return (data as EdgeFunctionResult<{ assigned_count: number }>) ?? { ok: true };
+  }
+
+  const db = loadDemoDb();
+  const owner = db.profiles.find((profile) => profile.id === ownerId && profile.role === 'owner');
+  if (!owner) return { ok: false, error: 'Owner account not found.' };
+  const available = db.businesses.filter((business) => businessIds.includes(business.id));
+  if (available.length !== new Set(businessIds).size || available.some((business) => business.owner_id && business.owner_id !== ownerId)) {
+    return { ok: false, error: 'One or more listings are unavailable or assigned to another owner.' };
+  }
+  for (const business of db.businesses) {
+    if (business.owner_id === ownerId) business.owner_id = businessIds.includes(business.id) ? ownerId : null;
+    else if (businessIds.includes(business.id)) business.owner_id = ownerId;
+  }
+  saveDemoDb(db);
+  return { ok: true, data: { assigned_count: businessIds.length } };
+}
+
 export async function adminResetUserPassword(
   userId: string,
   newPassword: string,

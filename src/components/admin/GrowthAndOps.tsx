@@ -8,6 +8,7 @@ import {
   Globe,
   FileSpreadsheet,
   KeyRound,
+  ListChecks,
   Plus,
   Sparkles,
   Upload,
@@ -44,6 +45,7 @@ import {
 } from '../../lib/csvImport';
 import {
   adminCreateUser,
+  adminManageOwnerListings,
   adminResetUserPassword,
   adminSetUserActive,
   convertLeadToBusiness,
@@ -212,6 +214,9 @@ export function OwnersManager({
     show_email: false,
   });
   const [profileSaving, setProfileSaving] = useState(false);
+  const [listingsOwner, setListingsOwner] = useState<(ProfileRow & { email?: string }) | null>(null);
+  const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
+  const [listingsSaving, setListingsSaving] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -243,6 +248,28 @@ export function OwnersManager({
       });
     return () => { active = false; };
   }, [owners, showToast]);
+
+  const openListingsManager = (owner: ProfileRow & { email?: string }) => {
+    setListingsOwner(owner);
+    setSelectedListingIds(businesses.filter((business) => business.owner_id === owner.id).map((business) => business.id));
+  };
+
+  const saveOwnerListings = async () => {
+    if (!listingsOwner) return;
+    setListingsSaving(true);
+    try {
+      const result = await adminManageOwnerListings(listingsOwner.id, selectedListingIds, actorId);
+      if (!result.ok) throw new Error(result.error ?? 'Could not update owner listings.');
+      showToast(`Owner listings updated (${selectedListingIds.length} assigned).`, 'success');
+      setListingsOwner(null);
+      await onReload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not update owner listings.', 'error');
+      await onReload();
+    } finally {
+      setListingsSaving(false);
+    }
+  };
 
   const openPublicProfileEditor = (owner: ProfileRow & { email?: string }) => {
     const saved = publicProfiles[owner.id];
@@ -380,7 +407,15 @@ export function OwnersManager({
                   Listings: {ownedBiz.map((b) => b.name_en).join(', ') || 'None assigned'}
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openListingsManager(owner)}
+                  leftIcon={<ListChecks className="w-3.5 h-3.5" />}
+                >
+                  Manage Listings
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -455,6 +490,49 @@ export function OwnersManager({
             <Button type="submit">Create Owner</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        open={Boolean(listingsOwner)}
+        onClose={() => setListingsOwner(null)}
+        title={listingsOwner ? `Manage Listings — ${listingsOwner.full_name || listingsOwner.email || 'Owner'}` : 'Manage Owner Listings'}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-on-surface-variant">
+            Select all businesses this owner should manage. Businesses assigned to another owner are not available here.
+          </p>
+          <div className="max-h-[55vh] overflow-y-auto space-y-1 rounded-xl border border-outline-variant/40 p-2">
+            {businesses.filter((business) => !business.owner_id || business.owner_id === listingsOwner?.id)
+              .sort((a, b) => a.name_en.localeCompare(b.name_en))
+              .map((business) => {
+                const checked = selectedListingIds.includes(business.id);
+                return (
+                  <label key={business.id} className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-surface-container cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(event) => setSelectedListingIds((current) =>
+                        event.target.checked
+                          ? [...current, business.id]
+                          : current.filter((id) => id !== business.id)
+                      )}
+                      className="w-4 h-4 accent-primary shrink-0"
+                    />
+                    <span className="min-w-0 flex-1">{business.name_en}</span>
+                    {business.owner_id === listingsOwner?.id && <Badge variant="success">Assigned</Badge>}
+                  </label>
+                );
+              })}
+            {businesses.every((business) => business.owner_id && business.owner_id !== listingsOwner?.id) && (
+              <p className="p-3 text-sm text-on-surface-variant">No unassigned businesses are available.</p>
+            )}
+          </div>
+          <p className="text-xs text-on-surface-variant">{selectedListingIds.length} listing(s) selected. Unchecking an assigned listing removes it from this owner; it does not delete the business.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setListingsOwner(null)}>Cancel</Button>
+            <Button loading={listingsSaving} onClick={() => void saveOwnerListings()}>Save Listings</Button>
+          </div>
+        </div>
       </Modal>
 
       <Modal

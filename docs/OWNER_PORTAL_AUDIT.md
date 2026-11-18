@@ -107,3 +107,13 @@ GitHub CI passed (npm ci, lint, tests, production build). Cloudflare Pages produ
 - Root causes in the creation path: the Edge Function duplicated email validation with an incorrectly double-escaped regex instead of using the already-imported isValidEmail helper; the UI also offered already-assigned listings and retained the previous selected listing after a successful creation. The Edge Function correctly refused to overwrite a non-null owner_id, but its error was generic.
 - Fix: use the shared email validator; preflight-check the selected business exists and is unassigned; preserve the conditional owner_id IS NULL update and verify the returned owner_id; compensate by deleting the just-created Auth user if the assignment loses a race; return clear conflict errors; show only unassigned listings in the admin dropdown; clear selection after success and when opening/closing the modal.
 - No Supabase schema, RLS, permissions, existing profile, Auth user, business record or ownership relationship was changed as part of the fix. Edge Function deployment and CI/Pages verification are tracked separately.
+
+
+## Existing owner multi-listing management — 18 November 2026
+
+- Added a separate Manage Listings action to each existing owner card; public profile/privacy remains separate.
+- Admin can select multiple unassigned businesses and retain/remove the selected owner's existing assignments in one save.
+- New Supabase Edge Function validates authenticated admin/staff permissions, active owner role, UUIDs, and listing ownership. It refuses cross-owner transfers and uses conditional updates to avoid overwriting a concurrent assignment.
+- No database schema, RLS, profile, auth user, or existing business ownership was changed during implementation. Actual assignment changes occur only when an admin explicitly saves the listing selection.
+- Demo mode supports the same multi-listing selection behavior.
+- Verify CI, Edge Function deployment, Cloudflare Pages deployment, and a read-only production check before declaring live.

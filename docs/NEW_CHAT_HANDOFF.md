@@ -327,3 +327,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Root cause: admin-create-user contained a double-escaped email regex even though shared isValidEmail was already imported; admin UI showed all businesses including already-assigned ones and did not clear the selected business after a successful create. Edge function used owner_id IS NULL correctly but returned a generic 400 on conflict.
 - Fix in progress: switch to shared validator; only list unassigned businesses; reset selector after successful create/open/close; server preflight checks the listing is still unassigned; conditional update remains race-safe and returned owner_id is verified; rollback newly created Auth user on assignment failure with a clear conflict response.
 - No changes to existing business data, profiles, Auth users, ownership assignments, schema, RLS or permissions. Verify production Edge Function and Pages release before asking owner to retry.
+
+
+## Existing owner multi-listing management — 18 November 2026
+
+- Added Manage Listings modal separate from Public Profile & Privacy.
+- Supports multiple listings per owner; existing assignments are preselected; unassigned listings are selectable; other owners' listings are hidden.
+- Added admin-manage-owner-listings Edge Function with JWT auth, super-admin / authorized sales-onboarding staff checks, active-owner validation, conditional assignment, and conflict protection. Does not transfer from another owner.
+- Added API wrapper and demo fallback.
+- No existing ownership data changed. Save action is explicit.
+- Deployment and CI verification pending at handoff.

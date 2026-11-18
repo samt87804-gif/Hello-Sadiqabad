@@ -324,3 +324,12 @@ Batch 3 — completed (16 November 2026):
 - [x] Add server-side listing preflight, preserve race-safe conditional assignment, verify owner_id after update, and return actionable conflict errors with Auth-user rollback on failure.
 - [ ] Verify Edge Function deployment, GitHub checks, Cloudflare Pages deployment and production read-only ownership state.
 - No existing owner/business assignments or Supabase schema/RLS policies changed.
+
+
+## Existing owner multi-listing management — 18 November 2026
+
+- [x] Add a separate Manage Listings control to existing owner cards.
+- [x] Support selecting multiple unassigned listings and retaining/removing that owner's current assignments.
+- [x] Enforce authenticated admin permission and refuse listings assigned to another owner.
+- [ ] Verify Edge Function deployment, GitHub CI and Cloudflare Pages release.
+- No schema or existing ownership data changes required.
