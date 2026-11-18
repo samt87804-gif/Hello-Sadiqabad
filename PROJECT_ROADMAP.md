@@ -342,3 +342,14 @@ Batch 3 — completed (16 November 2026):
 - [x] Verified the function owner is postgres and SECURITY DEFINER is active.
 - [x] Ran a transaction-level authenticated Super Admin update test for the exact selected MS Advertisement listing; trigger accepted the update. Rolled the transaction back and independently verified owner_id remains NULL.
 - [ ] Owner to retry Manage Listings in the live Admin UI and confirm the real Edge Function request succeeds. This remains the end-to-end acceptance check.
+
+
+## Inspire Business Academy listing enhancement — 18 November 2026
+
+- [x] Updated the existing published listing (no duplicate): six-month programme, all 10 courses, Rs. 2,000 admission fee, Rs. 5,040 monthly lab charges including all courses, batch timings, facilities, location, contact details and 09:00–20:00 opening hours.
+- [x] Existing listing remains Premium and Featured; homepage relevance ordering already prioritizes featured listings.
+- [x] Added active categories `Computer & IT Training Institute` and `Education & Training Academy`; tagged the existing listing for both categories. Live SQL verification reports one matching listing in each category.
+- [x] Updated directory category-count and search matching logic to recognize secondary category slugs stored in business tags. TypeScript, automated tests and production build passed in CI.
+- [x] Confirmed Adeel Bhatti is the assigned owner account and his public profile has name/photo sharing enabled; the existing Business Profile page already displays the public owner profile and the existing Admin gallery workflow supports multiple listing photos.
+- [ ] CI overall remains blocked at the existing npm audit gate (high dependency advisories in picomatch/tinyglobby/Vite); type-check, tests and build steps passed. Production Pages deployment and live browser category-page verification are pending until CI is green.
+- Existing business record, owner assignment and public profile were preserved; no schema/RLS changes or duplicate listing created.
