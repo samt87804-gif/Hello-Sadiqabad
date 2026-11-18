@@ -704,10 +704,11 @@ export async function fetchSearchSuggestions(query:string,options:{signal?:Abort
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
   const term=normalizeDirectorySearchText(query);if(term.length<2)return [];
   const rawTerm=query.trim().toLocaleLowerCase();
-  const [categories,areas,businesses,news,emergency]=await Promise.all([
+  const [categories,areas,businesses,news,emergency,authorityProfiles]=await Promise.all([
     fetchAllCategories(),fetchAllAreas(),fetchGitHubBusinesses(),
     isBrowserOffline() ? Promise.resolve([] as NewsArticleRow[]) : fetchPublishedNewsArticles(24),
     fetchEmergencyContacts(),
+    isBrowserOffline() ? Promise.resolve([] as AuthorityProfileRow[]) : fetchAuthorityProfiles(),
   ]);
   if(options.signal?.aborted)throw new DOMException('The user aborted a request.','AbortError');
   const results:SearchSuggestionItem[]=[];
@@ -716,6 +717,26 @@ export async function fetchSearchSuggestions(query:string,options:{signal?:Abort
     normalizeDirectorySearchText(item.phone).includes(term)||normalizeDirectorySearchText(item.description_en||'').includes(term)||
     normalizeDirectorySearchText(item.description_ur||'').includes(term)
   ) results.push({kind:'emergency',label_en:item.name_en,label_ur:item.name_ur,slug:item.category==='government'?'government':'all',subtitle:item.phone});
+  for(const profile of authorityProfiles) {
+    const searchable = [
+      profile.name_en, profile.designation_en, profile.designation_ur,
+      profile.show_organization ? profile.organization_en : null,
+      profile.show_organization ? profile.organization_ur : null,
+      profile.show_status ? profile.status_label_en : null,
+      profile.show_status ? profile.status_label_ur : null,
+      profile.show_authority ? profile.authority_en : null,
+      profile.show_authority ? profile.authority_ur : null,
+      profile.show_bio ? profile.bio_en : null,
+      profile.show_bio ? profile.bio_ur : null,
+      profile.show_contact ? profile.phone : null,
+      profile.show_contact ? profile.email : null,
+    ].filter((value): value is string => Boolean(value));
+    const matched = searchable.some((value) => normalizeDirectorySearchText(value).includes(term) || value.toLocaleLowerCase().includes(rawTerm)) || profile.name_ur.toLocaleLowerCase().includes(rawTerm);
+    if (matched) {
+      const subtitle = [profile.designation_en, profile.show_organization ? profile.organization_en : null].filter(Boolean).join(' · ') || 'Authority Profile';
+      results.push({kind:'authority',label_en:profile.name_en,label_ur:profile.name_ur || profile.name_en,slug:profile.slug,subtitle});
+    }
+  }
   for(const item of news)if(
     normalizeDirectorySearchText(item.title_en).includes(term)||(item.title_ur||'').toLocaleLowerCase().includes(rawTerm)||
     normalizeDirectorySearchText(item.excerpt_en).includes(term)||(item.excerpt_ur||'').toLocaleLowerCase().includes(rawTerm)

@@ -328,6 +328,8 @@ export function Home() {
                             ? `/area/${s.slug}`
                             : s.kind === 'news'
                             ? `/news/${s.slug}`
+                            : s.kind === 'authority'
+                            ? `/authority-profiles/${s.slug}`
                             : s.slug === 'government'
                             ? '/government-helplines'
                             : '/emergency';
@@ -354,8 +356,10 @@ export function Home() {
                                   ? 'علاقہ'
                                   : s.kind === 'news'
                                   ? 'خبر'
+                                  : s.kind === 'authority'
+                                  ? 'شخصیت'
                                   : 'ہیلپ لائن'
-                                : s.kind}
+                                : s.kind === 'authority' ? 'Authority' : s.kind}
                             </span>
                           </Link>
                         );

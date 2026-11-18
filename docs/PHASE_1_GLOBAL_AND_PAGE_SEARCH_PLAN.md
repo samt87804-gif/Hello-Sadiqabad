@@ -22,6 +22,7 @@ This document is the source of truth for Phase 1 scope, progress, acceptance cri
 - [ ] Audit existing routes, search components, data access, database schema, and current search behavior before coding.
 - [ ] Add a prominent global search entry point on the homepage.
 - [ ] Search public, relevant records across:
+  - [x] Active public Authority Profiles (name, designation, and fields enabled for public display)
   - [ ] Businesses and business services
   - [ ] Categories and subcategories
   - [ ] News (headline and approved searchable content)
@@ -171,3 +172,12 @@ Add dated notes here as work progresses. Record changed files, commit/PR referen
 - [x] Category search reuses the existing public business matcher and supports business name, Urdu text, phone, address, area, category synonyms/tags and services without changing database schema or RLS.
 - [x] Search is debounced by 300 ms and uses the existing abort/cancellation path so fast typing cannot let an older request overwrite the latest result.
 - [ ] Remaining page-level search rollout and full Phase 1 acceptance are still pending.
+
+
+### Progress — 2026-11-18 (Authority Profile Search)
+
+- [x] Homepage autocomplete includes active public Authority Profiles and links directly to their existing profile route.
+- [x] `/search` cross-directory results include Authority Profiles while preserving business directory results.
+- [x] Matching covers English/Urdu names, designation, and only fields enabled for public display (organization, status, authority, bio, contact).
+- [x] Uses existing public authority-profile query and active-only RLS visibility; no schema, RLS, or permissions changed.
+- [ ] Typecheck, tests, production build, and deployment verification pending.

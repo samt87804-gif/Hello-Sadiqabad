@@ -500,6 +500,8 @@ export function Search() {
                       ? `/area/${item.slug}`
                       : item.kind === 'news'
                       ? `/news/${item.slug}`
+                      : item.kind === 'authority'
+                      ? `/authority-profiles/${item.slug}`
                       : item.slug === 'government'
                       ? '/government-helplines'
                       : '/emergency';
@@ -509,6 +511,8 @@ export function Search() {
                       ? (lang === 'ur' ? 'علاقہ' : 'Area')
                       : item.kind === 'news'
                       ? (lang === 'ur' ? 'خبر' : 'News')
+                      : item.kind === 'authority'
+                      ? (lang === 'ur' ? 'شخصیت' : 'Authority')
                       : (lang === 'ur' ? 'ہیلپ لائن' : 'Helpline');
                     return (
                       <Link key={item.kind + ':' + item.slug} to={destination}
