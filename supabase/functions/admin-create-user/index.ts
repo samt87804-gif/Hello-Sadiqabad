@@ -90,7 +90,7 @@ Deno.serve(async (req: Request) => {
     const phone = typeof body.phone === "string" ? body.phone.trim().slice(0, 30) : null;
     const assignBusinessId = body.assign_business_id;
 
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254 ||
+    if (!isValidEmail(email) || email.length > 254 ||
       password.length < 12 || password.length > 128 ||
       fullName.length < 2 || fullName.length > 120 ||
       !["owner", "staff", "super_admin"].includes(role) ||
@@ -104,6 +104,20 @@ Deno.serve(async (req: Request) => {
       (role !== "owner" || !isValidUuid(assignBusinessId))) {
       return response(req, { ok: false, error: "A valid business can only be assigned to an owner account" }, 400);
     }
+    if (typeof assignBusinessId === "string") {
+      const { data: selectedBusiness, error: selectedBusinessError } = await db.from("businesses")
+        .select("id,owner_id").eq("id", assignBusinessId).maybeSingle();
+      if (selectedBusinessError) {
+        return response(req, { ok: false, error: "The selected listing could not be checked. Please refresh and try again." }, 500);
+      }
+      if (!selectedBusiness) {
+        return response(req, { ok: false, error: "The selected listing no longer exists. Please refresh and choose another listing." }, 404);
+      }
+      if (selectedBusiness.owner_id !== null) {
+        return response(req, { ok: false, error: "This listing is already assigned to another owner. Please choose an unassigned listing." }, 409);
+      }
+    }
+
     if (role === "staff" && body.staff_types !== undefined &&
       (!Array.isArray(body.staff_types) || body.staff_types.some((item) =>
         !["data_entry", "importer", "sales_onboarding", "listing_manager", "moderator", "support"].includes(String(item))
@@ -153,10 +167,16 @@ Deno.serve(async (req: Request) => {
 
     if (typeof assignBusinessId === "string") {
       const { data: business, error: businessError } = await db.from("businesses")
-        .update({ owner_id: userId }).eq("id", assignBusinessId).is("owner_id", null).select("id").maybeSingle();
-      if (businessError || !business) {
+        .update({ owner_id: userId }).eq("id", assignBusinessId).is("owner_id", null)
+        .select("id,owner_id").maybeSingle();
+      if (businessError || !business || business.owner_id !== userId) {
         await rollbackCreatedUser(userId);
-        return response(req, { ok: false, error: "Business assignment failed; account creation was rolled back." }, 400);
+        return response(req, {
+          ok: false,
+          error: businessError
+            ? "The listing could not be assigned. The new owner account was rolled back; please retry."
+            : "This listing was assigned elsewhere before the request completed. The new owner account was rolled back; please choose another listing.",
+        }, businessError ? 500 : 409);
       }
     }
 

@@ -315,3 +315,12 @@ Batch 3 — completed (16 November 2026):
 - [x] Existing issue chips, issue counts, listing cards, and CSV export now operate within the selected category scope; selecting All Categories preserves the previous overall view.
 - [ ] Verify GitHub CI and Cloudflare Pages deployment before marking this UI change production-verified.
 - No business records, category records, Supabase schema, RLS policies, or permissions were changed.
+
+
+## Owner account listing assignment correction — 18 November 2026
+
+- [x] Correct admin-create-user email validation to use the existing shared validator.
+- [x] Show only unassigned businesses in the owner-creation listing selector and clear stale selection after a successful create.
+- [x] Add server-side listing preflight, preserve race-safe conditional assignment, verify owner_id after update, and return actionable conflict errors with Auth-user rollback on failure.
+- [ ] Verify Edge Function deployment, GitHub checks, Cloudflare Pages deployment and production read-only ownership state.
+- No existing owner/business assignments or Supabase schema/RLS policies changed.

@@ -220,6 +220,7 @@ export function OwnersManager({
   const [assignBizId, setAssignBizId] = useState('');
 
   const owners = useMemo(() => profiles.filter((p) => p.role === 'owner'), [profiles]);
+  const unassignedBusinesses = useMemo(() => businesses.filter((business) => !business.owner_id), [businesses]);
 
   useEffect(() => {
     const client = getSupabaseClient();
@@ -331,6 +332,7 @@ export function OwnersManager({
     setFullName('');
     setPhone('');
     setPassword('');
+    setAssignBizId('');
     await onReload();
   };
 
@@ -354,7 +356,7 @@ export function OwnersManager({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-lg font-bold text-on-surface">Business Owners ({owners.length})</h2>
-        <Button onClick={() => setModalOpen(true)} leftIcon={<UserPlus className="w-4 h-4" />}>
+        <Button onClick={() => { setAssignBizId(""); setModalOpen(true); }} leftIcon={<UserPlus className="w-4 h-4" />}>
           Create Owner Account
         </Button>
       </div>
@@ -436,15 +438,15 @@ export function OwnersManager({
         }}
       />
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Create Owner Account">
+      <Modal open={modalOpen} onClose={() => { setModalOpen(false); setAssignBizId(""); }} title="Create Owner Account">
         <form onSubmit={createOwner} className="space-y-3">
           <Input label="Full Name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
           <Input label="Email" type="email" required dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} />
           <Input label="Mobile Phone" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <Input label="Temporary Password" type="password" autoComplete="new-password" minLength={12} required dir="ltr" hint="Use a unique password with at least 12 characters. No preset password is provided." value={password} onChange={(e) => setPassword(e.target.value)} />
-          <Select label="Assign Existing Listing (optional)" value={assignBizId} onChange={(e) => setAssignBizId(e.target.value)}>
+          <Select label="Assign Unassigned Listing (optional)" hint="Only listings that are not already linked to another owner are shown." value={assignBizId} onChange={(e) => setAssignBizId(e.target.value)}>
             <option value="">None</option>
-            {businesses.map((b) => (
+            {unassignedBusinesses.map((b) => (
               <option key={b.id} value={b.id}>{b.name_en}</option>
             ))}
           </Select>

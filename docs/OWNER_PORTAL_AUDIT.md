@@ -97,3 +97,13 @@ GitHub CI passed (npm ci, lint, tests, production build). Cloudflare Pages produ
 - 20261114152345_link_owner_submitted_new_business_to_portal
 - Edge Function: submit-suggestion, version 6
 - No pull request was created; changes were committed directly to main.
+
+
+## Admin owner creation and listing assignment correction — 18 November 2026
+
+- Owner reported that choosing an existing listing while creating an Owner Portal account did not result in the listing appearing under that owner.
+- Read the permanent project rules, Owner Portal audit, current OwnersManager UI, admin-create-user Edge Function, shared validation helper, live schema/RLS, and production function logs.
+- Confirmed production has 3 owner profiles: one owns ARTS APPAREL; two have no assigned listings. Production currently has 371 unassigned businesses and 1 assigned business. No existing owner/business relationship was changed.
+- Root causes in the creation path: the Edge Function duplicated email validation with an incorrectly double-escaped regex instead of using the already-imported isValidEmail helper; the UI also offered already-assigned listings and retained the previous selected listing after a successful creation. The Edge Function correctly refused to overwrite a non-null owner_id, but its error was generic.
+- Fix: use the shared email validator; preflight-check the selected business exists and is unassigned; preserve the conditional owner_id IS NULL update and verify the returned owner_id; compensate by deleting the just-created Auth user if the assignment loses a race; return clear conflict errors; show only unassigned listings in the admin dropdown; clear selection after success and when opening/closing the modal.
+- No Supabase schema, RLS, permissions, existing profile, Auth user, business record or ownership relationship was changed as part of the fix. Edge Function deployment and CI/Pages verification are tracked separately.
