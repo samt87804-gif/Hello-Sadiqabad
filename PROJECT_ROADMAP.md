@@ -294,3 +294,9 @@ Batch 3 — completed (16 November 2026):
 - [x] Applied migration `20261117204927_fix_site_media_admin_insert_rls` and verified the live policy.
 - [x] Client-side WebP conversion, resizing and 8 MiB compressed-file limit remain in `adminMedia.ts`. MIME/size are no longer independently enforced by Storage RLS.
 - [ ] Owner to confirm a successful upload in the live Admin UI; then verify image URL persistence and `/offline-data` media caching. Public visitors and business owners remain unable to upload.
+
+
+## Offline media polish — 18 November 2026
+
+- [x] Preserve public category and helpline image URL mappings in the existing offline IndexedDB snapshot so their already-cached images can render on category and emergency cards without connectivity.
+- [ ] Verify the new snapshot mapping path in CI and on a real browser/device with internet disabled; users with an older offline package must download the offline directory once again.

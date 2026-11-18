@@ -321,7 +321,13 @@ function appendAuditDemo(
 // ---------------------------------------------------------------------------
 
 export async function fetchSiteSettings(): Promise<SiteSettingsMap> {
-  if (isBrowserOffline()) return parseSiteSettings(SEED_SITE_SETTINGS);
+  if (isBrowserOffline()) {
+    const settings = parseSiteSettings(SEED_SITE_SETTINGS);
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    return snapshot?.directory_image_urls
+      ? { ...settings, directory_image_urls: snapshot.directory_image_urls }
+      : settings;
+  }
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('site_settings').select('*').eq('is_public', true);

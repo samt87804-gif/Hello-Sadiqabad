@@ -444,6 +444,7 @@ export function OfflineData() {
         categories: categories.filter((item) => item.is_active).map(toOfflineCategory),
         areas: areas.filter((item) => item.is_active).map(toOfflineArea),
         emergency_contacts: emergency.items.map(toOfflineEmergencyContact),
+        directory_image_urls: siteSettings.directory_image_urls,
       };
 
       if (!validateOfflineDirectorySnapshot(snapshot)) {

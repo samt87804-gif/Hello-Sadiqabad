@@ -1,4 +1,5 @@
 import type { BusinessPublicView } from '../types/directory';
+import type { DirectoryImageUrls } from './siteSettings';
 import type { BusinessRow, CategoryRow, AreaRow, EmergencyContactRow, OfferRow, ReviewRow } from '../types/database';
 
 export const OFFLINE_DIRECTORY_SCHEMA_VERSION = 1;
@@ -120,6 +121,7 @@ export interface OfflineDirectorySnapshot {
   categories: OfflineCategory[];
   areas: OfflineArea[];
   emergency_contacts: OfflineEmergencyContact[];
+  directory_image_urls?: DirectoryImageUrls;
 }
 
 export interface OfflineSnapshotMetadata {
@@ -324,6 +326,18 @@ function isValidPublicArea(value: unknown): value is OfflineArea {
     typeof area.name_ur === 'string';
 }
 
+function isValidDirectoryImageMap(value: unknown): value is DirectoryImageUrls {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  return ['categories', 'areas', 'helplines', 'businesses', 'offers', 'ads'].every((key) => {
+    const group = record[key];
+    return Boolean(group && typeof group === 'object' && !Array.isArray(group) &&
+      Object.entries(group as Record<string, unknown>).every(([id, url]) =>
+        isNonEmptyString(id) && typeof url === 'string' && (url === '' || url.startsWith('https://'))
+      ));
+  });
+}
+
 export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnapshot): boolean {
   if (!snapshot || typeof snapshot !== 'object') return false;
   if (snapshot.schema_version !== OFFLINE_DIRECTORY_SCHEMA_VERSION) return false;
@@ -331,6 +345,7 @@ export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnaps
   if (!Array.isArray(snapshot.businesses) || !Array.isArray(snapshot.categories) ||
       !Array.isArray(snapshot.areas) || !Array.isArray(snapshot.emergency_contacts)) return false;
   if (containsForbiddenKeys(snapshot)) return false;
+  if (snapshot.directory_image_urls !== undefined && !isValidDirectoryImageMap(snapshot.directory_image_urls)) return false;
 
   const businessIds = new Set<string>();
   for (const candidate of snapshot.businesses as unknown[]) {

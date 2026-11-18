@@ -87,7 +87,7 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 **Acceptance gate:** clean CI (typecheck, tests, production build and existing Deno checks); online smoke checks for homepage/search/business profile/category/area/emergency; offline reload and search using a verified snapshot; offline write attempts show a clear connection-required message and create no local pending submission; existing install/update behavior remains intact. No production rollout if stale chunks, missing core routes, data leakage or online regressions are observed.
 
 ### Phase 2 — Complete public-content coverage and media
-**Status: not started; depends on Phase 1.**
+**Status: in progress — public image prefetch/cache is implemented for business and other public media; category/helpline image URL mappings are now included in the offline snapshot so cached images can resolve offline. Remaining public-content snapshots and device acceptance are pending.**
 
 - Add offline snapshots and offline read fallbacks for active offers, published news/articles, current announcements, active local authorities, public authority profiles, public static pages and public site settings.
 - Create a deduplicated image manifest from the public business/content snapshots. Download public logos and cover images first, then galleries and other public media with bounded concurrency and explicit storage limits.
@@ -250,3 +250,13 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 - Applied `20261117204927_fix_site_media_admin_insert_rls` to remove only those metadata predicates. Admin-only authenticated role, `site-media` bucket/path scope, own-UID folder and approved Admin/Super Admin permission checks remain.
 - The shared browser uploader still converts images to WebP, resizes, rejects unsupported formats and limits compressed output to 8 MiB. MIME/size are currently enforced in the client, not independently by this Storage RLS policy; do not describe them as server-side enforcement.
 - Live policy definition verified. Actual browser upload and offline image caching remain pending owner/device acceptance.
+
+
+### 18 November 2026 — Category and helpline offline image mapping
+
+- Added the public `directory_image_urls` mapping to the existing version-1 offline snapshot as an optional backward-compatible field. This avoids invalidating previously downloaded offline packages.
+- The offline download now saves the same public category/area/helpline image maps already used to build the image prefetch list. Category images remain keyed by category slug; helpline images remain keyed by public helpline ID, matching existing cards.
+- Offline `fetchSiteSettings()` restores those saved public image mappings from the verified active IndexedDB snapshot instead of falling back to seed-only image settings. Existing Cache Storage media fetching and Service Worker interception are reused; no new image host or cache namespace is introduced.
+- Added snapshot validation tests for valid public category/helpline image maps and rejection of insecure image URLs.
+- No Supabase schema/data/RLS, Storage policy, Service Worker, image upload, business image path or Cloudflare setting change is required.
+- Pending verification: CI/typecheck/tests/build, production Pages deployment, and browser/device offline rendering of category and helpline card images. Existing offline snapshots from before this update need one fresh offline-directory download to save the image URL mappings.

@@ -287,3 +287,14 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Direct commit to main is required by the permanent project rules. Cloudflare Pages is GitHub-integrated to main, so the commit should trigger a production deployment automatically.
 - Supabase production project remains Hello Sadiqabad (efwohfzqitevkuybnyif); no schema/data change is needed for this UI-only feature.
 - Before calling the feature deployed, verify GitHub CI, the matching Cloudflare Pages deployment for the new commit, and the affected public category route.
+
+
+## Offline category and helpline card images — 18 November 2026
+
+- Owner requested category-card and helpline-card images to remain visible offline, consistent with existing business image caching.
+- Read `docs/PROJECT_WORKING_RULES.md` and `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` before editing.
+- Root cause: `OfflineData` already included all `directory_image_urls` groups in its public media prefetch list, including categories and helplines, but only image responses were cached. The URL-to-category-slug / URL-to-helpline-ID mappings were not included in the IndexedDB offline snapshot. Offline `fetchSiteSettings()` therefore returned seed settings and the cards could not resolve their cached image URLs.
+- Fix: added optional `directory_image_urls` to the existing offline snapshot, persist it during normal download, and restore it through offline `fetchSiteSettings()`. Kept schema version 1 and made field optional for old snapshot compatibility; a fresh download is needed for old snapshots to gain the mappings.
+- Added validation tests for HTTPS category/helpline mappings and rejection of insecure image URLs.
+- Reused existing Cache Storage media cache and Service Worker allowlist. No Supabase migration, data/RLS/Storage change, Cloudflare setting or image uploader change.
+- Verify CI and Cloudflare deployment, then test /categories and /emergency or /government-helplines offline on an actual browser/device.

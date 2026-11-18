@@ -213,3 +213,21 @@ test('snapshot validation rejects nested private fields in public content', () =
   });
   assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
 });
+
+
+test('offline snapshot preserves public category and helpline image URL mappings', () => {
+  const snapshot = createSnapshot();
+  snapshot.directory_image_urls = {
+    categories: { showroom: 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/showroom.webp' },
+    areas: {},
+    helplines: { 'helpline-1122': 'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/1122.webp' },
+    businesses: {}, offers: {}, ads: {},
+  };
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), true);
+});
+
+test('offline snapshot rejects non-HTTPS directory image mappings', () => {
+  const snapshot = createSnapshot();
+  snapshot.directory_image_urls = { categories: { showroom: 'http://example.com/showroom.webp' }, areas: {}, helplines: {}, businesses: {}, offers: {}, ads: {} };
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
+});
