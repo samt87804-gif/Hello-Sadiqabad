@@ -490,3 +490,12 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Immediate next step: re-audit current tests, report RPC and authorization, then add/complete collector abuse tests and privacy/route lifecycle verification before richer reports.
 - Preserve current analytics tables, RPCs, legacy analytics, privacy controls, permission model and raw-event retention. No raw IP/PII/precise location, visitor-level dashboard, fabricated history or anonymous analytics reads.
 - Do not mark manual browser/device checks complete unless actually performed. See expansion roadmap for phase acceptance criteria.
+
+
+### Analytics expansion — latest execution checkpoint (19 November 2026)
+- Expansion plan: `docs/ANALYTICS_EXPANSION_ROADMAP.md`; original security/data contract remains `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`.
+- Shared collector envelope validator and automated contract tests added. Sensitive/unknown top-level fields, invalid event names/IDs, engagement/search bounds and invalid entity references are rejected.
+- Edge Function `track-site-analytics` deployed as version 4 (ACTIVE; JWT verification remains disabled for public ingestion). Rate limiting and bot filtering preserved.
+- CI run `44554526513` passed both jobs for commit `f9b2631fbefbd59c6e8dcdae9fbbe16b25686ae6`.
+- Live grants/RLS rechecked: anon analytics table SELECT/report EXECUTE denied; service_role report EXECUTE and DELETE denied; authenticated SELECT is subject to Super Admin / active staff `analytics.view` RLS.
+- Remaining P0 blockers: direct live HTTP abuse/replay/rate-limit checks, staff-without-permission and inactive-staff authorization tests, and controlled browser navigation/engagement/opt-out/DNT/GPC/private-route walkthrough. Do these before custom report UI expansion.
