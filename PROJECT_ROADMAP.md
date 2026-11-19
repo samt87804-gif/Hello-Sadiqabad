@@ -373,3 +373,11 @@ Batch 3 — completed (16 November 2026):
 - [x] Initial read-only audit confirmed existing business events, daily business stats, search logs, ad counters and Analytics tab. Existing Admin UI remains directory-focused; full site-wide visitors/sessions/live traffic are not yet implemented.
 - [x] Deployed `track-event` v7 reviewed: JWT verification is off, service-role is server-side, CORS allowlist and rate limit exist, but rate-limit key is client-provided session ID; Origin is not authentication. Raw search text is stored in legacy `search_logs`. Hardening/design review remains required before extension.
 - [ ] Complete Phase 0 RLS/grants/RPC and permission verification; do not make schema/function changes until the gate passes.
+
+- [ ] Advanced site-wide analytics and Live Visitors. Scope, security controls, phases and evidence checklist: [docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md](docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md).
+- [x] Owner approved full analytics scope including Live Visitors; feature plan committed to main.
+- [x] Read-only audit verified legacy analytics schemas, RLS/grants, admin_analytics RPC authorization, active-staff permission helper, deployed track-event v7 and repository source/callers.
+- [x] Identified repository/deployed track-event drift: deployed v7 is less strict than repository source; client-controlled session ID rate limiting is bypassable; legacy search_logs contains raw query text.
+- [x] Verified Supabase Realtime has no published tables and no realtime.messages RLS policies; it is not currently a safe/proven visitor Presence transport.
+- [x] Recorded initial threat model and preferred Cloudflare Durable Object ephemeral presence design in the feature plan. No application code, DB schema, Edge Function or Cloudflare config changed.
+- [ ] Phase 0 remains open: inspect SPA route lifecycle/offline exclusions, compare repo migrations with live ledger, verify Cloudflare Pages/Worker binding availability and finalize event/report contracts before schema/function work.
