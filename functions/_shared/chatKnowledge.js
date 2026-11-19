@@ -15,7 +15,7 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   const normalized = normalize(query);
   if (!normalized) return { category: null, area: null };
 
-  const locationMatch = normalized.match(/\b(?:in|near|at|within|around)\s+(.+)$/i);
+  const locationMatch = normalized.match(/\b(?:in|near|at|within|around|mein|ma)\s+(.+)$/i);
   const categorySearchText = locationMatch ? normalized.slice(0, locationMatch.index).trim() : normalized;
   const areaSearchText = locationMatch ? locationMatch[1].trim() : normalized;
 
@@ -30,7 +30,11 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   const genericAreaTokens = [
     'sadiqabad', 'town', 'road', 'area', 'block', 'colony', 'street',
     'mandi', 'market', 'bazaar', 'chowk', 'mohalla', 'city', 'phase',
-    'extension', 'sector', 'near', 'within', 'around',
+    'extension', 'sector', 'near', 'within', 'around', 'school', 'schools', 'academy', 'academies',
+    'hospital', 'hospitals', 'clinic', 'clinics', 'medical', 'complex', 'restaurant', 'restaurants',
+    'hotel', 'hotels', 'shop', 'shops', 'store', 'stores', 'business', 'businesses', 'college',
+    'university', 'mosque', 'masjid', 'bank', 'office', 'offices', 'mall', 'plaza', 'center', 'centre',
+    'park', 'factory', 'industrial', 'estate', 'railway', 'station', 'stand',
   ];
   const area = areas.find((item) => {
     const rawTerms = [item.name_en, item.name_ur, item.slug?.replace(/[-_]+/g, ' ')];
@@ -38,6 +42,7 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
       const term = normalize(value);
       if (!term) return false;
       if (areaSearchText.includes(term)) return true;
+      if (!locationMatch) return false;
       const meaningfulTokens = term.split(/\s+/).filter((token) =>
         token.length >= 5 && !genericAreaTokens.includes(token)
       );
