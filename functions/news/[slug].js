@@ -34,14 +34,13 @@ function safeImage(value) {
 }
 
 function setMeta(html, attribute, name, value) {
-  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp('<meta\\b(?=[^>]*\\b' + attribute + '\\s*=\\s*["\\\']' + escapedName + '["\\\'])[^>]*>', 'i');
+  const pattern = new RegExp(\`<meta\\b(?=[^>]*\\b\${attribute}\\s*=\\s*["']\${name}["'])[^>]*>\`, 'i');
   const tag = '<meta ' + attribute + '="' + escapeHtml(name) + '" content="' + escapeHtml(value) + '" />';
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\\/head>/i, tag + '\\n</head>');
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\n</head>');
 }
 
 function buildSocialHtml(html, { title, description, url, image, imageAlt, type, publishedAt }) {
-  let output = html.replace(/<title>[\\s\\S]*?<\\/title>/i, '<title>' + escapeHtml(title) + '</title>');
+  let output = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escapeHtml(title) + '</title>');
   const tags = [
     ['property', 'og:title', title],
     ['property', 'og:description', description],
@@ -60,15 +59,15 @@ function buildSocialHtml(html, { title, description, url, image, imageAlt, type,
   if (publishedAt) output = setMeta(output, 'property', 'article:published_time', publishedAt);
 
   const canonicalTag = '<link rel="canonical" href="' + escapeHtml(url) + '" />';
-  const canonicalPattern = /<link\\b(?=[^>]*\\brel\\s*=\\s*["']canonical["'])[^>]*>/i;
+  const canonicalPattern = /<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/i;
   output = canonicalPattern.test(output)
     ? output.replace(canonicalPattern, canonicalTag)
-    : output.replace(/<\\/head>/i, canonicalTag + '\\n</head>');
+    : output.replace(/<\/head>/i, canonicalTag + '\n</head>');
   return output;
 }
 
 async function fetchPublishedArticle(env, slug) {
-  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\\/+$/, '');
+  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const publicKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !publicKey) return null;
 
