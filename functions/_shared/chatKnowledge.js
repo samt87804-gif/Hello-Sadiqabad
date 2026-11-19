@@ -10,12 +10,12 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   const normalize = (value) => String(value || '')
     .normalize('NFKC')
     .toLocaleLowerCase()
-    .replace(/[^\\p{L}\\p{N}]+/gu, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
   const normalized = normalize(query);
   if (!normalized) return { category: null, area: null };
 
-  const locationMatch = normalized.match(/\\b(?:in|near|at|within|around)\\s+(.+)$/i);
+  const locationMatch = normalized.match(/\b(?:in|near|at|within|around)\s+(.+)$/i);
   const categorySearchText = locationMatch ? normalized.slice(0, locationMatch.index).trim() : normalized;
   const areaSearchText = locationMatch ? locationMatch[1].trim() : normalized;
 
@@ -38,7 +38,7 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
       const term = normalize(value);
       if (!term) return false;
       if (areaSearchText.includes(term)) return true;
-      const meaningfulTokens = term.split(/\\s+/).filter((token) =>
+      const meaningfulTokens = term.split(/\s+/).filter((token) =>
         token.length >= 5 && !genericAreaTokens.includes(token)
       );
       return meaningfulTokens.some((token) => areaSearchText.includes(token));
