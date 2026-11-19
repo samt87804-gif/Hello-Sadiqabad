@@ -95,11 +95,13 @@ async function supabaseRest(admin, path, options = {}) {
 
 async function updateRun(admin, runId, patch) {
   const query = new URLSearchParams({ id: `eq.${runId}` });
-  return supabaseRest(admin, `chatbot_knowledge_sync_runs?${query}`, {
+  const rows = await supabaseRest(admin, `chatbot_knowledge_sync_runs?${query}`, {
     method: 'PATCH',
     body: patch,
     returnRepresentation: true,
   });
+  if (!Array.isArray(rows) || !rows[0]) throw new Error('Chatbot sync progress could not be saved.');
+  return rows[0];
 }
 
 async function fetchBusinessDirectoryCount(admin) {
@@ -195,13 +197,16 @@ export async function onRequestPost({ request, env }) {
   }
 
   let sourceStatus = pendingSources;
+  let sourceCounts = {};
+  let businessCount = null;
   let knowledgeRefreshed = false;
   try {
     await updateRun(admin, run.id, {
       stage: 'Checking the published business directory',
       progress_percent: 20,
     });
-    const businessCount = await fetchBusinessDirectoryCount(admin);
+    businessCount = await fetchBusinessDirectoryCount(admin);
+    sourceCounts.businesses = businessCount;
 
     await updateRun(admin, run.id, {
       stage: 'Refreshing all public knowledge sources',
@@ -214,7 +219,7 @@ export async function onRequestPost({ request, env }) {
 
     knowledgeRefreshed = true;
     sourceStatus = { ...context.source_status, business_directory: 'loaded' };
-    const sourceCounts = { ...context.source_counts, businesses: businessCount };
+    sourceCounts = { ...context.source_counts, businesses: businessCount };
     const totalRecords = Object.values(sourceCounts).reduce((sum, value) => sum + Number(value || 0), 0);
 
     await updateRun(admin, run.id, {
@@ -225,7 +230,7 @@ export async function onRequestPost({ request, env }) {
       total_records: totalRecords,
     });
     const completedAt = new Date().toISOString();
-    const updated = await updateRun(admin, run.id, {
+    const result = await updateRun(admin, run.id, {
       status: 'success',
       stage: 'All public sources refreshed successfully',
       progress_percent: 100,
@@ -235,12 +240,11 @@ export async function onRequestPost({ request, env }) {
       total_records: totalRecords,
       error_summary: null,
     });
-    const result = Array.isArray(updated) ? updated[0] : null;
-    if (!result) throw new Error('Knowledge refreshed, but the final sync status could not be confirmed.');
     return json({ run: result });
   } catch (error) {
     if (error?.sourceStatus && typeof error.sourceStatus === 'object') {
-      sourceStatus = { ...error.sourceStatus, business_directory: 'loaded' };
+      sourceStatus = { ...error.sourceStatus, business_directory: businessCount === null ? 'unavailable' : 'loaded' };
+      if (error.sourceCounts && typeof error.sourceCounts === 'object') sourceCounts = { ...error.sourceCounts, ...(businessCount === null ? {} : { businesses: businessCount }) };
     } else if (sourceStatus.business_directory === 'pending') {
       sourceStatus = { ...sourceStatus, business_directory: 'unavailable' };
     }
@@ -252,11 +256,11 @@ export async function onRequestPost({ request, env }) {
         progress_percent: 100,
         completed_at: new Date().toISOString(),
         source_status: sourceStatus,
+        source_counts: sourceCounts,
+        total_records: Object.values(sourceCounts).reduce((sum, value) => sum + Number(value || 0), 0),
         error_summary: message,
       });
-      const result = Array.isArray(failed) ? failed[0] : null;
-      if (!result) throw new Error('Failure status update returned no record.');
-      return json({ error: message, run: result }, 502);
+      return json({ error: message, run: failed }, 502);
     } catch {
       return json({ error: 'Refresh failed and its status could not be saved. The previous cached knowledge was not intentionally deleted.', run_id: run.id }, 502);
     }
