@@ -266,3 +266,15 @@ test('uses category and area filters for explicit directory browsing', () => {
     { category: null, area: 'ghalla-mandi', query: null },
   );
 });
+
+test('does not mistake a business category word for a locality', () => {
+  const areas = [{ name_en: 'Bismillah School Rd', name_ur: 'بسم اللہ اسکول روڈ', slug: 'bismillah-school-rd' }];
+  assert.deepEqual(
+    resolvePublicDirectoryFilters('Al-Buraq School Academy Sadiqabad', [], areas),
+    { category: null, area: null },
+  );
+  assert.deepEqual(
+    resolvePublicDirectoryFilters('schools near Bismillah School Rd', [], areas),
+    { category: null, area: 'bismillah-school-rd' },
+  );
+});
