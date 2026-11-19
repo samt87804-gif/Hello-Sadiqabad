@@ -543,3 +543,21 @@ Counts are a live snapshot and may change as public content is updated.
 
 ### Explicitly not part of Part 1
 The admin “Train / Sync Latest Information to Chatbot” button and its manual full/incremental sync controls have not been added. No separate vector database, persistent training corpus, or model fine-tuning has been introduced. Those are separate later phases and remain untouched until approved.
+
+
+## Chatbot public knowledge and conversation experience — Part 2
+**Status: implemented, CI passed, and deployed (20 November 2026).** Full feature plan: `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md`.
+
+- Follow-up retrieval now anchors short questions such as “aur iska address?” to the prior user query; chained follow-ups retain the original topic, while unrelated questions start a new retrieval topic.
+- Business search now distinguishes exact business-name lookup from category browsing. It searches a distinctive business-name token even if the business name contains category synonyms.
+- Locality matching no longer selects an area merely because a business name contains a generic token such as “school”; partial locality matching requires an explicit location cue.
+- Assistant HTTP(S) and Markdown URLs render as safe clickable links; unsafe schemes are not linked.
+- Chat widget has a New Chat control and accessible message/loading announcements.
+- Regression tests cover follow-up context, category/business-name disambiguation, locality false positives and safe links.
+- GitHub Actions run `44604061079` passed TypeScript, automated tests, production build and Edge Function checks.
+- Cloudflare Pages deployment `97e8efdf-a322-41bd-8949-215e2b7766ce` succeeded for commit `83e8a86777f6db361e1b5c5bb5d3b35984331da9`.
+- Canonical production API smoke test returned HTTP 200 and correctly returned Al-Buraq School & Academy's public phone number `03277056075`; the follow-up address question correctly resolved to “near Kamal medical complex, Sadiqabad”.
+- No database migration or private-data access was introduced. Physical mobile/device UI verification remains outstanding.
+
+### Next planned chatbot phase
+Admin-only knowledge refresh control (“Train / Sync Latest Information to Chatbot”), with safe full/incremental refresh, authorization, progress, last-sync status and error reporting. This is not implemented in Part 2; see the feature plan.

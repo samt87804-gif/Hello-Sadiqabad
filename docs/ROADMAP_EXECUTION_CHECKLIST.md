@@ -288,3 +288,20 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 **Observed public-data snapshot:** 397 published businesses, 22 active categories, 314 active areas, 2 published news articles, 8 published static pages, 12 active helplines, 9 local authorities, 2 active authority profiles, 3 visible public owner profiles, 1 active product, 0 current offers, and 0 current announcements. Counts are not fixed.
 
 **Implementation note:** This is live public-data retrieval with a 180-second edge cache, not fine-tuning of model weights. The manual admin sync button, persistent vector index, and any separate training corpus are not part of Part 1 and have not been implemented.
+
+
+## Chatbot public knowledge and conversation experience — Part 2 (20 November 2026)
+
+- [x] Resolve short follow-up questions against the prior user query, including chained follow-ups.
+- [x] Keep unrelated new questions independent of previous conversation context.
+- [x] Separate business-name lookup from category browsing where a business name overlaps a category synonym.
+- [x] Prevent locality false positives when business names contain generic locality/category words such as “school”.
+- [x] Render assistant HTTP(S) and Markdown links as safe clickable links; reject unsafe schemes from link rendering.
+- [x] Add New Chat reset and accessible chat log/loading announcements.
+- [x] Add regression tests for follow-up context, business/category disambiguation, locality false positives and link safety.
+- [x] GitHub Actions run `44604061079` passed TypeScript, automated tests, production build and Edge Function checks.
+- [x] Cloudflare Pages deployment `97e8efdf-a322-41bd-8949-215e2b7766ce` succeeded.
+- [x] Canonical production API follow-up test: Al-Buraq School & Academy phone `03277056075`, then “aur iska address?” correctly returned near Kamal medical complex, Sadiqabad.
+- [ ] Physical mobile/device interaction verification of the chatbot UI.
+
+**Not part of Part 2:** Admin sync button, persistent vector index, separate training corpus and model fine-tuning. No DB migration was made.

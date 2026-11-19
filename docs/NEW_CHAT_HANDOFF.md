@@ -556,3 +556,19 @@ Part 1 is implemented and deployed. Existing `/api/chat` and Cloudflare Workers 
 - No DB migration or data writes were made.
 
 **Not done in Part 1:** Admin manual “Train / Sync Latest Information” button, persistent vector index/training corpus, and model fine-tuning. Do not assume these are implemented; wait for the user's next instruction before starting another phase.
+
+
+## Latest verified update — Chatbot Part 2 (20 November 2026)
+
+Read `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md` for the feature plan and phase boundaries.
+
+- Follow-up retrieval resolves short questions against earlier user requests and retains the original subject through chained follow-ups.
+- Business-name searches are no longer confused with category synonyms; locality matching avoids false positives from business-name words such as “school”.
+- Assistant HTTP(S)/Markdown links are clickable and safe; a New Chat control and accessible message/loading announcements were added.
+- Regression tests cover follow-up context, category/business disambiguation, locality false positives and link safety.
+- GitHub Actions run `44604061079` passed TypeScript, automated tests, production build and Edge Function checks.
+- Cloudflare Pages deployment `97e8efdf-a322-41bd-8949-215e2b7766ce` succeeded for commit `83e8a86777f6db361e1b5c5bb5d3b35984331da9`.
+- Production API smoke test returned HTTP 200; Al-Buraq School & Academy's public phone `03277056075` and follow-up address “near Kamal medical complex, Sadiqabad” were returned correctly.
+- No DB migration or private-data access. Physical device/mobile interaction remains unverified.
+
+**Next chatbot phase (not started):** Admin-only “Train / Sync Latest Information to Chatbot” control with safe full/incremental refresh, authorization, progress, last-sync status and error reporting. Do not claim that a persistent vector index or model fine-tuning exists.
