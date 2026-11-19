@@ -385,3 +385,13 @@ Batch 3 — completed (16 November 2026):
 - [x] Further Phase 0 audit: mapped React Router public/private route groups, confirmed offline mode skips telemetry and creates no event queue, and identified search/business/ad event call sites.
 - [x] Read-only Cloudflare audit: production Pages project has only the existing AI binding, one unrelated Worker script and zero Durable Object namespaces. Cloudflare docs require a separate DO Worker deployment and binding to Pages; this infrastructure has not been changed.
 - [ ] Analytics Phase 0 remains open pending repo migration tree parity and reviewed separate DO Worker/Pages binding deployment sequence.
+
+
+## Advanced Admin Analytics — migration and deployment audit (19 November 2026)
+
+- [x] Compare the current repository migration directory against the live Supabase migration ledger; document differences and select a safe forward-only migration path.
+- Repository currently has 47 migration SQL files; live Supabase has 67 applied migration versions through `20261118091057`. Normalized name matching found 44 corresponding names, 23 live entries without a same-named repository file and 3 repository files without a same-named live entry. Some similarly named migrations have different timestamps; do not assume their SQL is identical.
+- The repository's consolidated initial baseline is not the same as the production ledger's 16 individual initial migrations. Never replay the consolidated baseline or rewrite historical migration records.
+- New analytics schema work, when ready, must use a new timestamped additive migration after the latest live version and be checked against actual live object names.
+- Cloudflare Pages deployment for docs commit `36fd8af2757d77001192e16b48b1611fa9aab256` is now verified successful: deployment `bc218d44-5724-4f50-b6c1-83bcbe047aa6`. This is documentation-only deployment, not an analytics release.
+- Advanced Analytics implementation remains not started: no analytics schema, tracker, ingestion function, Durable Object or dashboard changes have been made. Phase 0 remains open for final event/report contract and Cloudflare edge architecture review.
