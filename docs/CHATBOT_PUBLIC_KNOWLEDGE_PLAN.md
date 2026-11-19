@@ -45,13 +45,27 @@ Provide public visitors with a reliable, read-only assistant for published Hello
 - A false locality match caused by the word “School” was found during testing, fixed, covered by a regression test, and retested successfully.
 - The API was browser-render smoke-tested on the canonical production domain. Automated build/tests passed. A manual physical-device/mobile interaction test has not been performed.
 
-## Part 3 — Admin-managed knowledge refresh (not yet implemented)
-Planned separately, based on the owner's original request:
-- Add an admin-only “Train / Sync Latest Information to Chatbot” control.
-- Design a secure full/incremental refresh workflow, with permission checks, progress/status, last successful refresh, source-level results and errors.
-- Make the button accurately describe what it does: refresh/rebuild the chatbot's retrievable knowledge, not fine-tune the underlying model unless a separate approved training pipeline is designed.
-- Preserve the public chatbot's read-only boundary and existing RLS. Do not expose privileged keys in the browser.
-- Before implementing, inspect current admin authorization patterns, audit logging, Cloudflare cache behavior and data-source limits. No DB migration or vector database is assumed necessary; justify any persistent index before introducing it.
+## Part 3 — Admin-managed knowledge refresh
+**Status:** Implemented · Database migrations applied · CI/deployment verification pending · First authenticated admin sync pending
+
+- Add a super-admin-only Admin Portal section at `/admin/chatbot-knowledge`, with the “Train / Sync Latest Information to Chatbot” button.
+- Backend route: `functions/api/chat/sync.js`; public context refresh is shared with `functions/api/chat.js`.
+- Verify the bearer token against Supabase Auth, then verify the caller's current `profiles.role = super_admin` and `profiles.is_active = true`. The backend does not trust frontend role claims.
+- Require a same-origin POST and keep all Supabase calls server-side or authenticated with the admin's own user JWT. No service-role/secret key is exposed or used.
+- A full refresh re-reads all 12 public knowledge tables/views and the published-business directory count. The chatbot continues to query actual business records live through the public search RPC per question; it does not duplicate all business records into a second store.
+- Public knowledge cache uses a new versioned cache key. The previous cache is not overwritten unless every required source loads successfully and the refreshed context can be written.
+- Persist run history in `public.chatbot_knowledge_sync_runs`, including actor, start/completion time, status, progress, source statuses/counts, total records and failure summary. Only active Super Admins can read, insert or update rows; anonymous access and deletes are denied by grants/RLS.
+- Admin UI polls progress while a refresh is running and shows the last successful refresh, current stage/percentage, per-source record counts/status, recent runs and errors.
+- Full refresh only is implemented. Incremental sync is not yet available.
+- This refreshes retrievable public knowledge and edge cache; it does not fine-tune model weights and does not create a vector database.
+- Migrations applied to Supabase:
+  - `20261119201013_chatbot_knowledge_sync_runs`
+  - `20261119201034_chatbot_knowledge_sync_progress`
+  - `20261119201234_chatbot_knowledge_sync_admin_select_hardening`
+- SQL privilege check confirmed RLS enabled, no anon SELECT, authenticated SELECT/INSERT/UPDATE granted for RLS-gated operations, and no authenticated DELETE privilege.
+- Security Advisor returned the existing private analytics-token RLS informational finding and the existing Free-plan leaked-password-protection warning; no new public sync-table finding.
+- Preview endpoint smoke test returned HTTP 401 for unauthenticated GET and POST. A positive authenticated full sync has not been run because no Super Admin browser session was available to this implementation session; the owner should run the button once after deployment to verify all live source statuses.
+- Physical mobile/device UI verification remains outstanding.
 
 ## Guardrails
 - Public information only; no invented businesses, contact details, hours, news or routes.
