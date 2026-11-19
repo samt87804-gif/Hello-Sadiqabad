@@ -395,3 +395,19 @@ Batch 3 — completed (16 November 2026):
 - New analytics schema work, when ready, must use a new timestamped additive migration after the latest live version and be checked against actual live object names.
 - Cloudflare Pages deployment for docs commit `36fd8af2757d77001192e16b48b1611fa9aab256` is now verified successful: deployment `bc218d44-5724-4f50-b6c1-83bcbe047aa6`. This is documentation-only deployment, not an analytics release.
 - Advanced Analytics implementation remains not started: no analytics schema, tracker, ingestion function, Durable Object or dashboard changes have been made. Phase 0 remains open for final event/report contract and Cloudflare edge architecture review.
+
+
+## Advanced Admin Analytics — Phase 1 database foundation (19 November 2026)
+
+- [x] Additive Supabase migration `20261119140712_site_analytics_foundation`: privacy-minimized event/session tables, RLS, indexes and `admin_site_analytics_report` SECURITY INVOKER RPC.
+- [x] Additive privilege hardening migration `20261119140832_site_analytics_privilege_hardening`: service_role can insert/update/read new analytics rows but cannot delete; service_role cannot execute the admin report.
+- [x] Add independent weekly 90-day retention job through migration `20261119140930_site_analytics_retention_90d`; existing legacy cleanup job was not modified.
+- [x] Add atomic deduplicated event/session database RPC and private gateway-token registry primitives through `20261119141643_site_analytics_ingestion_primitives`. Registry has no active token and is not used by the current collector.
+- [x] Deploy new Supabase Edge Function `track-site-analytics` v1 (`verify_jwt=false`) with 4 KiB payload cap, strict event/path allowlists, sensitive-field rejection, bot filtering, HMAC visitor/session pseudonyms, HMAC edge-IP rate-limit key and atomic event RPC. Existing `track-event` v7 remains unchanged.
+- [x] Verify anon cannot SELECT the new tables or execute the report RPC; verify authenticated SELECT remains subject to `analytics.view` RLS; verify service_role cannot DELETE analytics rows or execute the report RPC.
+- [x] Transaction test: first event insert and duplicate suppression yielded one event row and one session page view; transaction rolled back. Rate-limit test allowed first request and denied the second at limit 1; transaction rolled back.
+- [x] Simulated unrelated authenticated user denied by report RPC; simulated active Super Admin received correctly structured empty report. No test analytics rows retained.
+- [ ] Complete request-level collector smoke tests and frontend integration. No public page tracker has been enabled and no analytics events are being collected yet.
+- [ ] Implement Live Visitors Durable Object and secure Pages binding; current Cloudflare Pages project has no analytics binding.
+- [ ] Build advanced Analytics UI and verify production data only after privacy notice and opt-out behavior are in place.
+- Advisor status after migrations: one pre-existing leaked-password-protection security warning; 30 unused-index INFO notices (7 new analytics indexes are expected to be unused before ingestion); two pre-existing multiple-permissive-policy warnings on unrelated tables.
