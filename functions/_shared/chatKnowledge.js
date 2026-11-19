@@ -278,7 +278,7 @@ function relevanceScore(item, query, fields) {
 function isContextualFollowUp(query) {
   const normalized = normalizeKnowledgeText(query);
   if (!normalized || normalized.length > 120) return false;
-  return /^(?:aur|also|and|iska|iski|iske|uska|uski|uske|is ka|is ki|is ke|us ka|us ki|us ke|yeh|ye|woh|wo|in ka|in ki|in ke|unka|unki|inke|phone|number|address|pata|timing|hours|opening|location|map|link|details|contact|website|price|qeemat|keemat|daam|more|tell me more|more details|what about|how about|where is it|what is its|what are its|their|its|it|that|these|those)\\b/i.test(normalized);
+  return /^(?:aur|also|and|iska|iski|iske|uska|uski|uske|is ka|is ki|is ke|us ka|us ki|us ke|yeh|ye|woh|wo|in ka|in ki|in ke|unka|unki|inke|phone|number|address|pata|timing|hours|opening|location|map|link|details|contact|website|price|qeemat|keemat|daam|more|tell me more|more details|what about|how about|where is it|what is its|what are its|their|its|it|that|these|those)\b/i.test(normalized);
 }
 
 export function resolveChatKnowledgeQuery(messages = []) {
