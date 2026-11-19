@@ -403,3 +403,14 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Cloudflare read-only inspection: Pages project hello-sadiqabad uses main and has only AI binding; account has one unrelated Worker script and zero Durable Object namespaces. Cloudflare docs require a separate DO Worker deployed outside Pages, then binding it to Pages and redeploying. No Cloudflare infra/config changes made.
 - Rate-limit docs note WAF counters are data-centre-local. Zone WAF can add a layer but is not authentication or a global exact quota. Do not treat it as the only ingestion defense.
 - Plan updated with SPA/offline/Cloudflare findings. Phase 0 remains open pending migration directory parity and complete deployment sequence for separate DO Worker + namespace + Pages binding. No code/schema/function/infra changed.
+
+
+## Advanced Admin Analytics — current continuation checkpoint (19 November 2026)
+
+- Re-opened and read the full source-of-truth plan at `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md` on GitHub `main`.
+- Completed an exact inventory comparison of the repository's `supabase/migrations/` directory and the live Supabase migration ledger: 47 repo SQL files vs 67 live applied versions (latest `20261118091057`); 44 normalized name matches; 23 live entries without same-named repo files; 3 repo files without same-named live entries. Some migrations have similar names but different timestamps, so this is not SQL-equivalence proof.
+- The repo's consolidated `20261113220000_hello_sadiqabad_baseline.sql` must not be replayed: production has 16 individually applied initial migrations. For Analytics, only a new additive migration after `20261118091057` is acceptable once the SQL is reviewed.
+- Verified Cloudflare Pages deployment `bc218d44-5724-4f50-b6c1-83bcbe047aa6` for docs commit `36fd8af2757d77001192e16b48b1611fa9aab256` completed successfully. This only deploys documentation; no analytics infrastructure exists yet.
+- SPA public/private route inventory and offline no-queue behavior are mapped; existing search, business event and ad impression call paths are known. Full CTA/share event-source inventory remains open.
+- No analytics code, DB schema/migration, Supabase function, Worker, Durable Object namespace or Pages binding has been changed. Continue from Phase 0; do not mark feature implementation complete.
+- Latest plan audit update commit: `c76e64665648aab20c3bf98ffc1c93ac8c48605d`. Latest roadmap update commit is recorded in GitHub after this handoff update.
