@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, MessageCircle, Phone } from 'lucide-react';
 import { fetchPageBySlug, fetchPublicSiteSettings } from '../lib/api';
+import { getSiteAnalyticsOptOut, hasBrowserAnalyticsPrivacySignal, setSiteAnalyticsOptOut } from '../lib/siteAnalytics';
 import { useI18n } from '../lib/i18n';
 import { bilingualText } from '../lib/format';
 import { buildTelUrl, buildWhatsAppUrl, formatPkPhoneDisplay } from '../lib/phone';
@@ -25,6 +26,12 @@ export function StaticPage({ slug }: { slug: string }) {
   const [page, setPage] = useState<PageRow | null>(null);
   const [settings, setSettings] = useState<SiteSettingsMap>(DEFAULT_SITE_SETTINGS);
   const [loading, setLoading] = useState(true);
+  const [analyticsOptOut, setAnalyticsOptOut] = useState(true);
+  const privacySignal = hasBrowserAnalyticsPrivacySignal();
+
+  useEffect(() => {
+    if (slug === 'privacy') setAnalyticsOptOut(getSiteAnalyticsOptOut());
+  }, [slug]);
 
   useEffect(() => {
     fetchPublicSiteSettings()
@@ -105,6 +112,49 @@ export function StaticPage({ slug }: { slug: string }) {
                 content={lang === 'ur' ? page.body_md_ur || page.body_md_en : page.body_md_en}
               />
             </div>
+
+            {slug === 'privacy' && (
+              <section className="pt-5 border-t border-outline-variant/30 space-y-3" aria-labelledby="analytics-privacy-title">
+                <div>
+                  <h2 id="analytics-privacy-title" className="text-base font-bold text-on-surface">
+                    {lang === 'ur' ? 'ویب سائٹ کے استعمال کی شماریات' : 'Website Usage Analytics'}
+                  </h2>
+                  <p className="mt-1 text-sm text-on-surface-variant">
+                    {lang === 'ur'
+                      ? 'ہم صفحہ دیکھنے، عمومی ڈیوائس کی قسم اور مجموعی استعمال کو سمجھنے کے لیے محدود شماریات استعمال کر سکتے ہیں۔ خام IP، نام، فون نمبر یا درست مقام کو اس رپورٹ میں محفوظ نہیں کیا جاتا۔'
+                      : 'We may use limited, first-party analytics to understand page views, broad device type and aggregate site usage. Raw IP addresses, names, phone numbers and precise location are not stored in these reports.'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-xs font-semibold text-on-surface">
+                    {lang === 'ur'
+                      ? (analyticsOptOut ? 'شماریات سے آپٹ آؤٹ فعال ہے' : 'شماریات کی اجازت فعال ہے')
+                      : (analyticsOptOut ? 'Analytics opt-out is enabled' : 'Analytics preference is enabled')}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={privacySignal}
+                    onClick={() => {
+                      const next = !analyticsOptOut;
+                      setSiteAnalyticsOptOut(next);
+                      setAnalyticsOptOut(next);
+                    }}
+                    className="min-h-10 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-on-primary disabled:opacity-50"
+                  >
+                    {lang === 'ur'
+                      ? (analyticsOptOut ? 'شماریات کی اجازت دیں' : 'شماریات سے آپٹ آؤٹ کریں')
+                      : (analyticsOptOut ? 'Allow analytics' : 'Opt out of analytics')}
+                  </button>
+                </div>
+                {privacySignal && (
+                  <p className="text-xs text-on-surface-variant">
+                    {lang === 'ur'
+                      ? 'آپ کے براؤزر کا Do Not Track یا Global Privacy Control سگنل فعال ہے؛ اس لیے شماریات بند رہیں گی۔'
+                      : 'Your browser sends Do Not Track or Global Privacy Control; analytics therefore remain disabled.'}
+                  </p>
+                )}
+              </section>
+            )}
           </Card>
         )}
 
