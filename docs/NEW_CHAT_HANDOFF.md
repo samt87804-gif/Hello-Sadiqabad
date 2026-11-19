@@ -499,3 +499,6 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - CI run `44554526513` passed both jobs for commit `f9b2631fbefbd59c6e8dcdae9fbbe16b25686ae6`.
 - Live grants/RLS rechecked: anon analytics table SELECT/report EXECUTE denied; service_role report EXECUTE and DELETE denied; authenticated SELECT is subject to Super Admin / active staff `analytics.view` RLS.
 - Remaining P0 blockers: direct live HTTP abuse/replay/rate-limit checks, staff-without-permission and inactive-staff authorization tests, and controlled browser navigation/engagement/opt-out/DNT/GPC/private-route walkthrough. Do these before custom report UI expansion.
+
+- Latest analytics hardening adds shared public-route allowlist validation plus tests excluding Admin/Owner/auth/API/private/unknown and malformed URL paths. CI passed for commit `d6a9a063995d09295268148c51b05f891afa8314`.
+- Supabase `track-site-analytics` is now version 5 (ACTIVE), including envelope and route validators. Live HTTP abuse tests and manual browser checks are still required.
