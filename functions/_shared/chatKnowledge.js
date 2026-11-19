@@ -249,12 +249,12 @@ export function buildPublicKnowledgeContext(rows, siteUrl = DEFAULT_SITE_URL) {
 const normalizeKnowledgeText = (value) => String(value || '')
   .normalize('NFKC')
   .toLocaleLowerCase()
-  .replace(/[^\\p{L}\\p{N}]+/gu, ' ')
+  .replace(/[^\p{L}\p{N}]+/gu, ' ')
   .trim();
 
 function relevanceScore(item, query, fields) {
   const haystack = normalizeKnowledgeText(fields.map((field) => item?.[field]).filter(Boolean).join(' '));
-  const terms = normalizeKnowledgeText(query).split(/\\s+/).filter((term) => term.length > 2);
+  const terms = normalizeKnowledgeText(query).split(/\s+/).filter((term) => term.length > 2);
   return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
 }
 
@@ -277,8 +277,10 @@ export function selectRelevantPublicKnowledge(context, query) {
     const exact = (context.areas || []).filter((item) => item.slug === filters.area);
     const related = areaRanked.filter((item) => item.slug !== filters.area).slice(0, 8);
     areas = [...exact, ...related];
+  } else if (asksAreas) {
+    areas = (context.areas || []).map(({ name, slug, url }) => ({ name, slug, url }));
   } else {
-    areas = areaRanked.slice(0, asksAreas ? 50 : 8);
+    areas = areaRanked.slice(0, 8);
   }
 
   const pageRanked = [...(context.website_pages || [])].sort((a, b) =>
