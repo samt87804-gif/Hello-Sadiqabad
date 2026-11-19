@@ -393,3 +393,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Critical deployment drift: deployed track-event v7 is materially older/less strict than repo source. Do not deploy or extend until reviewed compatibility contract is finalized.
 - New findings and initial threat model recorded in docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md (commit cba1afbdc10e555f9b7f7e44da22bfe1f3206d15).
 - No analytics app code, DB schema/migration, Edge Function or Cloudflare configuration has been changed. Phase 0 remains open pending SPA route lifecycle/offline review, repo-vs-live migration parity, Cloudflare binding verification and final event/report contracts.
+
+
+## Advanced Analytics — continued audit 19 November 2026
+
+- Re-read docs/PROJECT_WORKING_RULES.md and docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md. Direct main only; inspect before every change; narrow additive changes; preserve all data; never weaken RLS/auth/privacy; no unverified completion claims; verify CI and Pages deployment after commits.
+- React Router source is src/App.tsx. Public routes identified: /, /search, /categories, /category/:slug, /area/:slug, /business/:slug, /owner-profile/:ownerId, /offers, /map, /favorites, /offline-data, emergency/government/local authorities, announcements/news and public static pages. Private/auth routes include login/reset/change-password, /owner/* and /admin/:tab. A global tracker belongs inside mounted BrowserRouter via useLocation; exclude private routes and query/hash-only changes by design.
+- Existing offline mode explicitly skips track-event when navigator.onLine is false; no offline tracking queue is created. Preserve that. Existing search event comes from fetchBusinesses; business events and ad impressions have separate legacy calls. Do not double count these when adding site-wide page views.
+- Cloudflare read-only inspection: Pages project hello-sadiqabad uses main and has only AI binding; account has one unrelated Worker script and zero Durable Object namespaces. Cloudflare docs require a separate DO Worker deployed outside Pages, then binding it to Pages and redeploying. No Cloudflare infra/config changes made.
+- Rate-limit docs note WAF counters are data-centre-local. Zone WAF can add a layer but is not authentication or a global exact quota. Do not treat it as the only ingestion defense.
+- Plan updated with SPA/offline/Cloudflare findings. Phase 0 remains open pending migration directory parity and complete deployment sequence for separate DO Worker + namespace + Pages binding. No code/schema/function/infra changed.
