@@ -527,3 +527,14 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Example cover image object exists in the public storage bucket as WebP; actual app/platform image retrieval is still pending.
 - Owner's illustrative slug `al-madina-medical-store` is not currently in the live published data. Live crawler checks used `al-madina-boring-and-sanitary-store-gvz`.
 - Remaining: LinkedIn crawler test, actual WhatsApp/Facebook app previews and social image fetch/cache confirmation, Search Console URL Inspection and observed Google indexing, and data-readiness improvements for 22 businesses without images.
+
+
+## Mobile business share popup fix — 19 November 2026
+
+- Owner clarified permanent workflow: direct commits to `main`; do not create feature branches or PRs. Re-read `docs/PROJECT_WORKING_RULES.md` and `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` and confirmed this rule.
+- An unintended PR #13 was created in the prior turn; it has been closed. The same narrow code change was applied directly to `main` instead.
+- `src/components/ui/Modal.tsx`: centered mobile backdrop with safe viewport margins; modal max-height accounts for viewport; body is a flex child with touch scrolling/overscroll containment and bottom safe-area padding.
+- `src/components/directory/ActionModals.tsx`: business share sheet max width set to `max-w-md`; share actions use a two-column mobile grid.
+- Main commits: `6246f7a68c4ac18dd5bbeb7c90d8b300f04bd287` and `af3041a1d00297dec9ad3324afbf6eed179ae15a`.
+- No database, RLS, storage, business data, share destinations or unrelated workflows changed.
+- CI, Pages deployment and actual narrow-device/browser verification are pending. Keep status as implemented, not deployed/verified, until evidence is available.
