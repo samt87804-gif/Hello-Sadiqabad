@@ -39,7 +39,8 @@ import {
   formatDateShort,
 } from '../lib/format';
 import { buildTelUrl, buildWhatsAppUrl, formatPkPhoneDisplay, isValidPkPhone } from '../lib/phone';
-import { buildLocalBusinessJsonLd, updatePageSeo } from '../lib/seo';
+import { updatePageSeo } from '../lib/seo';
+import { buildBusinessJsonLd, buildBusinessSeoMetadata } from '../lib/businessSeo';
 import { effectivePlanCode } from '../lib/searchFilter';
 import {
   addRecentlyViewed,
@@ -147,15 +148,13 @@ export function BusinessProfile() {
             setOwnerProfile(null);
           }
         }
+        const seoMetadata = buildBusinessSeoMetadata(found);
         updatePageSeo({
-          title: found.meta_title_en || `${found.name_en} — Sadiqabad | Hello Sadiqabad`,
-          description:
-            found.meta_description_en ||
-            found.description_en ||
-            `Phone number, hours, and location for ${found.name_en} in Sadiqabad.`,
+          title: seoMetadata.title,
+          description: seoMetadata.description,
           canonicalPath: `/business/${found.slug}`,
-          image: found.cover_url || found.logo_url || null,
-          jsonLd: buildLocalBusinessJsonLd(found),
+          image: seoMetadata.image,
+          jsonLd: buildBusinessJsonLd(found, seoMetadata),
         });
         if (viewedSlugRef.current !== found.slug) {
           viewedSlugRef.current = found.slug;
