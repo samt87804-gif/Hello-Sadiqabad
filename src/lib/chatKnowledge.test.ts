@@ -164,3 +164,27 @@ test('selects compact knowledge for ordinary questions and expands only the requ
   const ownerQuery = selectRelevantPublicKnowledge(context, 'Public owner profile details');
   assert.equal(ownerQuery.public_owner_profiles[0].display_name, 'Public Owner');
 });
+
+test('recognizes Roman Urdu knowledge intents', () => {
+  const context = {
+    categories: [],
+    areas: [{ name: 'Model Town', slug: 'model-town', url: '/area/model-town' }],
+    government_helplines: [],
+    local_authorities: [{ name: 'Municipal Office', phone: '123' }],
+    authority_profiles: [{ name: 'Public Official', biography: 'Biography' }],
+    public_owner_profiles: [{ display_name: 'Public Owner' }],
+    news: [{ title: 'Local news', content: 'Full local news body' }],
+    website_pages: [{ title: 'Add Business', slug: 'add-business', url: '/add-business', content: 'How to add your business' }],
+    products: [],
+    offers: [],
+    announcements: [],
+    public_site_information: [],
+    source_status: {},
+  };
+
+  assert.equal(selectRelevantPublicKnowledge(context, 'Sadiqabad ke ilaqay kon kon se hain').areas.length, 1);
+  assert.equal(selectRelevantPublicKnowledge(context, 'aaj ki taza khabrain batao').news[0].content, 'Full local news body');
+  assert.equal(selectRelevantPublicKnowledge(context, 'sarkari daftar ka number').local_authorities[0].phone, '123');
+  assert.equal(selectRelevantPublicKnowledge(context, 'business kaise add karun?').website_pages[0].content, 'How to add your business');
+  assert.equal(selectRelevantPublicKnowledge(context, 'maalik ki public profile').public_owner_profiles[0].display_name, 'Public Owner');
+});
