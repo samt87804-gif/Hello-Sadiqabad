@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../../functions/_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveChatKnowledgeQuery, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../../functions/_shared/chatKnowledge.js';
 
 test('maps every supplied public knowledge source to canonical visitor links', () => {
   const context = buildPublicKnowledgeContext({
@@ -202,4 +202,37 @@ test('separates category intent from locality names sharing generic words', () =
     ],
   );
   assert.deepEqual(filters, { category: 'restaurants', area: 'ghalla-mandi' });
+});
+
+test('keeps the original subject when resolving follow-up questions', () => {
+  assert.equal(
+    resolveChatKnowledgeQuery([
+      { role: 'user', content: 'Al-Buraq School Academy ka phone number batao' },
+      { role: 'assistant', content: 'Al-Buraq School Academy...' },
+      { role: 'user', content: 'aur iska address?' },
+    ]),
+    'Al-Buraq School Academy ka phone number batao aur iska address?',
+  );
+
+  assert.equal(
+    resolveChatKnowledgeQuery([
+      { role: 'user', content: 'restaurants in Ghalla Mandi' },
+      { role: 'assistant', content: 'Yeh businesses milay...' },
+      { role: 'user', content: 'aur phone number?' },
+      { role: 'assistant', content: 'Kis business ka number chahiye?' },
+      { role: 'user', content: 'opening hours bhi batao' },
+    ]),
+    'restaurants in Ghalla Mandi opening hours bhi batao',
+  );
+});
+
+test('does not carry stale context into a new unrelated question', () => {
+  assert.equal(
+    resolveChatKnowledgeQuery([
+      { role: 'user', content: 'hospitals in Model Town' },
+      { role: 'assistant', content: 'Hospitals...' },
+      { role: 'user', content: 'Sadiqabad ki latest news batao' },
+    ]),
+    'Sadiqabad ki latest news batao',
+  );
 });
