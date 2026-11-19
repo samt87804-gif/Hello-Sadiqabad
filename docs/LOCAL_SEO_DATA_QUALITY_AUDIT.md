@@ -134,3 +134,12 @@ Additional verified controls:
 - No database/schema/RLS/storage changes or business-record mutations were made during this re-audit.
 
 This is a live snapshot only; counts may change as businesses are published or their media is updated.
+
+
+## 9. Business sitemap and image-object verification — 19 November 2026
+
+- Live sitemap returned HTTP 200 XML with 479 URLs total, including 397 `/business/` URLs.
+- Live `public.businesses` has 397 published rows, 397 distinct published slugs and zero duplicate published slugs. The sitemap contained the existing live test slug `al-madina-boring-and-sanitary-store-gvz`.
+- The sample cover object referenced by the crawler's `og:image` metadata exists in the public `Hello Sadiqabad` bucket and is stored as `image/webp` (41,564 bytes).
+- Googlebot Browser Rendering returned HTTP 200, business-specific title/description/canonical/OG image/JSON-LD and the visible business H1 after hydration. WhatsApp and Facebook crawler requests also returned the expected preview metadata.
+- This verifies the URL and storage object are present; actual preview rendering/image retrieval by the WhatsApp/Facebook apps remains a separate device/platform check.
