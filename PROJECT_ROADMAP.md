@@ -473,3 +473,15 @@ Batch 3 — completed (16 November 2026):
 - [x] Googlebot Browser Rendering returned HTTP 200 and page-specific title, description, canonical, real cover image URL and JSON-LD for a live published listing.
 - [ ] Verify post-hydration visible content, normal-browser pass-through, invalid/unpublished crawler 404, WhatsApp/Facebook/LinkedIn crawlers and actual device previews.
 - [ ] Audit sitemap sample/uniqueness, submit/inspect priority URLs in Search Console, and monitor actual index coverage. Google indexing/ranking is not guaranteed.
+
+
+### Business SEO/share-card verification update — 19 November 2026
+
+- [x] Final deployed code commit `b8f0c6d3bc2135c4cc6991fcbfd6b03fcc4ef056`; CI run `44582413841` passed all jobs; Pages deployment `73868e0a-b57f-4a60-8294-d9190c23a818` succeeded.
+- [x] BusinessProfile browser metadata now uses the same SEO/JSON-LD helper as the crawler handler, preventing mismatched titles and duplicate structured-data scripts after hydration.
+- [x] Googlebot post-hydration check returned the real business h1 and one JSON-LD script.
+- [x] WhatsApp and Facebook crawler responses returned HTTP 200 with correct OG/Twitter image/title/description/canonical tags.
+- [x] Unknown slug gives 404/noindex; normal browser user-agent pass-through verified.
+- [x] Sitemap XML is HTTP 200 and contains 397 business URLs; live published table has 397 unique slugs and no duplicate slugs.
+- [ ] Actual WhatsApp/Facebook app previews and LinkedIn crawler check remain pending; social platform image fetch/cache behavior must be observed separately.
+- [ ] Search Console URL inspection and actual Google indexing/performance remain pending.
