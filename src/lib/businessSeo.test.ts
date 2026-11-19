@@ -72,6 +72,7 @@ test('business JSON-LD contains factual directory details without fabricated rat
     addressCountry: 'PK',
   });
   assert.equal('aggregateRating' in localBusiness, false);
+  assert.equal('telephone' in localBusiness, true);
   assert.equal('geo' in localBusiness, false);
 });
 
