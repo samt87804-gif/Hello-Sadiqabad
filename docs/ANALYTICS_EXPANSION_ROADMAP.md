@@ -109,3 +109,7 @@ A phase is not complete merely because code compiles. Mark implementation, test-
 - [x] Live ACL verification: anon cannot execute report RPC or SELECT analytics tables; authenticated has table SELECT grants subject to RLS; service_role cannot execute report RPC or DELETE analytics rows/sessions. Both table policies require Super Admin or `analytics.view`.
 - [ ] Direct HTTP request-level abuse tests and the staff/inactive-staff authorization matrix are still pending.
 - [ ] Controlled browser navigation, engagement, opt-out, DNT/GPC and private-route walkthrough is still pending.
+
+- [x] Extracted public route classification into `supabase/functions/_shared/siteAnalyticsPath.ts`; added tests for supported public routes, admin/owner/auth/private exclusions, unknown routes, query/fragment strings, external URLs, traversal and malformed paths.
+- [x] CI run for commit `d6a9a063995d09295268148c51b05f891afa8314` passed both build and Edge Function jobs.
+- [x] Deployed `track-site-analytics` version 5 (ACTIVE), including both shared validators. Public ingestion JWT setting remains unchanged.
