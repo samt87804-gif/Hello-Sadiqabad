@@ -118,7 +118,7 @@ test('business context respects plan-gated public fields and never invents coord
     video_urls: ['https://youtube.com/watch?v=sample'],
     lat: 28.3,
     lng: 69.7,
-  }, 'https://hellosadiqabad.com', 'show social links, photos and videos');
+  }, 'https://hellosadiqabad.com', 'show social links, photos, videos and map directions');
   assert.equal(premium.whatsapp, '03001234567');
   assert.equal(premium.social_links!.facebook, 'https://facebook.com/sample');
   assert.equal(premium.gallery_urls.length, 1);
