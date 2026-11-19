@@ -65,3 +65,19 @@ test('matches locality variants with punctuation and the city suffix', () => {
   );
   assert.deepEqual(filters, { category: null, area: 'hussainabad-sadiqabad' });
 });
+
+test('keeps only pre-redacted public owner profile fields and omits internal IDs', () => {
+  const context = buildPublicKnowledgeContext({
+    owner_public_profile_directory: [
+      { owner_id: 'internal-uuid', display_name: 'Public Owner', photo_url: 'https://hellosadiqabad.com/public.jpg', phone: null, email: 'public@example.com' },
+      { owner_id: 'hidden-uuid', display_name: null, photo_url: null, phone: null, email: null },
+    ],
+  });
+  assert.deepEqual(context.public_owner_profiles, [{
+    display_name: 'Public Owner',
+    photo_url: 'https://hellosadiqabad.com/public.jpg',
+    phone: null,
+    email: 'public@example.com',
+  }]);
+  assert.equal('owner_id' in context.public_owner_profiles[0], false);
+});
