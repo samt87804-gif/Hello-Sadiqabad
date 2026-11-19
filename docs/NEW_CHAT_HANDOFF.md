@@ -480,3 +480,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - No Durable Object is required for current aggregate live count.
 - Still pending: controlled browser walkthrough including opt-out and private-route exclusion; direct request-level collector abuse tests; staff-denial edge cases; custom date range/comparison/visible filters/content drilldowns/expanded exports; owner-device visual verification.
 - Full feature checklist and security caveats are in `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`. This current checkpoint supersedes earlier handoff notes saying analytics code or production event collection had not started.
+
+
+## Advanced Analytics Expansion — continuation (19 November 2026)
+
+- New owner-requested roadmap: [docs/ANALYTICS_EXPANSION_ROADMAP.md](ANALYTICS_EXPANSION_ROADMAP.md).
+- Prioritized phases: P0 reliability/security verification; P1 custom dates, comparisons, filters, metric glossary/freshness and scoped exports; P2 content/CTA/search funnels; P3 audience/acquisition; P4 alerts; P5 advanced exports and UX.
+- Plan and roadmap were committed directly to `main`; implementation is authorized to begin.
+- Immediate next step: re-audit current tests, report RPC and authorization, then add/complete collector abuse tests and privacy/route lifecycle verification before richer reports.
+- Preserve current analytics tables, RPCs, legacy analytics, privacy controls, permission model and raw-event retention. No raw IP/PII/precise location, visitor-level dashboard, fabricated history or anonymous analytics reads.
+- Do not mark manual browser/device checks complete unless actually performed. See expansion roadmap for phase acceptance criteria.
