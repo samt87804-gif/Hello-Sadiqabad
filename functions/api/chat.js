@@ -53,7 +53,7 @@ async function fetchTable(baseUrl, key, table, params) {
 
 async function fetchBusinessMatches(env, query) {
   const searchText = String(query || '').trim().slice(0, 120);
-  if (!searchText) return [];
+  if (!searchText) return { matches: [], status: 'not_requested' };
   const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !key) return [];
@@ -69,11 +69,11 @@ async function fetchBusinessMatches(env, query) {
       },
       body: JSON.stringify({ p_query: searchText, p_limit: 12, p_offset: 0, p_sort: 'relevance' }),
     });
-    if (!response.ok) return [];
+    if (!response.ok) return { matches: [], status: 'unavailable' };
     const rows = await response.json();
-    if (!Array.isArray(rows)) return [];
+    if (!Array.isArray(rows)) return { matches: [], status: 'unavailable' };
     const siteUrl = 'https://hellosadiqabad.com';
-    return rows.slice(0, 12).map((row) => ({
+    return { status: 'loaded', matches: rows.slice(0, 12).map((row) => ({
       name: row.name_en,
       name_ur: row.name_ur,
       slug: row.slug,
@@ -106,9 +106,9 @@ async function fetchBusinessMatches(env, query) {
         valid_from: offer.valid_from,
         valid_to: offer.valid_to,
       })) : [],
-    }));
+    })) };
   } catch {
-    return [];
+    return { matches: [], status: 'unavailable' };
   }
 }
 
@@ -248,7 +248,9 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const context = await fetchPublicContext(env, new URL(request.url).origin);
-    context.business_search_matches = await fetchBusinessMatches(env, messages[messages.length - 1].content);
+    const businessSearch = await fetchBusinessMatches(env, messages[messages.length - 1].content);
+    context.business_search_matches = businessSearch.matches;
+    context.source_status.business_search = businessSearch.status;
     const result = await env.AI.run(
       MODEL,
       { messages: [{ role: 'system', content: buildSystemPrompt(context) }, ...messages], max_tokens: 450, temperature: 0.2 },
