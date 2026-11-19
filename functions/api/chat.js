@@ -170,6 +170,7 @@ export async function fetchPublicContext(env, origin, options = {}) {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=180' },
     }));
   } catch {
+    if (options.requireAllSources) throw new Error('Public knowledge was fetched, but the refreshed cache could not be stored.');
     // Caching is an optimization; never fail a chat because it is unavailable.
   }
   return context;
