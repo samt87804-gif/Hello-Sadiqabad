@@ -42,6 +42,7 @@ function setMeta(html, attribute, name, value) {
 function buildSocialHtml(html, { title, description, url, image, imageAlt, type, publishedAt }) {
   let output = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escapeHtml(title) + '</title>');
   const tags = [
+    ['name', 'description', description],
     ['property', 'og:title', title],
     ['property', 'og:description', description],
     ['property', 'og:type', type],
