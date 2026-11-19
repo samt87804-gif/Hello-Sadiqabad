@@ -104,15 +104,17 @@ async function fetchBusinessMatches(env, query, publicContext) {
   }
 }
 
-async function fetchPublicContext(env, origin) {
+export async function fetchPublicContext(env, origin, options = {}) {
   const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !key) throw new Error('Public directory connection is not configured.');
 
-  const cacheKey = new Request(`${origin}/__hello-sadiqabad-chat-context-v2`);
+  const cacheKey = new Request(`${origin}/__hello-sadiqabad-chat-context-v3`);
   try {
-    const cached = await caches.default.match(cacheKey);
-    if (cached) return await cached.json();
+    if (!options.forceRefresh) {
+      const cached = await caches.default.match(cacheKey);
+      if (cached) return await cached.json();
+    }
   } catch {
     // Continue with a live public read when edge caching is unavailable.
   }
@@ -149,9 +151,19 @@ async function fetchPublicContext(env, origin) {
       sourceStatus[table] = 'unavailable';
     }
   });
+  const sourceCounts = Object.fromEntries(requests.map(([table]) => [table, rows[table].length]));
+  const unavailableSources = Object.entries(sourceStatus).filter(([, status]) => status !== 'loaded').map(([source]) => source);
   if (successfulTables === 0) throw new Error('Public directory is temporarily unavailable.');
+  if (options.requireAllSources && unavailableSources.length) {
+    const error = new Error(`Knowledge refresh could not load: ${unavailableSources.join(', ')}`);
+    error.sourceStatus = sourceStatus;
+    error.sourceCounts = sourceCounts;
+    throw error;
+  }
 
   const context = buildPublicKnowledgeContext({ ...rows, source_status: sourceStatus }, 'https://hellosadiqabad.com');
+  context.source_counts = sourceCounts;
+  context.synced_at = now;
 
   try {
     await caches.default.put(cacheKey, new Response(JSON.stringify(context), {
