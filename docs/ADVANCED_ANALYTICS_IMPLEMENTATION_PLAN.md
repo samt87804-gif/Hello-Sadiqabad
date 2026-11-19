@@ -343,3 +343,14 @@ This document is the execution checklist and source of truth for this feature. E
 - Cloudflare Pages deployment for commit `9c04c3c5780ea5a84dc91338044c159e695c0ceb` completed successfully (build and deploy stages both success). This verifies production build only; GitHub typecheck/test workflow status has not yet been verified.
 - Added a visible bilingual analytics preference control on the public `/privacy` page; it persists an opt-out locally and respects Do Not Track / Global Privacy Control. Live published privacy policy text already states random session identifiers and no raw visitor IP storage. Cloudflare Pages production flag `VITE_SITE_ANALYTICS_ENABLED=true` is now configured and the production deployment for the privacy-controls commit succeeded. Tracking is enabled; users with opt-out/DNT/GPC remain untracked. Request-level collector smoke tests and end-to-end production event verification remain outstanding.
 - No Live Visitors Durable Object, Cloudflare binding or live presence count exists yet. No production analytics events have been enabled; no historical metrics are fabricated.
+
+
+### Live Visitors architecture decision and implementation (19 November 2026)
+
+The earlier Durable Object proposal above is superseded for the current Live Visitors requirement. The new session aggregate table already receives server-validated heartbeat-equivalent engagement events every 30 seconds while a page is visible. A separate Durable Object would add an extra public endpoint, namespace, Worker deployment and cross-service auth path without adding necessary capability for a simple aggregate count.
+
+- Applied additive migration `20261119150122_site_analytics_live_visitor_count`.
+- Added `public.admin_live_visitor_count()`: SECURITY INVOKER, empty search_path, authenticated-only EXECUTE, explicit Super Admin / active staff `analytics.view` check, returns only the number of session aggregates whose `last_seen_at` is within the last five minutes.
+- The RPC returns no session hashes, visitor hashes, paths or visitor-level rows. Anonymous EXECUTE is false; authenticated EXECUTE is true and RLS/auth checks remain in force. A simulated active Super Admin successfully read the aggregate count.
+- Added `fetchAdminLiveVisitorCount()` and a Live Visitors KPI in the Admin panel, refreshed every 30 seconds. A Durable Object/Cloudflare binding is not required for this aggregate-only implementation.
+- Revisit DO or sharded ephemeral presence only if measured traffic/load demonstrates that the existing Supabase aggregate query needs a dedicated coordination layer. Do not build a visitor list.
