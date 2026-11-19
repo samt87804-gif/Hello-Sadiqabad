@@ -414,3 +414,21 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - SPA public/private route inventory and offline no-queue behavior are mapped; existing search, business event and ad impression call paths are known. Full CTA/share event-source inventory remains open.
 - No analytics code, DB schema/migration, Supabase function, Worker, Durable Object namespace or Pages binding has been changed. Continue from Phase 0; do not mark feature implementation complete.
 - Latest plan audit update commit: `c76e64665648aab20c3bf98ffc1c93ac8c48605d`. Latest roadmap update commit is recorded in GitHub after this handoff update.
+
+
+## Advanced Admin Analytics — Phase 1 database and collector checkpoint (19 November 2026)
+
+- Source-of-truth plan is `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`; latest Phase 1 progress commit: `7eae8758e7e7bb258d5bf004c0f6c831d9d24942`.
+- Applied live migrations:
+  - `20261119140712_site_analytics_foundation`
+  - `20261119140832_site_analytics_privilege_hardening`
+  - `20261119140930_site_analytics_retention_90d`
+  - `20261119141643_site_analytics_ingestion_primitives`
+- Committed matching SQL files under `supabase/migrations/` on `main`; the retention file timestamp was corrected to match the actual live ledger version `20261119140930`.
+- New tables: `public.site_analytics_events` and `public.site_analytics_sessions`; both have RLS enabled, no anon SELECT, authenticated SELECT only through the `analytics.view` policy, and service_role direct writes. Service_role cannot delete or execute the admin report.
+- New report RPC: `public.admin_site_analytics_report`, SECURITY INVOKER, fixed empty search_path, Super Admin / active staff `analytics.view` authorization, max 90-day range, optional page/channel/device/entity filters, Asia/Karachi reporting date.
+- New independent weekly 90-day cleanup job `site-analytics-retention-90d` is active. Existing legacy cleanup job and legacy tables remain unchanged.
+- Deployed Supabase Edge Function `track-site-analytics` version 1, JWT verification disabled for public visitor ingestion. It has strict allowlists, 4 KiB body cap, HMAC visitor/session IDs, HMAC of Cloudflare edge IP for atomic 240/hour per-IP rate limiting, bot filtering and no raw search query. The existing `track-event` v7 is untouched.
+- DB tests: duplicate event insertion was idempotent and updated session page views once; rate limit allowed first request and denied second; both transactions rolled back. An unrelated authenticated user was denied the report; simulated active Super Admin got the expected empty summary. Anonymous table SELECT/report execute denied. No test rows retained.
+- Security Advisor still has one pre-existing leaked-password warning. Performance Advisor has 30 unused-index notices (7 new analytics indexes not used yet) and 2 pre-existing permissive-policy warnings on unrelated tables.
+- No frontend tracker, dashboard UI, Live Visitors Durable Object, Cloudflare binding or production analytics events yet. Next: request-level Edge Function smoke tests, privacy notice/opt-out review, then guarded frontend tracker and dashboard.
