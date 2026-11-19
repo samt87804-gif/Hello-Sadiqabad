@@ -153,7 +153,7 @@ export function News() {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface">{bilingualText(lang, article.title_en, article.title_ur)}</h1>
               {lang === 'en' && urduHints && <p className="font-urdu text-lg text-primary leading-[2]" dir="rtl">{article.title_ur}</p>}
               <p className="text-base text-on-surface-variant leading-relaxed">{bilingualText(lang, article.excerpt_en, article.excerpt_ur)}</p>
-              <ContentShareActions title={bilingualText(lang, article.title_en, article.title_ur)} description={bilingualText(lang, article.excerpt_en, article.excerpt_ur)} url={'https://hellosadiqabad.com/news/' + article.slug} lang={lang} />
+              <ContentShareActions title={bilingualText(lang, article.title_en, article.title_ur)} description={bilingualText(lang, article.excerpt_en, article.excerpt_ur)} url={'https://hellosadiqabad.com/news/' + article.slug} lang={lang} contentType="news" />
             </div>
             <div className="prose prose-sm max-w-none text-on-surface whitespace-pre-line leading-8" dir={lang === 'ur' ? 'rtl' : 'ltr'}>
               {bilingualText(lang, article.content_en, article.content_ur)}
