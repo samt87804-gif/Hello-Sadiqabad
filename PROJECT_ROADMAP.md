@@ -432,3 +432,15 @@ Batch 3 — completed (16 November 2026):
 
 - [x] Add `admin_live_visitor_count()` RPC (SECURITY INVOKER; Super Admin / analytics.view; aggregate only) and Admin KPI polling every 30 seconds.
 - [x] Verify anon EXECUTE is denied and simulated Super Admin can read aggregate count. No visitor-level data is exposed.
+
+
+## Advanced Analytics — verified production checkpoint (19 November 2026)
+
+- [x] Privacy-minimized event ingestion is live; production database aggregate check: 53 events/24h (20 page views, 19 search summaries, 14 engagement), 3 sessions/24h, 1 live session in the five-minute window.
+- [x] Live Visitors aggregate-only RPC and KPI deployed; no visitor-level records are exposed.
+- [x] Privacy opt-out/DNT/GPC controls are deployed on `/privacy`; production collection flag is enabled.
+- [x] CSV spreadsheet-formula injection protection added.
+- [x] Latest code commit `d7c007660890badfa9e30a13510ec8eedaa00b21`; Pages deployment `534fa136-8ad7-4af8-8f22-752028b5973a` successful.
+- [x] GitHub Actions run `44551040604`: TypeScript, automated tests, production build and Edge Function type-check all passed.
+- [ ] Manual browser/opt-out walkthrough and direct collector abuse tests remain outstanding.
+- [ ] Custom date range, comparison periods, visible report filters, deeper content drilldowns and expanded CSV exports remain outstanding.
