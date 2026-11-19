@@ -1,3 +1,5 @@
+import { fetchPublicContext } from '../chat.js';
+
 const SOURCE_KEYS = [
   'business_directory',
   'categories',
@@ -193,6 +195,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   let sourceStatus = pendingSources;
+  let knowledgeRefreshed = false;
   try {
     await updateRun(admin, run.id, {
       stage: 'Checking the published business directory',
@@ -204,11 +207,12 @@ export async function onRequestPost({ request, env }) {
       stage: 'Refreshing all public knowledge sources',
       progress_percent: 35,
     });
-    const context = await (await import('../chat.js')).fetchPublicContext(env, new URL(request.url).origin, {
+    const context = await fetchPublicContext(env, new URL(request.url).origin, {
       forceRefresh: true,
       requireAllSources: true,
     });
 
+    knowledgeRefreshed = true;
     sourceStatus = { ...context.source_status, business_directory: 'loaded' };
     const sourceCounts = { ...context.source_counts, businesses: businessCount };
     const totalRecords = Object.values(sourceCounts).reduce((sum, value) => sum + Number(value || 0), 0);
@@ -232,7 +236,8 @@ export async function onRequestPost({ request, env }) {
       error_summary: null,
     });
     const result = Array.isArray(updated) ? updated[0] : null;
-    return json({ run: result || { ...run, status: 'success', completed_at: completedAt, source_status: sourceStatus, source_counts: sourceCounts, total_records: totalRecords } });
+    if (!result) throw new Error('Knowledge refreshed, but the final sync status could not be confirmed.');
+    return json({ run: result });
   } catch (error) {
     if (error?.sourceStatus && typeof error.sourceStatus === 'object') {
       sourceStatus = { ...error.sourceStatus, business_directory: 'loaded' };
@@ -243,14 +248,15 @@ export async function onRequestPost({ request, env }) {
     try {
       const failed = await updateRun(admin, run.id, {
         status: 'failed',
-        stage: 'Refresh failed; previous successful chatbot cache was preserved',
+        stage: knowledgeRefreshed ? 'Knowledge refreshed; final status update failed' : 'Refresh failed; previous successful chatbot cache was preserved',
         progress_percent: 100,
         completed_at: new Date().toISOString(),
         source_status: sourceStatus,
         error_summary: message,
       });
       const result = Array.isArray(failed) ? failed[0] : null;
-      return json({ error: message, run: result || { ...run, status: 'failed', source_status: sourceStatus, error_summary: message } }, 502);
+      if (!result) throw new Error('Failure status update returned no record.');
+      return json({ error: message, run: result }, 502);
     } catch {
       return json({ error: 'Refresh failed and its status could not be saved. The previous cached knowledge was not intentionally deleted.', run_id: run.id }, 502);
     }
