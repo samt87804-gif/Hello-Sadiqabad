@@ -432,3 +432,18 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - DB tests: duplicate event insertion was idempotent and updated session page views once; rate limit allowed first request and denied second; both transactions rolled back. An unrelated authenticated user was denied the report; simulated active Super Admin got the expected empty summary. Anonymous table SELECT/report execute denied. No test rows retained.
 - Security Advisor still has one pre-existing leaked-password warning. Performance Advisor has 30 unused-index notices (7 new analytics indexes not used yet) and 2 pre-existing permissive-policy warnings on unrelated tables.
 - No frontend tracker, dashboard UI, Live Visitors Durable Object, Cloudflare binding or production analytics events yet. Next: request-level Edge Function smoke tests, privacy notice/opt-out review, then guarded frontend tracker and dashboard.
+
+
+## Advanced Analytics — frontend/Admin dashboard checkpoint (19 November 2026)
+
+- Latest plan progress commit: `18a59dfb401753cadaa266f88cc73f043c763ee0`.
+- Frontend tracker `src/lib/siteAnalytics.ts`: visitor/session pseudonyms, DNT/GPC and local opt-out checks, offline skip, allowlisted routes, no offline queue, non-blocking invocation.
+- `src/App.tsx`: global React Router page-view + active-visible-time tracking.
+- `src/lib/api.ts`: privacy-minimized search summary and business CTA/share event calls; legacy `track-event` calls are retained.
+- `src/components/admin/AdvancedAnalyticsPanel.tsx`: database-backed report UI with 7/30/90 day range, KPIs, daily chart, top pages, channels, devices, search/engagement, CSV export.
+- `src/pages/admin/AdminPortal.tsx`: panel added inside existing analytics permission gate; legacy directory analytics component remains.
+- `fetchSiteAnalyticsReport` in `src/lib/api.ts` calls the SECURITY INVOKER RPC with explicit 7/30/90-day bounds.
+- Cloudflare Pages production deployment for commit `9c04c3c5780ea5a84dc91338044c159e695c0ceb` succeeded. Do not infer TypeScript/test/Edge Function CI from the Pages build.
+- Production env does NOT yet contain `VITE_SITE_ANALYTICS_ENABLED`; tracking remains disabled until privacy notice/controls and endpoint smoke tests are done.
+- No Durable Object, Live Visitors data or Cloudflare analytics binding yet.
+- Next tasks: add a visible privacy preference/notice that accurately explains analytics, perform request-level collector tests, check CI typecheck/test results, then enable tracking only after the privacy gate. Build DO presence with strict authenticated report read and no visitor-level exposure.
