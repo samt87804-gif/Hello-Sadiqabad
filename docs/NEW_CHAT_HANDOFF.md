@@ -502,3 +502,16 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 
 - Latest analytics hardening adds shared public-route allowlist validation plus tests excluding Admin/Owner/auth/API/private/unknown and malformed URL paths. CI passed for commit `d6a9a063995d09295268148c51b05f891afa8314`.
 - Supabase `track-site-analytics` is now version 5 (ACTIVE), including envelope and route validators. Live HTTP abuse tests and manual browser checks are still required.
+
+
+## Business share cards & organic Google Search — current implementation checkpoint (19 November 2026)
+
+- Owner approved the updated plan. Goal is the normal organic Google Search website result for each published Hello Sadiqabad business profile plus social URL preview cards. Do not create Google Maps listings or Google Business Profiles as part of this work.
+- Phase 0 re-audit found 397 published businesses; 375 have at least one image URL and 22 have neither. Public `businesses` SELECT RLS is enabled and anon is limited to published rows. The only configured storage bucket is the public `Hello Sadiqabad` bucket; no storage policy was changed.
+- Added `functions/business/[slug].js` for Google/social crawler requests, plus `src/lib/businessSeo.ts` and tests. The crawler response includes title, description, canonical, robots, Open Graph/Twitter and LocalBusiness/BreadcrumbList JSON-LD. Public query is allowlisted and status-filtered; normal visitors pass through unchanged.
+- CI run `44581326800` passed TypeScript, tests, production build and Edge Function typecheck.
+- Pages deployment `cdf061de-6a21-4d32-8deb-ea39013c03eb` succeeded for `c60031040fd95f41fb3ee35afeb2e55725507a00`.
+- Googlebot Browser Rendering confirmed HTTP 200 and correct metadata/image/JSON-LD for `/business/al-madina-boring-and-sanitary-store-gvz`.
+- The requested illustrative slug `al-madina-medical-store` did not match a current published business record at audit time; use an existing published slug for live testing.
+- Remaining: wait-for-selector test for visible content after hydration; normal-browser and unknown/unpublished route checks; WhatsApp/Facebook/LinkedIn crawler and actual device preview checks; sitemap spot-check; Search Console URL Inspection and observed indexing. Do not claim Google indexing/ranking yet.
+- No database/schema/RLS/storage changes or business-data mutations were made.
