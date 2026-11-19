@@ -117,13 +117,13 @@ This document is the execution checklist and source of truth for this feature. E
 **Gate:** Phase 0 read-only audit and design is complete. The repository/live migration mismatch is understood and documented; no historical migrations will be replayed. The detailed contract below is the basis for Phase 1. This does not authorize an unreviewed production migration or infrastructure change.
 
 ### Phase 1 — Secure ingestion and additive data model
-- [ ] Define event contract, allowlisted event names, public-route policy, schema version and payload limits.
+- [x] Define event contract, allowlisted event names, public-route policy, schema version and payload limits.
 - [ ] Harden ingestion against malformed payloads, spoofed URLs/referrers, oversized values, bot noise, replay/duplicate events and abuse.
 - [ ] Validate Origin as a supplementary browser control only; do not treat it as caller authentication.
 - [ ] Ensure no secret/service-role material is shipped to browser.
-- [ ] Create additive migration(s) only after review; RLS on every exposed table, least-privilege grants, appropriate indexes and no anonymous report reads.
-- [ ] Add authorized server-side reporting access using the existing Super Admin / active staff `analytics.view` rules.
-- [ ] Add safe retention/aggregation strategy only after verifying available Supabase scheduling/cron capability.
+- [x] Create additive migration(s) with RLS on every exposed table, least-privilege grants, appropriate indexes and no anonymous report reads; migrations and live checks are recorded below.
+- [x] Add authorized server-side reporting access using the existing Super Admin / active staff `analytics.view` rules.
+- [x] Add safe 90-day raw-event retention using a separate weekly Supabase Cron job after verifying `pg_cron` capability.
 - [ ] Test unauthorized anon/authenticated/staff-without-permission/inactive-staff access and authorized Super Admin/analytics staff access.
 
 **Gate:** Database advisors reviewed; RLS/grants and permission tests pass; existing analytics queries and owner dashboards remain unaffected.
@@ -284,9 +284,9 @@ This document is the execution checklist and source of truth for this feature. E
 
 #### 2. First-party collection and abuse controls
 
-- Browser calls a same-origin Cloudflare Pages Function under `/api/analytics/*`; it applies strict schema/body-size/route validation and forwards sanitized event data to a new Supabase Edge Function using a server-to-server secret. The secret exists only in server-side Cloudflare/Supabase secret stores, never in browser code or GitHub.
-- New Supabase function has JWT verification disabled only because it authenticates the Pages-to-Supabase shared secret itself; reject missing/invalid secret, malformed JSON, unknown event names, oversized payloads, invalid IDs and unsupported routes. Keep the existing `track-event` function and its deployed v7 contract untouched until separately reconciled.
-- Cloudflare Rate Limiting binding/WAF is a perimeter layer, not authentication or a strict global quota. The dedicated Durable Object applies a strict coordinated quota using a short-lived HMAC digest of the edge request IP signal; raw IP is never stored or written to Supabase. This derived rate-limit key is ephemeral and expires quickly.
+- Browser invokes the dedicated Supabase Edge Function directly through the existing Supabase client. This preserves the real visitor's Cloudflare `cf-connecting-ip` signal for per-IP rate limiting; a Pages proxy would hide that address behind the proxy's egress identity unless a separate authenticated gateway were provisioned.
+- New Supabase function has JWT verification disabled because it is a public visitor-ingestion endpoint. It uses strict allowlists, a 4 KiB body cap, server-side route classification, HMAC pseudonymization and a database-backed per-IP quota. Origin/CORS is supplementary only, never authentication. Keep the existing `track-event` function and its deployed v7 contract untouched until separately reconciled.
+- The collector derives an HMAC-SHA256 rate-limit key from Cloudflare's edge-provided `cf-connecting-ip` using the server-only Supabase service-role key, then calls the existing atomic `check_rate_limit` RPC at 240 requests/hour per edge IP. Only the HMAC key is stored temporarily in the existing `rate_limits` table, which is already cleaned by the existing maintenance job; raw IP is never stored or written to analytics tables. Client session IDs are never used as rate-limit keys.
 - Never trust client IDs for abuse quotas. Random browser visitor/session IDs are only for aggregate grouping; the server HMACs them before persistence. Client timestamps are ignored; server timestamps are authoritative. Event UUIDs provide deduplication.
 - Normalize pathnames; strip query strings, fragments and arbitrary URL parameters. Keep only allowlisted, length-limited UTM values and referrer host. Never store full referrer URLs.
 - Device/browser/OS are coarse families only. Country may be derived from Cloudflare's country code when present; do not request geolocation or store city, coordinates, IP, fingerprinting attributes, email, name or phone.
@@ -312,7 +312,7 @@ This document is the execution checklist and source of truth for this feature. E
 
 #### 5. Cloudflare deployment sequence
 
-- Deploy a separate Worker containing the Durable Object class and namespace migration; verify its script, namespace and internal-only routes.
+- For Live Visitors, deploy a separate Worker containing the Durable Object class and namespace migration; verify its script, namespace and internal-only routes. The event collector itself does not require a Pages proxy or Cloudflare secret.
 - Bind that namespace to the Pages project through Pages Settings → Bindings → Durable Object (or the project's supported Wrangler configuration), then redeploy Pages. Cloudflare confirms a DO cannot be created/deployed inside a Pages project itself.
 - Add server-only Pages secrets and the required binding only after the Worker exists. Never expose internal tokens as `VITE_*` variables.
 - Verify production Pages deployment and same-origin collector routes before enabling frontend tracking. Rollback means disable the frontend tracker/collector route and stop the new cron job; do not delete event data or the namespace during normal rollback.
@@ -325,3 +325,17 @@ This document is the execution checklist and source of truth for this feature. E
 - Frontend tests: initial page view once, SPA pathname change once, query/hash ignored, private/form/offline routes excluded, offline queue absent, tracker network failure non-blocking, engagement foreground-only and capped.
 - Live tests: heartbeat cadence, 75-second stale expiry, alarm cleanup, duplicate tabs, reconnect, browser sleep, admin-only aggregate access and no public visitor-level response.
 - Regression tests: existing `track-event` business/search/ad behavior, `admin_analytics`, owner analytics and all current counters remain unchanged.
+
+
+### Phase 1 — database and collector progress (19 November 2026)
+
+- Applied additive migration `20261119140712_site_analytics_foundation`: created `site_analytics_events`, `site_analytics_sessions`, indexes, RLS policies and the `admin_site_analytics_report` SECURITY INVOKER RPC.
+- Applied `20261119140832_site_analytics_privilege_hardening`: tightened `service_role` table privileges to SELECT/INSERT/UPDATE only and removed its report-RPC EXECUTE permission. Anonymous table SELECT and report-RPC EXECUTE are denied; authenticated SELECT is subject to the `analytics.view` RLS policy.
+- Applied `20261119140930_site_analytics_retention_90d`: added independent weekly `pg_cron` job `site-analytics-retention-90d` at 22:00 UTC Sunday. Existing maintenance job was not modified.
+- Applied `20261119141643_site_analytics_ingestion_primitives`: added atomic deduplicated `record_site_analytics_event(jsonb)` and a private, inactive gateway-token registry reserved for a future internal edge-to-edge integration. The token registry has no active token and is not used by the public collector.
+- Deployed new Supabase Edge Function `track-site-analytics` version 1 with `verify_jwt=false`. It validates a 4 KiB JSON contract, allowlisted public paths/events, filters/UTM, bot user agents, coarse device/browser/OS and country; rejects raw search text and unsupported fields; HMACs visitor/session IDs and the edge IP rate-limit key; calls the atomic database RPC. Existing `track-event` remains untouched.
+- The collector uses the edge-provided `cf-connecting-ip` only to derive an HMAC rate-limit key with the server-only service-role key, then uses the existing atomic `check_rate_limit` RPC (240/hour). Raw IP is not stored. CORS allowlisting is supplementary only.
+- Transactional database tests verified event insert + duplicate suppression (one event row and one session page-view increment), then rolled the test transaction back. Rate-limit test verified first request allowed and second request denied at a limit of one, then rolled back.
+- Authorization checks: anonymous SELECT on both new tables is false; anonymous EXECUTE on the report RPC is false; authenticated SELECT is granted but RLS applies; service_role can insert but cannot delete; service_role cannot execute the report RPC. A simulated unrelated authenticated user was denied by the report RPC; a simulated active Super Admin received an empty, correctly structured report. No test analytics rows were retained.
+- Supabase Security Advisor after these changes still reports only the pre-existing leaked-password-protection warning. Performance Advisor shows 30 unused-index INFO notices (7 are the new analytics indexes, expected before ingestion/report usage) and 2 pre-existing multiple-permissive-policy warnings on unrelated tables. No analytics-specific security warning was reported.
+- No frontend tracker, Admin dashboard UI, live visitor Durable Object, Cloudflare binding or production analytics event has been enabled yet. Collector endpoint needs request-level smoke tests and frontend integration before Phase 1 gate can close.
