@@ -100,6 +100,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
       matched_category: filters.category ? categories.get(filters.category)?.name || filters.category : null,
       matched_area: filters.area ? areas.get(filters.area)?.name || filters.area : null,
       matches: rows.slice(0, scopedSearch ? 30 : 12).map((row) => mapPublicBusinessSearchResult(row, siteUrl)),
+    };
   } catch {
     return { matches: [], status: 'unavailable', total_count: 0 };
   }
