@@ -572,3 +572,17 @@ Read `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md` for the feature plan and phase boun
 - No DB migration or private-data access. Physical device/mobile interaction remains unverified.
 
 **Next chatbot phase (not started):** Admin-only “Train / Sync Latest Information to Chatbot” control with safe full/incremental refresh, authorization, progress, last-sync status and error reporting. Do not claim that a persistent vector index or model fine-tuning exists.
+
+## Latest verified update — Chatbot Part 3 implementation (20 November 2026)
+
+Read `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md` for architecture, scope and verification boundaries.
+
+- Added Admin Portal navigation section `/admin/chatbot-knowledge`, restricted to Super Admin in the frontend.
+- Added backend `GET/POST /api/chat/sync`; server verifies Supabase Auth bearer token and current active `profiles.role = super_admin`. POST also requires same-origin.
+- Added full public knowledge refresh. It re-reads 12 public sources and the published business count; business listings remain live searched per visitor question rather than being copied into a separate store.
+- Versioned edge cache is replaced only after all sources load and cache write succeeds. Source failure preserves the prior successful cache.
+- Admin UI records and displays progress, last successful refresh, source-by-source statuses/counts, recent runs and errors. Only full refresh is implemented; incremental sync and model fine-tuning are not.
+- Applied Supabase migrations: `20261119201013_chatbot_knowledge_sync_runs`, `20261119201034_chatbot_knowledge_sync_progress`, `20261119201234_chatbot_knowledge_sync_admin_select_hardening`.
+- Verified sync-history RLS: enabled; anon SELECT denied; authenticated SELECT/INSERT/UPDATE available only through Super Admin RLS; DELETE not granted.
+- Preview API smoke test: unauthenticated GET and POST both returned HTTP 401.
+- **Pending verification:** CI and matching Pages deployment for the final commit; positive authenticated full refresh by owner using an active Super Admin session; physical mobile/device interaction.
