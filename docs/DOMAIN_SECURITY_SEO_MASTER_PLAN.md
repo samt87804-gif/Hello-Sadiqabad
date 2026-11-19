@@ -1,6 +1,6 @@
 # Hello Sadiqabad — Domain, Security & SEO Master Plan
 
-Last updated: 17 November 2026 — Phase 0 security verification and Phase 1 technical SEO deployed  
+Last updated: 19 November 2026 — Phase 0 security verification, Phase 1 technical SEO, and public News/Authority social sharing deployed  
 Canonical website: https://hellosadiqabad.com  
 Repository: https://github.com/samt87804-gif/Hello-Sadiqabad  
 Production: Cloudflare Pages project `hello-sadiqabad`, branch `main`  
