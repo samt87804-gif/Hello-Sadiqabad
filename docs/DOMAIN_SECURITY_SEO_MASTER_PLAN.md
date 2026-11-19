@@ -266,3 +266,14 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] Googlebot Browser Rendering check returned HTTP 200 for a live published business and confirmed business-specific HTML metadata, canonical URL, real cover image URL and JSON-LD.
 - [ ] Still pending: post-hydration visible-content verification; WhatsApp/Facebook/LinkedIn crawler and actual app preview tests; unknown/unpublished and normal-browser route tests; Google Search Console URL inspection/indexing evidence.
 - [ ] Do not claim Google indexing, ranking, or a social-platform card display until those respective observations are recorded.
+
+
+### Final deployed verification — 19 November 2026
+
+- [x] WhatsApp and Facebook crawler user-agent requests returned HTTP 200 with business-specific OG/Twitter title, description, canonical URL, real cover image URL and JSON-LD.
+- [x] Googlebot Browser Rendering with a wait-for-selector check confirmed the real business H1 after React hydration and exactly one shared `hs-json-ld` script. Client and crawler metadata now use the same helper.
+- [x] Unknown slug returns HTTP 404/noindex with no business JSON-LD. A normal Chrome user agent with JavaScript disabled receives the original SPA shell without crawler metadata injection.
+- [x] Sitemap response is HTTP 200 XML with 479 total URLs and 397 business URLs. Live database confirms 397 published rows, 397 distinct slugs and no duplicate published slug.
+- [x] The referenced cover image exists in the public storage bucket as an `image/webp` object. Actual third-party social-platform retrieval remains to be observed.
+- [x] Latest code commit `b8f0c6d3bc2135c4cc6991fcbfd6b03fcc4ef056`, CI run `44582413841` passed all jobs, and Pages deployment `73868e0a-b57f-4a60-8294-d9190c23a818` succeeded.
+- [ ] Still open: LinkedIn crawler test, real WhatsApp/Facebook device previews and image fetch, Google Search Console URL Inspection/indexing evidence, and image/description data-readiness work. Do not claim actual Google indexing or ranking yet.
