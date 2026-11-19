@@ -468,3 +468,15 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - SQL check confirmed anon EXECUTE false/authenticated EXECUTE true; simulated Super Admin RPC read succeeded.
 - No DO namespace or Cloudflare binding is required for this aggregate-only implementation. Consider sharded DO only if observed scale warrants it.
 - Current production deployment after the live visitor code commit is pending verification.
+
+
+## Advanced Analytics — current verified status (19 November 2026)
+
+- Latest code commit on `main`: `d7c007660890badfa9e30a13510ec8eedaa00b21` (CSV formula-injection protection).
+- Latest Pages production deployment: `534fa136-8ad7-4af8-8f22-752028b5973a`, successful; alias https://hellosadiqabad.com.
+- GitHub Actions run `44551040604` succeeded: TypeScript typecheck, automated tests, production build and Edge Function typecheck.
+- Production analytics events are confirmed by aggregate database counts: 53 events in 24h (20 page_view, 19 search_summary, 14 engagement), 3 sessions in 24h and 1 live session in the five-minute window.
+- Analytics tracker, privacy opt-out/DNT/GPC, Admin analytics panel, daily-series CSV export and aggregate Live Visitors KPI are deployed. Existing legacy analytics and `track-event` remain intact.
+- No Durable Object is required for current aggregate live count.
+- Still pending: controlled browser walkthrough including opt-out and private-route exclusion; direct request-level collector abuse tests; staff-denial edge cases; custom date range/comparison/visible filters/content drilldowns/expanded exports; owner-device visual verification.
+- Full feature checklist and security caveats are in `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`. This current checkpoint supersedes earlier handoff notes saying analytics code or production event collection had not started.
