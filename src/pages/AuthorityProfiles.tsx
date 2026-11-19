@@ -27,18 +27,32 @@ export function AuthorityProfiles() {
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
+    setBusinesses([]);
     fetchAuthorityProfiles()
-      .then(async (rows) => {
+      .then((rows) => {
         if (!active) return;
         setProfiles(rows);
+        setLoading(false);
+
+        // Related directory data is optional. Do not hold the authority profile
+        // (or its share actions) behind loading every linked business record.
         const selected = slug ? rows.find((item) => item.slug === slug) : null;
         if (selected?.show_businesses && selected.business_ids?.length) {
-          const linked = await fetchBusinessesByIds(selected.business_ids);
-          if (active) setBusinesses(linked.filter((business) => business.status === 'published'));
-        } else if (active) setBusinesses([]);
+          fetchBusinessesByIds(selected.business_ids)
+            .then((linked) => {
+              if (active) setBusinesses(linked.filter((business) => business.status === 'published'));
+            })
+            .catch(() => { if (active) setBusinesses([]); });
+        }
       })
-      .catch(() => { if (active) setProfiles([]); })
-      .finally(() => { if (active) setLoading(false); });
+      .catch(() => {
+        if (active) {
+          setProfiles([]);
+          setBusinesses([]);
+          setLoading(false);
+        }
+      });
     return () => { active = false; };
   }, [slug]);
 
