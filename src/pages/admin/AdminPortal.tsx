@@ -84,6 +84,7 @@ import {
 import { Card } from '../../components/ui/Surface';
 import { Skeleton } from '../../components/ui/Feedback';
 import { DemoModeNotice } from '../../components/ui/DemoModeNotice';
+import { AdvancedAnalyticsPanel } from '../../components/admin/AdvancedAnalyticsPanel';
 import { useToast } from '../../components/ui/Toast';
 
 export function AdminPortal() {
@@ -261,13 +262,18 @@ export function AdminPortal() {
       case 'overview':
         return <AdminDashboard counts={counts} />;
       case 'analytics':
-        return hasPermission('analytics.view') && analytics ? (
-          <AnalyticsView
-            analytics={analytics}
-            businesses={businesses}
-            days={analyticsDays}
-            onDaysChange={setAnalyticsDays}
-          />
+        return (isSuperAdmin || hasPermission('analytics.view')) ? (
+          <div className="space-y-8">
+            <AdvancedAnalyticsPanel />
+            {analytics && (
+              <AnalyticsView
+                analytics={analytics}
+                businesses={businesses}
+                days={analyticsDays}
+                onDaysChange={setAnalyticsDays}
+              />
+            )}
+          </div>
         ) : (
           <PermissionDenied />
         );
