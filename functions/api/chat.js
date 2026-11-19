@@ -1,4 +1,4 @@
-import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolvePublicDirectoryFilters } from '../_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../_shared/chatKnowledge.js';
 
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_MESSAGE_LENGTH = 500;
@@ -190,6 +190,7 @@ LANGUAGE AND STYLE
 - Keep proper names, phone numbers, URLs and official titles unchanged. Be concise and use bullets when helpful.
 - Guide visitors to the exact relevant Hello Sadiqabad page using the supplied canonical links.
 - Business search may return a limited relevant subset. Respect business_search_total_count and business_search_scope; never claim returned matches are the complete directory when the total is larger. Link to the matching category/area or the full search page.
+- The areas array is a selected index or a full list only when the user asks for areas. Respect areas_total_count; do not claim a sample is complete. Use /search to help users find a business by area.
 
 STRICT INFORMATION AND PRIVACY BOUNDARY
 - Supplied directory data is the only source for local facts. It was retrieved using the website's public/anonymous database permissions and explicit public-field allowlists.
@@ -246,9 +247,11 @@ export async function onRequestPost({ request, env }) {
 
   let failureStage = 'public_knowledge';
   try {
-    const context = await fetchPublicContext(env, new URL(request.url).origin);
+    const fullContext = await fetchPublicContext(env, new URL(request.url).origin);
+    const userQuery = messages[messages.length - 1].content;
     failureStage = 'business_search';
-    const businessSearch = await fetchBusinessMatches(env, messages[messages.length - 1].content, context);
+    const businessSearch = await fetchBusinessMatches(env, userQuery, fullContext);
+    const context = selectRelevantPublicKnowledge(fullContext, userQuery);
     context.business_search_matches = businessSearch.matches;
     context.source_status.business_search = businessSearch.status;
     context.business_search_total_count = businessSearch.total_count;
