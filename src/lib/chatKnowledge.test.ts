@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPublicKnowledgeContext, resolvePublicDirectoryFilters } from '../../functions/_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolvePublicDirectoryFilters } from '../../functions/_shared/chatKnowledge.js';
 
 test('maps every supplied public knowledge source to canonical visitor links', () => {
   const context = buildPublicKnowledgeContext({
@@ -80,4 +80,48 @@ test('keeps only pre-redacted public owner profile fields and omits internal IDs
     email: 'public@example.com',
   }]);
   assert.equal('owner_id' in context.public_owner_profiles[0], false);
+});
+
+test('business context respects plan-gated public fields and never invents coordinates', () => {
+  const free = mapPublicBusinessSearchResult({
+    slug: 'sample-shop',
+    name_en: 'Sample Shop',
+    plan_code: 'free',
+    plan_expires_at: null,
+    whatsapp: '03001234567',
+    facebook_url: 'https://facebook.com/sample',
+    gallery_urls: ['https://hellosadiqabad.com/gallery.jpg'],
+    video_urls: ['https://youtube.com/watch?v=sample'],
+    lat: null,
+    lng: null,
+    phone_primary: '03001112222',
+    website_url: 'https://example.com',
+  });
+  assert.equal(free.whatsapp, null);
+  assert.equal(free.social_links, null);
+  assert.deepEqual(free.gallery_urls, []);
+  assert.deepEqual(free.video_urls, []);
+  assert.equal(free.latitude, null);
+  assert.equal(free.longitude, null);
+  assert.equal(free.directions_url, null);
+  assert.equal(free.phone, '03001112222');
+  assert.equal(free.website, 'https://example.com');
+
+  const premium = mapPublicBusinessSearchResult({
+    slug: 'premium-shop',
+    name_en: 'Premium Shop',
+    plan_code: 'premium',
+    plan_expires_at: new Date(Date.now() + 86400000).toISOString(),
+    whatsapp: '03001234567',
+    facebook_url: 'https://facebook.com/sample',
+    gallery_urls: ['https://hellosadiqabad.com/gallery.jpg'],
+    video_urls: ['https://youtube.com/watch?v=sample'],
+    lat: 28.3,
+    lng: 69.7,
+  });
+  assert.equal(premium.whatsapp, '03001234567');
+  assert.equal(premium.social_links.facebook, 'https://facebook.com/sample');
+  assert.equal(premium.gallery_urls.length, 1);
+  assert.equal(premium.video_urls.length, 1);
+  assert.match(premium.directions_url, /28.3,69.7/);
 });
