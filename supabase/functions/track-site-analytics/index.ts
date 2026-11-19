@@ -181,6 +181,23 @@ Deno.serve(async (req: Request) => {
     const body = await readJsonObject(req, 4_096);
     if (!body) return reply(req, { ok: false, error: "Invalid or oversized request body" }, 400);
 
+    const ip = req.headers.get("cf-connecting-ip");
+    if (!ip || ip.length > 128) return reply(req, { ok: false, error: "Rate limit identity unavailable" }, 429);
+    const rateKey = await hmacHex(`site-analytics-rate:${ip}`);
+    const { data: rateAllowed, error: rateError } = await db.rpc("check_rate_limit", {
+      p_key: `site-analytics:${rateKey}`,
+      p_limit: 1200,
+      p_window_seconds: 3600,
+    });
+    if (rateError || rateAllowed !== true) {
+      return reply(req, { ok: false, error: "Rate limit exceeded" }, 429);
+    }
+
+    const userAgent = req.headers.get("user-agent") ?? "";
+    if (!userAgent || /bot|crawler|spider|facebookexternalhit|twitterbot|slackbot|discordbot|googlebot|bingbot|linkedinbot|pinterestbot|telegrambot|preview/i.test(userAgent)) {
+      return reply(req, { ok: true, ignored: true });
+    }
+
     const envelope = validateSiteAnalyticsEnvelope(body);
     if (!envelope.ok) return reply(req, { ok: false, error: envelope.reason }, 400);
 
