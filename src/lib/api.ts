@@ -993,7 +993,7 @@ export async function trackBusinessEvent(
   const client = getSupabaseClient();
   const isDatabaseBusinessId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId);
   if (client && isDatabaseBusinessId) {
-    if (eventType === 'call' || eventType === 'whatsapp' || eventType === 'directions' || eventType === 'website') {
+    if (eventType === 'call' || eventType === 'whatsapp' || eventType === 'directions') {
       trackSiteAnalyticsEvent('cta_click',{
         pagePath:typeof window!=='undefined'?window.location.pathname:'/business',
         entityType:'business',
