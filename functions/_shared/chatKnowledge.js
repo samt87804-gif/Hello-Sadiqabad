@@ -7,20 +7,35 @@ const pageUrl = (base, path) => `${base.replace(/\/+$/, '')}/${String(path || ''
 
 
 export function resolvePublicDirectoryFilters(query, categories = [], areas = []) {
-  const normalized = String(query || '').normalize('NFKC').toLocaleLowerCase().trim();
+  const normalize = (value) => String(value || '')
+    .normalize('NFKC')
+    .toLocaleLowerCase()
+    .replace(/[^\\p{L}\\p{N}]+/gu, ' ')
+    .trim();
+  const normalized = normalize(query);
   if (!normalized) return { category: null, area: null };
+
   const category = categories.find((item) => {
-    const terms = [item.name_en, item.name_ur, item.slug, ...(Array.isArray(item.synonyms) ? item.synonyms : [])]
-      .filter((value) => typeof value === 'string' && value.trim())
-      .map((value) => value.normalize('NFKC').toLocaleLowerCase().trim());
-    return terms.some((term) => normalized.includes(term));
+    const rawTerms = [item.name_en, item.name_ur, item.slug, ...(Array.isArray(item.synonyms) ? item.synonyms : [])];
+    return rawTerms.some((value) => {
+      const term = normalize(value);
+      return term && normalized.includes(term);
+    });
   });
+
   const area = areas.find((item) => {
-    const terms = [item.name_en, item.name_ur, item.slug]
-      .filter((value) => typeof value === 'string' && value.trim())
-      .map((value) => value.normalize('NFKC').toLocaleLowerCase().trim());
-    return terms.some((term) => normalized.includes(term));
+    const rawTerms = [item.name_en, item.name_ur, item.slug?.replace(/[-_]+/g, ' ')];
+    return rawTerms.some((value) => {
+      const term = normalize(value);
+      if (!term) return false;
+      if (normalized.includes(term)) return true;
+      const meaningfulTokens = term.split(/\\s+/).filter((token) =>
+        token.length >= 5 && !['sadiqabad', 'town', 'road', 'area', 'block', 'colony', 'street'].includes(token)
+      );
+      return meaningfulTokens.some((token) => normalized.includes(token));
+    });
   });
+
   return { category: category?.slug || null, area: area?.slug || null };
 }
 
