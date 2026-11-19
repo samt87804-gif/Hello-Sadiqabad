@@ -428,4 +428,7 @@ Batch 3 — completed (16 November 2026):
 - [x] Add public bilingual analytics opt-out control on `/privacy`, with local preference persistence and Do Not Track / Global Privacy Control enforcement.
 - [x] Enable production `VITE_SITE_ANALYTICS_ENABLED=true` only after the privacy control was deployed; Cloudflare Pages deployment for commit `b0fd6d2c203a8fba8a874c7ed4ffa06ed8a600d9` succeeded.
 - [ ] Verify a real browser page view and opt-out behavior end-to-end; request-level collector smoke tests remain outstanding.
-- [ ] Implement Live Visitors Durable Object and protected aggregate read path.
+- [x] Implement Live Visitors using a permission-guarded aggregate RPC over active session heartbeats; Durable Object not needed for current scale.
+
+- [x] Add `admin_live_visitor_count()` RPC (SECURITY INVOKER; Super Admin / analytics.view; aggregate only) and Admin KPI polling every 30 seconds.
+- [x] Verify anon EXECUTE is denied and simulated Super Admin can read aggregate count. No visitor-level data is exposed.
