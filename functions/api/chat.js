@@ -51,14 +51,18 @@ async function fetchTable(baseUrl, key, table, params) {
 }
 
 
-async function fetchBusinessMatches(env, query) {
+async function fetchBusinessMatches(env, query, publicContext) {
   const searchText = String(query || '').trim().slice(0, 120);
-  if (!searchText) return { matches: [], status: 'not_requested' };
+  if (!searchText) return { matches: [], status: 'not_requested', total_count: 0 };
   const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
-  if (!baseUrl.startsWith('https://') || !key) return { matches: [], status: 'unavailable' };
+  if (!baseUrl.startsWith('https://') || !key) return { matches: [], status: 'unavailable', total_count: 0 };
 
   try {
+    const { resolvePublicDirectoryFilters } = await import('../_shared/chatKnowledge.js');
+    const filters = resolvePublicDirectoryFilters(searchText, publicContext.categories, publicContext.areas);
+    const broadRequest = /\b(all|every|list|show|directory|businesses|business|shops|stores)\b/i.test(searchText);
+    const scopedSearch = Boolean(filters.category || filters.area);
     const response = await fetch(`${baseUrl}/rest/v1/rpc/search_businesses`, {
       method: 'POST',
       headers: {
@@ -67,48 +71,70 @@ async function fetchBusinessMatches(env, query) {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({ p_query: searchText, p_limit: 12, p_offset: 0, p_sort: 'relevance' }),
+      body: JSON.stringify({
+        p_query: scopedSearch || broadRequest ? null : searchText,
+        p_category: filters.category,
+        p_area: filters.area,
+        p_open_now: false,
+        p_verified: false,
+        p_has_offer: false,
+        p_min_rating: null,
+        p_delivery: false,
+        p_lat: null,
+        p_lng: null,
+        p_sort: 'relevance',
+        p_limit: scopedSearch ? 30 : 12,
+        p_offset: 0,
+      }),
     });
-    if (!response.ok) return { matches: [], status: 'unavailable' };
+    if (!response.ok) return { matches: [], status: 'unavailable', total_count: 0 };
     const rows = await response.json();
-    if (!Array.isArray(rows)) return { matches: [], status: 'unavailable' };
+    if (!Array.isArray(rows)) return { matches: [], status: 'unavailable', total_count: 0 };
     const siteUrl = 'https://hellosadiqabad.com';
-    return { status: 'loaded', matches: rows.slice(0, 12).map((row) => ({
-      name: row.name_en,
-      name_ur: row.name_ur,
-      slug: row.slug,
-      url: `${siteUrl}/business/${encodeURIComponent(row.slug)}`,
-      category: row.category?.name_en || null,
-      category_ur: row.category?.name_ur || null,
-      category_url: row.category?.slug ? `${siteUrl}/category/${encodeURIComponent(row.category.slug)}` : null,
-      area: row.area?.name_en || null,
-      area_ur: row.area?.name_ur || null,
-      area_url: row.area?.slug ? `${siteUrl}/area/${encodeURIComponent(row.area.slug)}` : null,
-      address: typeof row.address_en === 'string' ? row.address_en.slice(0, 180) : null,
-      address_ur: typeof row.address_ur === 'string' ? row.address_ur.slice(0, 180) : null,
-      phone: row.phone_primary,
-      alternate_phone: row.phone_secondary,
-      whatsapp: row.whatsapp,
-      website: row.website_url,
-      description: typeof row.description_en === 'string' ? row.description_en.slice(0, 500) : null,
-      description_ur: typeof row.description_ur === 'string' ? row.description_ur.slice(0, 500) : null,
-      services: row.services_en,
-      services_ur: row.services_ur,
-      opening_hours: row.opening_hours,
-      open_24_hours: row.is_open_24h,
-      home_delivery: row.home_delivery,
-      verified: row.is_verified,
-      rating: row.rating_avg,
-      rating_count: row.rating_count,
-      active_offers: Array.isArray(row.active_offers) ? row.active_offers.slice(0, 3).map((offer) => ({
-        title: offer.title,
-        description: typeof offer.description === 'string' ? offer.description.slice(0, 240) : null,
-        valid_from: offer.valid_from,
-        valid_to: offer.valid_to,
-      })) : [],
-    })) };
+    const categories = new Map((publicContext.categories || []).map((item) => [item.slug, item]));
+    const areas = new Map((publicContext.areas || []).map((item) => [item.slug, item]));
+    return {
+      status: 'loaded',
+      total_count: Number(rows[0]?.total_count ?? rows.length),
+      matched_category: filters.category ? categories.get(filters.category)?.name || filters.category : null,
+      matched_area: filters.area ? areas.get(filters.area)?.name || filters.area : null,
+      matches: rows.slice(0, scopedSearch ? 30 : 12).map((row) => ({
+        name: row.name_en,
+        name_ur: row.name_ur,
+        slug: row.slug,
+        url: `${siteUrl}/business/${encodeURIComponent(row.slug)}`,
+        category: row.category?.name_en || null,
+        category_ur: row.category?.name_ur || null,
+        category_url: row.category?.slug ? `${siteUrl}/category/${encodeURIComponent(row.category.slug)}` : null,
+        area: row.area?.name_en || null,
+        area_ur: row.area?.name_ur || null,
+        area_url: row.area?.slug ? `${siteUrl}/area/${encodeURIComponent(row.area.slug)}` : null,
+        address: typeof row.address_en === 'string' ? row.address_en.slice(0, 180) : null,
+        address_ur: typeof row.address_ur === 'string' ? row.address_ur.slice(0, 180) : null,
+        phone: row.phone_primary,
+        alternate_phone: row.phone_secondary,
+        whatsapp: row.whatsapp,
+        website: row.website_url,
+        description: typeof row.description_en === 'string' ? row.description_en.slice(0, 500) : null,
+        description_ur: typeof row.description_ur === 'string' ? row.description_ur.slice(0, 500) : null,
+        services: row.services_en,
+        services_ur: row.services_ur,
+        opening_hours: row.opening_hours,
+        open_24_hours: row.is_open_24h,
+        home_delivery: row.home_delivery,
+        verified: row.is_verified,
+        rating: row.rating_avg,
+        rating_count: row.rating_count,
+        active_offers: Array.isArray(row.active_offers) ? row.active_offers.slice(0, 3).map((offer) => ({
+          title: offer.title,
+          description: typeof offer.description === 'string' ? offer.description.slice(0, 240) : null,
+          valid_from: offer.valid_from,
+          valid_to: offer.valid_to,
+        })) : [],
+      })),
+    };
   } catch {
-    return { matches: [], status: 'unavailable' };
+    return { matches: [], status: 'unavailable', total_count: 0 };
   }
 }
 
@@ -248,9 +274,11 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const context = await fetchPublicContext(env, new URL(request.url).origin);
-    const businessSearch = await fetchBusinessMatches(env, messages[messages.length - 1].content);
+    const businessSearch = await fetchBusinessMatches(env, messages[messages.length - 1].content, context);
     context.business_search_matches = businessSearch.matches;
     context.source_status.business_search = businessSearch.status;
+    context.business_search_total_count = businessSearch.total_count;
+    context.business_search_scope = { category: businessSearch.matched_category, area: businessSearch.matched_area };
     const result = await env.AI.run(
       MODEL,
       { messages: [{ role: 'system', content: buildSystemPrompt(context) }, ...messages], max_tokens: 450, temperature: 0.2 },
