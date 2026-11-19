@@ -48,6 +48,45 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   return { category: category?.slug || null, area: area?.slug || null };
 }
 
+export function resolveBusinessSearchIntent(query, categories = [], areas = []) {
+  const text = String(query || '').trim().slice(0, 240);
+  const filters = resolvePublicDirectoryFilters(text, categories, areas);
+  const connector = /\\b(?:in|near|at|within|around)\\s+/i.exec(text);
+  const categoryPhrase = connector ? text.slice(0, connector.index) : text;
+  const categoryRecord = categories.find((item) => item.slug === filters.category);
+  const categoryTerms = categoryRecord
+    ? [categoryRecord.name_en, categoryRecord.name_ur, categoryRecord.slug, ...(Array.isArray(categoryRecord.synonyms) ? categoryRecord.synonyms : [])]
+      .filter((value) => typeof value === 'string' && value.trim())
+      .map(normalizeKnowledgeText)
+    : [];
+  const browseWords = new Set(['all', 'every', 'list', 'show', 'me', 'find', 'directory', 'business', 'businesses', 'shop', 'shops', 'store', 'stores', 'category', 'categories', 'type', 'types', 'best', 'top', 'the', 'of', 'please', 'mujhe', 'dikhao', 'batao']);
+  const categoryPhraseTokens = normalizeKnowledgeText(categoryPhrase).split(/\\s+/).filter(Boolean);
+  const cleanedCategoryPhrase = categoryPhraseTokens.filter((token) => !browseWords.has(token)).join(' ');
+  const categoryIntent = Boolean(filters.category && categoryTerms.some((term) => term && cleanedCategoryPhrase === term));
+  const directoryWords = /\\b(?:all|every|list|show|directory|businesses|business|shops|stores)\\b/i.test(text);
+  const areaDirectoryIntent = Boolean(filters.area && directoryWords);
+  const category = categoryIntent ? filters.category : null;
+
+  let searchQuery = null;
+  if (!categoryIntent && !areaDirectoryIntent) {
+    const categoryTokens = new Set(categoryTerms.flatMap((term) => term.split(/\\s+/)).filter(Boolean));
+    const stopWords = new Set([
+      ...browseWords, 'in', 'near', 'at', 'within', 'around', 'sadiqabad', 'phone', 'number', 'address',
+      'pata', 'timing', 'hours', 'opening', 'open', 'close', 'contact', 'website', 'map', 'location',
+      'price', 'prices', 'qeemat', 'keemat', 'daam', 'ka', 'ki', 'ke', 'aur', 'and', 'what', 'is',
+      'its', 'their', 'my', 'his', 'her', 'for', 'about', 'tell', 'get', 'give', 'please',
+    ]);
+    const tokens = text.match(/[\\p{L}\\p{N}-]+/gu) || [];
+    searchQuery = tokens.find((token) => {
+      const normalized = normalizeKnowledgeText(token);
+      return normalized.length >= 3 && !stopWords.has(normalized) && !categoryTokens.has(normalized);
+    }) || null;
+    if (!searchQuery && !filters.area) searchQuery = text.slice(0, 120);
+  }
+
+  return { category, area: filters.area, query: searchQuery };
+}
+
 export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL, query = '') {
   const base = siteUrl.replace(/\/+$/, '');
   const expiry = row.plan_expires_at ? new Date(row.plan_expires_at).getTime() : null;
