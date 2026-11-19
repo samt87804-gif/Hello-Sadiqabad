@@ -461,3 +461,15 @@ Batch 3 — completed (16 November 2026):
 
 - [x] Extract public route allowlist into shared validator and add tests excluding Admin, Owner, auth, API, unknown, query-bearing, fragment-bearing and malformed routes.
 - [x] CI passed for route-validation commit `d6a9a063995d09295268148c51b05f891afa8314`; deployed collector is Edge Function v5 (ACTIVE).
+
+
+## Business share cards & organic Google Search — owner-approved (19 November 2026)
+
+- [x] Owner approved the plan. Scope is the Hello Sadiqabad business page appearing as a conventional organic Google Search result; Google Maps / Google Business Profile creation is explicitly excluded.
+- [x] Phase 0 live re-audit: 397 published businesses, 375 with at least one image URL and 22 without; anon business SELECT is limited by RLS to published rows.
+- [x] Added crawler-specific Cloudflare Pages route `functions/business/[slug].js`, safe SEO/JSON-LD helpers and automated tests.
+- [x] GitHub Actions run `44581326800` passed typecheck, tests, build and Edge Function checks.
+- [x] Pages deployment `cdf061de-6a21-4d32-8deb-ea39013c03eb` succeeded for commit `c60031040fd95f41fb3ee35afeb2e55725507a00`.
+- [x] Googlebot Browser Rendering returned HTTP 200 and page-specific title, description, canonical, real cover image URL and JSON-LD for a live published listing.
+- [ ] Verify post-hydration visible content, normal-browser pass-through, invalid/unpublished crawler 404, WhatsApp/Facebook/LinkedIn crawlers and actual device previews.
+- [ ] Audit sitemap sample/uniqueness, submit/inspect priority URLs in Search Console, and monitor actual index coverage. Google indexing/ranking is not guaranteed.
