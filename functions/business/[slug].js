@@ -25,22 +25,21 @@ function escapeHtml(value) {
 }
 
 function setMeta(html, attribute, name, value) {
-  const safeName = name.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
-  const pattern = new RegExp('<meta\\\\b(?=[^>]*\\\\b' + attribute + '\\\\s*=\\\\s*["\\\\\\\\']' + safeName + '["\\\\\\\\'])[^>]*>', 'i');
+  const pattern = new RegExp('<meta\\b(?=[^>]*\\b' + attribute + '\\s*=\\s*["\\x27]' + name + '["\\x27])[^>]*>', 'i');
   const tag = '<meta ' + attribute + '="' + escapeHtml(name) + '" content="' + escapeHtml(value) + '" />';
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\\\\/head>/i, tag + '\\n</head>');
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\n</head>');
 }
 
 function setCanonical(html, url) {
   const tag = '<link rel="canonical" href="' + escapeHtml(url) + '" />';
-  const pattern = /<link\\\\b(?=[^>]*\\\\brel\\\\s*=\\\\s*["']canonical["'])[^>]*>/i;
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\\\\/head>/i, tag + '\\n</head>');
+  const pattern = /<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/i;
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\n</head>');
 }
 
 function injectBusinessMetadata(html, business) {
   const metadata = buildBusinessSeoMetadata(business, SITE_ORIGIN);
-  let output = /<title>[\\s\\S]*?<\\/title>/i.test(html)
-    ? html.replace(/<title>[\\s\\S]*?<\\/title>/i, '<title>' + escapeHtml(metadata.title) + '</title>')
+  let output = /<title>[\s\S]*?<\/title>/i.test(html)
+    ? html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escapeHtml(metadata.title) + '</title>')
     : html.replace(/<head[^>]*>/i, (head) => head + '<title>' + escapeHtml(metadata.title) + '</title>');
 
   const tags = [
@@ -64,10 +63,10 @@ function injectBusinessMetadata(html, business) {
 
   const jsonLd = serializeBusinessJsonLd(buildBusinessJsonLd(business, metadata, SITE_ORIGIN));
   const script = '<script id="hs-business-json-ld" type="application/ld+json">' + jsonLd + '</script>';
-  const existingJsonLd = /<script\\\\b(?=[^>]*\\\\bid=["']hs-business-json-ld["'])[^>]*>[\\s\\S]*?<\\/script>/i;
+  const existingJsonLd = /<script\b(?=[^>]*\bid=["']hs-business-json-ld["'])[^>]*>[\s\S]*?<\/script>/i;
   output = existingJsonLd.test(output)
     ? output.replace(existingJsonLd, script)
-    : output.replace(/<\\\\/head>/i, script + '\\n</head>');
+    : output.replace(/<\/head>/i, script + '\n</head>');
   return output;
 }
 
@@ -85,7 +84,7 @@ function notFoundResponse() {
 }
 
 async function fetchPublishedBusiness(env, slug) {
-  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\\/+$/, '');
+  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const publicKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !publicKey) return null;
 
