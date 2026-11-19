@@ -559,5 +559,16 @@ The admin “Train / Sync Latest Information to Chatbot” button and its manual
 - Canonical production API smoke test returned HTTP 200 and correctly returned Al-Buraq School & Academy's public phone number `03277056075`; the follow-up address question correctly resolved to “near Kamal medical complex, Sadiqabad”.
 - No database migration or private-data access was introduced. Physical mobile/device UI verification remains outstanding.
 
-### Next planned chatbot phase
-Admin-only knowledge refresh control (“Train / Sync Latest Information to Chatbot”), with safe full/incremental refresh, authorization, progress, last-sync status and error reporting. This is not implemented in Part 2; see the feature plan.
+### Chatbot Part 3 — Admin-managed public knowledge refresh
+**Status: implemented; CI/production deployment verification pending at this documentation update.** Details: `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md`.
+
+- Added super-admin-only Admin Portal section `/admin/chatbot-knowledge` and the “Train / Sync Latest Information to Chatbot” control.
+- Added authenticated server route `POST /api/chat/sync` and status route `GET /api/chat/sync`; both validate the Supabase user and current active Super Admin profile. POST requires same-origin.
+- Full refresh reloads all 12 public knowledge sources plus the published-business count. Business records themselves continue to be searched live for each visitor question.
+- Refresh only replaces the versioned public cache when all required sources load and the cache write succeeds. Failed source loads preserve the previous cache.
+- Added persistent run history/progress/source results in `public.chatbot_knowledge_sync_runs`, protected by RLS for active Super Admins only. Anonymous SELECT is denied; authenticated DELETE is not granted.
+- Admin UI shows last successful sync, live progress, source counts/status, recent history and error details.
+- Applied Supabase migrations `20261119201013`, `20261119201034` and `20261119201234`.
+- Unauthenticated preview GET/POST tests returned HTTP 401. Positive full sync requires the owner to use their active Super Admin session after deployment.
+- Full refresh is implemented; incremental sync, vector search and model fine-tuning are not.
+- Mobile/device verification remains outstanding.
