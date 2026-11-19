@@ -25,11 +25,11 @@ export interface BusinessSeoMetadata {
 
 export function cleanBusinessSeoText(value: string | null | undefined, fallback: string, maxLength = 160): string {
   const plainText = String(value || '')
-    .replace(/!\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1')
-    .replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/<[^>]*>/g, ' ')
     .replace(/[*_>#~|]/g, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
   const text = plainText || fallback;
   return text.length > maxLength ? text.slice(0, maxLength - 1).trimEnd() + '…' : text;
@@ -67,7 +67,7 @@ export function buildBusinessSeoMetadata(
   return {
     title,
     description,
-    canonicalUrl: siteOrigin.replace(/\\/$/, '') + '/business/' + business.slug,
+    canonicalUrl: siteOrigin.replace(/\/$/, '') + '/business/' + business.slug,
     image,
     imageAlt: name,
   };
@@ -75,7 +75,7 @@ export function buildBusinessSeoMetadata(
 
 function normalizeBusinessTelephone(value: string | null | undefined): string | null {
   const raw = String(value || '').trim();
-  const digits = raw.replace(/\\D/g, '');
+  const digits = raw.replace(/\D/g, '');
   if (digits.length < 7 || digits.length > 15 || /^0+$/.test(digits)) return null;
   if (digits.startsWith('0092') && digits.length >= 13) return '+' + digits.slice(2);
   if (digits.startsWith('92') && digits.length === 12) return '+' + digits;
@@ -118,7 +118,7 @@ export function buildBusinessJsonLd(
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: siteOrigin.replace(/\\/$/, '') + '/' },
+          { '@type': 'ListItem', position: 1, name: 'Home', item: siteOrigin.replace(/\/$/, '') + '/' },
           { '@type': 'ListItem', position: 2, name, item: metadata.canonicalUrl },
         ],
       },
@@ -127,11 +127,11 @@ export function buildBusinessJsonLd(
 }
 
 export function serializeBusinessJsonLd(value: Record<string, unknown>): string {
-  return JSON.stringify(value).replace(/[<>&\\u2028\\u2029]/g, (character) => ({
-    '<': '\\\\u003c',
-    '>': '\\\\u003e',
-    '&': '\\\\u0026',
-    '\\u2028': '\\\\u2028',
-    '\\u2029': '\\\\u2029',
+  return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (character) => ({
+    '<': '\\u003c',
+    '>': '\\u003e',
+    '&': '\\u0026',
+    '\u2028': '\\u2028',
+    '\u2029': '\\u2029',
   })[character] || character);
 }
