@@ -204,6 +204,8 @@ function buildSystemPrompt(context) {
     { name: 'Search businesses', url: 'https://hellosadiqabad.com/search' },
     { name: 'All categories', url: 'https://hellosadiqabad.com/categories' },
     { name: 'Business map', url: 'https://hellosadiqabad.com/map' },
+    { name: 'Saved businesses (Favorites)', url: 'https://hellosadiqabad.com/favorites' },
+    { name: 'Offline directory data', url: 'https://hellosadiqabad.com/offline-data' },
     { name: 'News', url: 'https://hellosadiqabad.com/news' },
     { name: 'Offers', url: 'https://hellosadiqabad.com/offers' },
     { name: 'Announcements', url: 'https://hellosadiqabad.com/announcements' },
