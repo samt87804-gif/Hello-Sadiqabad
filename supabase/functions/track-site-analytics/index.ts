@@ -15,8 +15,6 @@ const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ??
   .split(",").map((value) => value.trim()).filter(Boolean);
 
 const siteOrigin = "https://hellosadiqabad.com";
-const allowedTopLevel = new Set([
-
 function reply(req: Request, data: unknown, status = 200) {
   const origin = req.headers.get("origin") ?? "";
   if (origin && !allowedOrigins.includes(origin)) {
