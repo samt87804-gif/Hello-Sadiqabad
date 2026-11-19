@@ -458,3 +458,6 @@ Batch 3 — completed (16 November 2026):
 - [x] Deploy `track-site-analytics` Edge Function v4; CI run `44554526513` passed app build/tests/typecheck and Edge Function Deno check.
 - [x] Reverify live analytics grants/RLS: anon read/execute denied; service_role report execute/delete denied; authenticated report access remains gated by Super Admin / `analytics.view` policies.
 - [ ] Direct HTTP abuse/replay/rate-limit tests, staff permission matrix and browser privacy/lifecycle walkthrough remain open.
+
+- [x] Extract public route allowlist into shared validator and add tests excluding Admin, Owner, auth, API, unknown, query-bearing, fragment-bearing and malformed routes.
+- [x] CI passed for route-validation commit `d6a9a063995d09295268148c51b05f891afa8314`; deployed collector is Edge Function v5 (ACTIVE).
