@@ -267,12 +267,12 @@ export function selectRelevantPublicKnowledge(context, query) {
   const text = String(query || '');
   const lower = normalizeKnowledgeText(text);
   const filters = resolvePublicDirectoryFilters(text, context.categories || [], context.areas || []);
-  const asksAreas = Boolean(filters.area) || /\\b(areas?|localit(?:y|ies)|neighbou?rhoods?|mohallas?|colon(?:y|ies)|towns?)\\b/i.test(lower);
-  const asksNews = /\\b(news|latest|updates?|announcements?|events?|headlines?)\\b|خبریں|تازہ|اعلان/i.test(text);
-  const asksSiteHelp = /\\b(website|app|how|use|feature|register|submit|add business|contact|privacy|terms|faq|favorites?|offline|map|search|account)\\b/i.test(lower);
-  const asksCivic = /\\b(government|authority|official|commissioner|deputy|police|municipal|council|helpline|emergency|rescue|ambulance)\\b|سرکاری|پولیس|ریسکیو|ایمرجنسی|ہیلپ لائن/i.test(text);
-  const asksOwner = /\\b(owner|owners|business owner|public profile)\\b|مالک|مالکان/i.test(text);
-  const asksProducts = /\\b(product|products|service|services|price|prices|offer|offers|discount|sale)\\b|قیمت|آفر|ڈسکاؤنٹ/i.test(text);
+  const asksAreas = Boolean(filters.area) || /\b(areas?|localit(?:y|ies)|neighbou?rhoods?|mohallas?|colon(?:y|ies)|towns?)\b/i.test(lower);
+  const asksNews = /\b(news|latest|updates?|announcements?|events?|headlines?)\b|خبریں|تازہ|اعلان/i.test(text);
+  const asksSiteHelp = /\b(website|app|how|use|feature|register|submit|add business|contact|privacy|terms|faq|favorites?|offline|map|search|account)\b/i.test(lower);
+  const asksCivic = /\b(government|authority|official|commissioner|deputy|police|municipal|council|helpline|emergency|rescue|ambulance)\b|سرکاری|پولیس|ریسکیو|ایمرجنسی|ہیلپ لائن/i.test(text);
+  const asksOwner = /\b(owner|owners|business owner|public profile)\b|مالک|مالکان/i.test(text);
+  const asksProducts = /\b(product|products|service|services|price|prices|offer|offers|discount|sale)\b|قیمت|آفر|ڈسکاؤنٹ/i.test(text);
 
   const areaRanked = [...(context.areas || [])].sort((a, b) =>
     relevanceScore(b, text, ['name', 'name_ur', 'slug']) - relevanceScore(a, text, ['name', 'name_ur', 'slug'])
