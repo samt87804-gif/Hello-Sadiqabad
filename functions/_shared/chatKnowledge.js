@@ -58,6 +58,9 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL, q
   const wantsPhotos = /photo|photos|image|images|gallery|picture|tasveer|tasveerein|تصویر|تصاویر|فوٹو/.test(queryText);
   const wantsVideos = /video|videos|youtube|ویڈیو/.test(queryText);
   const wantsReviews = /review|reviews|rating|ratings|feedback|ریویو|درجہ بندی/.test(queryText);
+  const wantsHours = /hour|hours|timing|timings|open|opening|close|closing|time|schedule|khula|khulay|waqt|اوقات|ٹائمنگ/.test(queryText);
+  const wantsDirections = /map|direction|directions|address|location|where|kahan|kidhar|raasta|route|نقشہ|پتہ|کہاں/.test(queryText);
+  const wantsOffers = /offer|offers|discount|sale|deal|promotion|آفر|ڈسکاؤنٹ/.test(queryText);
   const hasCoordinates = row.lat != null && row.lng != null && Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lng));
   const lat = hasCoordinates ? Number(row.lat) : null;
   const lng = hasCoordinates ? Number(row.lng) : null;
@@ -77,9 +80,9 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL, q
     address_ur: clip(row.address_ur, 250),
     landmark: clip(row.landmark_en, 180),
     landmark_ur: clip(row.landmark_ur, 180),
-    latitude: lat,
-    longitude: lng,
-    directions_url: hasCoordinates ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : null,
+    latitude: wantsDirections ? lat : null,
+    longitude: wantsDirections ? lng : null,
+    directions_url: wantsDirections && hasCoordinates ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : null,
     phone: row.phone_primary,
     alternate_phone: row.phone_secondary,
     whatsapp: hasPaidFeatures ? row.whatsapp : null,
@@ -90,22 +93,22 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL, q
       youtube: row.youtube_url,
       tiktok: row.tiktok_url,
     } : null,
-    logo_url: row.logo_url,
-    cover_url: row.cover_url,
+    logo_url: wantsPhotos ? row.logo_url : null,
+    cover_url: wantsPhotos ? row.cover_url : null,
     gallery_urls: hasPaidFeatures && wantsPhotos && Array.isArray(row.gallery_urls) ? row.gallery_urls.slice(0, 4) : [],
     video_urls: hasPaidFeatures && wantsVideos && Array.isArray(row.video_urls) ? row.video_urls.slice(0, 3) : [],
-    description: clip(row.description_en, 500),
-    description_ur: clip(row.description_ur, 500),
-    services: Array.isArray(row.services_en) ? row.services_en.slice(0, 10) : [],
-    services_ur: Array.isArray(row.services_ur) ? row.services_ur.slice(0, 10) : [],
-    opening_hours: row.opening_hours,
+    description: clip(row.description_en, 350),
+    description_ur: clip(row.description_ur, 350),
+    services: Array.isArray(row.services_en) ? row.services_en.slice(0, 6) : [],
+    services_ur: Array.isArray(row.services_ur) ? row.services_ur.slice(0, 6) : [],
+    opening_hours: wantsHours ? row.opening_hours : null,
     open_24_hours: row.is_open_24h,
     home_delivery: row.home_delivery,
     established_year: row.established_year,
     verified: row.is_verified,
     rating: row.rating_avg,
     rating_count: row.rating_count,
-    active_offers: Array.isArray(row.active_offers) ? row.active_offers.slice(0, 2).map((offer) => ({
+    active_offers: wantsOffers && Array.isArray(row.active_offers) ? row.active_offers.slice(0, 2).map((offer) => ({
       title: offer.title,
       description: clip(offer.description, 240),
       valid_from: offer.valid_from,
