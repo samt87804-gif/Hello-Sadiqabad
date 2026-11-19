@@ -571,7 +571,7 @@ Read `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md` for the feature plan and phase boun
 - Production API smoke test returned HTTP 200; Al-Buraq School & Academy's public phone `03277056075` and follow-up address “near Kamal medical complex, Sadiqabad” were returned correctly.
 - No DB migration or private-data access. Physical device/mobile interaction remains unverified.
 
-**Next chatbot phase (not started):** Admin-only “Train / Sync Latest Information to Chatbot” control with safe full/incremental refresh, authorization, progress, last-sync status and error reporting. Do not claim that a persistent vector index or model fine-tuning exists.
+**Part 3 now implemented:** Super Admin-only “Train / Sync Latest Information to Chatbot” control with full refresh, authorization, progress, last-sync history, source counts and error reporting. Incremental sync, vector index and model fine-tuning do not exist.
 
 ## Latest verified update — Chatbot Part 3 implementation (20 November 2026)
 
@@ -582,7 +582,8 @@ Read `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md` for architecture, scope and verific
 - Added full public knowledge refresh. It re-reads 12 public sources and the published business count; business listings remain live searched per visitor question rather than being copied into a separate store.
 - Versioned edge cache is replaced only after all sources load and cache write succeeds. Source failure preserves the prior successful cache.
 - Admin UI records and displays progress, last successful refresh, source-by-source statuses/counts, recent runs and errors. Only full refresh is implemented; incremental sync and model fine-tuning are not.
-- Applied Supabase migrations: `20261119201013_chatbot_knowledge_sync_runs`, `20261119201034_chatbot_knowledge_sync_progress`, `20261119201234_chatbot_knowledge_sync_admin_select_hardening`.
+- Applied Supabase migrations: `20261119201013_chatbot_knowledge_sync_runs`, `20261119201034_chatbot_knowledge_sync_progress`, `20261119201234_chatbot_knowledge_sync_admin_select_hardening`, `20261119201810_chatbot_knowledge_sync_actor_index`.
 - Verified sync-history RLS: enabled; anon SELECT denied; authenticated SELECT/INSERT/UPDATE available only through Super Admin RLS; DELETE not granted.
-- Preview API smoke test: unauthenticated GET and POST both returned HTTP 401.
-- **Pending verification:** CI and matching Pages deployment for the final commit; positive authenticated full refresh by owner using an active Super Admin session; physical mobile/device interaction.
+- GitHub Actions run `44607374336` passed TypeScript, automated tests, production build and Edge Function checks. Cloudflare Pages deployment `f59c46e9-e0e6-494f-ad41-8cd2ddcbba26` succeeded for final commit `700dc172b70624c539373ad185ba620b538dfff5`.
+- Production API smoke test: unauthenticated GET and POST both returned HTTP 401.
+- **Pending verification:** owner runs the first authenticated full refresh using an active Super Admin session; physical mobile/device interaction.

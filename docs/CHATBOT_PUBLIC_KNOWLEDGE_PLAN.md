@@ -46,7 +46,7 @@ Provide public visitors with a reliable, read-only assistant for published Hello
 - The API was browser-render smoke-tested on the canonical production domain. Automated build/tests passed. A manual physical-device/mobile interaction test has not been performed.
 
 ## Part 3 — Admin-managed knowledge refresh
-**Status:** Implemented · Database migrations applied · CI/deployment verification pending · First authenticated admin sync pending
+**Status:** Implemented · CI passed · Production Pages deployed · Unauthenticated endpoint smoke-tested · First authenticated admin sync pending
 
 - Add a super-admin-only Admin Portal section at `/admin/chatbot-knowledge`, with the “Train / Sync Latest Information to Chatbot” button.
 - Backend route: `functions/api/chat/sync.js`; public context refresh is shared with `functions/api/chat.js`.
@@ -65,8 +65,8 @@ Provide public visitors with a reliable, read-only assistant for published Hello
   - `20261119201810_chatbot_knowledge_sync_actor_index`
   - `20261119201810_chatbot_knowledge_sync_actor_index`
 - SQL privilege check confirmed RLS enabled, no anon SELECT, authenticated SELECT/INSERT/UPDATE granted for RLS-gated operations, and no authenticated DELETE privilege. An index also covers the audit actor foreign key.
-- Security Advisor returned the existing private analytics-token RLS informational finding and the existing Free-plan leaked-password-protection warning; no new public sync-table finding.
-- Preview endpoint smoke test returned HTTP 401 for unauthenticated GET and POST. A positive authenticated full sync has not been run because no Super Admin browser session was available to this implementation session; the owner should run the button once after deployment to verify all live source statuses.
+- Security Advisor returned the existing private analytics-token RLS informational finding and the existing Free-plan leaked-password-protection warning; no new public sync-table finding. Performance Advisor prompted an index on the sync actor foreign key, which was added in migration `20261119201810_chatbot_knowledge_sync_actor_index`.
+- Production endpoint smoke test returned HTTP 401 for unauthenticated GET and POST. A positive authenticated full sync has not been run because no Super Admin browser session was available to this implementation session; the owner should run the button once to verify all live source statuses.
 - Physical mobile/device UI verification remains outstanding.
 
 ## Guardrails

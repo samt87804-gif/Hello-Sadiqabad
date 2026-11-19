@@ -560,7 +560,7 @@ The admin “Train / Sync Latest Information to Chatbot” button and its manual
 - No database migration or private-data access was introduced. Physical mobile/device UI verification remains outstanding.
 
 ### Chatbot Part 3 — Admin-managed public knowledge refresh
-**Status: implemented; CI/production deployment verification pending at this documentation update.** Details: `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md`.
+**Status: implemented, CI-passed and deployed.** Details: `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md`.
 
 - Added super-admin-only Admin Portal section `/admin/chatbot-knowledge` and the “Train / Sync Latest Information to Chatbot” control.
 - Added authenticated server route `POST /api/chat/sync` and status route `GET /api/chat/sync`; both validate the Supabase user and current active Super Admin profile. POST requires same-origin.
@@ -569,6 +569,7 @@ The admin “Train / Sync Latest Information to Chatbot” button and its manual
 - Added persistent run history/progress/source results in `public.chatbot_knowledge_sync_runs`, protected by RLS for active Super Admins only. Anonymous SELECT is denied; authenticated DELETE is not granted.
 - Admin UI shows last successful sync, live progress, source counts/status, recent history and error details.
 - Applied Supabase migrations `20261119201013`, `20261119201034`, `20261119201234` and `20261119201810`.
-- Unauthenticated preview GET/POST tests returned HTTP 401. Positive full sync requires the owner to use their active Super Admin session after deployment.
+- GitHub Actions run `44607374336` passed TypeScript, automated tests, production build and Edge Function checks. Cloudflare Pages deployment `f59c46e9-e0e6-494f-ad41-8cd2ddcbba26` succeeded for final commit `700dc172b70624c539373ad185ba620b538dfff5`.
+- Production unauthenticated GET/POST tests returned HTTP 401. Positive full sync requires the owner to use their active Super Admin session.
 - Full refresh is implemented; incremental sync, vector search and model fine-tuning are not.
 - Mobile/device verification remains outstanding.
