@@ -353,3 +353,13 @@ Batch 3 — completed (16 November 2026):
 - [x] Confirmed Adeel Bhatti is the assigned owner account and his public profile has name/photo sharing enabled; the existing Business Profile page already displays the public owner profile and the existing Admin gallery workflow supports multiple listing photos. The two already-approved listing images (cover and logo) were added to gallery_urls without duplicating either URL.
 - [ ] CI overall remains blocked at the existing npm audit gate (high dependency advisories in picomatch/tinyglobby/Vite); type-check, tests and build steps passed. Production Pages deployment and live browser category-page verification are pending until CI is green.
 - Existing business record, owner assignment and public profile were preserved; no schema/RLS changes or duplicate listing created.
+
+
+## Public News and Authority sharing — 19 November 2026
+
+- [x] Add WhatsApp, Facebook, copy-link and supported native-share actions to individual News article and Authority Profile detail pages.
+- [x] Add crawler-ready Open Graph/Twitter metadata responses for News and Authority detail URLs. News uses its cover image (first gallery image fallback); Authority uses the profile's own photo; existing site logo is the fallback when an image is absent.
+- [x] Limit metadata lookup to published News articles and active Authority profiles using the existing public Supabase read access. No database schema, RLS, private records or existing content changed.
+- [x] Production Pages deployment 891d235d-b897-4207-b4fc-008dcdcf9229 succeeded for code commit 3360b77aa8ec8c10c9c5b55b65c2000458dda3b9.
+- [x] Live crawler-user-agent checks returned HTTP 200 and correct page-specific title, canonical URL and OG image for one News article and Farhan Iqbal's Authority profile using WhatsApp and Facebook user-agent strings; the latest Authority Urdu-description fallback was rechecked after deployment.
+- [ ] Actual WhatsApp app/device and Facebook Sharing Debugger preview checks, plus physical-device interaction checks, remain pending. Do not claim those external platform checks are complete.
