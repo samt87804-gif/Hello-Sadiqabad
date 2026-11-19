@@ -34,7 +34,7 @@ function safeImage(value) {
 }
 
 function setMeta(html, attribute, name, value) {
-  const pattern = new RegExp(\`<meta\\b(?=[^>]*\\b\${attribute}\\s*=\\s*["']\${name}["'])[^>]*>\`, 'i');
+  const pattern = new RegExp("<meta\\b(?=[^>]*\\b" + attribute + "\\s*=\\s*[\"']" + name + "[\"'])[^>]*>", 'i');
   const tag = '<meta ' + attribute + '="' + escapeHtml(name) + '" content="' + escapeHtml(value) + '" />';
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\n</head>');
 }
