@@ -39,11 +39,16 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   return { category: category?.slug || null, area: area?.slug || null };
 }
 
-export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL) {
+export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL, query = '') {
   const base = siteUrl.replace(/\/+$/, '');
   const expiry = row.plan_expires_at ? new Date(row.plan_expires_at).getTime() : null;
   const effectivePlan = expiry && expiry < Date.now() ? 'free' : row.plan_code;
   const hasPaidFeatures = effectivePlan === 'basic' || effectivePlan === 'premium';
+  const queryText = String(query || '').toLocaleLowerCase();
+  const wantsSocial = /social|facebook|instagram|youtube|tiktok/.test(queryText);
+  const wantsPhotos = /photo|photos|image|images|gallery|picture/.test(queryText);
+  const wantsVideos = /video|videos|youtube/.test(queryText);
+  const wantsReviews = /review|reviews|rating|ratings|feedback/.test(queryText);
   const hasCoordinates = row.lat != null && row.lng != null && Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lng));
   const lat = hasCoordinates ? Number(row.lat) : null;
   const lng = hasCoordinates ? Number(row.lng) : null;
@@ -70,7 +75,7 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL) {
     alternate_phone: row.phone_secondary,
     whatsapp: hasPaidFeatures ? row.whatsapp : null,
     website: row.website_url,
-    social_links: hasPaidFeatures ? {
+    social_links: hasPaidFeatures && wantsSocial ? {
       facebook: row.facebook_url,
       instagram: row.instagram_url,
       youtube: row.youtube_url,
@@ -78,12 +83,12 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL) {
     } : null,
     logo_url: row.logo_url,
     cover_url: row.cover_url,
-    gallery_urls: hasPaidFeatures && Array.isArray(row.gallery_urls) ? row.gallery_urls.slice(0, 6) : [],
-    video_urls: hasPaidFeatures && Array.isArray(row.video_urls) ? row.video_urls.slice(0, 4) : [],
-    description: clip(row.description_en, 700),
-    description_ur: clip(row.description_ur, 700),
-    services: Array.isArray(row.services_en) ? row.services_en.slice(0, 20) : [],
-    services_ur: Array.isArray(row.services_ur) ? row.services_ur.slice(0, 20) : [],
+    gallery_urls: hasPaidFeatures && wantsPhotos && Array.isArray(row.gallery_urls) ? row.gallery_urls.slice(0, 4) : [],
+    video_urls: hasPaidFeatures && wantsVideos && Array.isArray(row.video_urls) ? row.video_urls.slice(0, 3) : [],
+    description: clip(row.description_en, 500),
+    description_ur: clip(row.description_ur, 500),
+    services: Array.isArray(row.services_en) ? row.services_en.slice(0, 10) : [],
+    services_ur: Array.isArray(row.services_ur) ? row.services_ur.slice(0, 10) : [],
     opening_hours: row.opening_hours,
     open_24_hours: row.is_open_24h,
     home_delivery: row.home_delivery,
@@ -91,13 +96,13 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL) {
     verified: row.is_verified,
     rating: row.rating_avg,
     rating_count: row.rating_count,
-    active_offers: Array.isArray(row.active_offers) ? row.active_offers.slice(0, 3).map((offer) => ({
+    active_offers: Array.isArray(row.active_offers) ? row.active_offers.slice(0, 2).map((offer) => ({
       title: offer.title,
       description: clip(offer.description, 240),
       valid_from: offer.valid_from,
       valid_to: offer.valid_to,
     })) : [],
-    approved_reviews: Array.isArray(row.approved_reviews) ? row.approved_reviews.slice(0, 3).map((review) => ({
+    approved_reviews: wantsReviews && Array.isArray(row.approved_reviews) ? row.approved_reviews.slice(0, 2).map((review) => ({
       author: review.author_name,
       rating: review.rating,
       comment: clip(review.comment, 350),
