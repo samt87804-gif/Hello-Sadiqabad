@@ -45,10 +45,10 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL, q
   const effectivePlan = expiry && expiry < Date.now() ? 'free' : row.plan_code;
   const hasPaidFeatures = effectivePlan === 'basic' || effectivePlan === 'premium';
   const queryText = String(query || '').toLocaleLowerCase();
-  const wantsSocial = /social|facebook|instagram|youtube|tiktok/.test(queryText);
-  const wantsPhotos = /photo|photos|image|images|gallery|picture/.test(queryText);
-  const wantsVideos = /video|videos|youtube/.test(queryText);
-  const wantsReviews = /review|reviews|rating|ratings|feedback/.test(queryText);
+  const wantsSocial = /social|facebook|instagram|youtube|tiktok|سوشل|فیس بک|انسٹاگرام/.test(queryText);
+  const wantsPhotos = /photo|photos|image|images|gallery|picture|tasveer|tasveerein|تصویر|تصاویر|فوٹو/.test(queryText);
+  const wantsVideos = /video|videos|youtube|ویڈیو/.test(queryText);
+  const wantsReviews = /review|reviews|rating|ratings|feedback|ریویو|درجہ بندی/.test(queryText);
   const hasCoordinates = row.lat != null && row.lng != null && Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lng));
   const lat = hasCoordinates ? Number(row.lat) : null;
   const lng = hasCoordinates ? Number(row.lng) : null;
@@ -267,12 +267,12 @@ export function selectRelevantPublicKnowledge(context, query) {
   const text = String(query || '');
   const lower = normalizeKnowledgeText(text);
   const filters = resolvePublicDirectoryFilters(text, context.categories || [], context.areas || []);
-  const asksAreas = Boolean(filters.area) || /\b(areas?|localit(?:y|ies)|neighbou?rhoods?|mohallas?|colon(?:y|ies)|towns?)\b/i.test(lower);
-  const asksNews = /\b(news|latest|updates?|announcements?|events?|headlines?)\b|خبریں|تازہ|اعلان/i.test(text);
-  const asksSiteHelp = /\b(website|app|how|use|feature|register|submit|add business|contact|privacy|terms|faq|favorites?|offline|map|search|account)\b/i.test(lower);
-  const asksCivic = /\b(government|authority|official|commissioner|deputy|police|municipal|council|helpline|emergency|rescue|ambulance)\b|سرکاری|پولیس|ریسکیو|ایمرجنسی|ہیلپ لائن/i.test(text);
-  const asksOwner = /\b(owner|owners|business owner|public profile)\b|مالک|مالکان/i.test(text);
-  const asksProducts = /\b(product|products|service|services|price|prices|offer|offers|discount|sale)\b|قیمت|آفر|ڈسکاؤنٹ/i.test(text);
+  const asksAreas = Boolean(filters.area) || /\b(areas?|localit(?:y|ies)|ilaqay|ilakay|ilaka|ilaaqay|neighbou?rhoods?|mohallas?|colon(?:y|ies)|towns?)\b/i.test(lower);
+  const asksNews = /\b(news|latest|updates?|announcements?|events?|headlines?|khabar|khabrain|khabrein|taaza|taza|elaan)\b|خبریں|تازہ|اعلان/i.test(text);
+  const asksSiteHelp = /\b(website|app|how|kaise|kaisay|kese|use|feature|register|submit|add business|contact|privacy|terms|faq|favorites?|offline|map|search|account)\b/i.test(lower);
+  const asksCivic = /\b(government|authority|official|commissioner|deputy|police|municipal|council|helpline|emergency|rescue|ambulance|sarkari|hakoomat|hakumat)\b|سرکاری|حکومت|پولیس|ریسکیو|ایمرجنسی|ہیلپ لائن/i.test(text);
+  const asksOwner = /\b(owner|owners|business owner|public profile|malik|maalik)\b|مالک|مالکان/i.test(text);
+  const asksProducts = /\b(product|products|service|services|price|prices|qeemat|keemat|daam|offer|offers|discount|sale)\b|قیمت|دام|آفر|ڈسکاؤنٹ/i.test(text);
 
   const areaRanked = [...(context.areas || [])].sort((a, b) =>
     relevanceScore(b, text, ['name', 'name_ur', 'slug']) - relevanceScore(a, text, ['name', 'name_ur', 'slug'])
