@@ -453,3 +453,8 @@ Batch 3 — completed (16 November 2026):
 - [ ] Phase 2 custom date range, period comparison, visible filters, metric glossary/freshness and filter-scoped exports.
 - [ ] Phases 3–6: content/conversion funnels, audience/acquisition, alerts and advanced exports/UX.
 - Existing production analytics and legacy counters remain in place; no historical backfill or visitor-level tracking is planned.
+
+- [x] Extract shared analytics collector envelope validation and add automated tests for PII-like fields, event names, UUIDs, engagement/search bounds and content references.
+- [x] Deploy `track-site-analytics` Edge Function v4; CI run `44554526513` passed app build/tests/typecheck and Edge Function Deno check.
+- [x] Reverify live analytics grants/RLS: anon read/execute denied; service_role report execute/delete denied; authenticated report access remains gated by Super Admin / `analytics.view` policies.
+- [ ] Direct HTTP abuse/replay/rate-limit tests, staff permission matrix and browser privacy/lifecycle walkthrough remain open.
