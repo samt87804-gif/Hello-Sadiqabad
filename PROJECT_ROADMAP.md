@@ -485,3 +485,11 @@ Batch 3 — completed (16 November 2026):
 - [x] Sitemap XML is HTTP 200 and contains 397 business URLs; live published table has 397 unique slugs and no duplicate slugs.
 - [ ] Actual WhatsApp/Facebook app previews and LinkedIn crawler check remain pending; social platform image fetch/cache behavior must be observed separately.
 - [ ] Search Console URL inspection and actual Google indexing/performance remain pending.
+
+
+### Mobile business share popup fix — 19 November 2026
+
+- [x] Shared modal layout now uses viewport-safe centered sizing on mobile, constrained flex content, touch-friendly vertical scrolling and bottom safe-area padding.
+- [x] Business share popup is constrained to `max-w-md`; share actions use a compact two-column mobile grid.
+- [x] Changes committed directly to `main` in `6246f7a` and `af3041a`; no database, RLS, storage, business data or sharing destinations changed.
+- [ ] CI, Pages deployment and narrow-device browser verification pending; do not describe the fix as live until those checks pass.
