@@ -2,7 +2,7 @@ export type ChatMessagePart =
   | { type: 'text'; value: string }
   | { type: 'link'; label: string; url: string };
 
-const LINK_PATTERN = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)|(https?:\\/\\/[^\\s<>()]+)/g;
+const LINK_PATTERN = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<>()]+)/g;
 
 export function parseChatMessageContent(content: string): ChatMessagePart[] {
   const parts: ChatMessagePart[] = [];
