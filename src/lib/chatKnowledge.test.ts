@@ -120,8 +120,8 @@ test('business context respects plan-gated public fields and never invents coord
     lng: 69.7,
   });
   assert.equal(premium.whatsapp, '03001234567');
-  assert.equal(premium.social_links.facebook, 'https://facebook.com/sample');
+  assert.equal(premium.social_links!.facebook, 'https://facebook.com/sample');
   assert.equal(premium.gallery_urls.length, 1);
   assert.equal(premium.video_urls.length, 1);
-  assert.match(premium.directions_url, /28.3,69.7/);
+  assert.match(premium.directions_url!, /28.3,69.7/);
 });
