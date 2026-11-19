@@ -10,6 +10,7 @@ import { updatePageSeo } from '../lib/seo';
 import { AppShell } from '../components/layout/AppShell';
 import { Container, Card, Badge } from '../components/ui/Surface';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
+import { ContentShareActions } from '../components/ui/ContentShareActions';
 
 function profileText(lang: string, en?: string | null, ur?: string | null): string {
   return lang === 'ur' ? (ur || en || '') : (en || ur || '');
@@ -44,8 +45,10 @@ export function AuthorityProfiles() {
   useEffect(() => {
     updatePageSeo({
       title: profile ? `${profile.name_en} — Authority Profile` : 'Sadiqabad Authority Profiles',
-      description: profile?.bio_en || 'Profiles of public representatives, union chairmen, association presidents and government officers in Sadiqabad.',
+      description: profile ? (profile.show_bio ? profile.bio_en || profile.bio_ur : profile.show_authority ? profile.authority_en || profile.authority_ur : profile.designation_en || profile.designation_ur) || 'Public authority profile from Sadiqabad.' : 'Profiles of public representatives, union chairmen, association presidents and government officers in Sadiqabad.',
       canonicalPath: slug ? `/authority-profiles/${slug}` : '/authority-profiles',
+      ogType: profile ? 'article' : 'website',
+      image: profile?.photo_url || null,
     });
   }, [profile, slug]);
 
@@ -89,6 +92,7 @@ export function AuthorityProfiles() {
                       <Badge variant="neutral">{lang === 'ur' ? 'صادق آباد' : 'Sadiqabad'}</Badge>
                     </div>
                     <h2 className={presentationMode ? 'text-3xl sm:text-5xl lg:text-6xl font-extrabold text-on-surface leading-tight' : 'text-2xl sm:text-3xl font-extrabold text-on-surface'}>{profileText(lang, profile.name_en, profile.name_ur)}</h2>
+                    <ContentShareActions title={profileText(lang, profile.name_en, profile.name_ur)} description={profile.show_bio ? profileText(lang, profile.bio_en, profile.bio_ur) : profile.show_authority ? profileText(lang, profile.authority_en, profile.authority_ur) : profileText(lang, profile.designation_en, profile.designation_ur)} url={'https://hellosadiqabad.com/authority-profiles/' + profile.slug} lang={lang} />
                     {(profile.designation_en || profile.designation_ur) && <p className={presentationMode ? 'text-xl sm:text-2xl font-bold text-primary' : 'text-base font-bold text-primary'}>{profileText(lang, profile.designation_en, profile.designation_ur)}</p>}
                     {profile.show_organization && (profile.organization_en || profile.organization_ur) && <p className="flex items-center gap-2 text-sm text-on-surface-variant"><Building2 className="w-4 h-4 shrink-0" />{profileText(lang, profile.organization_en, profile.organization_ur)}</p>}
                     {profile.show_authority && (profile.authority_en || profile.authority_ur) && <section className="pt-2"><h3 className="text-sm font-extrabold mb-1">{lang === 'ur' ? 'اختیارات اور ذمہ داریاں' : 'Authority & responsibilities'}</h3><p className={presentationMode ? 'text-base sm:text-lg leading-8 text-on-surface-variant whitespace-pre-line' : 'text-sm leading-7 text-on-surface-variant whitespace-pre-line'}>{profileText(lang, profile.authority_en, profile.authority_ur)}</p></section>}
