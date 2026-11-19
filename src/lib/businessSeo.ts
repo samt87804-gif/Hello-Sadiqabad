@@ -127,11 +127,8 @@ export function buildBusinessJsonLd(
 }
 
 export function serializeBusinessJsonLd(value: Record<string, unknown>): string {
-  return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (character) => ({
-    '<': '\\u003c',
-    '>': '\\u003e',
-    '&': '\\u0026',
-    '\u2028': '\\u2028',
-    '\u2029': '\\u2029',
-  })[character] || character);
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026');
 }
