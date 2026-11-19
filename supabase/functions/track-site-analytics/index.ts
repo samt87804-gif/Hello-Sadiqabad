@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { isValidUuid, readJsonObject } from "../_shared/validation.ts";
+import { readJsonObject } from "../_shared/validation.ts";
+import { validateSiteAnalyticsEnvelope } from "../_shared/siteAnalyticsValidation.ts";
 
 const url = Deno.env.get("SUPABASE_URL");
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -14,12 +15,7 @@ const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ??
   .split(",").map((value) => value.trim()).filter(Boolean);
 
 const siteOrigin = "https://hellosadiqabad.com";
-const eventNames = new Set(["page_view", "engagement", "cta_click", "content_share", "search_summary"]);
 const allowedTopLevel = new Set([
-  "event_id", "event_name", "visitor_id", "session_id", "page_path",
-  "entity_type", "entity_id", "referrer", "utm", "filters",
-  "active_seconds", "results_count",
-]);
 
 function reply(req: Request, data: unknown, status = 200) {
   const origin = req.headers.get("origin") ?? "";
@@ -187,60 +183,13 @@ Deno.serve(async (req: Request) => {
     const body = await readJsonObject(req, 4_096);
     if (!body) return reply(req, { ok: false, error: "Invalid or oversized request body" }, 400);
 
-    if (Object.keys(body).some((key) => !allowedTopLevel.has(key))) {
-      return reply(req, { ok: false, error: "Unsupported analytics fields" }, 400);
-    }
+    const envelope = validateSiteAnalyticsEnvelope(body);
+    if (!envelope.ok) return reply(req, { ok: false, error: envelope.reason }, 400);
 
-    const ip = req.headers.get("cf-connecting-ip");
-    if (!ip || ip.length > 128) return reply(req, { ok: false, error: "Rate limit identity unavailable" }, 429);
-    const rateKey = await hmacHex(`site-analytics-rate:${ip}`);
-    const { data: rateAllowed, error: rateError } = await db.rpc("check_rate_limit", {
-      p_key: `site-analytics:${rateKey}`,
-      p_limit: 1200,
-      p_window_seconds: 3600,
-    });
-    if (rateError || rateAllowed !== true) {
-      return reply(req, { ok: false, error: "Rate limit exceeded" }, 429);
-    }
-
-    const userAgent = req.headers.get("user-agent") ?? "";
-    if (!userAgent || /bot|crawler|spider|facebookexternalhit|twitterbot|slackbot|discordbot|googlebot|bingbot|linkedinbot|pinterestbot|telegrambot|preview/i.test(userAgent)) {
-      return reply(req, { ok: true, ignored: true });
-    }
-
-    if (!isValidUuid(body.event_id) || !isValidUuid(body.visitor_id) || !isValidUuid(body.session_id) ||
-        typeof body.event_name !== "string" || !eventNames.has(body.event_name)) {
-      return reply(req, { ok: false, error: "Invalid event contract" }, 400);
-    }
+    const { eventName, activeSeconds, resultsCount, entityType, entityId } = envelope.value;
 
     const route = classifyPath(body.page_path);
     if (!route) return reply(req, { ok: true, ignored: true });
-
-    const eventName = body.event_name;
-    const activeSeconds = body.active_seconds === undefined ? 0 : body.active_seconds;
-    if (!Number.isInteger(activeSeconds) || Number(activeSeconds) < 0 || Number(activeSeconds) > 30) {
-      return reply(req, { ok: false, error: "Invalid engagement duration" }, 400);
-    }
-    const resultsCount = body.results_count === undefined ? null : body.results_count;
-    if (resultsCount !== null && (!Number.isInteger(resultsCount) || Number(resultsCount) < 0 || Number(resultsCount) > 100_000)) {
-      return reply(req, { ok: false, error: "Invalid search result count" }, 400);
-    }
-    if (eventName === "search_summary" && resultsCount === null) {
-      return reply(req, { ok: false, error: "Invalid search summary" }, 400);
-    }
-    if (eventName === "engagement" && Number(activeSeconds) < 1) {
-      return reply(req, { ok: false, error: "Invalid engagement duration" }, 400);
-    }
-
-    const entityType = typeof body.entity_type === "string" ? body.entity_type : null;
-    const entityId = body.entity_id === undefined || body.entity_id === null ? null : body.entity_id;
-    const allowedEntityTypes = new Set(["business", "news", "authority_profile", "category", "area"]);
-    if (entityType !== null && !allowedEntityTypes.has(entityType)) {
-      return reply(req, { ok: false, error: "Invalid content type" }, 400);
-    }
-    if (entityId !== null && (!isValidUuid(entityId) || !entityType)) {
-      return reply(req, { ok: false, error: "Invalid content reference" }, 400);
-    }
 
     const filters = sanitizeFilters(body.filters, eventName);
     if (eventName === "cta_click" && !filters.cta) return reply(req, { ok: false, error: "Invalid CTA event" }, 400);
