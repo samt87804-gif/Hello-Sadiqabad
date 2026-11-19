@@ -3139,3 +3139,41 @@ export async function upsertNewsArticle(
   if (error) throw error;
   return data as NewsArticleRow;
 }
+
+
+export interface SiteAnalyticsReport {
+  timezone: string;
+  range: { start: string; end: string };
+  summary: {
+    page_views: number;
+    unique_visitors: number;
+    sessions: number;
+    avg_engagement_seconds: number;
+    pages_per_session: number;
+    returning_visitors: number;
+  };
+  daily: Array<{ date: string; page_views: number; cta_clicks: number; content_shares: number; searches: number }>;
+  top_pages: Array<{ page_type: string; page_path: string; views: number }>;
+  channels: Array<{ channel: string; page_views: number }>;
+  devices: Array<{ device_class: string; page_views: number }>;
+  engagement: Array<{ event_name: string; total: number }>;
+  search: { searches: number; zero_result_searches: number };
+}
+
+export async function fetchSiteAnalyticsReport(days: 7 | 30 | 90 = 30): Promise<SiteAnalyticsReport> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Live site analytics is unavailable in demo mode.');
+  const end = new Date();
+  const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+  const { data, error } = await client.rpc('admin_site_analytics_report', {
+    p_start: start.toISOString(),
+    p_end: end.toISOString(),
+    p_page_type: null,
+    p_channel: null,
+    p_device_class: null,
+    p_entity_id: null,
+  });
+  if (error) throw error;
+  if (!data || typeof data !== 'object') throw new Error('Site analytics report returned no data.');
+  return data as SiteAnalyticsReport;
+}
