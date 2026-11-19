@@ -447,3 +447,14 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Production env does NOT yet contain `VITE_SITE_ANALYTICS_ENABLED`; tracking remains disabled until privacy notice/controls and endpoint smoke tests are done.
 - No Durable Object, Live Visitors data or Cloudflare analytics binding yet.
 - Next tasks: add a visible privacy preference/notice that accurately explains analytics, perform request-level collector tests, check CI typecheck/test results, then enable tracking only after the privacy gate. Build DO presence with strict authenticated report read and no visitor-level exposure.
+
+
+## Analytics production activation (19 November 2026)
+
+- Added bilingual opt-out control to `src/pages/StaticPage.tsx` on the public Privacy Policy page. It persists the visitor preference and enforces DNT/GPC.
+- Existing published privacy policy in Supabase says random session identifiers are used and raw visitor IPs are not stored in analytics.
+- Set Cloudflare Pages production variable `VITE_SITE_ANALYTICS_ENABLED=true`; latest deployment for commit `b0fd6d2c203a8fba8a874c7ed4ffa06ed8a600d9` completed build and deploy successfully.
+- Production analytics collection is enabled for visitors who have not opted out and do not send DNT/GPC. End-to-end event verification is still outstanding; do not claim events are verified until a browser smoke test is done.
+- Current edge collector per-IP limit is 1200 requests/hour (HMAC digest only in existing rate_limits table; no raw IP storage).
+- Correct retention schedule: daily at 22:00 UTC, 90-day event/session cleanup.
+- Next: verify collector/browser end-to-end and implement Live Visitors Durable Object with authenticated aggregate-only admin read.
