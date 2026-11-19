@@ -100,3 +100,12 @@ A phase is not complete merely because code compiles. Mark implementation, test-
 - Production aggregate checkpoint recorded in the original implementation plan; counts are events/sessions, not a claim about unique people.
 - Known outstanding work before expansion: browser walkthrough, direct collector abuse tests, full staff authorization matrix, custom range/comparison/filters/content drilldowns and scoped exports.
 - This roadmap does not mark those outstanding tasks complete.
+
+### 19 November 2026 — Phase 0 / P0 first implementation batch
+- [x] Extracted public event-envelope validation into `supabase/functions/_shared/siteAnalyticsValidation.ts`; the live collector now uses the shared validator before processing events.
+- [x] Added automated tests for allowed page views, unknown/PII-like top-level fields, malformed UUIDs, unsupported event names, engagement/search bounds and content-reference validation.
+- [x] GitHub Actions run `44554526513` for commit `f9b2631fbefbd59c6e8dcdae9fbbe16b25686ae6` passed both `build` and `edge-functions` jobs (TypeScript, automated tests, production build and Deno Edge Function checks).
+- [x] Deployed `track-site-analytics` as Supabase Edge Function version 4, status ACTIVE, `verify_jwt=false` retained for public ingestion. The rate-limit and bot-filter checks were preserved.
+- [x] Live ACL verification: anon cannot execute report RPC or SELECT analytics tables; authenticated has table SELECT grants subject to RLS; service_role cannot execute report RPC or DELETE analytics rows/sessions. Both table policies require Super Admin or `analytics.view`.
+- [ ] Direct HTTP request-level abuse tests and the staff/inactive-staff authorization matrix are still pending.
+- [ ] Controlled browser navigation, engagement, opt-out, DNT/GPC and private-route walkthrough is still pending.
