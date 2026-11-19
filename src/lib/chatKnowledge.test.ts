@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveChatKnowledgeQuery, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../../functions/_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveBusinessSearchIntent, resolveChatKnowledgeQuery, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../../functions/_shared/chatKnowledge.js';
 
 test('maps every supplied public knowledge source to canonical visitor links', () => {
   const context = buildPublicKnowledgeContext({
@@ -234,5 +234,35 @@ test('does not carry stale context into a new unrelated question', () => {
       { role: 'user', content: 'Sadiqabad ki latest news batao' },
     ]),
     'Sadiqabad ki latest news batao',
+  );
+});
+
+test('keeps business names searchable when a word overlaps a category synonym', () => {
+  const categories = [
+    { name_en: 'Schools', name_ur: 'اسکولز', slug: 'schools', synonyms: ['school', 'academy'] },
+    { name_en: 'Restaurants', name_ur: 'ریسٹورنٹس', slug: 'restaurants', synonyms: ['restaurant', 'food'] },
+  ];
+  const areas = [
+    { name_en: 'near Kamal medical complex, Sadiqabad', name_ur: 'کمال میڈیکل کمپلیکس کے قریب، صادق آباد', slug: 'near-kamal-medical-complex-sadiqabad' },
+    { name_en: 'Ghalla Mandi', name_ur: 'غلہ منڈی', slug: 'ghalla-mandi' },
+  ];
+
+  assert.deepEqual(
+    resolveBusinessSearchIntent('Al-Buraq School & Academy Sadiqabad ka phone number batao', categories, areas),
+    { category: null, area: null, query: 'Al-Buraq' },
+  );
+});
+
+test('uses category and area filters for explicit directory browsing', () => {
+  const categories = [{ name_en: 'Restaurants', name_ur: 'ریسٹورنٹس', slug: 'restaurants', synonyms: ['restaurant', 'food'] }];
+  const areas = [{ name_en: 'Ghalla Mandi', name_ur: 'غلہ منڈی', slug: 'ghalla-mandi' }];
+
+  assert.deepEqual(
+    resolveBusinessSearchIntent('restaurants in Ghalla Mandi', categories, areas),
+    { category: 'restaurants', area: 'ghalla-mandi', query: null },
+  );
+  assert.deepEqual(
+    resolveBusinessSearchIntent('businesses in Ghalla Mandi', categories, areas),
+    { category: null, area: 'ghalla-mandi', query: null },
   );
 });
