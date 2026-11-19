@@ -234,14 +234,8 @@ Deno.serve(async (req: Request) => {
 
     const entityType = typeof body.entity_type === "string" ? body.entity_type : null;
     const entityId = body.entity_id === undefined || body.entity_id === null ? null : body.entity_id;
-    const entityTypeByPage: Record<string, string> = {
-      business: "business",
-      news: "news",
-      authority_profiles: "authority_profile",
-      category: "category",
-      area: "area",
-    };
-    if (entityType !== null && entityTypeByPage[route.pageType] !== entityType) {
+    const allowedEntityTypes = new Set(["business", "news", "authority_profile", "category", "area"]);
+    if (entityType !== null && !allowedEntityTypes.has(entityType)) {
       return reply(req, { ok: false, error: "Invalid content type" }, 400);
     }
     if (entityId !== null && (!isValidUuid(entityId) || !entityType)) {
