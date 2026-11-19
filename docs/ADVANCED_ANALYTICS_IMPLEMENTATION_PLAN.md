@@ -179,6 +179,17 @@ This document is the execution checklist and source of truth for this feature. E
 - **Geography:** coarse provider-derived country/city only if available without persisting raw IP; otherwise omit.
 - **Retention:** proposed raw-event maximum 90 days, subject to final technical and privacy review. Aggregated data may be retained longer only if it contains no visitor-level identifiers.
 
+### Phase 0 — verified findings (19 November 2026)
+
+- Existing Admin tab is `AnalyticsView` in `src/components/admin/SystemAndTaxonomy.tsx`: it displays directory traffic, top businesses, zero-result searches, business CSV and sitemap download; date presets are 7/30/90 days.
+- `AdminPortal.tsx` gates the tab with Super Admin or `analytics.view`. Database helper `private.staff_has_permission('analytics.view')` checks active staff row, active profile, role `staff`, explicit allow/deny overrides and role-derived defaults. Super Admin is separately checked by `private.is_super_admin()`.
+- Existing `public.admin_analytics(p_days)` is SQL `STABLE`, SECURITY INVOKER (not SECURITY DEFINER), `search_path=''`, and internally filters on Super Admin / `analytics.view`. It aggregates legacy directory stats, businesses, categories, searches and ad counters. Its EXECUTE ACL currently includes `anon`, but the function returns no report object to unauthorized callers and invoker/RLS boundaries remain in force; this will be revisited when adding new report RPCs.
+- Live RLS: `business_events` SELECT requires `private.staff_has_permission('analytics.view')`; `search_logs` SELECT requires Super Admin or `analytics.view`; `daily_business_stats` SELECT permits the business owner or analytics staff. These tables have RLS enabled and no anon SELECT grants. `rate_limits` denies anon/authenticated table access.
+- Live migration ledger contains a distinct sequence of timestamped migrations (starting 2026-11-13 and later owner-specific migrations through 2026-11-18). Repository baseline is not the live ledger; any future schema migration must be additive and carefully aligned.
+- Deployed `track-event` v7: JWT verification OFF; service-role client is server-side; payload capped at 4 KiB; allowlisted business event names and UUID checks; rate limiting 300/hour keyed by caller-provided `session_id`; CORS Origin allowlist; raw search query up to 120 chars stored in `search_logs`. This is a public ingestion endpoint. Caller-controlled session IDs can be rotated to evade the current per-session limit; CORS is not authentication. Do not extend this path for site-wide analytics until a robust edge-level abuse strategy is designed.
+- Supabase Realtime docs confirm private channel authorization is enforced by RLS on `realtime.messages` and private channel mode; the project’s Realtime settings and any live channel policies still need direct verification before using Presence.
+- Supabase Security Advisor currently has one pre-existing leaked-password-protection warning (Free-plan limitation already documented elsewhere). Performance Advisor reports 23 unused-index INFO notices and two existing multiple-permissive-policy warnings on unrelated tables. No advisor finding is attributed to this analytics work.
+
 ## Progress log
 
 | Date | Phase | Change / evidence | Status |
