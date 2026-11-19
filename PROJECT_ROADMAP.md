@@ -444,3 +444,12 @@ Batch 3 — completed (16 November 2026):
 - [x] GitHub Actions run `44551040604`: TypeScript, automated tests, production build and Edge Function type-check all passed.
 - [ ] Manual browser/opt-out walkthrough and direct collector abuse tests remain outstanding.
 - [ ] Custom date range, comparison periods, visible report filters, deeper content drilldowns and expanded CSV exports remain outstanding.
+
+
+## Advanced Analytics Expansion — plan approved to begin (19 November 2026)
+
+- [x] Created [Advanced Analytics Expansion Roadmap](docs/ANALYTICS_EXPANSION_ROADMAP.md): prioritized P0 reliability/security, P1 reporting controls, P2 content/journeys, P3 audience/acquisition, P4 alerts and P5 exports/UX.
+- [ ] Phase 0 re-audit and P0 browser, collector-abuse and authorization verification.
+- [ ] Phase 2 custom date range, period comparison, visible filters, metric glossary/freshness and filter-scoped exports.
+- [ ] Phases 3–6: content/conversion funnels, audience/acquisition, alerts and advanced exports/UX.
+- Existing production analytics and legacy counters remain in place; no historical backfill or visitor-level tracking is planned.
