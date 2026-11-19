@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, BarChart3, Download, Eye, Globe2, MonitorSmartphone, Users } from 'lucide-react';
-import { fetchSiteAnalyticsReport, type SiteAnalyticsReport } from '../../lib/api';
+import { fetchAdminLiveVisitorCount, fetchSiteAnalyticsReport, type SiteAnalyticsReport } from '../../lib/api';
 import { Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
@@ -58,6 +58,7 @@ export function AdvancedAnalyticsPanel() {
   const [report, setReport] = useState<SiteAnalyticsReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [liveVisitors, setLiveVisitors] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +92,21 @@ export function AdvancedAnalyticsPanel() {
     URL.revokeObjectURL(url);
     showToast('Site analytics CSV exported.', 'success');
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () => {
+      void fetchAdminLiveVisitorCount()
+        .then((count) => { if (!cancelled) setLiveVisitors(count); })
+        .catch(() => { if (!cancelled) setLiveVisitors(null); });
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 30_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   const maxDaily = useMemo(() => Math.max(1, ...(report?.daily ?? []).map((d) => d.page_views)), [report]);
   const summary = report?.summary;
@@ -126,7 +142,8 @@ export function AdvancedAnalyticsPanel() {
       )}
       {!loading && report && summary && (
         <>
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
+            <Metric label="Live Visitors" value={liveVisitors === null ? "—" : liveVisitors.toLocaleString()} icon={Activity} detail="Active in last 5 minutes · refreshes every 30s" />
             <Metric label="Page Views" value={summary.page_views.toLocaleString()} icon={Eye} />
             <Metric label="Unique Visitors" value={summary.unique_visitors.toLocaleString()} icon={Users} detail="Pseudonymous, 30-day browser ID" />
             <Metric label="Sessions" value={summary.sessions.toLocaleString()} icon={Activity} />
