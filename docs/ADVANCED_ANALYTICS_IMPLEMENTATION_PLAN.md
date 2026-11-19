@@ -385,3 +385,7 @@ The earlier Durable Object proposal above is superseded for the current Live Vis
 - Deployed Edge Function `track-site-analytics` version 4; status ACTIVE; public-ingestion `verify_jwt=false` retained. The existing HMAC rate limiter and bot filter remain in the deployed handler.
 - Live grants/policies rechecked: anon SELECT on both analytics tables is false; anon report EXECUTE false; authenticated report EXECUTE true and table SELECT grants remain RLS constrained; service_role report EXECUTE false and DELETE on both tables false. Table policies explicitly require Super Admin or `analytics.view`.
 - Still not verified: direct live HTTP abuse/replay/rate-limit tests; staff-without-permission and inactive-staff matrix; controlled browser lifecycle/privacy walkthrough. Do not mark Phase 1/P0 accepted until those gates pass.
+
+- Further P0 hardening: extracted allowlisted public route classification into `supabase/functions/_shared/siteAnalyticsPath.ts`; added tests proving admin, owner, auth, API, unknown, query-bearing, fragment-bearing, external and traversal paths are excluded.
+- CI passed for commit `d6a9a063995d09295268148c51b05f891afa8314`; Edge Function `track-site-analytics` redeployed as version 5 (ACTIVE) with the route helper included.
+- Direct live HTTP abuse/replay/rate-limit tests, staff-denial edge cases and manual browser privacy walkthrough remain outstanding.
