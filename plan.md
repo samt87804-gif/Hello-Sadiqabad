@@ -98,18 +98,6 @@ A potential result could use a title like:
 and a short description drawn from the actual listing. Google decides whether and when to show the page, which title/snippet/image it selects, and its ranking.
 
 
-### Expected search result
-
-For a search such as `[Exact Business Name] Sadiqabad`, Google should be able to discover and understand the matching public URL:
-
-`https://hellosadiqabad.com/business/[business-slug]`
-
-A potential result could use a title like:
-
-`Business Name — Sadiqabad | Hello Sadiqabad`
-
-and a short description drawn from the actual listing. Google decides whether and when to show the page, which title/snippet/image it selects, and its ranking.
-
 ### Implementation scope
 
 1. **Crawler-facing business HTML:** Extend the business Pages Function so Googlebot receives accurate, page-specific title, description, canonical URL, Open Graph/Twitter metadata and JSON-LD without relying only on browser-side React effects.
