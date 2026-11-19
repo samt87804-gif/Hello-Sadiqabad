@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, BarChart3, Download, Eye, Globe2, MonitorSmartphone, Users } from 'lucide-react';
+import { Activity, BarChart3, Download, Eye, MonitorSmartphone, Users } from 'lucide-react';
 import { fetchAdminLiveVisitorCount, fetchSiteAnalyticsReport, type SiteAnalyticsReport } from '../../lib/api';
 import { Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
@@ -80,10 +80,13 @@ export function AdvancedAnalyticsPanel() {
       ['date', 'page_views', 'searches', 'cta_clicks', 'content_shares'],
       ...report.daily.map((item) => [item.date, item.page_views, item.searches, item.cta_clicks, item.content_shares]),
     ];
-    const csv = rows.map((row) => row.map((value) => {
-      const text = String(value);
-      return /[",\\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-    }).join(',')).join('\\n');
+    const csvCell = (value: unknown) => {
+      const raw = String(value ?? '');
+      // Prefix spreadsheet formula starters so exported text cannot execute as a formula.
+      const safe = /^[\\t\\r\\n ]*[=+@-]/.test(raw) ? `'${raw}` : raw;
+      return /[",\\r\\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+    };
+    const csv = rows.map((row) => row.map(csvCell).join(',')).join('\\r\\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const anchor = document.createElement('a');
     anchor.href = url;
