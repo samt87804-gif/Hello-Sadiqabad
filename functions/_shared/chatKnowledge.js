@@ -246,6 +246,136 @@ export function buildPublicKnowledgeContext(rows, siteUrl = DEFAULT_SITE_URL) {
   };
 }
 
+const normalizeKnowledgeText = (value) => String(value || '')
+  .normalize('NFKC')
+  .toLocaleLowerCase()
+  .replace(/[^\\p{L}\\p{N}]+/gu, ' ')
+  .trim();
+
+function relevanceScore(item, query, fields) {
+  const haystack = normalizeKnowledgeText(fields.map((field) => item?.[field]).filter(Boolean).join(' '));
+  const terms = normalizeKnowledgeText(query).split(/\\s+/).filter((term) => term.length > 2);
+  return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
+}
+
+export function selectRelevantPublicKnowledge(context, query) {
+  const text = String(query || '');
+  const lower = normalizeKnowledgeText(text);
+  const filters = resolvePublicDirectoryFilters(text, context.categories || [], context.areas || []);
+  const asksAreas = Boolean(filters.area) || /\\b(areas?|localit(?:y|ies)|neighbou?rhoods?|mohallas?|colon(?:y|ies)|towns?)\\b/i.test(lower);
+  const asksNews = /\\b(news|latest|updates?|announcements?|events?|headlines?)\\b|خبریں|تازہ|اعلان/i.test(text);
+  const asksSiteHelp = /\\b(website|app|how|use|feature|register|submit|add business|contact|privacy|terms|faq|favorites?|offline|map|search|account)\\b/i.test(lower);
+  const asksCivic = /\\b(government|authority|official|commissioner|deputy|police|municipal|council|helpline|emergency|rescue|ambulance)\\b|سرکاری|پولیس|ریسکیو|ایمرجنسی|ہیلپ لائن/i.test(text);
+  const asksOwner = /\\b(owner|owners|business owner|public profile)\\b|مالک|مالکان/i.test(text);
+  const asksProducts = /\\b(product|products|service|services|price|prices|offer|offers|discount|sale)\\b|قیمت|آفر|ڈسکاؤنٹ/i.test(text);
+
+  const areaRanked = [...(context.areas || [])].sort((a, b) =>
+    relevanceScore(b, text, ['name', 'name_ur', 'slug']) - relevanceScore(a, text, ['name', 'name_ur', 'slug'])
+  );
+  let areas;
+  if (filters.area) {
+    const exact = (context.areas || []).filter((item) => item.slug === filters.area);
+    const related = areaRanked.filter((item) => item.slug !== filters.area).slice(0, 8);
+    areas = [...exact, ...related];
+  } else {
+    areas = areaRanked.slice(0, asksAreas ? 50 : 8);
+  }
+
+  const pageRanked = [...(context.website_pages || [])].sort((a, b) =>
+    relevanceScore(b, text, ['title', 'title_ur', 'slug', 'content', 'content_ur']) -
+    relevanceScore(a, text, ['title', 'title_ur', 'slug', 'content', 'content_ur'])
+  );
+  const relevantPages = pageRanked.filter((item) =>
+    relevanceScore(item, text, ['title', 'title_ur', 'slug', 'content', 'content_ur']) > 0
+  ).slice(0, 3);
+  const pages = asksSiteHelp
+    ? (relevantPages.length ? relevantPages : pageRanked.slice(0, 2)).map((item) => ({
+      ...item,
+      content: clip(item.content, 1600),
+      content_ur: clip(item.content_ur, 1600),
+    }))
+    : (context.website_pages || []).map(({ title, title_ur, slug, url }) => ({ title, title_ur, slug, url }));
+
+  const news = (context.news || []).map((item) => asksNews ? ({
+    ...item,
+    content: clip(item.content, 2600),
+    content_ur: clip(item.content_ur, 2600),
+  }) : ({
+    title: item.title,
+    title_ur: item.title_ur,
+    excerpt: clip(item.excerpt, 260),
+    excerpt_ur: clip(item.excerpt_ur, 260),
+    slug: item.slug,
+    published_at: item.published_at,
+    url: item.url,
+  }));
+
+  const localAuthorities = asksCivic
+    ? context.local_authorities
+    : (context.local_authorities || []).map((item) => ({
+      name: item.name,
+      name_ur: item.name_ur,
+      type: item.type,
+      directory_url: item.directory_url,
+    }));
+  const authorityProfiles = asksCivic
+    ? context.authority_profiles
+    : (context.authority_profiles || []).map((item) => ({
+      name: item.name,
+      name_ur: item.name_ur,
+      designation: item.designation,
+      designation_ur: item.designation_ur,
+      url: item.url,
+    }));
+  const publicOwnerProfiles = asksOwner ? context.public_owner_profiles : [];
+  const products = asksProducts ? context.products : (context.products || []).map((item) => ({
+    name: item.name,
+    name_ur: item.name_ur,
+    business: item.business,
+  }));
+  const offers = asksProducts ? context.offers : (context.offers || []).map((item) => ({
+    title: item.title,
+    business: item.business,
+  }));
+  const announcements = asksNews ? context.announcements : (context.announcements || []).map((item) => ({
+    title: item.title,
+    title_ur: item.title_ur,
+    start_date: item.start_date,
+    end_date: item.end_date,
+    directory_url: item.directory_url,
+  }));
+
+  return {
+    categories: context.categories || [],
+    areas,
+    areas_total_count: (context.areas || []).length,
+    government_helplines: context.government_helplines || [],
+    local_authorities: localAuthorities || [],
+    authority_profiles: authorityProfiles || [],
+    public_owner_profiles: publicOwnerProfiles || [],
+    news,
+    website_pages: pages,
+    products: products || [],
+    offers: offers || [],
+    announcements: announcements || [],
+    public_site_information: context.public_site_information || [],
+    source_status: context.source_status || {},
+    knowledge_totals: {
+      categories: (context.categories || []).length,
+      areas: (context.areas || []).length,
+      published_news: (context.news || []).length,
+      published_pages: (context.website_pages || []).length,
+      active_helplines: (context.government_helplines || []).length,
+      active_local_authorities: (context.local_authorities || []).length,
+      active_authority_profiles: (context.authority_profiles || []).length,
+      visible_owner_profiles: (context.public_owner_profiles || []).length,
+      active_products: (context.products || []).length,
+      current_offers: (context.offers || []).length,
+      current_announcements: (context.announcements || []).length,
+    },
+  };
+}
+
 export const PUBLIC_SITE_SETTING_KEYS = [
   'site_name',
   'contact_email',
