@@ -458,3 +458,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Current edge collector per-IP limit is 1200 requests/hour (HMAC digest only in existing rate_limits table; no raw IP storage).
 - Correct retention schedule: daily at 22:00 UTC, 90-day event/session cleanup.
 - Next: verify collector/browser end-to-end and implement Live Visitors Durable Object with authenticated aggregate-only admin read.
+
+
+## Live Visitors implementation (19 November 2026)
+
+- Live Visitors uses Supabase aggregate session heartbeats, not a Durable Object. The earlier DO architecture was superseded after review: existing page engagement events update session `last_seen_at` every 30 seconds while visible; querying a 5-minute window gives an appropriate aggregate live count with fewer moving parts.
+- Migration `20261119150122_site_analytics_live_visitor_count` applied and committed. RPC `public.admin_live_visitor_count()` returns only an integer; SECURITY INVOKER; requires Super Admin or active staff `analytics.view`; anon EXECUTE denied.
+- Added API helper `fetchAdminLiveVisitorCount()` and Live Visitors KPI in `AdvancedAnalyticsPanel.tsx`, polls every 30 seconds.
+- SQL check confirmed anon EXECUTE false/authenticated EXECUTE true; simulated Super Admin RPC read succeeded.
+- No DO namespace or Cloudflare binding is required for this aggregate-only implementation. Consider sharded DO only if observed scale warrants it.
+- Current production deployment after the live visitor code commit is pending verification.
