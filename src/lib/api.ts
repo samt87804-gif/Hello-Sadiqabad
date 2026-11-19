@@ -3177,3 +3177,14 @@ export async function fetchSiteAnalyticsReport(days: 7 | 30 | 90 = 30): Promise<
   if (!data || typeof data !== 'object') throw new Error('Site analytics report returned no data.');
   return data as SiteAnalyticsReport;
 }
+
+
+export async function fetchAdminLiveVisitorCount(): Promise<number> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Live visitor count is unavailable in demo mode.');
+  const { data, error } = await client.rpc('admin_live_visitor_count');
+  if (error) throw error;
+  const count = Number(data);
+  if (!Number.isInteger(count) || count < 0) throw new Error('Live visitor count returned an invalid value.');
+  return count;
+}
