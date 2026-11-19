@@ -221,3 +221,22 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] `/offers` and `/announcements` were rendered with `noindex,follow` while their active datasets are empty. This is intentional; do not remove noindex or request indexing until those pages contain real active content.
 - [x] Confirmed `www.hellosadiqabad.com` remains intentionally unsupported; only `https://hellosadiqabad.com/` is the canonical homepage. Use the apex URL in Search Console.
 - [ ] Search Console's exact rejected URL and detailed Live Test fields have not been supplied. Do not change Cloudflare security controls or remove intentional noindex directives without the URL and the specific failing field. Browser Rendering with a matching user-agent is a useful spot-check, not proof that Google's own fetch from Google's infrastructure succeeded.
+
+
+## Public content sharing and social preview cards — 19 November 2026
+
+### Implemented
+- [x] Add reusable public sharing actions to individual News articles and Authority Profiles: WhatsApp, Facebook, copy-link, and the device's native share sheet where supported. The share actions use each record's canonical detail URL.
+- [x] Add crawler-facing Cloudflare Pages Functions for /news/:slug and /authority-profiles/:slug. They return page-specific HTML metadata to recognized social/search crawlers while ordinary visitors continue through the existing application route.
+- [x] News preview image selection uses the published article's cover image, then its first gallery image, then the existing same-domain site logo fallback.
+- [x] Authority preview image selection uses the active profile's own photo_url, then the existing same-domain site logo fallback.
+- [x] Crawler HTML includes page title, description, canonical URL, Open Graph title/description/type/site name/url/image/image-alt and Twitter large-image card metadata. News publication time is included when present.
+- [x] Metadata lookups use the existing Supabase publishable/anon key and public read policies; News lookup is restricted to published and already-published articles, Authority lookup to active profiles. No schema, RLS, storage policy, existing content, or private data was changed.
+- [x] Authority crawler description now falls back to Urdu authority text when English authority text is empty.
+
+### Production verification — 19 November 2026
+- [x] GitHub main implementation commits: reusable sharing actions 3e1407c4fbd0b79efa00b9acb50601be024d37ad; News sharing 8207342ad7594469616bf0b0d5307b23fd8f2609; Authority sharing/photo metadata 07895a64f11eeace24b8e95491a064e4ac6792bc; crawler HTML and metadata corrections 92a4575603782add5d789151ab20526c9515b52e, 0d439e4195112acd9f487ad1806dc52aceeed880, 086b571caaaecf33c2322ec29c0b14e3bfb7eda1, 835966f41ddc4344a5ee79b3992f86cff653ca81; Urdu fallback 3360b77aa8ec8c10c9c5b55b65c2000458dda3b9.
+- [x] Latest feature-code Pages deployment 891d235d-b897-4207-b4fc-008dcdcf9229 for commit 3360b77aa8ec8c10c9c5b55b65c2000458dda3b9: all queued, initialize, clone, build and deploy stages succeeded.
+- [x] Live Cloudflare Browser Rendering checks with WhatsApp and Facebook crawler user-agent strings returned HTTP 200 and the correct page-specific title, description, canonical URL and image metadata for /news/sadiqabad-ki-pehli-phone-directory and /authority-profiles/farhan-iqbal. News used its article cover image; Farhan Iqbal's profile used its own WebP portrait URL. The latest deployed Urdu-fallback commit was rechecked against the Authority route with the WhatsApp user agent and returned the same correct profile metadata.
+- [ ] Actual WhatsApp app/device share-preview and Facebook Sharing Debugger checks remain pending. Social platforms may cache previous previews; their own cache refresh/debugger may be needed after content changes.
+- [ ] Share-button interaction has been code-inspected but not physically device-tested. The GitHub combined-status endpoint returned no status checks for the feature commit; do not describe this as a separate GitHub Actions CI pass. Cloudflare Pages build/deploy succeeded as recorded above.
