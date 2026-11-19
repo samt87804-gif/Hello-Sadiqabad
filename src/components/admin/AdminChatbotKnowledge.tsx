@@ -72,7 +72,7 @@ export function AdminChatbotKnowledge() {
       if (!response.ok) throw new Error(body?.error || 'Chatbot sync history could not be loaded.');
       setRuns(Array.isArray(body.runs) ? body.runs : []);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Chatbot sync history could not be loaded.', 'error');
+      if (!silent) showToast(error instanceof Error ? error.message : 'Chatbot sync history could not be loaded.', 'error');
     } finally {
       if (!silent) setLoading(false);
     }
