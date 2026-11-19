@@ -62,8 +62,8 @@ function injectBusinessMetadata(html, business) {
   output = setCanonical(output, metadata.canonicalUrl);
 
   const jsonLd = serializeBusinessJsonLd(buildBusinessJsonLd(business, metadata, SITE_ORIGIN));
-  const script = '<script id="hs-business-json-ld" type="application/ld+json">' + jsonLd + '</script>';
-  const existingJsonLd = /<script\b(?=[^>]*\bid=["']hs-business-json-ld["'])[^>]*>[\s\S]*?<\/script>/i;
+  const script = '<script id="hs-json-ld" type="application/ld+json">' + jsonLd + '</script>';
+  const existingJsonLd = /<script\b(?=[^>]*\bid=["']hs-json-ld["'])[^>]*>[\s\S]*?<\/script>/i;
   output = existingJsonLd.test(output)
     ? output.replace(existingJsonLd, script)
     : output.replace(/<\/head>/i, script + '\n</head>');
