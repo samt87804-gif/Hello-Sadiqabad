@@ -205,10 +205,20 @@ For every phase, report separately: implemented, automated tests passed, CI pass
 - [x] GitHub Actions run [44581326800](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/44581326800) passed: TypeScript typecheck, automated tests, production build and Edge Function typecheck.
 - [x] Cloudflare Pages production deployment `cdf061de-6a21-4d32-8deb-ea39013c03eb` for commit `c60031040fd95f41fb3ee35afeb2e55725507a00` completed all stages successfully.
 - [x] Cloudflare Browser Rendering with a Googlebot user agent fetched the existing published page `/business/al-madina-boring-and-sanitary-store-gvz` with HTTP 200. Its HTML contained the business-specific title, description, canonical URL, real cover image URL, Twitter/Open Graph tags, index directive and LocalBusiness/BreadcrumbList JSON-LD.
-- [ ] Confirm post-hydration visible page content with a browser wait-for-selector check; the first crawler HTML capture was taken at DOMContentLoaded and showed the app loading skeleton inside the React root.
-- [ ] Verify WhatsApp/Facebook/LinkedIn crawler responses and actual in-app preview cards, including image retrieval and cache refresh.
-- [ ] Verify the deployed unknown/unpublished slug response and a normal-browser pass-through after deployment.
+- [x] Confirmed post-hydration visible page content with Googlebot Browser Rendering waiting for the business-page h1; it returned the real business name and one shared JSON-LD script.
+- [x] WhatsApp and Facebook crawler requests both returned HTTP 200 with business-specific Open Graph/Twitter title, image, canonical and JSON-LD metadata. LinkedIn crawler and actual WhatsApp/Facebook app previews, image-fetch confirmation by those platforms and cache refresh remain pending.
+- [x] Unknown slug returned HTTP 404/noindex with no business JSON-LD; normal Chrome user agent with JavaScript disabled received the original SPA shell and no crawler-injected business metadata. A direct unpublished-record test remains pending.
 - [ ] Inspect Google Search Console URL Inspection and indexing/performance evidence. No Google indexing or ranking claim is made yet.
-- [ ] Complete remaining discovery/data-readiness phases, including the sitemap sample audit and image/description quality review.
+- [x] Sitemap audit: HTTP 200 XML, 479 total URLs, 397 business URLs; live database has 397 published rows, 397 distinct slugs and zero duplicate slug rows. The example published slug was present. Image/description data-readiness review and owner image guidance remain pending.
 
 The implementation is deployed, but social-platform/device preview verification and Google Search Console observation remain open.
+
+### Latest deployed verification — 19 November 2026
+
+- [x] Final consistency refinement uses the same `buildBusinessSeoMetadata` and `buildBusinessJsonLd` helpers in both the Pages Function and the React BusinessProfile page. Both use the same `hs-json-ld` script ID so hydration replaces rather than duplicates the structured-data block.
+- [x] Latest code commit: `b8f0c6d3bc2135c4cc6991fcbfd6b03fcc4ef056`; GitHub Actions run `44582413841` passed all jobs (TypeScript, automated tests, production build, Edge Function typecheck).
+- [x] Latest Pages production deployment: `73868e0a-b57f-4a60-8294-d9190c23a818`; queued, initialize, clone, build and deploy stages all succeeded.
+- [x] After this final deployment, Googlebot Browser Rendering returned HTTP 200, the real business H1, canonical and OG image metadata, and exactly one `hs-json-ld` script after hydration.
+- [x] WhatsApp and Facebook crawler HTML checks were completed on the preceding successful production deployment; the final code change only unified the JSON-LD script ID and client metadata helper. The final Googlebot hydration check confirms the updated build.
+- [x] The sample cover image object referenced in OG metadata exists in the public `Hello Sadiqabad` bucket with MIME type `image/webp`. Actual third-party social platform image retrieval is not yet confirmed.
+- [ ] Still pending: LinkedIn crawler check; actual WhatsApp/Facebook app/device previews; Search Console URL Inspection and observed indexing; direct image GET by a social platform; 22 listings without photos and descriptions/content quality improvements.
