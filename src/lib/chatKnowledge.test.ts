@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPublicKnowledgeContext } from '../../functions/_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, resolvePublicDirectoryFilters } from '../../functions/_shared/chatKnowledge.js';
 
 test('maps every supplied public knowledge source to canonical visitor links', () => {
   const context = buildPublicKnowledgeContext({
@@ -39,4 +39,20 @@ test('does not synthesize missing public records or profile contact fields', () 
   assert.deepEqual(context.areas, []);
   assert.equal(context.authority_profiles[0].phone, null);
   assert.equal(context.authority_profiles[0].email, null);
+});
+
+test('resolves category and area filters from English, Urdu and synonyms', () => {
+  const filters = resolvePublicDirectoryFilters(
+    'hospitals in Model Town',
+    [{ name_en: 'Healthcare', name_ur: 'صحت', slug: 'healthcare', synonyms: ['hospitals', 'clinics'] }],
+    [{ name_en: 'Model Town', name_ur: 'ماڈل ٹاؤن', slug: 'model-town' }],
+  );
+  assert.deepEqual(filters, { category: 'healthcare', area: 'model-town' });
+
+  const urduFilters = resolvePublicDirectoryFilters(
+    'صحت ماڈل ٹاؤن',
+    [{ name_en: 'Healthcare', name_ur: 'صحت', slug: 'healthcare', synonyms: [] }],
+    [{ name_en: 'Model Town', name_ur: 'ماڈل ٹاؤن', slug: 'model-town' }],
+  );
+  assert.deepEqual(urduFilters, { category: 'healthcare', area: 'model-town' });
 });
