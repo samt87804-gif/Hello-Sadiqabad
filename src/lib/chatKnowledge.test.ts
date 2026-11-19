@@ -188,3 +188,18 @@ test('recognizes Roman Urdu knowledge intents', () => {
   assert.equal(selectRelevantPublicKnowledge(context, 'business kaise add karun?').website_pages[0].content, 'How to add your business');
   assert.equal(selectRelevantPublicKnowledge(context, 'maalik ki public profile').public_owner_profiles[0].display_name, 'Public Owner');
 });
+
+test('separates category intent from locality names sharing generic words', () => {
+  const filters = resolvePublicDirectoryFilters(
+    'restaurants in Ghalla Mandi',
+    [
+      { name_en: 'Ghalla Mandi', slug: 'ghalla-mandi', synonyms: [] },
+      { name_en: 'Restaurants', slug: 'restaurants', synonyms: ['restaurant', 'food'] },
+    ],
+    [
+      { name_en: 'Anaj Mandi', slug: 'anaj-mandi' },
+      { name_en: 'Ghalla Mandi', slug: 'ghalla-mandi' },
+    ],
+  );
+  assert.deepEqual(filters, { category: 'restaurants', area: 'ghalla-mandi' });
+});
