@@ -1,3 +1,5 @@
+import { buildPublicKnowledgeContext, resolvePublicDirectoryFilters } from '../_shared/chatKnowledge.js';
+
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_HISTORY_MESSAGES = 8;
@@ -59,7 +61,6 @@ async function fetchBusinessMatches(env, query, publicContext) {
   if (!baseUrl.startsWith('https://') || !key) return { matches: [], status: 'unavailable', total_count: 0 };
 
   try {
-    const { resolvePublicDirectoryFilters } = await import('../_shared/chatKnowledge.js');
     const filters = resolvePublicDirectoryFilters(searchText, publicContext.categories, publicContext.areas);
     const broadRequest = /\b(all|every|list|show|directory|businesses|business|shops|stores)\b/i.test(searchText);
     const scopedSearch = Boolean(filters.category || filters.area);
@@ -184,7 +185,6 @@ async function fetchPublicContext(env, origin) {
   });
   if (successfulTables === 0) throw new Error('Public directory is temporarily unavailable.');
 
-  const { buildPublicKnowledgeContext } = await import('../_shared/chatKnowledge.js');
   const context = buildPublicKnowledgeContext({ ...rows, source_status: sourceStatus }, 'https://hellosadiqabad.com');
 
   try {
