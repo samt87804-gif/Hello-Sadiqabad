@@ -242,13 +242,27 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] Live Browser Rendering of the normal visitor pages confirmed WhatsApp, Facebook and Copy link controls render on both the News article and Authority profile detail pages. The Authority profile was initially held behind an optional related-business data fetch; that fetch is now independent so the profile and share actions render without waiting for the full linked directory dataset. Latest Pages deployment `e69db7ef-2085-4a61-bbb1-a2607f6d35b5` for commit `2ef92af403aaffea845948ebae1320559bdd5769` succeeded; the Authority page was rechecked after deployment (HTTP 200, profile image and all three share controls present). Physical-device interaction remains pending. The GitHub combined-status endpoint returned no status checks for the feature commit; do not describe this as a separate GitHub Actions CI pass.
 
 
-## Business share cards and per-business Google visibility — proposed (19 November 2026)
+## Business share cards and per-business Google organic Search — owner-approved (19 November 2026)
 
 - Owner requested rich share preview cards for every published business profile, showing the actual business image, name, short description and canonical Hello Sadiqabad URL.
 - Owner also requested that each published business's own Hello Sadiqabad profile page be eligible to appear when people search Google for that business name.
 - Detailed proposal is recorded in the repository root [plan.md](../plan.md).
 - Existing baseline already includes browser-side business SEO metadata and LocalBusiness/BreadcrumbList JSON-LD, all published business slugs in the dynamic sitemap, and deployed crawler metadata handlers for News and Authority Profiles. The Business ShareSheet already shares canonical URLs through WhatsApp, SMS, Facebook, copy-link and native share.
 - Proposed next implementation: add a business-specific Cloudflare Pages crawler handler, improve crawler-facing business SEO/JSON-LD and validate sitemap/internal links. Share previews use platform-fetched Open Graph/Twitter metadata; they are not guaranteed merely by putting a URL in a message.
-- Data readiness warning: the 17 November audit found 222 of 223 published businesses had no logo or cover image. Missing photos will use the Hello Sadiqabad site-logo fallback until real, permission-cleared business images are supplied. No fake/stock images or unapproved Google Maps photos will be assigned.
+- The 17 November audit was a historical snapshot. The 19 November Phase 0 re-audit found 397 published businesses, 375 with at least one image URL and 22 without; missing photos use the Hello Sadiqabad site-logo fallback until genuine, permission-cleared images are supplied. No fake/stock images or unapproved Google Maps photos will be assigned.
 - Google indexing, search appearance, rich results and ranking are not guaranteed. The existing Search Console property and sitemap submission are already in place; future indexing/performance claims must be based on actual Search Console evidence. A directory listing is not the same as the business owner's Google Business Profile.
-- **Approval gate:** proposal has been documented in root `plan.md`; implementation has not started. Wait for the owner's explicit approval before coding or changing production behavior.
+- **Approval:** owner explicitly approved the updated plan on 19 November 2026. Implementation is authorized and recorded below. Scope is organic Google Search results and social URL preview cards only; Google Maps / Google Business Profile setup is excluded.
+
+
+### Implementation checkpoint — 19 November 2026
+
+- [x] Phase 0 re-audit: live business table RLS is enabled and anonymous SELECT is restricted to `status = 'published'`; crawler uses the publishable key and an explicit public-field allowlist.
+- [x] Fresh published count is 397; 375 have at least one business image URL and 22 have neither. The 17 November count of 223 is historical.
+- [x] Existing sitemap already includes published business slugs with updated_at lastmod; robots.txt allows crawling and references the canonical sitemap.
+- [x] Added `functions/business/[slug].js`, shared `src/lib/businessSeo.ts` helpers and automated tests. The handler injects page-specific title, description, canonical, OG/Twitter metadata and LocalBusiness/BreadcrumbList JSON-LD for Google/social crawlers; normal browser requests pass through.
+- [x] Public metadata query is restricted to published rows and selected public fields. No service-role key, schema change, RLS change, storage policy change or business-data mutation was made.
+- [x] CI run 44581326800 passed typecheck, automated tests, production build and Edge Function typecheck.
+- [x] Cloudflare Pages deployment cdf061de-6a21-4d32-8deb-ea39013c03eb succeeded for commit c60031040fd95f41fb3ee35afeb2e55725507a00.
+- [x] Googlebot Browser Rendering check returned HTTP 200 for a live published business and confirmed business-specific HTML metadata, canonical URL, real cover image URL and JSON-LD.
+- [ ] Still pending: post-hydration visible-content verification; WhatsApp/Facebook/LinkedIn crawler and actual app preview tests; unknown/unpublished and normal-browser route tests; Google Search Console URL inspection/indexing evidence.
+- [ ] Do not claim Google indexing, ranking, or a social-platform card display until those respective observations are recorded.
