@@ -244,13 +244,16 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'Chat assistant abhi configure nahi hua. Barah-e-karam baad mein koshish karein.' }, 503);
   }
 
+  let failureStage = 'public_knowledge';
   try {
     const context = await fetchPublicContext(env, new URL(request.url).origin);
+    failureStage = 'business_search';
     const businessSearch = await fetchBusinessMatches(env, messages[messages.length - 1].content, context);
     context.business_search_matches = businessSearch.matches;
     context.source_status.business_search = businessSearch.status;
     context.business_search_total_count = businessSearch.total_count;
     context.business_search_scope = { category: businessSearch.matched_category, area: businessSearch.matched_area };
+    failureStage = 'workers_ai';
     const result = await env.AI.run(
       MODEL,
       { messages: [{ role: 'system', content: buildSystemPrompt(context) }, ...messages], max_tokens: 450, temperature: 0.2 },
@@ -261,9 +264,11 @@ export async function onRequestPost({ request, env }) {
       : typeof result?.choices?.[0]?.message?.content === 'string'
         ? result.choices[0].message.content
         : '';
+    failureStage = 'answer_validation';
     if (!answer.trim()) throw new Error('The AI model returned an empty response.');
     return json({ answer: answer.trim() });
-  } catch {
-    return json({ error: 'Maazrat, abhi jawab hasil nahi ho saka. Thori dair baad dobara koshish karein.' }, 502);
+  } catch (error) {
+    console.error('Hello Sadiqabad chat request failed', failureStage, error instanceof Error ? error.message : String(error));
+    return json({ error: 'Maazrat, abhi jawab hasil nahi ho saka. Thori dair baad dobara koshish karein.', code: failureStage }, 502);
   }
 }
