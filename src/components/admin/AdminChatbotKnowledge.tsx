@@ -60,8 +60,8 @@ export function AdminChatbotKnowledge() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
-  const loadRuns = useCallback(async () => {
-    setLoading(true);
+  const loadRuns = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const token = await getAccessToken();
       const response = await fetch('/api/chat/sync', {
@@ -74,7 +74,7 @@ export function AdminChatbotKnowledge() {
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Chatbot sync history could not be loaded.', 'error');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [showToast]);
 
@@ -83,6 +83,7 @@ export function AdminChatbotKnowledge() {
   const runFullRefresh = async () => {
     if (syncing) return;
     setSyncing(true);
+    const statusPoll = window.setInterval(() => { void loadRuns(true); }, 1800);
     try {
       const token = await getAccessToken();
       const response = await fetch('/api/chat/sync', {
@@ -100,6 +101,7 @@ export function AdminChatbotKnowledge() {
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Chatbot knowledge refresh failed.', 'error');
     } finally {
+      window.clearInterval(statusPoll);
       setSyncing(false);
     }
   };
