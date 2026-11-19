@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { readJsonObject } from "../_shared/validation.ts";
 import { validateSiteAnalyticsEnvelope } from "../_shared/siteAnalyticsValidation.ts";
+import { classifySiteAnalyticsPath } from "../_shared/siteAnalyticsPath.ts";
 
 const url = Deno.env.get("SUPABASE_URL");
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -14,7 +15,6 @@ const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ??
   "https://hellosadiqabad.com,https://www.hellosadiqabad.com,http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173")
   .split(",").map((value) => value.trim()).filter(Boolean);
 
-const siteOrigin = "https://hellosadiqabad.com";
 function reply(req: Request, data: unknown, status = 200) {
   const origin = req.headers.get("origin") ?? "";
   if (origin && !allowedOrigins.includes(origin)) {
@@ -45,52 +45,6 @@ async function hmacHex(value: string): Promise<string> {
   return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-function classifyPath(raw: unknown): { path: string; pageType: string } | null {
-  if (typeof raw !== "string" || raw.length < 1 || raw.length > 512 ||
-      !raw.startsWith("/") || raw.includes("?") || raw.includes("#") ||
-      raw.includes("\\") || raw.includes("\0")) return null;
-
-  let parsed: URL;
-  try {
-    parsed = new URL(raw, siteOrigin);
-  } catch {
-    return null;
-  }
-  if (parsed.origin !== siteOrigin || parsed.pathname !== raw) return null;
-
-  const staticRoutes: Record<string, string> = {
-    "/": "home",
-    "/search": "search",
-    "/categories": "categories",
-    "/offers": "offers",
-    "/map": "map",
-    "/emergency": "emergency",
-    "/government-helplines": "government_helplines",
-    "/local-authorities": "local_authorities",
-    "/authority-profiles": "authority_profiles",
-    "/announcements": "announcements",
-    "/news": "news",
-    "/about": "static",
-    "/advertise": "static",
-    "/contact": "static",
-    "/terms": "static",
-    "/privacy": "static",
-    "/listing-terms": "static",
-    "/refund-policy": "static",
-    "/faq": "static",
-  };
-  if (staticRoutes[raw]) return { path: raw, pageType: staticRoutes[raw] };
-
-  const dynamic: Array<[RegExp, string]> = [
-    [/^\/category\/[a-z0-9]+(?:-[a-z0-9]+)*$/, "category"],
-    [/^\/area\/[a-z0-9]+(?:-[a-z0-9]+)*$/, "area"],
-    [/^\/business\/[a-z0-9]+(?:-[a-z0-9]+)*$/, "business"],
-    [/^\/news\/[a-z0-9]+(?:-[a-z0-9]+)*$/, "news"],
-    [/^\/authority-profiles\/[a-z0-9]+(?:-[a-z0-9]+)*$/, "authority_profiles"],
-  ];
-  const match = dynamic.find(([pattern]) => pattern.test(raw));
-  return match ? { path: raw, pageType: match[1] } : null;
-}
 
 function safeLabel(value: unknown, max = 100): string | null {
   if (typeof value !== "string") return null;
@@ -203,7 +157,7 @@ Deno.serve(async (req: Request) => {
 
     const { eventName, activeSeconds, resultsCount, entityType, entityId } = envelope.value;
 
-    const route = classifyPath(body.page_path);
+    const route = classifySiteAnalyticsPath(body.page_path);
     if (!route) return reply(req, { ok: true, ignored: true });
 
     const filters = sanitizeFilters(body.filters, eventName);
