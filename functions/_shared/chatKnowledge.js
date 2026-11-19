@@ -40,11 +40,11 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
 }
 
 export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL) {
-  const base = siteUrl.replace(/\\/+$/, '');
+  const base = siteUrl.replace(/\/+$/, '');
   const expiry = row.plan_expires_at ? new Date(row.plan_expires_at).getTime() : null;
   const effectivePlan = expiry && expiry < Date.now() ? 'free' : row.plan_code;
   const hasPaidFeatures = effectivePlan === 'basic' || effectivePlan === 'premium';
-  const hasCoordinates = Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lng));
+  const hasCoordinates = row.lat != null && row.lng != null && Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lng));
   const lat = hasCoordinates ? Number(row.lat) : null;
   const lng = hasCoordinates ? Number(row.lng) : null;
 
