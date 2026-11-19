@@ -84,7 +84,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
         p_lat: null,
         p_lng: null,
         p_sort: 'relevance',
-        p_limit: scopedSearch ? 30 : 12,
+        p_limit: 12,
         p_offset: 0,
       }),
     });
@@ -99,7 +99,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
       total_count: Number(rows[0]?.total_count ?? rows.length),
       matched_category: filters.category ? categories.get(filters.category)?.name || filters.category : null,
       matched_area: filters.area ? areas.get(filters.area)?.name || filters.area : null,
-      matches: rows.slice(0, scopedSearch ? 30 : 12).map((row) => mapPublicBusinessSearchResult(row, siteUrl, searchText)),
+      matches: rows.slice(0, 12).map((row) => mapPublicBusinessSearchResult(row, siteUrl, searchText)),
     };
   } catch {
     return { matches: [], status: 'unavailable', total_count: 0 };
