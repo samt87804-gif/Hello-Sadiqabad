@@ -18,7 +18,7 @@ type SyncRun = {
 };
 
 const SOURCE_LABELS: Record<string, string> = {
-  business_directory: 'Published businesses',
+  business_directory: 'Published businesses (live search)',
   categories: 'Categories',
   areas: 'Sadiqabad areas',
   emergency_contacts: 'Emergency contacts / helplines',
@@ -129,7 +129,7 @@ export function AdminChatbotKnowledge() {
           <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <p className="text-xs text-on-surface-variant">
             Sirf published aur public information refresh hoti hai. Private admin/owner records include nahi hote.
-            Yeh retrieval knowledge ko refresh karta hai; AI model ke weights ki fine-tuning nahi karta.
+            Business listings har sawal par live search hoti hain; sync unka published count aur baqi public knowledge cache refresh karta hai. Yeh retrieval knowledge ko refresh karta hai; AI model ke weights ki fine-tuning nahi karta.
           </p>
         </div>
 
