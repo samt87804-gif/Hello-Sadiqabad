@@ -56,3 +56,12 @@ test('resolves category and area filters from English, Urdu and synonyms', () =>
   );
   assert.deepEqual(urduFilters, { category: 'healthcare', area: 'model-town' });
 });
+
+test('matches locality variants with punctuation and the city suffix', () => {
+  const filters = resolvePublicDirectoryFilters(
+    'businesses in Hussainabad',
+    [],
+    [{ name_en: ', Hussainabad, Sadiqabad', name_ur: 'حسین آباد', slug: 'hussainabad-sadiqabad' }],
+  );
+  assert.deepEqual(filters, { category: null, area: 'hussainabad-sadiqabad' });
+});
