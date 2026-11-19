@@ -110,7 +110,7 @@ This document is the execution checklist and source of truth for this feature. E
 - [x] Confirm live legacy analytics table schemas (`business_events`, `daily_business_stats`, `search_logs`, `rate_limits`) and live migration ledger; reviewed RLS/grants/RPC definitions below.
 - [x] Trace application permission source: Admin UI uses `analytics.view`; database helper checks Super Admin or active staff/profile with explicit overrides and role-derived defaults. Verified the existing report RPC and analytics SELECT policies below.
 - [ ] Inspect route/page lifecycle and all meaningful event sources, including SPA navigation and offline mode.
-- [ ] Compare repository migrations with live migration history; do not replay consolidated baseline or assume migration parity.
+- [x] Compare repository migrations with live migration history; mismatch and safe forward-migration path documented below. Do not replay consolidated baseline or assume migration parity.
 - [x] Review current Supabase Realtime authorization docs: private channels require Realtime RLS policies on `realtime.messages` and private channel mode; do not assume topic secrecy is authorization. Current changelog review was performed in the prior audit.
 - [ ] Write the final schema/ingestion/live-presence design and threat model in this plan before database changes. (Initial architecture decision recorded below; detailed contract, migration parity and route lifecycle still open.)
 
@@ -245,3 +245,26 @@ This document is the execution checklist and source of truth for this feature. E
 - Cloudflare documentation explicitly says a Durable Object Worker must be created/deployed separately and then bound to Pages; a Durable Object cannot be created/deployed within a Pages project. The Pages project currently has no such binding. Therefore the previously proposed DO live-presence architecture is technically viable but requires a separately deployed Worker, a namespace, and a Pages binding followed by redeployment. No infrastructure was modified.
 - Cloudflare Pages currently has Functions enabled, but no rate-limiting binding or dedicated analytics endpoint is configured. Zone-level WAF rate-limiting is a separate perimeter control and does not authenticate analytics payloads; do not rely on it as the sole abuse defense. Cloudflare's current docs also note rate-limit counters are data-centre-local, so don't describe WAF limits as a globally exact quota.
 - Phase 0 remains open until the current repository migration directory is reconciled against the live migration ledger, exact current route/page tracking semantics are finalized, and a reviewed deployment sequence for the separate Durable Object Worker + Pages binding is documented. No schema, application code, deployed function or Cloudflare configuration changes have been made.
+
+
+#### Repository migration parity comparison (19 November 2026)
+
+- Read the complete current `supabase/migrations/` directory from GitHub `main` and independently fetched the live Supabase migration ledger.
+- Repository contains 47 SQL migration files; live ledger contains 67 applied versions (latest live version: `20261118091057`).
+- A normalized migration-name comparison found 44 name matches, 23 live ledger entries without a same-named repository migration, and 3 repository files without a same-named live ledger entry. Several semantically similar entries also have different timestamps/names; this is not proof that their SQL is identical.
+- The repository includes a consolidated `20261113220000_hello_sadiqabad_baseline.sql`, while production has 16 individually applied initial migrations from 2026-11-13. The baseline must not be replayed against production.
+- Result: migration history is not in exact parity. The safe path for this feature is a new, uniquely timestamped, additive migration strictly later than the latest live version (`20261118091057`), after reviewing its SQL and live object names. Do not repair historical migration records or replay older migrations as part of this feature.
+- This completes the comparison task, not the historical reconciliation. The mismatch is documented and must remain a deployment constraint.
+
+#### Latest Pages deployment verification (19 November 2026)
+
+- Re-read the Cloudflare Pages project after the previous queued status. Production deployment `bc218d44-5724-4f50-b6c1-83bcbe047aa6`, commit `36fd8af2757d77001192e16b48b1611fa9aab256`, reached deploy stage `success` at `2026-11-19T12:19:48Z`.
+- Current production configuration still has only the existing AI binding and existing Vite environment variables; no analytics Worker/DO binding has been introduced.
+- This verifies deployment of documentation changes only; it does not mean Advanced Analytics is deployed.
+
+#### Phase 0 status clarification
+
+- SPA route inventory and offline/no-queue behavior have been inspected, as have existing search, business-event and ad-impression call paths. The broader event-source inventory (all public CTA and content-share actions) still needs a focused pass, so the route/event-source checklist remains open.
+- Migration comparison is complete as an audit, but repository/live history is not identical. No historical ledger or migration file was rewritten.
+- Phase 0 remains open until the complete event contract and threat model, final DB/report schema, ingestion perimeter and separately deployed Cloudflare Durable Object + Pages binding sequence are specified and reviewed.
+- No analytics schema, application tracker, Edge Function, Worker, Durable Object namespace or Cloudflare binding has been changed.
