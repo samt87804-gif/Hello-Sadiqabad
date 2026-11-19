@@ -62,7 +62,9 @@ Provide public visitors with a reliable, read-only assistant for published Hello
   - `20261119201013_chatbot_knowledge_sync_runs`
   - `20261119201034_chatbot_knowledge_sync_progress`
   - `20261119201234_chatbot_knowledge_sync_admin_select_hardening`
-- SQL privilege check confirmed RLS enabled, no anon SELECT, authenticated SELECT/INSERT/UPDATE granted for RLS-gated operations, and no authenticated DELETE privilege.
+  - `20261119201810_chatbot_knowledge_sync_actor_index`
+  - `20261119201810_chatbot_knowledge_sync_actor_index`
+- SQL privilege check confirmed RLS enabled, no anon SELECT, authenticated SELECT/INSERT/UPDATE granted for RLS-gated operations, and no authenticated DELETE privilege. An index also covers the audit actor foreign key.
 - Security Advisor returned the existing private analytics-token RLS informational finding and the existing Free-plan leaked-password-protection warning; no new public sync-table finding.
 - Preview endpoint smoke test returned HTTP 401 for unauthenticated GET and POST. A positive authenticated full sync has not been run because no Super Admin browser session was available to this implementation session; the owner should run the button once after deployment to verify all live source statuses.
 - Physical mobile/device UI verification remains outstanding.
