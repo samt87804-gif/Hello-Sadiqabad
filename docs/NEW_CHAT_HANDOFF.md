@@ -370,3 +370,13 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Live Cloudflare Browser Rendering with WhatsApp and Facebook crawler user-agent strings returned HTTP 200 and the correct page-specific title, description, canonical URL and image for /news/sadiqabad-ki-pehli-phone-directory and /authority-profiles/farhan-iqbal. The latest Urdu-fallback commit was rechecked on the Authority route with the WhatsApp user agent.
 - Normal-browser rendering now also confirms WhatsApp, Facebook and Copy link controls are present on both the News article and Authority profile pages. The Authority page was adjusted so optional related-business loading no longer blocks the profile/share controls; latest Pages deployment `e69db7ef-2085-4a61-bbb1-a2607f6d35b5` succeeded, and the Authority route returned HTTP 200 with its portrait and all three share controls.
 - Remaining external acceptance: test actual WhatsApp on a phone and Facebook Sharing Debugger; social networks may cache previews. Share buttons are present in the rendered News and Authority pages, but actual taps/sharing have not been physically device-tested. GitHub combined-status returned no checks for the feature commit, so do not report a separate GitHub Actions CI pass. Cloudflare Pages build/deploy is verified.
+
+
+## Advanced Admin Analytics — 19 November 2026
+
+- Owner approved an advanced Admin Analytics dashboard including Live Visitors.
+- Feature plan and checklist: `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`.
+- Plan commit: b95c46279f8a36ae6e80000e65e3943afe62aebc; roadmap update commit: fd2d357558ba5ca92f3c1122d032b88a639ccdf1.
+- Initial audit: legacy `business_events`, `daily_business_stats`, `search_logs`, ad counters and the existing directory Analytics tab are present. The current tab is not full site-wide analytics and does not yet show live visitors/sessions.
+- Deployed `track-event` v7 has JWT verification OFF and uses a server-side service-role client. It has CORS allowlisting and rate limiting keyed by the client-supplied session ID; Origin is not authentication and a caller can choose its own session key. Search logs currently retain raw search text (max 120 chars). These are explicit hardening/privacy design items, not proof of an exploit.
+- No analytics application code, Edge Function or database schema has been changed yet. Phase 0 security review remains in progress; no schema/function deployment until RLS, grants, RPC authorization and migration path are fully verified.
