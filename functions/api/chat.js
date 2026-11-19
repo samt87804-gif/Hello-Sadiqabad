@@ -1,4 +1,4 @@
-import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveChatKnowledgeQuery, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveBusinessSearchIntent, resolveChatKnowledgeQuery, selectRelevantPublicKnowledge } from '../_shared/chatKnowledge.js';
 
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_MESSAGE_LENGTH = 500;
@@ -61,9 +61,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
   if (!baseUrl.startsWith('https://') || !key) return { matches: [], status: 'unavailable', total_count: 0 };
 
   try {
-    const filters = resolvePublicDirectoryFilters(searchText, publicContext.categories, publicContext.areas);
-    const broadRequest = /\b(all|every|list|show|directory|businesses|business|shops|stores)\b/i.test(searchText);
-    const scopedSearch = Boolean(filters.category || filters.area);
+    const intent = resolveBusinessSearchIntent(searchText, publicContext.categories, publicContext.areas);
     const response = await fetch(`${baseUrl}/rest/v1/rpc/search_businesses`, {
       method: 'POST',
       headers: {
@@ -73,9 +71,9 @@ async function fetchBusinessMatches(env, query, publicContext) {
         Accept: 'application/json',
       },
       body: JSON.stringify({
-        p_query: scopedSearch || broadRequest ? null : searchText,
-        p_category: filters.category,
-        p_area: filters.area,
+        p_query: intent.query,
+        p_category: intent.category,
+        p_area: intent.area,
         p_open_now: false,
         p_verified: false,
         p_has_offer: false,
@@ -97,8 +95,8 @@ async function fetchBusinessMatches(env, query, publicContext) {
     return {
       status: 'loaded',
       total_count: Number(rows[0]?.total_count ?? rows.length),
-      matched_category: filters.category ? categories.get(filters.category)?.name || filters.category : null,
-      matched_area: filters.area ? areas.get(filters.area)?.name || filters.area : null,
+      matched_category: intent.category ? categories.get(intent.category)?.name || intent.category : null,
+      matched_area: intent.area ? areas.get(intent.area)?.name || intent.area : null,
       matches: rows.slice(0, 12).map((row) => mapPublicBusinessSearchResult(row, siteUrl, searchText)),
     };
   } catch {
