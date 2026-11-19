@@ -10,29 +10,38 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   const normalize = (value) => String(value || '')
     .normalize('NFKC')
     .toLocaleLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .replace(/[^\\p{L}\\p{N}]+/gu, ' ')
     .trim();
   const normalized = normalize(query);
   if (!normalized) return { category: null, area: null };
 
-  const category = categories.find((item) => {
-    const rawTerms = [item.name_en, item.name_ur, item.slug, ...(Array.isArray(item.synonyms) ? item.synonyms : [])];
-    return rawTerms.some((value) => {
-      const term = normalize(value);
-      return term && normalized.includes(term);
-    });
-  });
+  const locationMatch = normalized.match(/\\b(?:in|near|at|within|around)\\s+(.+)$/i);
+  const categorySearchText = locationMatch ? normalized.slice(0, locationMatch.index).trim() : normalized;
+  const areaSearchText = locationMatch ? locationMatch[1].trim() : normalized;
 
+  const findCategory = (searchText) => categories.find((item) => {
+    const terms = [item.name_en, item.name_ur, item.slug, ...(Array.isArray(item.synonyms) ? item.synonyms : [])]
+      .filter((value) => typeof value === 'string' && value.trim())
+      .map(normalize);
+    return terms.some((term) => term && searchText.includes(term));
+  });
+  const category = findCategory(categorySearchText) || findCategory(normalized);
+
+  const genericAreaTokens = [
+    'sadiqabad', 'town', 'road', 'area', 'block', 'colony', 'street',
+    'mandi', 'market', 'bazaar', 'chowk', 'mohalla', 'city', 'phase',
+    'extension', 'sector', 'near', 'within', 'around',
+  ];
   const area = areas.find((item) => {
     const rawTerms = [item.name_en, item.name_ur, item.slug?.replace(/[-_]+/g, ' ')];
     return rawTerms.some((value) => {
       const term = normalize(value);
       if (!term) return false;
-      if (normalized.includes(term)) return true;
-      const meaningfulTokens = term.split(/\s+/).filter((token) =>
-        token.length >= 5 && !['sadiqabad', 'town', 'road', 'area', 'block', 'colony', 'street'].includes(token)
+      if (areaSearchText.includes(term)) return true;
+      const meaningfulTokens = term.split(/\\s+/).filter((token) =>
+        token.length >= 5 && !genericAreaTokens.includes(token)
       );
-      return meaningfulTokens.some((token) => normalized.includes(token));
+      return meaningfulTokens.some((token) => areaSearchText.includes(token));
     });
   });
 
