@@ -1,7 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bot, LoaderCircle, MessageCircle, Send, Sparkles, X } from 'lucide-react';
+import { Bot, LoaderCircle, MessageCircle, RotateCcw, Send, Sparkles, X } from 'lucide-react';
+import { parseChatMessageContent } from '../../lib/chatMessageLinks';
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
+
+const WELCOME_MESSAGE: ChatMessage = {
+  role: 'assistant',
+  content: 'Assalam-o-Alaikum! Main Hello Sadiqabad ka information assistant hoon. Aap businesses, services, areas, news aur government helplines ke bare mein mujh se pooch sakte hain.',
+};
+
+function renderMessageContent(content: string) {
+  return parseChatMessageContent(content).map((part, index) => part.type === 'link' ? (
+    <a
+      key={index}
+      href={part.url}
+      target=\"_blank\"
+      rel=\"noopener noreferrer\"
+      className=\"text-primary underline underline-offset-2 break-all hover:opacity-80\"
+    >
+      {part.label}
+    </a>
+  ) : <React.Fragment key={index}>{part.value}</React.Fragment>);
+}
 
 const SUGGESTIONS = [
   'Sadiqabad mein hospitals aur clinics?',
@@ -29,7 +49,7 @@ export function ChatbotWidget() {
     }
   }, [isOpen, messages, isSending]);
 
-  async function sendMessage(rawMessage: string) {
+  function startNewChat() {\n    if (isSending) return;\n    setMessages([WELCOME_MESSAGE]);\n    setInput('');\n    inputRef.current?.focus();\n  }\n\n  async function sendMessage(rawMessage: string) {
     const content = rawMessage.trim();
     if (!content || isSending || content.length > 500) return;
 
