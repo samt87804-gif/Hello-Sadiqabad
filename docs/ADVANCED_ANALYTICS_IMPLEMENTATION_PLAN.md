@@ -109,12 +109,12 @@ This document is the execution checklist and source of truth for this feature. E
 - [x] Inspect current `track-event` source, callers, config, CORS, rate limiting, service-role operations and deployed function version (repo + deployed v7).
 - [x] Confirm live legacy analytics table schemas (`business_events`, `daily_business_stats`, `search_logs`, `rate_limits`) and live migration ledger; reviewed RLS/grants/RPC definitions below.
 - [x] Trace application permission source: Admin UI uses `analytics.view`; database helper checks Super Admin or active staff/profile with explicit overrides and role-derived defaults. Verified the existing report RPC and analytics SELECT policies below.
-- [ ] Inspect route/page lifecycle and all meaningful event sources, including SPA navigation and offline mode.
+- [x] Inspect route/page lifecycle and existing event sources, including SPA navigation and offline mode; gaps to instrument are documented below.
 - [x] Compare repository migrations with live migration history; mismatch and safe forward-migration path documented below. Do not replay consolidated baseline or assume migration parity.
 - [x] Review current Supabase Realtime authorization docs: private channels require Realtime RLS policies on `realtime.messages` and private channel mode; do not assume topic secrecy is authorization. Current changelog review was performed in the prior audit.
-- [ ] Write the final schema/ingestion/live-presence design and threat model in this plan before database changes. (Initial architecture decision recorded below; detailed contract, migration parity and route lifecycle still open.)
+- [x] Write the schema/ingestion/live-presence design and threat model in this plan before database changes. The design below is the implementation contract; each production change still requires its own review and tests.
 
-**Gate:** No schema or production function change until the live architecture, permissions, migration path and security design are understood. This gate remains open: route lifecycle/event coverage, repository-vs-live migration parity, final Cloudflare binding availability and detailed event/report contracts still require verification.
+**Gate:** Phase 0 read-only audit and design is complete. The repository/live migration mismatch is understood and documented; no historical migrations will be replayed. The detailed contract below is the basis for Phase 1. This does not authorize an unreviewed production migration or infrastructure change.
 
 ### Phase 1 — Secure ingestion and additive data model
 - [ ] Define event contract, allowlisted event names, public-route policy, schema version and payload limits.
@@ -268,3 +268,60 @@ This document is the execution checklist and source of truth for this feature. E
 - Migration comparison is complete as an audit, but repository/live history is not identical. No historical ledger or migration file was rewritten.
 - Phase 0 remains open until the complete event contract and threat model, final DB/report schema, ingestion perimeter and separately deployed Cloudflare Durable Object + Pages binding sequence are specified and reviewed.
 - No analytics schema, application tracker, Edge Function, Worker, Durable Object namespace or Cloudflare binding has been changed.
+
+
+### Final implementation contract — reviewed 19 November 2026
+
+#### 1. Public route and event contract
+
+- Mount the tracker inside the existing `BrowserRouter` and subscribe to React Router `useLocation()`; record the initial public route once and subsequent pathname changes only. Query/hash-only changes do not create page views.
+- Strictly allow known public route patterns: `/`, `/search`, `/categories`, `/category/:slug`, `/area/:slug`, `/business/:slug`, `/offers`, `/map`, `/emergency`, `/government-helplines`, `/local-authorities`, `/authority-profiles`, `/authority-profiles/:slug`, `/announcements`, `/news`, `/news/:slug`, and approved public static pages.
+- Exclude `/admin/*`, `/owner/*`, all authentication/reset routes, `/add-business` (form may contain contact data), `/favorites` (locally personalized), `/offline-data`, unknown routes, and all internal/API/function routes.
+- Event names are versioned and allowlisted: `page_view`, `engagement`, `cta_click`, `content_share`, and `search_summary`. Existing business/ad counters continue through their existing path; new site-wide events must not increment them again.
+- Existing call sites identified: search tracking in `searchBusinesses`; business profile view and call/WhatsApp/directions/share actions through `trackBusinessEvent`; ad impression/click paths through `trackAdImpression` and `trackBusinessEvent`. News and Authority sharing uses `ContentShareActions` and currently has no analytics instrumentation; these share actions will be added as separate `content_share` events. Helpline/authority/owner-profile contact links are not business events and will not be included in business counters.
+- Search analytics will capture result count and safe category/area/filter metadata. Raw free-text search will not be copied into the new analytics event table. Existing `search_logs` remains unchanged until a separately reviewed redaction/retention change is approved.
+- The tracker does not run while offline and creates no offline event queue. Failed telemetry must never block route rendering or user actions.
+
+#### 2. First-party collection and abuse controls
+
+- Browser calls a same-origin Cloudflare Pages Function under `/api/analytics/*`; it applies strict schema/body-size/route validation and forwards sanitized event data to a new Supabase Edge Function using a server-to-server secret. The secret exists only in server-side Cloudflare/Supabase secret stores, never in browser code or GitHub.
+- New Supabase function has JWT verification disabled only because it authenticates the Pages-to-Supabase shared secret itself; reject missing/invalid secret, malformed JSON, unknown event names, oversized payloads, invalid IDs and unsupported routes. Keep the existing `track-event` function and its deployed v7 contract untouched until separately reconciled.
+- Cloudflare Rate Limiting binding/WAF is a perimeter layer, not authentication or a strict global quota. The dedicated Durable Object applies a strict coordinated quota using a short-lived HMAC digest of the edge request IP signal; raw IP is never stored or written to Supabase. This derived rate-limit key is ephemeral and expires quickly.
+- Never trust client IDs for abuse quotas. Random browser visitor/session IDs are only for aggregate grouping; the server HMACs them before persistence. Client timestamps are ignored; server timestamps are authoritative. Event UUIDs provide deduplication.
+- Normalize pathnames; strip query strings, fragments and arbitrary URL parameters. Keep only allowlisted, length-limited UTM values and referrer host. Never store full referrer URLs.
+- Device/browser/OS are coarse families only. Country may be derived from Cloudflare's country code when present; do not request geolocation or store city, coordinates, IP, fingerprinting attributes, email, name or phone.
+- Search text is not sent to the new event store. The initial search report uses safe filters, category/area and zero-result/result-count trends; any future readable-term reporting requires a separate redaction review.
+
+#### 3. Additive Supabase data model and access
+
+- Create `public.site_analytics_events` and `public.site_analytics_sessions` only after checking live names again immediately before migration. Event rows contain server timestamp, event UUID, allowlisted event name, schema version, HMAC visitor/session digests, normalized page path/type, optional content entity reference, safe referrer/UTM/channel fields, coarse device/browser/OS/country, result-count/filter summary and capped active seconds. No raw browser IDs or personal data.
+- Session rows contain HMAC digests, start/last-seen timestamps, landing/exit path, page-view count, capped active seconds and the same coarse attribution/device dimensions. No visitor-level API or UI list is created.
+- Enable RLS on both exposed tables. Revoke `anon` and authenticated direct writes; allow only server-side service-role ingestion. Authenticated SELECT is restricted by RLS to active Super Admin or `private.staff_has_permission('analytics.view')`; anon receives no table access.
+- Add a narrow `SECURITY INVOKER` reporting RPC for authenticated users, fixed empty `search_path`, date range capped to 90 days, result limits and an explicit authorization check. Grant EXECUTE only to authenticated. Preserve `admin_analytics(p_days)` and all legacy business/search/ad/owner reporting contracts.
+- Initial reporting reads the event/session tables with indexes; add rollups only if measured query performance requires them. Do not fabricate historical page views.
+- `pg_cron` 1.6.4 is installed and active. Existing weekly maintenance job currently removes legacy search logs older than 180 days and business events older than 400 days. Add a separate, independently named weekly cleanup job for new raw analytics rows older than 90 days; do not modify the existing maintenance job. Aggregated visitor-free summaries may be retained only after their exact contents are reviewed.
+
+#### 4. Visitor/session privacy and live presence
+
+- Browser visitor token: cryptographically random, first-party, rotating after a documented 30-day expiry; session token: random, session-scoped with a 30-minute inactivity boundary. Neither contains account/user identity. The server stores only keyed HMAC digests.
+- Live heartbeat runs every 20 seconds only while the page is visible/online. A single Durable Object stores only opaque HMAC session key, approved page type and expiry; stale presence expires after 75 seconds and is removed by a scheduled alarm. No raw path, title, visitor identity or list is returned.
+- Public heartbeat endpoint returns only acknowledgement. Admin endpoint returns aggregate count and counts by approved page type, never per-visitor data. Admin reads require a valid Supabase access token and the same backend `analytics.view` check; hiding the UI is insufficient.
+- Initial live UI may refresh only the compact aggregate endpoint every 15 seconds; do not poll the full report or visitor list. A push/WebSocket channel is deferred until authentication and operational behavior are independently proven.
+- Show the count as approximate and include last-updated/freshness information. Browser tab close, sleep, offline, reconnect and duplicate-tab behavior must be tested.
+- Update the public privacy notice with first-party pseudonymous analytics, purpose, expiry/retention and opt-out behavior before enabling production collection.
+
+#### 5. Cloudflare deployment sequence
+
+- Deploy a separate Worker containing the Durable Object class and namespace migration; verify its script, namespace and internal-only routes.
+- Bind that namespace to the Pages project through Pages Settings → Bindings → Durable Object (or the project's supported Wrangler configuration), then redeploy Pages. Cloudflare confirms a DO cannot be created/deployed inside a Pages project itself.
+- Add server-only Pages secrets and the required binding only after the Worker exists. Never expose internal tokens as `VITE_*` variables.
+- Verify production Pages deployment and same-origin collector routes before enabling frontend tracking. Rollback means disable the frontend tracker/collector route and stop the new cron job; do not delete event data or the namespace during normal rollback.
+
+#### 6. Required test matrix before rollout
+
+- Anon cannot SELECT events/sessions or read live summary; authenticated users without `analytics.view`, inactive staff and unauthorized roles are denied; Super Admin and active explicitly authorized analytics staff succeed.
+- Payload tests: oversized JSON, invalid JSON, unknown event, invalid UUID, unsupported route, private route, query/fragment injection, forged referrer, long UTM, replayed event ID, client timestamp, sensitive search input and malformed visitor/session tokens.
+- Privacy tests: no raw IP, raw visitor/session token, email, name, phone, precise location, full referrer URL/query or free-text search is stored.
+- Frontend tests: initial page view once, SPA pathname change once, query/hash ignored, private/form/offline routes excluded, offline queue absent, tracker network failure non-blocking, engagement foreground-only and capped.
+- Live tests: heartbeat cadence, 75-second stale expiry, alarm cleanup, duplicate tabs, reconnect, browser sleep, admin-only aggregate access and no public visitor-level response.
+- Regression tests: existing `track-event` business/search/ad behavior, `admin_analytics`, owner analytics and all current counters remain unchanged.
