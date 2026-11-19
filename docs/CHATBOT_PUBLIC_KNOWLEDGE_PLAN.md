@@ -13,7 +13,7 @@ Provide public visitors with a reliable, read-only assistant for published Hello
 - Public data is fetched through anonymous/public permissions and the existing public business search RPC. No service-role key or new database privilege is used.
 
 ## Part 1 — Public knowledge retrieval
-<badge>Implemented · CI passed · Deployed</badge>
+**Status:** Implemented · CI passed · Deployed
 
 - Retrieve all active categories and areas, published news/pages, active helplines and authorities, approved public authority/owner profile fields, active products, current offers and announcements, and allowlisted public site settings.
 - Search published businesses per question; send at most 12 matching records and the exact total count.
@@ -24,7 +24,7 @@ Provide public visitors with a reliable, read-only assistant for published Hello
 - Pass source availability and result counts so missing sources are not described as empty directories.
 
 ## Part 2 — Conversational retrieval and visitor experience
-<badge>Implemented · CI passed · Deployed</badge>
+**Status:** Implemented · CI passed · Deployed
 
 - Resolve short follow-up questions against the earlier user query, including examples such as “aur iska address?” and “what about its hours?”.
 - Preserve the original query subject through consecutive follow-ups while keeping unrelated new questions independent.
