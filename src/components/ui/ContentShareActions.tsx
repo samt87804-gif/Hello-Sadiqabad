@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { trackSiteAnalyticsEvent } from '../../lib/siteAnalytics';
 import { Check, Copy, Facebook, MessageCircle, Share2 } from 'lucide-react';
 
 type ShareLanguage = 'en' | 'ur';
@@ -8,11 +9,13 @@ export function ContentShareActions({
   description,
   url,
   lang = 'en',
+  contentType,
 }: {
   title: string;
   description?: string | null;
   url: string;
   lang?: ShareLanguage;
+  contentType?: 'business' | 'news' | 'authority_profile';
 }) {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const shareText = [title, description, url].filter(Boolean).join('\n\n');
@@ -22,6 +25,7 @@ export function ContentShareActions({
     try {
       await navigator.clipboard.writeText(url);
       setCopyState('copied');
+      if (contentType) trackSiteAnalyticsEvent('content_share', { pagePath: window.location.pathname, filters: { content_type: contentType, action: 'copy' } });
     } catch {
       setCopyState('failed');
     }
@@ -31,6 +35,7 @@ export function ContentShareActions({
     if (!navigator.share) return;
     try {
       await navigator.share({ title, text: description || title, url });
+      if (contentType) trackSiteAnalyticsEvent('content_share', { pagePath: window.location.pathname, filters: { content_type: contentType, action: 'native' } });
     } catch {
       // A cancelled native share is not an error.
     }
@@ -42,6 +47,7 @@ export function ContentShareActions({
         href={'https://wa.me/?text=' + encodeURIComponent(shareText)}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => contentType && trackSiteAnalyticsEvent('content_share', { pagePath: window.location.pathname, filters: { content_type: contentType, action: 'whatsapp' } })}
         className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-whatsapp px-3 py-2 text-xs font-bold text-white hover:brightness-95"
       >
         <MessageCircle className="h-4 w-4" />
@@ -51,6 +57,7 @@ export function ContentShareActions({
         href={'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url)}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => contentType && trackSiteAnalyticsEvent('content_share', { pagePath: window.location.pathname, filters: { content_type: contentType, action: 'facebook' } })}
         className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#1877F2] px-3 py-2 text-xs font-bold text-white hover:brightness-95"
       >
         <Facebook className="h-4 w-4" />
