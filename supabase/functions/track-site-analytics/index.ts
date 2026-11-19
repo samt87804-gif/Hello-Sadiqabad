@@ -196,7 +196,7 @@ Deno.serve(async (req: Request) => {
     const rateKey = await hmacHex(`site-analytics-rate:${ip}`);
     const { data: rateAllowed, error: rateError } = await db.rpc("check_rate_limit", {
       p_key: `site-analytics:${rateKey}`,
-      p_limit: 240,
+      p_limit: 1200,
       p_window_seconds: 3600,
     });
     if (rateError || rateAllowed !== true) {
@@ -204,7 +204,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const userAgent = req.headers.get("user-agent") ?? "";
-    if (!userAgent || /bot|crawler|spider|facebookexternalhit|whatsapp|twitterbot|slackbot|discordbot|preview/i.test(userAgent)) {
+    if (!userAgent || /bot|crawler|spider|facebookexternalhit|twitterbot|slackbot|discordbot|googlebot|bingbot|linkedinbot|pinterestbot|telegrambot|preview/i.test(userAgent)) {
       return reply(req, { ok: true, ignored: true });
     }
 
@@ -225,7 +225,7 @@ Deno.serve(async (req: Request) => {
     if (resultsCount !== null && (!Number.isInteger(resultsCount) || Number(resultsCount) < 0 || Number(resultsCount) > 100_000)) {
       return reply(req, { ok: false, error: "Invalid search result count" }, 400);
     }
-    if (eventName === "search_summary" && (route.pageType !== "search" || resultsCount === null)) {
+    if (eventName === "search_summary" && resultsCount === null) {
       return reply(req, { ok: false, error: "Invalid search summary" }, 400);
     }
     if (eventName === "engagement" && Number(activeSeconds) < 1) {
@@ -241,7 +241,10 @@ Deno.serve(async (req: Request) => {
       category: "category",
       area: "area",
     };
-    if (entityId !== null && (!isValidUuid(entityId) || !entityType || entityTypeByPage[route.pageType] !== entityType)) {
+    if (entityType !== null && entityTypeByPage[route.pageType] !== entityType) {
+      return reply(req, { ok: false, error: "Invalid content type" }, 400);
+    }
+    if (entityId !== null && (!isValidUuid(entityId) || !entityType)) {
       return reply(req, { ok: false, error: "Invalid content reference" }, 400);
     }
 
