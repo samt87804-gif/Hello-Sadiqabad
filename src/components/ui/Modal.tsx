@@ -31,7 +31,7 @@ export function Modal({
 
   return (
     <div
-      className="hs-modal-backdrop fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/55 backdrop-blur-xs"
+      className="hs-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/55 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -40,7 +40,7 @@ export function Modal({
       }}
     >
       <div
-        className={`hs-modal-panel w-full ${maxWidthClass} bg-surface-container-lowest text-on-surface rounded-t-3xl sm:rounded-2xl shadow-2xl border border-outline-variant/40 max-h-[90dvh] flex flex-col overflow-hidden`}
+        className={`hs-modal-panel w-full ${maxWidthClass} bg-surface-container-lowest text-on-surface rounded-2xl shadow-2xl border border-outline-variant/40 max-h-[calc(100dvh-1.5rem)] min-h-0 flex flex-col overflow-hidden`}
       >
         <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-outline-variant/30 shrink-0">
           <div className="min-w-0">
@@ -60,7 +60,7 @@ export function Modal({
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-5 overflow-y-auto">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y p-4 sm:p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">{children}</div>
       </div>
     </div>
   );
