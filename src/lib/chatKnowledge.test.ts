@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-// @ts-expect-error The Pages Function shares this plain-JavaScript mapper with its unit tests.
 import { buildPublicKnowledgeContext } from '../../functions/_shared/chatKnowledge.js';
 
 test('maps every supplied public knowledge source to canonical visitor links', () => {
