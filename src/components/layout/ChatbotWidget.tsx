@@ -14,9 +14,9 @@ function renderMessageContent(content: string) {
     <a
       key={index}
       href={part.url}
-      target=\"_blank\"
-      rel=\"noopener noreferrer\"
-      className=\"text-primary underline underline-offset-2 break-all hover:opacity-80\"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline underline-offset-2 break-all hover:opacity-80"
     >
       {part.label}
     </a>
@@ -33,12 +33,7 @@ export function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content: 'Assalam-o-Alaikum! Main Hello Sadiqabad ka information assistant hoon. Aap businesses, services, areas, news aur government helplines ke bare mein mujh se pooch sakte hain.',
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +44,14 @@ export function ChatbotWidget() {
     }
   }, [isOpen, messages, isSending]);
 
-  function startNewChat() {\n    if (isSending) return;\n    setMessages([WELCOME_MESSAGE]);\n    setInput('');\n    inputRef.current?.focus();\n  }\n\n  async function sendMessage(rawMessage: string) {
+  function startNewChat() {
+    if (isSending) return;
+    setMessages([WELCOME_MESSAGE]);
+    setInput('');
+    inputRef.current?.focus();
+  }
+
+  async function sendMessage(rawMessage: string) {
     const content = rawMessage.trim();
     if (!content || isSending || content.length > 500) return;
 
@@ -97,6 +99,16 @@ export function ChatbotWidget() {
             </div>
             <button
               type="button"
+              onClick={startNewChat}
+              disabled={isSending}
+              aria-label="Start a new chat"
+              title="New chat"
+              className="w-9 h-9 rounded-xl hover:bg-white/15 flex items-center justify-center disabled:opacity-40"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
               onClick={() => setIsOpen(false)}
               aria-label="Close assistant"
               className="w-9 h-9 rounded-xl hover:bg-white/15 flex items-center justify-center"
@@ -105,7 +117,7 @@ export function ChatbotWidget() {
             </button>
           </header>
 
-          <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-3 bg-surface">
+          <div ref={scrollRef} role="log" aria-live="polite" aria-relevant="additions" className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-3 bg-surface">
             <div className="flex items-start gap-2">
               <div className="w-7 h-7 shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <Sparkles className="w-4 h-4" />
@@ -124,7 +136,7 @@ export function ChatbotWidget() {
                       : 'bg-surface-container-lowest border border-outline-variant/50 text-on-surface rounded-tl-md'
                   }`}
                 >
-                  {message.content}
+                  {message.role === 'assistant' ? renderMessageContent(message.content) : message.content}
                 </div>
               </div>
             ))}
@@ -147,7 +159,7 @@ export function ChatbotWidget() {
             )}
 
             {isSending && (
-              <div className="flex items-center gap-2 text-xs text-on-surface-variant px-2">
+              <div role="status" className="flex items-center gap-2 text-xs text-on-surface-variant px-2">
                 <LoaderCircle className="w-4 h-4 animate-spin" />
                 Jawab tayyar ho raha hai...
               </div>
