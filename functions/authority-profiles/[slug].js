@@ -109,7 +109,7 @@ export async function onRequest(context) {
     const image = safeImage(profile.photo_url) || FALLBACK_IMAGE;
     const designation = profile.designation_en || profile.designation_ur || '';
     const title = (profile.name_en || profile.name_ur || 'Sadiqabad Authority Profile') + (designation ? ' — ' + designation : '') + ' | Hello Sadiqabad';
-    const visibleDescription = profile.show_bio ? (profile.bio_en || profile.bio_ur) : profile.show_authority ? profile.authority_en : designation;
+    const visibleDescription = profile.show_bio ? (profile.bio_en || profile.bio_ur) : profile.show_authority ? (profile.authority_en || profile.authority_ur) : designation;
     const description = cleanDescription(visibleDescription, 'Public representative and authority profile from Sadiqabad.');
     const canonicalUrl = SITE_ORIGIN + '/authority-profiles/' + profile.slug;
     const html = buildSocialHtml(await page.text(), {
