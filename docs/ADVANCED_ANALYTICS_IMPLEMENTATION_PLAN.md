@@ -377,3 +377,11 @@ The earlier Durable Object proposal above is superseded for the current Live Vis
 - [ ] Add the remaining report filters/custom range/comparison and broaden export coverage.
 - [ ] Verify staff-without-permission and inactive-staff denial in addition to the already-tested anonymous and unrelated-authenticated cases.
 - [ ] Review real Admin dashboard rendering with an authorized owner/staff account and confirm existing legacy analytics screens still work.
+
+### Expansion continuation — collector contract hardening (19 November 2026)
+- Added `supabase/functions/_shared/siteAnalyticsValidation.ts` and switched `track-site-analytics` to the shared envelope validator. It rejects unsupported top-level fields (including accidental email/phone/name/IP/user_id/raw_query fields), invalid UUIDs/event names, invalid engagement/search counts and unsupported content references.
+- Added `src/lib/siteAnalyticsValidation.test.ts` covering the envelope contract and sensitive-field rejection.
+- GitHub CI run `44554526513` passed both jobs for commit `f9b2631fbefbd59c6e8dcdae9fbbe16b25686ae6`: app typecheck/tests/build and Supabase Edge Function Deno check.
+- Deployed Edge Function `track-site-analytics` version 4; status ACTIVE; public-ingestion `verify_jwt=false` retained. The existing HMAC rate limiter and bot filter remain in the deployed handler.
+- Live grants/policies rechecked: anon SELECT on both analytics tables is false; anon report EXECUTE false; authenticated report EXECUTE true and table SELECT grants remain RLS constrained; service_role report EXECUTE false and DELETE on both tables false. Table policies explicitly require Super Admin or `analytics.view`.
+- Still not verified: direct live HTTP abuse/replay/rate-limit tests; staff-without-permission and inactive-staff matrix; controlled browser lifecycle/privacy walkthrough. Do not mark Phase 1/P0 accepted until those gates pass.
