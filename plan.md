@@ -1,6 +1,6 @@
 # Business Share Cards & Google Search Visibility Plan
 
-**Status:** Proposed plan — awaiting explicit owner approval before implementation  
+**Status:** Owner approved on 19 November 2026 — implementation in progress  
 **Prepared:** 19 November 2026  
 **Canonical site:** https://hellosadiqabad.com  
 **Repository:** https://github.com/samt87804-gif/Hello-Sadiqabad  
@@ -175,4 +175,40 @@ For every phase, report separately: implemented, automated tests passed, CI pass
 
 ## 10. Approval gate
 
-**No implementation of these new business share-card / Google-visibility features begins until the owner explicitly approves this plan.** Existing production behavior remains unchanged while approval is pending.
+**Owner approval received on 19 November 2026.** Implementation is authorized. The scope remains organic Google Search website results and social link-preview cards only; Google Maps / Google Business Profile setup is excluded.
+
+
+## 11. Implementation checkpoint — 19 November 2026
+
+### Phase 0 — re-audit completed
+
+- Live `public.businesses` is a table with RLS enabled. The anonymous SELECT policy permits only rows whose `status = 'published'`; the Pages Function uses the Supabase publishable key and that existing public policy.
+- The crawler query is restricted to these approved public fields: business English/Urdu names, slug, English/Urdu descriptions, logo/cover URLs, public address, primary public phone, and the two public SEO override fields. It does not select owner IDs, email, moderation data, private notes, or owner-only fields.
+- Active categories and areas have anonymous SELECT policies limited to active records. The new handler does not need to query those tables.
+- The only configured storage bucket found is `Hello Sadiqabad`, marked public. The storage inventory contained 804 objects under `business-media`; no storage policy or bucket setting was changed.
+- Fresh live count: 397 published businesses; 375 have at least one logo/cover image URL and 22 have neither. The earlier 223-business snapshot in the 17 November audit is historical.
+- Existing `/sitemap.xml` already selects every published business slug and uses `updated_at` as last-modified data. `robots.txt` allows crawling and points to the canonical sitemap. No sitemap or robots change was needed in this first implementation.
+- The sample slug `al-madina-medical-store` supplied in the request was not present in the live published-business table at re-audit time; it is treated as the desired result format, not as a currently confirmed listing. A separate existing published listing was used for live crawler verification.
+- No database schema, business record, RLS policy, storage policy, or storage object was changed.
+
+### Phase 1 — crawler metadata handler implemented
+
+- Added `functions/business/[slug].js` for Google and social crawler requests to `/business/:slug`. Normal browser requests pass through to the existing application unchanged.
+- Added `src/lib/businessSeo.ts` for safe title/description/image selection and LocalBusiness + BreadcrumbList JSON-LD, with tests in `src/lib/businessSeo.test.ts`.
+- Published business lookups use only the public Supabase publishable key and an explicit field allowlist, filtered by both slug and `status = published`.
+- Crawler HTML receives a unique title, description, self-canonical URL, robots directive, Open Graph/Twitter card metadata and JSON-LD. Image selection is real cover first, logo second, and the Hello Sadiqabad logo fallback. Only HTTPS image URLs are accepted.
+- Unknown, malformed and unpublished slugs return 404/noindex to crawlers. Lookup/configuration errors fall back to the ordinary app response; no service-role key or new database permission is used.
+- Structured data deliberately omits unverified geo coordinates, ratings/reviews, hours and other unsupported claims. This does not create a Google Maps listing or Google Business Profile.
+
+### Verification evidence
+
+- [x] GitHub Actions run [44581326800](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/44581326800) passed: TypeScript typecheck, automated tests, production build and Edge Function typecheck.
+- [x] Cloudflare Pages production deployment `cdf061de-6a21-4d32-8deb-ea39013c03eb` for commit `c60031040fd95f41fb3ee35afeb2e55725507a00` completed all stages successfully.
+- [x] Cloudflare Browser Rendering with a Googlebot user agent fetched the existing published page `/business/al-madina-boring-and-sanitary-store-gvz` with HTTP 200. Its HTML contained the business-specific title, description, canonical URL, real cover image URL, Twitter/Open Graph tags, index directive and LocalBusiness/BreadcrumbList JSON-LD.
+- [ ] Confirm post-hydration visible page content with a browser wait-for-selector check; the first crawler HTML capture was taken at DOMContentLoaded and showed the app loading skeleton inside the React root.
+- [ ] Verify WhatsApp/Facebook/LinkedIn crawler responses and actual in-app preview cards, including image retrieval and cache refresh.
+- [ ] Verify the deployed unknown/unpublished slug response and a normal-browser pass-through after deployment.
+- [ ] Inspect Google Search Console URL Inspection and indexing/performance evidence. No Google indexing or ranking claim is made yet.
+- [ ] Complete remaining discovery/data-readiness phases, including the sitemap sample audit and image/description quality review.
+
+The implementation is deployed, but social-platform/device preview verification and Google Search Console observation remain open.
