@@ -107,14 +107,14 @@ This document is the execution checklist and source of truth for this feature. E
 ### Phase 0 — Read-only audit and detailed design
 - [x] Re-read permanent project rules, feature-relevant roadmap/handoff and current Analytics UI.
 - [x] Inspect current `track-event` source, callers, config, CORS, rate limiting, service-role operations and deployed function version (repo + deployed v7).
-- [x] Confirm live legacy analytics table schemas (`business_events`, `daily_business_stats`, `search_logs`, `ads`) and migration ledger; detailed RLS/grants/RPC review remains pending.
-- [x] Trace application permission source: Admin UI uses `analytics.view`; permission model uses `my_permissions()` and staff active state. Database-side report authorization still needs exact policy/RPC verification.
+- [x] Confirm live legacy analytics table schemas (`business_events`, `daily_business_stats`, `search_logs`, `rate_limits`) and live migration ledger; reviewed RLS/grants/RPC definitions below.
+- [x] Trace application permission source: Admin UI uses `analytics.view`; database helper checks Super Admin or active staff/profile with explicit overrides and role-derived defaults. Verified the existing report RPC and analytics SELECT policies below.
 - [ ] Inspect route/page lifecycle and all meaningful event sources, including SPA navigation and offline mode.
 - [ ] Compare repository migrations with live migration history; do not replay consolidated baseline or assume migration parity.
 - [x] Review current Supabase Realtime authorization docs: private channels require Realtime RLS policies on `realtime.messages` and private channel mode; do not assume topic secrecy is authorization. Current changelog review was performed in the prior audit.
-- [ ] Write the final schema/ingestion/live-presence design and threat model in this plan before database changes.
+- [ ] Write the final schema/ingestion/live-presence design and threat model in this plan before database changes. (Initial architecture decision recorded below; detailed contract, migration parity and route lifecycle still open.)
 
-**Gate:** No schema or production function change until the live architecture, permissions, migration path and security design are understood. This gate remains open: legacy analytics RLS/grants/RPC definitions, function callers, and exact active-staff database authorization still require full verification.
+**Gate:** No schema or production function change until the live architecture, permissions, migration path and security design are understood. This gate remains open: route lifecycle/event coverage, repository-vs-live migration parity, final Cloudflare binding availability and detailed event/report contracts still require verification.
 
 ### Phase 1 — Secure ingestion and additive data model
 - [ ] Define event contract, allowlisted event names, public-route policy, schema version and payload limits.
@@ -204,3 +204,34 @@ This document is the execution checklist and source of truth for this feature. E
 - Public-facing visitor counters or public access to Admin analytics.
 - Replacing existing business analytics, ad reporting, owner dashboards or moderation data.
 - Claiming Google Search Console metrics, search-engine rankings or ad-platform conversions unless verified external integrations are added separately.
+
+### Phase 0 — additional verified findings (19 November 2026)
+
+#### Tracking implementation and data flow
+- Repository supabase/functions/track-event/index.ts uses a server-side service-role client, 4 KiB JSON body cap, UUID validation for business/ad references, published-business lookup and allowlisted business event names. The deployed v7 source is older/simpler than repository source: deployed v7 parses unbounded JSON, does not apply the repository UUID checks or published business lookup consistently, and also trusts the supplied session ID as the rate-limit key. This repository/deployment drift must be reconciled before any deployment.
+- Frontend src/lib/api.ts invokes track-event for search and business events. Search tracking sends a normalized term (or category/area/browse fallback), result count and selected filters; business event tracking passes a session ID from the existing offline storage helper. Existing function callers must remain backward-compatible or be migrated atomically.
+- Existing public event ingestion is inherently callable outside the browser. Origin allowlisting only limits browser cross-origin use; it cannot authenticate a caller. A client-supplied session ID is not a trustworthy rate-limit identity.
+- Existing check_rate_limit RPC is SECURITY DEFINER with an empty search_path and atomically increments a server-side counter in rate_limits; however, the key is selected by the caller through the Edge Function. Do not persist raw IP or use client-supplied identifiers as an abuse boundary.
+
+#### Live database authorization and schema
+- business_events columns: id, business_id, event_type, ad_id, session_id, created_at; authenticated SELECT is granted and RLS requires private.staff_has_permission('analytics.view'). No anon SELECT grant.
+- daily_business_stats contains business/date counters for views, calls, WhatsApp, directions and shares; authenticated SELECT is granted and RLS allows the business owner or analytics staff. No anon SELECT grant.
+- search_logs stores raw query, JSONB filters, results_count and created_at; authenticated SELECT is granted and RLS requires Super Admin or analytics.view. No anon SELECT grant.
+- rate_limits stores key/window/count; RLS denies anon/authenticated access. No anon/authenticated table grants were found.
+- private.staff_has_permission('analytics.view') verifies Super Admin or an active staff row joined to an active profile with role staff; explicit permission overrides and all override take precedence, then role-derived listing-manager default applies.
+- Existing public.admin_analytics(p_days) is SQL STABLE, SECURITY INVOKER, empty search_path and returns no JSON report unless Super Admin or analytics.view. It currently aggregates legacy directory/business/search/ad metrics; preserve its contract while adding new report endpoints. Its EXECUTE ACL includes anon and authenticated, but the function's in-query authorization returns no report to unauthorized callers. New report functions should use narrower grants and independently enforce authorization.
+- Realtime publication supabase_realtime exists but has no published tables. No RLS policies exist on realtime.messages in this project. Therefore no current private Supabase Realtime channel authorization path is configured or proven safe for this feature.
+
+#### Migration and deployment implications
+- The live migration ledger currently runs through versions dated 18 November 2026 and is not identical to the repository's consolidated baseline. Future SQL must be a new timestamped additive migration after comparing exact repo migration files with the live ledger. Never replay baseline migrations or use an unreviewed schema push.
+- Repository track-event source and deployed v7 differ materially. Any rollout must first reconcile the deployed endpoint with reviewed repository source and preserve the existing legacy event contracts.
+- The project already uses Cloudflare Pages Functions for same-origin crawler metadata and sitemap responses. A Cloudflare same-origin collection route is a candidate perimeter for request shaping/rate limiting; Cloudflare Workers Rate Limiting bindings are documented as generally available, and Durable Objects support strongly consistent coordination, storage and real-time WebSockets. This is a design candidate, not yet an approved/deployed binding or proof that the current Pages project has the required bindings.
+- Current Supabase Realtime cannot be assumed to support visitor Presence safely: there are no published tables or Realtime RLS policies. Initial preferred design is a Cloudflare Durable Object-backed ephemeral heartbeat/aggregate for live visitor count, with no public visitor-list API; an admin-only authenticated read path will independently verify analytics.view. Confirm Pages/Worker binding support, cost/limits, and Cloudflare deployment configuration before implementation.
+
+#### Threat model — initial
+- Spoofed traffic/events: public clients can call endpoints directly, forge URLs/referrers/UTMs/event types and rotate arbitrary IDs. Mitigate with same-origin edge route, Cloudflare rate limits, strict allowlists/normalization, payload caps, bot filtering, server-side route validation, event deduplication and no trust in caller identity. These controls reduce abuse; public analytics events cannot be made cryptographically authentic without a verified visitor credential.
+- Rate-limit evasion: do not key quotas by caller-supplied session IDs. Use edge-provider request characteristics for transient rate limiting; do not store IP in analytics. Apply additional global and event-specific quotas to reduce distributed abuse.
+- Data exfiltration: never expose raw event/session tables to anon; report APIs independently check active Super Admin / analytics.view; enforce date and row limits; CSV export escapes formula-leading values.
+- Privacy leakage: do not store raw IP, full referrer URLs/query strings, sensitive free-text search terms, precise location, user identity or fingerprinting attributes. Store coarse device/browser/channel and privacy-safe normalized search terms only where justified.
+- Live presence abuse/leakage: ephemeral opaque random presence IDs, no visitor-level payload to public clients, TTL expiry, route allowlist and server-side admin authorization; do not use an unprotected public Supabase Realtime topic.
+- Operational risk: preserve business event writes, ad counters, owner dashboard metrics and existing search reports; deploy backward-compatible changes and verify with controlled test events.
