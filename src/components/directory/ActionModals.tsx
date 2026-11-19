@@ -891,6 +891,7 @@ export function ShareSheet({
     <Modal
       open={open}
       onClose={onClose}
+      maxWidthClass="max-w-md"
       title={lang === 'ur' ? 'کاروبار شیئر کریں' : 'Share Business'}
       titleUr={lang === 'en' ? 'کاروبار شیئر کریں' : undefined}
     >
@@ -898,7 +899,7 @@ export function ShareSheet({
         <div className="p-3 rounded-xl bg-surface-container-low text-xs font-mono break-all text-on-surface-variant" dir="ltr">
           {url}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
           <a
             href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
             target="_blank"
