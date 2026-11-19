@@ -28,7 +28,7 @@ function json(data, status = 200) {
 }
 
 function getConfig(env) {
-  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\\/+$/, '');
+  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !key) throw new Error('Supabase public API is not configured.');
   return { baseUrl, key };
@@ -46,7 +46,7 @@ function isSameOrigin(request, required = false) {
 
 async function authorizeSuperAdmin(request, env) {
   const authorization = request.headers.get('Authorization') || '';
-  const token = authorization.match(/^Bearer\\s+(.+)$/i)?.[1];
+  const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!token) return { ok: false, status: 401, error: 'Admin sign-in required.' };
 
   const { baseUrl, key } = getConfig(env);
