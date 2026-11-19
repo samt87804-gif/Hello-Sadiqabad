@@ -56,7 +56,7 @@ async function fetchBusinessMatches(env, query) {
   if (!searchText) return { matches: [], status: 'not_requested' };
   const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
-  if (!baseUrl.startsWith('https://') || !key) return [];
+  if (!baseUrl.startsWith('https://') || !key) return { matches: [], status: 'unavailable' };
 
   try {
     const response = await fetch(`${baseUrl}/rest/v1/rpc/search_businesses`, {
