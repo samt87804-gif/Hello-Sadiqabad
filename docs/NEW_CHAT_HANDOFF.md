@@ -515,3 +515,15 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - The requested illustrative slug `al-madina-medical-store` did not match a current published business record at audit time; use an existing published slug for live testing.
 - Remaining: wait-for-selector test for visible content after hydration; normal-browser and unknown/unpublished route checks; WhatsApp/Facebook/LinkedIn crawler and actual device preview checks; sitemap spot-check; Search Console URL Inspection and observed indexing. Do not claim Google indexing/ranking yet.
 - No database/schema/RLS/storage changes or business-data mutations were made.
+
+
+### Business SEO/share-card latest verification — 19 November 2026
+
+- Latest deployed code commit: `b8f0c6d3bc2135c4cc6991fcbfd6b03fcc4ef056`; CI run `44582413841` passed all jobs; Pages deployment `73868e0a-b57f-4a60-8294-d9190c23a818` succeeded.
+- Crawler and browser metadata now share `src/lib/businessSeo.ts` and the same JSON-LD script ID. Googlebot post-hydration Browser Rendering showed the real business H1 and exactly one structured-data script.
+- WhatsApp and Facebook crawler responses: HTTP 200 with business-specific title, description, canonical, OG/Twitter image and JSON-LD.
+- Unknown slug: HTTP 404/noindex, no business JSON-LD. Normal Chrome UA with JavaScript disabled: original SPA shell, no crawler-injected business metadata.
+- Sitemap: HTTP 200 XML, 479 URLs total, 397 business URLs. Database: 397 published rows, 397 unique slugs, zero duplicate slug rows.
+- Example cover image object exists in the public storage bucket as WebP; actual app/platform image retrieval is still pending.
+- Owner's illustrative slug `al-madina-medical-store` is not currently in the live published data. Live crawler checks used `al-madina-boring-and-sanitary-store-gvz`.
+- Remaining: LinkedIn crawler test, actual WhatsApp/Facebook app previews and social image fetch/cache confirmation, Search Console URL Inspection and observed Google indexing, and data-readiness improvements for 22 businesses without images.
