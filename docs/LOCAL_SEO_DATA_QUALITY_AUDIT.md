@@ -112,3 +112,25 @@ A review workbook was generated for owner/admin inspection: `Hello_Sadiqabad_Bus
 The live `public.businesses` schema was inspected directly. It has no Google Place ID column. A fresh read-only aggregate query confirmed 223 published businesses, 49 without area, 15 without primary phone, 7 without coordinates, and 33 without address. Therefore, this pass has **not** labelled any source row as a confirmed live duplicate or confirmed new listing. A safe next matching pass needs normalized business name + phone + address + coordinate proximity, with ambiguous cases manually reviewed. Do not add a place-ID column or mutate business rows as part of this report-only task without a separate schema/data plan.
 
 No production records were inserted, updated, merged, renamed, deactivated, or deleted.
+
+
+## 8. Live business image and crawler SEO re-audit — 19 November 2026
+
+A read-only re-audit was completed after the earlier 17 November snapshot. The live counts have changed and supersede the old snapshot for current planning:
+
+| Check | Result |
+|---|---:|
+| Published businesses | 397 |
+| Published businesses with at least one logo/cover image URL | 375 |
+| Published businesses without either logo or cover image URL | 22 |
+
+Additional verified controls:
+- `public.businesses` has RLS enabled. The anonymous SELECT policy is `status = 'published'`.
+- Active categories and areas are publicly readable only while active.
+- The only configured storage bucket is `Hello Sadiqabad`, marked public. The storage inventory contains 804 objects under the `business-media` folder. No bucket setting or storage policy was changed.
+- The dynamic sitemap already reads published business slugs and includes `updated_at` as last-modified metadata. `robots.txt` allows crawling and points to `https://hellosadiqabad.com/sitemap.xml`.
+- The requested example slug `al-madina-medical-store` was not found in the live published-business rows at the time of this check. This does not change the desired search-result format; an existing published listing was used for crawler testing.
+- A Googlebot request through Cloudflare Browser Rendering returned HTTP 200 for a live published business and exposed its page-specific title, description, canonical URL, real cover image URL and LocalBusiness/BreadcrumbList JSON-LD in the HTML.
+- No database/schema/RLS/storage changes or business-record mutations were made during this re-audit.
+
+This is a live snapshot only; counts may change as businesses are published or their media is updated.
