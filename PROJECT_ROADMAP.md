@@ -423,3 +423,9 @@ Batch 3 — completed (16 November 2026):
 - [ ] Add explicit privacy notice/controls and complete request-level collector smoke tests before enabling `VITE_SITE_ANALYTICS_ENABLED` in production. Production tracking remains disabled.
 - [ ] Build Live Visitors Durable Object, authenticated admin read path and Cloudflare binding.
 - [ ] Run/verify GitHub CI typecheck, automated tests and Edge Function typecheck; Pages build success alone is not a substitute.
+
+
+- [x] Add public bilingual analytics opt-out control on `/privacy`, with local preference persistence and Do Not Track / Global Privacy Control enforcement.
+- [x] Enable production `VITE_SITE_ANALYTICS_ENABLED=true` only after the privacy control was deployed; Cloudflare Pages deployment for commit `b0fd6d2c203a8fba8a874c7ed4ffa06ed8a600d9` succeeded.
+- [ ] Verify a real browser page view and opt-out behavior end-to-end; request-level collector smoke tests remain outstanding.
+- [ ] Implement Live Visitors Durable Object and protected aggregate read path.
