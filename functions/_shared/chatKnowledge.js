@@ -39,6 +39,73 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   return { category: category?.slug || null, area: area?.slug || null };
 }
 
+export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL) {
+  const base = siteUrl.replace(/\\/+$/, '');
+  const expiry = row.plan_expires_at ? new Date(row.plan_expires_at).getTime() : null;
+  const effectivePlan = expiry && expiry < Date.now() ? 'free' : row.plan_code;
+  const hasPaidFeatures = effectivePlan === 'basic' || effectivePlan === 'premium';
+  const hasCoordinates = Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lng));
+  const lat = hasCoordinates ? Number(row.lat) : null;
+  const lng = hasCoordinates ? Number(row.lng) : null;
+
+  return {
+    name: row.name_en,
+    name_ur: row.name_ur,
+    slug: row.slug,
+    url: pageUrl(base, `business/${encodeURIComponent(row.slug)}`),
+    category: row.category?.name_en || null,
+    category_ur: row.category?.name_ur || null,
+    category_url: row.category?.slug ? pageUrl(base, `category/${encodeURIComponent(row.category.slug)}`) : null,
+    area: row.area?.name_en || null,
+    area_ur: row.area?.name_ur || null,
+    area_url: row.area?.slug ? pageUrl(base, `area/${encodeURIComponent(row.area.slug)}`) : null,
+    address: clip(row.address_en, 250),
+    address_ur: clip(row.address_ur, 250),
+    landmark: clip(row.landmark_en, 180),
+    landmark_ur: clip(row.landmark_ur, 180),
+    latitude: lat,
+    longitude: lng,
+    directions_url: hasCoordinates ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : null,
+    phone: row.phone_primary,
+    alternate_phone: row.phone_secondary,
+    whatsapp: hasPaidFeatures ? row.whatsapp : null,
+    website: row.website_url,
+    social_links: hasPaidFeatures ? {
+      facebook: row.facebook_url,
+      instagram: row.instagram_url,
+      youtube: row.youtube_url,
+      tiktok: row.tiktok_url,
+    } : null,
+    logo_url: row.logo_url,
+    cover_url: row.cover_url,
+    gallery_urls: hasPaidFeatures && Array.isArray(row.gallery_urls) ? row.gallery_urls.slice(0, 6) : [],
+    video_urls: hasPaidFeatures && Array.isArray(row.video_urls) ? row.video_urls.slice(0, 4) : [],
+    description: clip(row.description_en, 700),
+    description_ur: clip(row.description_ur, 700),
+    services: Array.isArray(row.services_en) ? row.services_en.slice(0, 20) : [],
+    services_ur: Array.isArray(row.services_ur) ? row.services_ur.slice(0, 20) : [],
+    opening_hours: row.opening_hours,
+    open_24_hours: row.is_open_24h,
+    home_delivery: row.home_delivery,
+    established_year: row.established_year,
+    verified: row.is_verified,
+    rating: row.rating_avg,
+    rating_count: row.rating_count,
+    active_offers: Array.isArray(row.active_offers) ? row.active_offers.slice(0, 3).map((offer) => ({
+      title: offer.title,
+      description: clip(offer.description, 240),
+      valid_from: offer.valid_from,
+      valid_to: offer.valid_to,
+    })) : [],
+    approved_reviews: Array.isArray(row.approved_reviews) ? row.approved_reviews.slice(0, 3).map((review) => ({
+      author: review.author_name,
+      rating: review.rating,
+      comment: clip(review.comment, 350),
+      created_at: review.created_at,
+    })) : [],
+  };
+}
+
 export function buildPublicKnowledgeContext(rows, siteUrl = DEFAULT_SITE_URL) {
   const base = siteUrl.replace(/\/+$/, '');
   const categoriesById = new Map((rows.categories || []).map((item) => [item.id, item]));
