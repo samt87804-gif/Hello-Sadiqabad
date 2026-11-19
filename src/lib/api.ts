@@ -41,6 +41,7 @@ import {
 } from './offlineStorage';
 import { effectivePlanCode, filterAndRankBusinesses, matchesDirectoryBusinessQuery, normalizeDirectorySearchText } from './searchFilter';
 import { normalizePkPhone } from './phone';
+import { trackSiteAnalyticsEvent } from './siteAnalytics';
 import { daysUntil, slugify } from './format';
 import { attachPublicOffers, getPakistanDateString, isOfferCurrentlyValid } from './offers';
 import { parseSiteSettings, type SiteSettingsMap } from './siteSettings';
@@ -690,6 +691,22 @@ export async function searchBusinesses(
         offer:Boolean(filters.offer),rating:filters.rating??null,delivery:Boolean(filters.delivery),sort:filters.sort??'relevance'},
       results_count:combined.length,session_id:getOrCreateSessionId()}}).catch(() => {});
   }
+  if(options.logSearch!==false){
+    trackSiteAnalyticsEvent('search_summary',{
+      pagePath:typeof window!=='undefined'?window.location.pathname:'/search',
+      resultsCount:combined.length,
+      filters:{
+        category:filters.category??undefined,
+        area:filters.area??undefined,
+        open:Boolean(filters.open),
+        verified:Boolean(filters.verified),
+        offer:Boolean(filters.offer),
+        rating:filters.rating??undefined,
+        delivery:Boolean(filters.delivery),
+        sort:filters.sort??'relevance',
+      },
+    });
+  }
   if(filters.sort==='rating')combined.sort((a,b)=>(b.rating_avg??0)-(a.rating_avg??0));
   else if(filters.sort==='nearest'&&options.userCoords){
     const distance=(business:BusinessPublicView)=>{
@@ -976,6 +993,21 @@ export async function trackBusinessEvent(
   const client = getSupabaseClient();
   const isDatabaseBusinessId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId);
   if (client && isDatabaseBusinessId) {
+    if (eventType === 'call' || eventType === 'whatsapp' || eventType === 'directions' || eventType === 'website') {
+      trackSiteAnalyticsEvent('cta_click',{
+        pagePath:typeof window!=='undefined'?window.location.pathname:'/business',
+        entityType:'business',
+        entityId:businessId,
+        filters:{cta:eventType},
+      });
+    } else if (eventType === 'share') {
+      trackSiteAnalyticsEvent('content_share',{
+        pagePath:typeof window!=='undefined'?window.location.pathname:'/business',
+        entityType:'business',
+        entityId:businessId,
+        filters:{content_type:'business',action:'native'},
+      });
+    }
     await client.functions.invoke('track-event', { body: { business_id: businessId, event_type: eventType, ad_id: adId, session_id: sessionId } });
     return;
   }
