@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolvePublicDirectoryFilters } from '../../functions/_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../../functions/_shared/chatKnowledge.js';
 
 test('maps every supplied public knowledge source to canonical visitor links', () => {
   const context = buildPublicKnowledgeContext({
@@ -118,10 +118,49 @@ test('business context respects plan-gated public fields and never invents coord
     video_urls: ['https://youtube.com/watch?v=sample'],
     lat: 28.3,
     lng: 69.7,
-  });
+  }, 'https://hellosadiqabad.com', 'show social links, photos and videos');
   assert.equal(premium.whatsapp, '03001234567');
   assert.equal(premium.social_links!.facebook, 'https://facebook.com/sample');
   assert.equal(premium.gallery_urls.length, 1);
   assert.equal(premium.video_urls.length, 1);
   assert.match(premium.directions_url!, /28.3,69.7/);
+});
+
+test('selects compact knowledge for ordinary questions and expands only the requested sources', () => {
+  const context = {
+    categories: [{ name: 'Restaurants', slug: 'restaurants' }],
+    areas: Array.from({ length: 80 }, (_, i) => ({ name: `Area ${i}`, slug: `area-${i}`, url: `https://hellosadiqabad.com/area/area-${i}` })),
+    government_helplines: [{ name: 'Rescue', phone: '1122' }],
+    local_authorities: [{ name: 'Municipal Office', type: 'government', directory_url: '/local-authorities', phone: '123' }],
+    authority_profiles: [{ name: 'Public Official', designation: 'Officer', url: '/authority-profiles/public-official', biography: 'Long bio' }],
+    public_owner_profiles: [{ display_name: 'Public Owner', email: 'public@example.com' }],
+    news: [{ title: 'Road update', excerpt: 'A road update', content: 'Full article body', url: '/news/road-update' }],
+    website_pages: [{ title: 'FAQ', slug: 'faq', url: '/faq', content: 'Detailed FAQ answer', content_ur: 'اردو جواب' }],
+    products: [{ name: 'Product', business: { name: 'Shop' }, description: 'Long product description' }],
+    offers: [{ title: 'Offer', description: 'Long offer description' }],
+    announcements: [{ title: 'Notice', body: 'Long notice body' }],
+    public_site_information: [{ key: 'site_name', value: 'Hello Sadiqabad' }],
+    source_status: { categories: 'loaded' },
+  };
+
+  const general = selectRelevantPublicKnowledge(context, 'Assalam o Alaikum');
+  assert.equal(general.areas.length, 8);
+  assert.equal(general.areas_total_count, 80);
+  assert.equal(general.website_pages[0].content, undefined);
+  assert.equal(general.news[0].content, undefined);
+  assert.deepEqual(general.public_owner_profiles, []);
+  assert.equal(general.local_authorities[0].phone, undefined);
+
+  const areaList = selectRelevantPublicKnowledge(context, 'List all areas of Sadiqabad');
+  assert.equal(areaList.areas.length, 80);
+  assert.equal(areaList.areas[0].name, 'Area 0');
+
+  const newsQuery = selectRelevantPublicKnowledge(context, 'Latest news kya hai?');
+  assert.equal(newsQuery.news[0].content, 'Full article body');
+
+  const siteQuery = selectRelevantPublicKnowledge(context, 'How do I use the FAQ on the website?');
+  assert.equal(siteQuery.website_pages[0].content, 'Detailed FAQ answer');
+
+  const ownerQuery = selectRelevantPublicKnowledge(context, 'Public owner profile details');
+  assert.equal(ownerQuery.public_owner_profiles[0].display_name, 'Public Owner');
 });
