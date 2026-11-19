@@ -162,7 +162,7 @@ export function AdminChatbotKnowledge() {
             <div className="h-2 rounded-full bg-surface-container-high overflow-hidden">
               <div className="h-full w-1/2 bg-primary rounded-full animate-pulse" />
             </div>
-            <p className="text-[11px] text-on-surface-variant">Is process ke dauran page band na karein.</p>
+            <p className="text-[11px] text-on-surface-variant">{latestRun?.status === 'running' ? `Progress: ${latestRun.progress_percent || 0}% · ${latestRun.stage}` : 'Progress update hasil ho raha hai…'} Is process ke dauran page band na karein.</p>
           </div>
         )}
 
