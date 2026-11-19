@@ -7,6 +7,7 @@ import { bilingualText, formatDateShort } from '../lib/format';
 import { updatePageSeo } from '../lib/seo';
 import type { NewsArticleRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
+import { ContentShareActions } from '../components/ui/ContentShareActions';
 import { EmptyState, Skeleton } from '../components/ui/Feedback';
 import { Button } from '../components/ui/Button';
 import { Card, Container, SectionHeading } from '../components/ui/Surface';
@@ -56,7 +57,7 @@ export function News() {
         description: result.article?.excerpt_en ?? 'Latest verified local news and community updates from Sadiqabad.',
         canonicalPath: slug ? '/news/' + slug : '/news',
         ogType: result.article ? 'article' : 'website',
-        image: result.article?.cover_image_url || null,
+        image: result.article?.cover_image_url || result.article?.image_urls?.[0] || null,
         jsonLd: result.article
           ? {
               '@context': 'https://schema.org',
@@ -65,7 +66,7 @@ export function News() {
               description: result.article.excerpt_en,
               datePublished: result.article.published_at,
               dateModified: result.article.updated_at || result.article.published_at,
-              ...(result.article.cover_image_url ? { image: [result.article.cover_image_url] } : {}),
+              ...((result.article.cover_image_url || result.article.image_urls?.[0]) ? { image: [result.article.cover_image_url || result.article.image_urls?.[0]] } : {}),
               mainEntityOfPage: {
                 '@type': 'WebPage',
                 '@id': 'https://hellosadiqabad.com/news/' + result.article.slug,
@@ -152,6 +153,7 @@ export function News() {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface">{bilingualText(lang, article.title_en, article.title_ur)}</h1>
               {lang === 'en' && urduHints && <p className="font-urdu text-lg text-primary leading-[2]" dir="rtl">{article.title_ur}</p>}
               <p className="text-base text-on-surface-variant leading-relaxed">{bilingualText(lang, article.excerpt_en, article.excerpt_ur)}</p>
+              <ContentShareActions title={bilingualText(lang, article.title_en, article.title_ur)} description={bilingualText(lang, article.excerpt_en, article.excerpt_ur)} url={'https://hellosadiqabad.com/news/' + article.slug} lang={lang} />
             </div>
             <div className="prose prose-sm max-w-none text-on-surface whitespace-pre-line leading-8" dir={lang === 'ur' ? 'rtl' : 'ltr'}>
               {bilingualText(lang, article.content_en, article.content_ur)}
