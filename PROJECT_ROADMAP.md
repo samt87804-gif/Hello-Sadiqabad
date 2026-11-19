@@ -411,3 +411,15 @@ Batch 3 — completed (16 November 2026):
 - [ ] Implement Live Visitors Durable Object and secure Pages binding; current Cloudflare Pages project has no analytics binding.
 - [ ] Build advanced Analytics UI and verify production data only after privacy notice and opt-out behavior are in place.
 - Advisor status after migrations: one pre-existing leaked-password-protection security warning; 30 unused-index INFO notices (7 new analytics indexes are expected to be unused before ingestion); two pre-existing multiple-permissive-policy warnings on unrelated tables.
+
+
+### Advanced Analytics — frontend and Admin report (19 November 2026)
+
+- [x] Add privacy-aware client tracker with Do Not Track / Global Privacy Control and local opt-out checks, 30-day pseudonymous visitor IDs, 30-minute sessions and offline skip.
+- [x] Add global SPA page-view and active-time engagement events without blocking navigation.
+- [x] Add privacy-filtered search summary and business CTA/share event integration while retaining existing legacy event tracking.
+- [x] Add authorized report API and Admin Analytics dashboard: summary metrics, daily views, top pages, channels, devices, search/engagement summary and CSV export.
+- [x] Verify Cloudflare Pages production deployment for commit `9c04c3c5780ea5a84dc91338044c159e695c0ceb`: build and deploy stages succeeded.
+- [ ] Add explicit privacy notice/controls and complete request-level collector smoke tests before enabling `VITE_SITE_ANALYTICS_ENABLED` in production. Production tracking remains disabled.
+- [ ] Build Live Visitors Durable Object, authenticated admin read path and Cloudflare binding.
+- [ ] Run/verify GitHub CI typecheck, automated tests and Edge Function typecheck; Pages build success alone is not a substitute.
