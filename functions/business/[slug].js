@@ -86,7 +86,7 @@ function notFoundResponse() {
 async function fetchPublishedBusiness(env, slug) {
   const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const publicKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
-  if (!baseUrl.startsWith('https://') || !publicKey) return null;
+  if (!baseUrl.startsWith('https://') || !publicKey) throw new Error('Public Supabase configuration is unavailable.');
 
   const url = new URL(baseUrl + '/rest/v1/businesses');
   url.searchParams.set(
