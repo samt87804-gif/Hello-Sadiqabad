@@ -7,6 +7,7 @@ import { RequireAuth, RequireRole } from './lib/permissions';
 import { ToastProvider } from './components/ui/Toast';
 import { ErrorBoundary, Skeleton } from './components/ui/Feedback';
 import { restoreAdminRecoverySnapshot, saveAdminRecoverySnapshot } from './lib/adminRecovery';
+import { canTrackSiteAnalytics, classifySiteAnalyticsPath, trackSiteAnalyticsEvent } from './lib/siteAnalytics';
 
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const Search = lazy(() => import('./pages/Search').then((m) => ({ default: m.Search })));
@@ -293,6 +294,57 @@ function RouteIndexing() {
   return null;
 }
 
+
+function SiteAnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const pagePath = location.pathname;
+    if (!classifySiteAnalyticsPath(pagePath) || !canTrackSiteAnalytics()) return;
+
+    trackSiteAnalyticsEvent('page_view', { pagePath });
+    let activeSeconds = 0;
+    let lastTick = Date.now();
+
+    const flushActiveTime = () => {
+      if (activeSeconds > 0) {
+        trackSiteAnalyticsEvent('engagement', {
+          pagePath,
+          activeSeconds: Math.min(30, activeSeconds),
+        });
+        activeSeconds = 0;
+      }
+    };
+
+    const timer = window.setInterval(() => {
+      const now = Date.now();
+      const elapsed = Math.min(5, Math.max(0, Math.floor((now - lastTick) / 1000)));
+      lastTick = now;
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        activeSeconds += elapsed;
+        if (activeSeconds >= 30) {
+          trackSiteAnalyticsEvent('engagement', { pagePath, activeSeconds: 30 });
+          activeSeconds -= 30;
+        }
+      }
+    }, 5_000);
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushActiveTime();
+      lastTick = Date.now();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      flushActiveTime();
+    };
+  }, [location.pathname]);
+
+  return null;
+}
+
 function PageLoader() {
   return (
     <div className="min-h-screen bg-surface p-6 max-w-5xl mx-auto space-y-4">
@@ -316,6 +368,7 @@ export default function App() {
               <BrowserRouter>
                 <AdminScrollPersistence />
                 <RouteIndexing />
+                <SiteAnalyticsTracker />
                 <ChunkLoadNotice />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
