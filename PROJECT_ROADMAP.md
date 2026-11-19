@@ -381,3 +381,7 @@ Batch 3 — completed (16 November 2026):
 - [x] Verified Supabase Realtime has no published tables and no realtime.messages RLS policies; it is not currently a safe/proven visitor Presence transport.
 - [x] Recorded initial threat model and preferred Cloudflare Durable Object ephemeral presence design in the feature plan. No application code, DB schema, Edge Function or Cloudflare config changed.
 - [ ] Phase 0 remains open: inspect SPA route lifecycle/offline exclusions, compare repo migrations with live ledger, verify Cloudflare Pages/Worker binding availability and finalize event/report contracts before schema/function work.
+
+- [x] Further Phase 0 audit: mapped React Router public/private route groups, confirmed offline mode skips telemetry and creates no event queue, and identified search/business/ad event call sites.
+- [x] Read-only Cloudflare audit: production Pages project has only the existing AI binding, one unrelated Worker script and zero Durable Object namespaces. Cloudflare docs require a separate DO Worker deployment and binding to Pages; this infrastructure has not been changed.
+- [ ] Analytics Phase 0 remains open pending repo migration tree parity and reviewed separate DO Worker/Pages binding deployment sequence.
