@@ -105,16 +105,16 @@ This document is the execution checklist and source of truth for this feature. E
 ## Execution phases and acceptance gates
 
 ### Phase 0 — Read-only audit and detailed design
-- [ ] Re-read permanent project rules, feature-relevant roadmap/handoff and current Analytics UI.
-- [ ] Inspect current `track-event` source, callers, config, CORS, rate limiting, service-role operations and deployed function version.
-- [ ] Inspect all current analytics tables, indexes, RLS policies, grants, views, RPCs and relevant triggers in live Supabase and repository migrations.
-- [ ] Trace the exact active-staff permission check and ensure inactive staff cannot read analytics.
+- [x] Re-read permanent project rules, feature-relevant roadmap/handoff and current Analytics UI.
+- [x] Inspect current `track-event` source, callers, config, CORS, rate limiting, service-role operations and deployed function version (repo + deployed v7).
+- [x] Confirm live legacy analytics table schemas (`business_events`, `daily_business_stats`, `search_logs`, `ads`) and migration ledger; detailed RLS/grants/RPC review remains pending.
+- [x] Trace application permission source: Admin UI uses `analytics.view`; permission model uses `my_permissions()` and staff active state. Database-side report authorization still needs exact policy/RPC verification.
 - [ ] Inspect route/page lifecycle and all meaningful event sources, including SPA navigation and offline mode.
 - [ ] Compare repository migrations with live migration history; do not replay consolidated baseline or assume migration parity.
-- [ ] Review current Supabase Realtime private-channel authorization/Presence docs and current changelog for relevant breaking changes.
+- [x] Review current Supabase Realtime authorization docs: private channels require Realtime RLS policies on `realtime.messages` and private channel mode; do not assume topic secrecy is authorization. Current changelog review was performed in the prior audit.
 - [ ] Write the final schema/ingestion/live-presence design and threat model in this plan before database changes.
 
-**Gate:** No schema or production function change until the live architecture, permissions, migration path and security design are understood.
+**Gate:** No schema or production function change until the live architecture, permissions, migration path and security design are understood. This gate remains open: legacy analytics RLS/grants/RPC definitions, function callers, and exact active-staff database authorization still require full verification.
 
 ### Phase 1 — Secure ingestion and additive data model
 - [ ] Define event contract, allowlisted event names, public-route policy, schema version and payload limits.
@@ -184,7 +184,7 @@ This document is the execution checklist and source of truth for this feature. E
 | Date | Phase | Change / evidence | Status |
 |---|---|---|---|
 | 19 Nov 2026 | Approval | Owner approved advanced Admin Analytics scope including Live Visitors. No analytics code or database changes made at approval. | Approved |
-| 19 Nov 2026 | Phase 0 | Re-read permanent project rules and existing domain/security master plan. Initial repository search confirms existing `track-event`, `analytics.view` permission and legacy analytics sources; full live schema/function/RLS audit is in progress. | In progress |
+| 19 Nov 2026 | Phase 0 | Read project rules, existing master plan, roadmap and handoff; confirmed current Admin Analytics UI and live legacy analytics schemas/migration ledger. Deployed `track-event` v7 uses service-role server-side, JWT verification OFF, CORS allowlist and rate limiting keyed by client-provided session ID (300/hour); CORS is not authentication and the session key is caller-controlled. Search terms are stored in `search_logs` as raw text up to 120 chars. Current Admin Analytics shows legacy directory traffic, top businesses, zero-result searches and CSV; it does not yet provide site-wide page views, visitor/session reports or live visitors. Realtime private-channel docs reviewed. Detailed legacy RLS/grants/RPC and authorization checks remain open; no analytics code/database changes. | In progress |
 
 ## Explicit non-goals unless separately approved
 
