@@ -5,6 +5,25 @@ const clip = (value, limit = 1200) =>
 
 const pageUrl = (base, path) => `${base.replace(/\/+$/, '')}/${String(path || '').replace(/^\/+/, '')}`;
 
+
+export function resolvePublicDirectoryFilters(query, categories = [], areas = []) {
+  const normalized = String(query || '').normalize('NFKC').toLocaleLowerCase().trim();
+  if (!normalized) return { category: null, area: null };
+  const category = categories.find((item) => {
+    const terms = [item.name_en, item.name_ur, item.slug, ...(Array.isArray(item.synonyms) ? item.synonyms : [])]
+      .filter((value) => typeof value === 'string' && value.trim())
+      .map((value) => value.normalize('NFKC').toLocaleLowerCase().trim());
+    return terms.some((term) => normalized.includes(term));
+  });
+  const area = areas.find((item) => {
+    const terms = [item.name_en, item.name_ur, item.slug]
+      .filter((value) => typeof value === 'string' && value.trim())
+      .map((value) => value.normalize('NFKC').toLocaleLowerCase().trim());
+    return terms.some((term) => normalized.includes(term));
+  });
+  return { category: category?.slug || null, area: area?.slug || null };
+}
+
 export function buildPublicKnowledgeContext(rows, siteUrl = DEFAULT_SITE_URL) {
   const base = siteUrl.replace(/\/+$/, '');
   const categoriesById = new Map((rows.categories || []).map((item) => [item.id, item]));
