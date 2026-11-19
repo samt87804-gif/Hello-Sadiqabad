@@ -354,3 +354,26 @@ The earlier Durable Object proposal above is superseded for the current Live Vis
 - The RPC returns no session hashes, visitor hashes, paths or visitor-level rows. Anonymous EXECUTE is false; authenticated EXECUTE is true and RLS/auth checks remain in force. A simulated active Super Admin successfully read the aggregate count.
 - Added `fetchAdminLiveVisitorCount()` and a Live Visitors KPI in the Admin panel, refreshed every 30 seconds. A Durable Object/Cloudflare binding is not required for this aggregate-only implementation.
 - Revisit DO or sharded ephemeral presence only if measured traffic/load demonstrates that the existing Supabase aggregate query needs a dedicated coordination layer. Do not build a visitor list.
+
+
+## Verified production status — 19 November 2026 (supersedes earlier pending checkpoints)
+
+- Latest frontend change: CSV export now neutralizes spreadsheet formula starters (=, +, -, @ and leading control/space characters), quotes CSV delimiters/newlines, and uses CRLF row endings. Unused icon import removed.
+- Latest code commit: `d7c007660890badfa9e30a13510ec8eedaa00b21`.
+- Latest Cloudflare Pages production deployment: `534fa136-8ad7-4af8-8f22-752028b5973a`; commit matches the code commit above; build/deploy stage reports success. Production alias: https://hellosadiqabad.com.
+- GitHub Actions CI run `44551040604` completed successfully for the same commit. Both `build` and `edge-functions` jobs passed; TypeScript type-check, automated tests, production build, and Supabase Edge Function type-check all passed.
+- Production database confirms analytics ingestion is active: 53 events in the last 24 hours, comprising 20 `page_view`, 19 `search_summary`, and 14 `engagement` events; 3 sessions seen in the last 24 hours and 1 session active within the five-minute live window. These are aggregate counts only; no visitor-level data was inspected or exposed.
+- Live visitor aggregate RPC remains permission-guarded and returns only an integer. No Durable Object or public visitor-presence channel is used.
+- Privacy control remains available on `/privacy`; production flag `VITE_SITE_ANALYTICS_ENABLED=true` is enabled. Browser opt-out/DNT/GPC logic is implemented. Production event ingestion is verified by aggregate DB counts, but a controlled manual browser/opt-out walkthrough and direct request-level abuse test are still outstanding.
+- Current dashboard scope is 7/30/90-day presets, summary KPIs, daily page-view trend, top pages, channels, devices, search/engagement summaries, live count and daily-series CSV export. The broader feature wishlist is not complete: custom date ranges, comparison periods, visible page/source/device/entity filters, page-level content drilldowns, richer browser/OS/geography reporting, and full-table/filter-scoped exports remain open.
+- Security verification already completed: anon cannot read analytics tables or execute admin report/live-count RPCs; report access is gated by Super Admin / active staff `analytics.view`; service_role cannot delete analytics rows or execute report RPC. Existing `track-event` v7 and legacy analytics remain unchanged.
+- Correct collector rate limit is 1200 requests/hour per HMAC-derived edge-IP key; raw IP is not persisted. Event payload cap is 4 KiB. Raw analytics retention is independent and daily at 22:00 UTC for 90-day cleanup.
+- Advisor caveats remain: one pre-existing leaked-password-protection warning; unused-index notices include the new analytics indexes before sustained traffic; unrelated pre-existing permissive-policy notices remain.
+- Do not interpret the production aggregate counts as historical backfill or unique human users. Metrics are approximate pseudonymous browser/session counts and start only after activation/consent rules.
+
+### Remaining acceptance work
+- [ ] Controlled browser walkthrough: public page navigation, SPA route change, foreground engagement heartbeat, privacy opt-out, DNT/GPC and excluded private routes.
+- [ ] Direct request-level collector tests: malformed/oversized payload, disallowed event/path, sensitive field, bot, duplicate/replay and rate-limit behavior.
+- [ ] Add the remaining report filters/custom range/comparison and broaden export coverage.
+- [ ] Verify staff-without-permission and inactive-staff denial in addition to the already-tested anonymous and unrelated-authenticated cases.
+- [ ] Review real Admin dashboard rendering with an authorized owner/staff account and confirm existing legacy analytics screens still work.
