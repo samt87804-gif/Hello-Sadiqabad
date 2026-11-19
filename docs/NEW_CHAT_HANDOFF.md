@@ -538,3 +538,21 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Main commits: `6246f7a68c4ac18dd5bbeb7c90d8b300f04bd287` and `af3041a1d00297dec9ad3324afbf6eed179ae15a`.
 - No database, RLS, storage, business data, share destinations or unrelated workflows changed.
 - CI, Pages deployment and actual narrow-device/browser verification are pending. Keep status as implemented, not deployed/verified, until evidence is available.
+
+
+## Latest verified update — Chatbot Knowledge Part 1 (20 November 2026)
+
+Part 1 is implemented and deployed. Existing `/api/chat` and Cloudflare Workers AI remain in place.
+
+- Shared knowledge mapper/retrieval: `functions/_shared/chatKnowledge.js`.
+- Chat endpoint integration: `functions/api/chat.js`.
+- Unit tests: `src/lib/chatKnowledge.test.ts`.
+- Public data snapshot: 397 published businesses, 22 categories, 314 areas, 2 news articles, 8 static pages, 12 helplines, 9 local authorities, 2 authority profiles, 3 visibility-approved owner profiles, 1 active product, 0 current offers, 0 current announcements.
+- All published businesses are query-searchable through the public RPC; up to 12 matching businesses and the total count are supplied per request. Category/locality filtering supports English, Urdu, and Roman Urdu.
+- Other public sources are cached for up to 180 seconds. Page/news/civic/business details are selected by query to stay within the Workers AI model's 24,000-token context limit.
+- Public/private boundaries: only published/active public data, database-redacted owner profile fields, and plan-visible business fields are passed to the model. No owner IDs, admin/private data, or unpublished records.
+- GitHub Actions run `44600639970` passed. Cloudflare Pages deployment `5e76f8d4-1e2c-4702-ad38-fb3ba70a33e4` succeeded.
+- Production `/api/chat` returned HTTP 200 with real business links; area-list and news smoke tests also passed.
+- No DB migration or data writes were made.
+
+**Not done in Part 1:** Admin manual “Train / Sync Latest Information” button, persistent vector index/training corpus, and model fine-tuning. Do not assume these are implemented; wait for the user's next instruction before starting another phase.

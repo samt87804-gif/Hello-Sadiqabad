@@ -493,3 +493,53 @@ Batch 3 — completed (16 November 2026):
 - [x] Business share popup is constrained to `max-w-md`; share actions use a compact two-column mobile grid.
 - [x] Changes committed directly to `main` in `6246f7a` and `af3041a`; no database, RLS, storage, business data or sharing destinations changed.
 - [ ] CI, Pages deployment and narrow-device browser verification pending; do not describe the fix as live until those checks pass.
+
+
+## Chatbot public knowledge collection — Part 1
+**Status: implemented, CI passed, and deployed to production (20 November 2026).**
+
+The existing `/api/chat` and Cloudflare Workers AI integration have been retained. This part adds a public-data knowledge collection and query-specific retrieval layer; it does not fine-tune or retrain the base model.
+
+### Public sources collected
+- All published businesses are searchable through the existing public `search_businesses` RPC. Each request supplies up to 12 relevant public records and the database-reported total count; category and locality filters are applied when the query identifies them.
+- All active categories and areas are cached as source data; the prompt receives a relevant subset or the complete area-name index when the user asks for areas.
+- Published news articles and published static pages, with full text included only when relevant to the question.
+- Active government helplines, local authorities, authority profiles, visibility-approved owner public-profile fields, active products, current offers, current announcements, and an allowlist of public site settings.
+- Public navigation guide for the actual app routes, including search, categories, map, favorites, offline data, news, offers, emergency contacts, government helplines, local authorities, authority profiles, and add-business.
+
+### Data snapshot observed during implementation
+| Public source | Records |
+|---|---:|
+| Published businesses | 397 |
+| Active categories | 22 |
+| Active areas | 314 |
+| Published news | 2 |
+| Published static pages | 8 |
+| Active emergency/government helplines | 12 |
+| Active local authorities | 9 |
+| Active authority profiles | 2 |
+| Visibility-approved public owner profiles | 3 |
+| Active products for published businesses | 1 |
+| Current offers | 0 |
+| Current announcements | 0 |
+
+Counts are a live snapshot and may change as public content is updated.
+
+### Retrieval, accuracy and privacy
+- Public knowledge is cached at the edge for up to 180 seconds, then refreshed from the public database. This is live retrieval, not a model-weight training operation.
+- Context is compacted for the model's 24,000-token limit. News bodies, page bodies, civic details, owner profiles, business hours, media, reviews, and offers are included only when the question needs them.
+- Business results are capped at 12 per request; the exact total and applied category/area scope are passed to the assistant so it can avoid presenting a partial result as the complete directory.
+- English, Urdu, and Roman Urdu category/locality intent is recognized. Category terms and locality phrases are separated to avoid false matches such as “Ghalla Mandi” versus “Anaj Mandi”.
+- Business social links, WhatsApp, gallery and video fields respect the public business plan visibility rules. Owner profiles use only database-redacted public fields; owner IDs are not sent to the model.
+- Only public/published/active information is included. Unpublished content, admin/owner private data, credentials, internal IDs, and private account data are excluded.
+- Source-load status is passed to the assistant so an unavailable source is not misrepresented as an empty directory.
+- No database migration or database write was needed.
+
+### Verification
+- Added unit tests for public-field mapping, plan visibility, owner-profile redaction, category/locality matching, compact context selection, and Roman Urdu intent.
+- GitHub Actions run `44600639970`: TypeScript checks, automated tests, production build, and Edge Function type-check all passed.
+- Cloudflare Pages deployment `5e76f8d4-1e2c-4702-ad38-fb3ba70a33e4`: production deployment succeeded.
+- Production `/api/chat` smoke test returned HTTP 200 for a restaurant-category query and returned real business links. Area-list and latest-news queries were also smoke-tested successfully against the deployed Pages build.
+
+### Explicitly not part of Part 1
+The admin “Train / Sync Latest Information to Chatbot” button and its manual full/incremental sync controls have not been added. No separate vector database, persistent training corpus, or model fine-tuning has been introduced. Those are separate later phases and remain untouched until approved.

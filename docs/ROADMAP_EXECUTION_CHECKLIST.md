@@ -267,3 +267,24 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Update `docs/LOCAL_SEO_DATA_QUALITY_AUDIT.md` and `docs/NEW_CHAT_HANDOFF.md` with the findings and matching limitation.
 - [ ] Complete read-only candidate matching against the 223 published businesses using normalized name, phone, address and coordinate proximity; manually review ambiguous cases.
 - [ ] Only after review, propose an import/correction batch. No production import or schema change is authorized by this audit.
+
+
+## Chatbot public knowledge collection — Part 1 (20 November 2026)
+
+- [x] Audit the existing `/api/chat`, Workers AI integration, public Supabase sources, and public-page routes.
+- [x] Keep the existing chatbot endpoint and model integration; add a shared public knowledge mapper in `functions/_shared/chatKnowledge.js`.
+- [x] Include all published businesses through query-time `search_businesses` retrieval, with category/locality filtering, up to 12 records per request, and the database total count.
+- [x] Collect all active categories and areas; include all area names only for area-list questions and use compact relevant context for other questions.
+- [x] Collect published news and static pages; send full article/page text only when relevant to the question.
+- [x] Collect active helplines, local authorities, authority profiles, redacted public owner profiles, active products, current offers, announcements, and explicitly allowlisted public site settings.
+- [x] Add actual public app route guidance; explicitly prevent invented `/areas` links because no such route exists.
+- [x] Add source status, prompt-injection boundaries, published/public-only rules, plan-based business-field visibility, and no-invention instructions.
+- [x] Compact context to fit the model's 24,000-token window; include media, reviews, hours, offers, and civic details only when requested.
+- [x] Add automated tests for mapping, privacy redaction, plan visibility, category/area matching, Roman Urdu intent, and context selection.
+- [x] GitHub Actions run `44600639970` passed all build, test, type-check, and Edge Function checks.
+- [x] Cloudflare Pages production deployment `5e76f8d4-1e2c-4702-ad38-fb3ba70a33e4` succeeded.
+- [x] Production chatbot smoke test returned HTTP 200 and real restaurant business links; area and news smoke tests also returned HTTP 200.
+
+**Observed public-data snapshot:** 397 published businesses, 22 active categories, 314 active areas, 2 published news articles, 8 published static pages, 12 active helplines, 9 local authorities, 2 active authority profiles, 3 visible public owner profiles, 1 active product, 0 current offers, and 0 current announcements. Counts are not fixed.
+
+**Implementation note:** This is live public-data retrieval with a 180-second edge cache, not fine-tuning of model weights. The manual admin sync button, persistent vector index, and any separate training corpus are not part of Part 1 and have not been implemented.
