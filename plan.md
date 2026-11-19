@@ -73,7 +73,30 @@ The prior data audit found that 222 of 223 published businesses had no logo or c
 - Do not bulk-assign generic stock images or copy photos from Google Maps without checking source rights and permission.
 - Do not change existing business records or storage permissions in bulk.
 
-## 4. Feature B — Google visibility for each business
+## 4. Feature B — Google organic Search result for each business
+
+### Exact clarification from the owner
+
+The target is a **normal, organic Google Search website result** for each eligible Hello Sadiqabad business profile. For example, searching for “Al-Madina Medical Store Sadiqabad” should make this page eligible to appear as a conventional blue-link result:
+
+- **Search result title:** Al-Madina Medical Store — Sadiqabad | Hello Sadiqabad
+- **Displayed URL:** https://hellosadiqabad.com/business/al-madina-medical-store
+- **Snippet/description:** Al-Madina Medical Store, Sadiqabad. Contact details, location, opening hours and business information.
+
+This is the directory's own web page appearing in Google's ordinary organic Search results. **It does not mean creating or managing a Google Business Profile, adding every business to Google Maps, creating map pins, or promising a Maps/local-pack listing.** Those are explicitly outside this project scope.
+
+### Expected search result
+
+For a search such as `[Exact Business Name] Sadiqabad`, Google should be able to discover and understand the matching public URL:
+
+`https://hellosadiqabad.com/business/[business-slug]`
+
+A potential result could use a title like:
+
+`Business Name — Sadiqabad | Hello Sadiqabad`
+
+and a short description drawn from the actual listing. Google decides whether and when to show the page, which title/snippet/image it selects, and its ranking.
+
 
 ### Expected search result
 
@@ -106,13 +129,13 @@ and a short description drawn from the actual listing. Google decides whether an
 9. **Image SEO:** Use descriptive, accurate image alt text; keep public image URLs crawlable and fast; use real business image assets where available.
 10. **Index monitoring:** Use the already-verified Search Console property and submitted sitemap. Inspect a representative sample of business URLs, request indexing for priority pages when appropriate, and monitor Page Indexing, impressions, clicks, queries and crawl errors.
 
-## 5. Google visibility — important limits and distinction
+## 5. Google organic Search — important limits and scope distinction
 
-- This work makes each public business page technically discoverable and eligible for Google Search; it cannot force Google to index every URL, show it for every exact-name search, display a rich result, or rank it first.
+- This work targets conventional organic Google Search website results for the Hello Sadiqabad business URLs. It makes each public business page technically discoverable and eligible for indexing; it cannot force Google to index every URL, show it for every exact-name search, select the exact title/snippet, or rank it first.
+- Google Maps listings, Google Business Profile creation/management, map pins and local-pack placement are not deliverables and will not be attempted as part of this feature.
 - A sitemap helps Google discover URLs but does not guarantee indexing or ranking.
 - LocalBusiness structured data helps Google understand the listing and may make a page eligible for supported search features; it does not guarantee a rich result or Knowledge Panel.
-- A Hello Sadiqabad directory page appearing in Google Search is separate from a business having its own Google Business Profile. Each eligible business owner should claim and verify their own Google Business Profile if they want control over their business's Google Maps / local Knowledge Panel presence.
-- Do not create fake Google Business Profiles for Hello Sadiqabad or for businesses the directory does not own.
+- A Hello Sadiqabad directory page appearing in ordinary organic Google Search is independent of whether that business has a Google Business Profile or Google Maps listing. This project does not require either.
 - Do not buy clicks, searches, backlinks or reviews, and do not use automated search manipulation.
 
 ## 6. Data, privacy and security requirements
@@ -159,7 +182,7 @@ For every phase, report separately: implemented, automated tests passed, CI pass
 1. No new Google account access is needed for implementation if the existing Search Console property remains verified.
 2. After deployment, owner may need to inspect priority URLs in Search Console and share any indexing errors/results.
 3. Business owners should provide permission-cleared, genuine logos/covers and verify their own listing facts.
-4. Each real business owner may separately claim their eligible Google Business Profile. Hello Sadiqabad cannot claim it on their behalf without authorization.
+4. No Google Business Profile or Google Maps setup is required for this project.
 5. Owner may test a real business link in WhatsApp/Facebook and report any stale preview; social platforms may require a cache refresh.
 
 ## 10. Approval gate
