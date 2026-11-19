@@ -10,7 +10,7 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
   const normalize = (value) => String(value || '')
     .normalize('NFKC')
     .toLocaleLowerCase()
-    .replace(/[^\\p{L}\\p{N}]+/gu, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
   const normalized = normalize(query);
   if (!normalized) return { category: null, area: null };
@@ -29,7 +29,7 @@ export function resolvePublicDirectoryFilters(query, categories = [], areas = []
       const term = normalize(value);
       if (!term) return false;
       if (normalized.includes(term)) return true;
-      const meaningfulTokens = term.split(/\\s+/).filter((token) =>
+      const meaningfulTokens = term.split(/\s+/).filter((token) =>
         token.length >= 5 && !['sadiqabad', 'town', 'road', 'area', 'block', 'colony', 'street'].includes(token)
       );
       return meaningfulTokens.some((token) => normalized.includes(token));
