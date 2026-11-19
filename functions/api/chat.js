@@ -1,4 +1,4 @@
-import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../_shared/chatKnowledge.js';
+import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveChatKnowledgeQuery, resolvePublicDirectoryFilters, selectRelevantPublicKnowledge } from '../_shared/chatKnowledge.js';
 
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_MESSAGE_LENGTH = 500;
@@ -189,6 +189,7 @@ LANGUAGE AND STYLE
 - Understand Roman Urdu, Urdu and English. Reply in natural, friendly Roman Urdu unless the user asks for another language.
 - Keep proper names, phone numbers, URLs and official titles unchanged. Be concise and use bullets when helpful.
 - Guide visitors to the exact relevant Hello Sadiqabad page using the supplied canonical links.
+- Use the recent conversation turns to understand follow-up questions such as “iska number?”, “aur address?”, “what about its hours?” and resolve them against the earlier user request. If several businesses could match, ask which one instead of guessing.
 - Business search may return a limited relevant subset. Respect business_search_total_count and business_search_scope; never claim returned matches are the complete directory when the total is larger. Link to the matching category/area or the full search page.
 - For business questions, prioritize non-empty business_search_matches and cite each supplied business url. If business_search_total_count is zero, say no published listings match that exact category/area scope; do not imply there are no businesses elsewhere.
 - The areas array is a selected index or a full list only when the user asks for areas. Respect areas_total_count; do not claim a sample is complete. Use /search to help users find a business by area.
@@ -254,7 +255,7 @@ export async function onRequestPost({ request, env }) {
   let failureStage = 'public_knowledge';
   try {
     const fullContext = await fetchPublicContext(env, new URL(request.url).origin);
-    const userQuery = messages[messages.length - 1].content;
+    const userQuery = resolveChatKnowledgeQuery(messages);
     failureStage = 'business_search';
     const businessSearch = await fetchBusinessMatches(env, userQuery, fullContext);
     const context = selectRelevantPublicKnowledge(fullContext, userQuery);
