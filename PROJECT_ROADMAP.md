@@ -364,3 +364,12 @@ Batch 3 — completed (16 November 2026):
 - [x] Live crawler-user-agent checks returned HTTP 200 and correct page-specific title, canonical URL and OG image for one News article and Farhan Iqbal's Authority profile using WhatsApp and Facebook user-agent strings; the latest Authority Urdu-description fallback was rechecked after deployment.
 - [x] Live normal-browser rendering confirmed WhatsApp, Facebook and Copy link controls on both News and Authority detail pages. Authority profile rendering no longer waits for the optional related-business dataset; production deployment `e69db7ef-2085-4a61-bbb1-a2607f6d35b5` succeeded and the Authority route was rechecked after deployment.
 - [ ] Actual WhatsApp app/device and Facebook Sharing Debugger preview checks, plus physical-device interaction checks, remain pending. Do not claim those external platform checks are complete.
+
+
+## Advanced Admin Analytics — owner-approved 19 November 2026
+
+- [ ] Advanced site-wide analytics and Live Visitors. Scope, security controls, phases and evidence checklist: [docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md](docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md).
+- [x] Owner approved full analytics scope including Live Visitors; feature plan committed to main (commit b95c46279f8a36ae6e80000e65e3943afe62aebc).
+- [x] Initial read-only audit confirmed existing business events, daily business stats, search logs, ad counters and Analytics tab. Existing Admin UI remains directory-focused; full site-wide visitors/sessions/live traffic are not yet implemented.
+- [x] Deployed `track-event` v7 reviewed: JWT verification is off, service-role is server-side, CORS allowlist and rate limit exist, but rate-limit key is client-provided session ID; Origin is not authentication. Raw search text is stored in legacy `search_logs`. Hardening/design review remains required before extension.
+- [ ] Complete Phase 0 RLS/grants/RPC and permission verification; do not make schema/function changes until the gate passes.
