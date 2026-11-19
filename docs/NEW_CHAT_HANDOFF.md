@@ -357,3 +357,15 @@ Start **Phase 1** of `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md` only after re-i
 - Committed `src/lib/api.ts` change `4d4815419ba9682cfc7956b587c07d1f71de8ef4`: secondary category slugs in business tags now count toward category listing counts and satisfy category search filters. Existing primary category behavior is retained.
 - CI run `44287820063`: TypeScript type check, automated tests and production build passed; overall run failed only at the existing npm audit gate (three high advisories in picomatch/tinyglobby/Vite). Edge-function check passed. No dependency downgrade, suppression or unrelated package change made.
 - Production Cloudflare Pages deployment and browser-level category/homepage verification are pending because the overall CI gate is not green. Do not claim the code change is live until the matching Pages deployment is verified.
+
+
+## Latest verified feature — Public News and Authority sharing (19 November 2026)
+
+- Owner requested individual News articles and Authority Profiles be easy to share on WhatsApp/Facebook and that the social preview image match the article cover/profile portrait.
+- Implemented and deployed on GitHub main: reusable ContentShareActions component with WhatsApp, Facebook, copy-link and native share sheet (where supported); wired to News detail and Authority Profile detail pages.
+- Added crawler-specific Cloudflare Pages Functions at functions/news/[slug].js and functions/authority-profiles/[slug].js. These provide crawler-readable page-specific Open Graph/Twitter metadata and canonical URLs while regular visitors continue through the existing SPA routes.
+- News preview image: article cover → first gallery image → /site-logo.png. Authority preview image: profile photo_url → /site-logo.png. Data lookups use the Supabase publishable/anon key and existing public RLS policies; News is restricted to published/past-published rows and Authority to active profiles. No schema, RLS, storage, private data or existing content changed.
+- Added Urdu authority-description fallback when the English authority text is blank.
+- Latest feature-code commit: 3360b77aa8ec8c10c9c5b55b65c2000458dda3b9. Latest Pages deployment: 891d235d-b897-4207-b4fc-008dcdcf9229; Cloudflare reports all build/deploy stages succeeded.
+- Live Cloudflare Browser Rendering with WhatsApp and Facebook crawler user-agent strings returned HTTP 200 and the correct page-specific title, description, canonical URL and image for /news/sadiqabad-ki-pehli-phone-directory and /authority-profiles/farhan-iqbal. The latest Urdu-fallback commit was rechecked on the Authority route with the WhatsApp user agent.
+- Remaining external acceptance: test actual WhatsApp on a phone and Facebook Sharing Debugger; social networks may cache previews. Share-button interactions have been code-inspected but not physically device-tested. GitHub combined-status returned no checks for the feature commit, so do not report a separate GitHub Actions CI pass. Cloudflare Pages build/deploy is verified.
