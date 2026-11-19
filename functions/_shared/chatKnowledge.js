@@ -89,6 +89,12 @@ export function buildPublicKnowledgeContext(rows, siteUrl = DEFAULT_SITE_URL) {
       verified_at: item.verified_at,
       directory_url: pageUrl(base, 'local-authorities'),
     })),
+    public_owner_profiles: (rows.owner_public_profile_directory || []).map((item) => ({
+      display_name: item.display_name,
+      photo_url: item.photo_url,
+      phone: item.phone,
+      email: item.email,
+    })).filter((item) => item.display_name || item.photo_url || item.phone || item.email),
     authority_profiles: (rows.authority_profiles || []).map((item) => ({
       name: item.name_en,
       name_ur: item.name_ur,
