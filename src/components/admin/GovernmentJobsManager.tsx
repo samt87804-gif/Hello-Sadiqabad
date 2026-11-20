@@ -6,6 +6,7 @@ import type { GovernmentJobRow } from '../../types/database';
 import { Badge, Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
+import { getSupabaseClient } from '../../lib/supabase';
 
 type FormState = {
  id:string; title_en:string; title_ur:string; summary_en:string; summary_ur:string; slug:string; department_name:string; department_scope:string; job_type:string;
@@ -13,7 +14,7 @@ type FormState = {
  qualification_text:string; experience_text:string; age_text:string; domicile_text:string; gender_or_quota_text:string;
  other_eligibility_text:string; application_steps:string; application_fee_text:string; apply_url:string;
  advertisement_url:string; official_case_number:string; application_open_at:string; deadline_at:string; status:string;
- source_name:string; source_url:string; source_document_url:string; verified_date:string; next_review_date:string;
+ source_name:string; source_url:string; source_document_url:string; image_url:string; verified_date:string; next_review_date:string;
  source_verified:boolean; published_at:string|null; created_by:string|null;
 };
 function blankForm():FormState {
@@ -21,7 +22,7 @@ function blankForm():FormState {
   vacancy_count:'',location_text:'',districts:'',sadiqabad_relevance:'unknown',qualification_text:'',experience_text:'',age_text:'',
   domicile_text:'',gender_or_quota_text:'',other_eligibility_text:'',application_steps:'',application_fee_text:'',apply_url:'',
   advertisement_url:'',official_case_number:'',application_open_at:'',deadline_at:'',status:'draft',source_name:'',source_url:'',
-  source_document_url:'',verified_date:'',next_review_date:'',source_verified:false,published_at:null,created_by:null};
+  source_document_url:'',image_url:'',verified_date:'',next_review_date:'',source_verified:false,published_at:null,created_by:null};
 }
 function toForm(job:GovernmentJobRow):FormState {
  return {...blankForm(),id:job.id,title_en:job.title_en,title_ur:job.title_ur??'',summary_en:job.summary_en??'',summary_ur:job.summary_ur??'',slug:job.slug,department_name:job.department_name,
@@ -32,7 +33,7 @@ function toForm(job:GovernmentJobRow):FormState {
   gender_or_quota_text:job.gender_or_quota_text??'',other_eligibility_text:job.other_eligibility_text??'',application_steps:job.application_steps??'',
   application_fee_text:job.application_fee_text??'',apply_url:job.apply_url??'',advertisement_url:job.advertisement_url??'',
   official_case_number:job.official_case_number??'',application_open_at:job.application_open_at??'',deadline_at:job.deadline_at??'',
-  status:job.status,source_name:job.source_name??'',source_url:job.source_url??'',source_document_url:job.source_document_url??'',
+  status:job.status,source_name:job.source_name??'',source_url:job.source_url??'',source_document_url:job.source_document_url??'',image_url:job.image_url??'',
   verified_date:job.verified_at?job.verified_at.slice(0,10):'',next_review_date:job.next_review_at?job.next_review_at.slice(0,10):'',
   source_verified:Boolean(job.verified_at),published_at:job.published_at,created_by:job.created_by};
 }
@@ -53,6 +54,7 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
  const [form,setForm]=useState<FormState>(blankForm());
  const [loading,setLoading]=useState(true);
  const [saving,setSaving]=useState(false);
+ const [imageUploading,setImageUploading]=useState(false);
  const [showForm,setShowForm]=useState(false);
  const [query,setQuery]=useState('');
  const [reviewOnly,setReviewOnly]=useState(false);
@@ -77,6 +79,25 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
   const copy=toForm(job);copy.id='';copy.slug=job.slug+'-copy';copy.status='draft';copy.source_verified=false;
   copy.verified_date='';copy.published_at=null;copy.created_by=null;setForm(copy);setShowForm(true);
  };
+ const uploadJobImage=async(file:File|null)=>{
+  if(!file)return;
+  const extensions:Record<string,string>={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'};
+  const extension=extensions[file.type];
+  if(!extension){showToast('Upload a JPG, PNG, WebP or AVIF image.','error');return;}
+  if(file.size>5*1024*1024){showToast('Job poster must be 5 MB or smaller.','error');return;}
+  const client=getSupabaseClient();
+  if(!client){showToast('Image upload requires the live database.','error');return;}
+  setImageUploading(true);
+  try{
+   const path='government-jobs/'+actorId+'/'+crypto.randomUUID()+'.'+extension;
+   const {data,error}=await client.storage.from('Hello Sadiqabad').upload(path,file,{cacheControl:'3600',contentType:file.type,upsert:false});
+   if(error)throw error;
+   const {data:publicData}=client.storage.from('Hello Sadiqabad').getPublicUrl(data.path);
+   update('image_url',publicData.publicUrl);
+   showToast('Job image uploaded. Save the job to keep the image linked.','success');
+  }catch(error){showToast(error instanceof Error?error.message:'Job image could not be uploaded.','error');}
+  finally{setImageUploading(false);}
+ };
  const save=async(event:React.FormEvent)=>{
   event.preventDefault();setSaving(true);
   try{
@@ -96,7 +117,7 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
     advertisement_url:form.advertisement_url.trim()||null,official_case_number:form.official_case_number.trim()||null,
     application_open_at:form.application_open_at||null,deadline_at:form.deadline_at||null,status:form.status as GovernmentJobRow['status'],
     source_name:form.source_name.trim()||null,source_url:form.source_url.trim()||null,
-    source_document_url:form.source_document_url.trim()||null,verified_at:verifiedAt,next_review_at:nextReviewAt,
+    source_document_url:form.source_document_url.trim()||null,image_url:form.image_url.trim()||null,verified_at:verifiedAt,next_review_at:nextReviewAt,
     published_at:form.status==='draft'?null:(form.published_at??undefined),created_by:form.created_by??actorId,
    },actorId);
    showToast(form.status==='published'?'Government job published.':'Government job saved.','success');
@@ -144,6 +165,13 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
      <TextAreaField label="Other eligibility conditions" value={form.other_eligibility_text} onChange={value=>update('other_eligibility_text',value)}/>
      <TextAreaField label="Application steps" value={form.application_steps} onChange={value=>update('application_steps',value)}/>
      <TextAreaField label="Application fee / payment instructions" value={form.application_fee_text} onChange={value=>update('application_fee_text',value)}/>
+    </div>
+    <div className="space-y-3 rounded-xl border border-outline-variant/40 p-3">
+     <h4 className="text-sm font-bold">Job poster / image (optional)</h4>
+     <p className="text-xs text-on-surface-variant">Upload a JPG, PNG, WebP or AVIF image (maximum 5 MB). You can save without an image and add one later.</p>
+     <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={imageUploading} onChange={event=>{void uploadJobImage(event.target.files?.[0]??null);event.currentTarget.value="";}} className="block w-full text-sm text-on-surface-variant file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-on-primary"/>
+     {imageUploading&&<p className="text-xs text-on-surface-variant">Uploading image…</p>}
+     {form.image_url&&<div className="flex flex-wrap items-center gap-3"><img src={form.image_url} alt="Job poster preview" className="h-28 w-40 rounded-xl border border-outline-variant object-contain bg-surface"/><div className="space-y-2"><p className="text-xs text-on-surface-variant break-all">Image uploaded. Save this job to link it.</p><Button type="button" size="sm" variant="outline" onClick={()=>update("image_url","")}>Remove image</Button></div></div>}
     </div>
     <div className="space-y-3 rounded-xl border border-outline-variant/40 p-3"><h4 className="text-sm font-bold">Official source verification</h4>
      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
