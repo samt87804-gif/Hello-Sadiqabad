@@ -277,3 +277,13 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] The referenced cover image exists in the public storage bucket as an `image/webp` object. Actual third-party social-platform retrieval remains to be observed.
 - [x] Latest code commit `b8f0c6d3bc2135c4cc6991fcbfd6b03fcc4ef056`, CI run `44582413841` passed all jobs, and Pages deployment `73868e0a-b57f-4a60-8294-d9190c23a818` succeeded.
 - [ ] Still open: LinkedIn crawler test, real WhatsApp/Facebook device previews and image fetch, Google Search Console URL Inspection/indexing evidence, and image/description data-readiness work. Do not claim actual Google indexing or ranking yet.
+
+
+### Government Schemes SEO/security checkpoint — 20 November 2026
+
+- [x] Added /government-schemes as a public indexable route and /government-schemes/:slug as an indexable detail route; unknown slugs remain noindex through the route indexer.
+- [x] Dynamic sitemap now includes the Government Schemes listing and published scheme detail slugs only; sitemap cache version was incremented.
+- [x] Public page metadata uses canonical URLs and official-source descriptions; no unsupported JobPosting/financial-product structured data was added.
+- [x] Supabase anonymous SELECT is limited by RLS to published scheme rows with published_at <= now(); draft and report data are not public.
+- [ ] Browser fetch of production and Pages preview routes was inaccessible to the web verification tool. Do not claim rendered metadata or live sitemap output verified until a real browser check is completed.
+- [ ] Physical mobile/browser acceptance and Search Console URL Inspection remain pending; do not claim Google indexing or ranking.
