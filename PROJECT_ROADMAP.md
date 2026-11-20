@@ -593,3 +593,15 @@ Planning baseline inspected:
 - Public new-business requests continue through existing moderation; this plan must not bypass it.
 - Initial official research sources and scam-safety requirements are recorded in the feature plan.
 - Owner approved the plan and authorised Phase 0 on 20 November 2026. Next: complete Phase 0 inspection/design/documentation only. No feature code, schema migration or production data change is authorised yet; obtain explicit approval before Phase 1 implementation.
+
+
+---
+
+## Government Jobs / Schemes / Owner Portal — Phase 0 checkpoint (20 Nov 2026)
+
+- [x] Owner approval received for Phase 0 audit, requirements and design only.
+- [x] Read-only audit completed against the current `main` code and live Supabase schema, migration ledger, RLS, Storage policies, plan data, permission gates and relevant Owner/Admin flows.
+- [x] Detailed findings and proposed additive architecture documented in `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md`.
+- [ ] Owner review/acceptance of the Phase 0 design.
+- [ ] Phase 1 Government Jobs implementation — **not authorised until Phase 0 design is accepted**.
+- No feature code or database changes have been made. Preserve existing businesses, submissions, owner registration, plans, security policies and migration history.
