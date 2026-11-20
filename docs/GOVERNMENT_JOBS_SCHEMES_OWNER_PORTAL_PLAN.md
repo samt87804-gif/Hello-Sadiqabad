@@ -608,4 +608,4 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 
 - The official PID release (10 Nov 2026) confirms Tier 4 loans above PKR 7.5m up to PKR 25m at 8% markup for up to eight years. The PMYB&ALS information portal still displays the older three tiers, so the record tells applicants to confirm live form implementation.
 - Radio Pakistan's 8 Nov report says the minimum age was reduced to 18 for all; the PID Tier 4 release and older portal still state 21–45 (18 for IT/e-commerce). The public record explicitly flags this conflict rather than silently choosing one rule.
-- Applied/tracked migration: 20261120160458_government_schemes_pmyb_tier4_verified_v5.sql.
+- Applied/tracked migrations: 20261120160458_government_schemes_pmyb_tier4_verified_v5.sql and 20261120160642_government_schemes_hunarmand_public_source_only_v6.sql.
