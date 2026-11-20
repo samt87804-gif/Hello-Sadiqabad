@@ -4,13 +4,13 @@
 
 ## 0. Owner approval and current checkpoint
 
-- **Owner approval:** The owner approved the overall Jobs/Schemes/Owner Experience plan on **20 November 2026**, explicitly authorised Phase 1 Government Jobs implementation, and on 20 November requested that the next planned work begin after the first job entry.
-- **Current status:** Phase 1 Government Jobs is implemented; one official-source job is published and optional poster upload is implemented. The owner’s latest instruction is treated as approval to begin **Phase 2 research/design** only. Phase 2 production code, schema migrations and data publication remain gated on Phase 1 acceptance and an explicit implementation go-ahead.
+- **Owner approval:** The owner approved the overall Jobs/Schemes/Owner Experience plan on **20 November 2026**, explicitly authorised Phase 1 Government Jobs implementation, then instructed that the next work begin and continue without pausing. This authorises Phase 2 Government Schemes implementation.
+- **Current status:** Phase 1 Government Jobs is implemented and deployed; its physical browser/mobile acceptance remains outstanding. Phase 2 Government Schemes MVP is implemented, the database is seeded with five official-source information records, and the public/Admin code is deployed. All five scheme intake statuses are deliberately `unconfirmed` until a live application window is independently verified.
 - **Repository:** [samt87804-gif/Hello-Sadiqabad](https://github.com/samt87804-gif/Hello-Sadiqabad), work directly on `main`.
 - **Production:** https://hellosadiqabad.com
 - **Cloudflare Pages:** `hello-sadiqabad`
 - **Supabase project ref:** `efwohfzqitevkuybnyif`
-- **Immediate next action:** finish Phase 1 production/browser acceptance and continue Phase 2 Government Schemes source verification/design from `docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md`. Do not apply Phase 2 migrations or publish scheme records until the Phase 1 acceptance gate is cleared and implementation is explicitly approved.
+- **Immediate next action:** verify the latest Pages deployment and complete real-browser/mobile acceptance for `/government-schemes` and `/government-jobs`; then reverify official programme intake before setting any scheme to `open`. Phase 3 Add Business / Owner Registration UX remains the next feature phase in the approved roadmap.
 
 ## 0.1 Required reading order for every new chat
 
@@ -519,7 +519,7 @@ An optional poster upload was added to the Admin Government Jobs form. It accept
 
 **Verification status:** schema and Storage policies have been applied; final RLS/Storage/Advisor, CI and Pages deployment checks are pending. Physical mobile-browser testing remains outstanding. Do not mark the phase fully accepted until those checks and owner-side QA are complete.
 
-**Next phase:** Government Schemes MVP is the next roadmap phase. It remains gated until the owner confirms that this is the intended next task and approves starting Phase 2.
+**Next phase:** Government Schemes MVP was started by the owner's 20 November instruction and is now implemented; see the Phase 2 checkpoint below.
 
 
 ### Phase 1 verification evidence update — 20 November 2026
@@ -530,3 +530,56 @@ An optional poster upload was added to the Admin Government Jobs form. It accept
 - Security Advisor showed no new Government Jobs/Storage findings; unrelated existing findings remain. Performance Advisor unused-index warnings include the new table's indexes, expected at current low usage; do not remove them without evidence.
 - Cloudflare Pages deployment `73263626-a9f9-43ba-a4df-f0a33dca493d` succeeded with production alias `https://hellosadiqabad.com` and includes the poster upload code.
 - Pages `npm run build` succeeded. GitHub combined status returned no check details, so do not claim independent unit-test, typecheck or CI completion. Production route could not be fetched by the web browser tool; physical mobile/browser QA remains outstanding.
+
+
+## 10. Phase 2 Government Schemes — implementation checkpoint (20 November 2026)
+
+**Status:** MVP code, schema, initial content and Admin tools implemented; production Pages deployment and SQL/RLS checks recorded. Physical browser/mobile acceptance and a final Pages deployment after the last small UI refinements remain to be confirmed.
+
+### Public experience
+- Public landing `/government-schemes` and detail `/government-schemes/:slug`.
+- Search, Punjab/Federal scope, category and intake-status filters.
+- Bilingual scheme titles; benefit type, benefits, eligibility, documents, steps, fees/repayment, official information/application links, verification and next-review dates.
+- Intake-unconfirmed banner. An unconfirmed scheme is never labelled “Apply Now”; links say to check the official portal.
+- “Report outdated information” stores only a reason and optional short note (max 500 chars); no contact details or sensitive application data.
+
+### Initial official-source records
+Five records are published as information pages, all with `intake_status='unconfirmed'`:
+1. Punjab — Apni Chhat Apna Ghar
+2. Punjab — CM Punjab Asaan Karobar Card
+3. Federal — Prime Minister's Youth Business & Agriculture Loan Scheme
+4. Federal — Benazir Kafaalat
+5. Federal — Benazir Hunarmand
+
+The PMYB&ALS record separates the three tiers still displayed by the official portal from Tier 4 announced by PID on 10 November 2026; the portal's implementation is not assumed. The Asaan Karobar Card record states the PSIC processing and annual card fees and identifies the product as repayable financing. BISP content does not reuse a stale stipend amount and warns that 8171 is the only official SMS number and the dynamic survey is free. Benazir Hunarmand content does not claim Sadiqabad course availability.
+
+### Admin and permissions
+- New Admin tab `Government Schemes`, gated by `government_schemes.manage`.
+- Dedicated permission added to `PermissionKey`, Admin staff permission list, navigation and `public.my_permissions()`. Super Admin receives it; other staff require explicit per-user permission.
+- Admin create/edit/draft/publish/archive, intake status, verified date, next review date, source URL and application URL.
+- Re-verification filter, public report review queue and append-only revision history with before/after snapshots.
+- Open intake cannot be saved unless an official application URL and next-review date are present (client and database guard).
+
+### Database and security
+- `public.government_schemes`: explicit grants, RLS public SELECT only for published rows; Admin write/read policies use Super Admin or `private.staff_has_permission('government_schemes.manage')`.
+- `public.government_scheme_reports`: no public SELECT; anon/authenticated may insert only scheme ID, reason and optional note for published schemes; reports are admin-readable/reviewable only. Unique scheme/reason/hour constraint limits duplicates.
+- `public.government_scheme_revisions`: no public access; append-only before/after snapshots, admin SELECT only. Scheme updates also use the existing audit log trigger.
+- All foreign keys indexed; open-intake safety constraint applied.
+- Applied and tracked migrations:
+  - `20261120153621_government_schemes_mvp.sql`
+  - `20261120154049_government_schemes_fk_indexes.sql`
+  - `20261120154130_government_scheme_reports_authenticated_submit.sql`
+  - `20261120154355_government_schemes_official_seed_v1.sql`
+  - `20261120154533_government_schemes_open_intake_guard.sql`
+  - `20261120154622_government_scheme_revision_history.sql`
+
+### Verification
+- Five published rows exist; anonymous-role SQL sees all five.
+- Draft visibility test returned zero for anon.
+- Anonymous and authenticated report insert tests succeeded inside rolled-back transactions; non-admin authenticated report SELECT returned zero.
+- Unauthorised authenticated insert into schemes was rejected by RLS.
+- Supabase Security Advisor shows no new findings for Government Schemes. Existing unrelated warnings remain: private analytics gateway token table has RLS with no policy (INFO) and leaked-password protection disabled (WARN).
+- Performance Advisor reports no unindexed foreign keys after indexes; unused-index notices on the new low-volume tables are expected until queries use them.
+- Cloudflare Pages build/deploy success was recorded for deployment `be6a1a2d-a0c8-4a16-96e4-06e064ee3564` with production alias. This deployment includes the initial Schemes page/Admin components; a final deployment after later history/filter guard refinements must be checked.
+- GitHub combined status returned no check details. Do not claim TypeScript/unit-test CI passed unless a later Actions run confirms it.
+- Browser fetch of production and preview routes was inaccessible; physical mobile/browser QA remains outstanding.
