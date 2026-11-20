@@ -462,4 +462,32 @@ Owner approved Phase 0 (read-only audit, requirements and design). The detailed 
 
 The audit inspected the current `main` code snapshot and live Supabase schema, migration ledger, RLS, Storage policies, plans, Admin permission gates, owner submission/registration flows and Supabase Advisors. It records the existing architecture, live counts, proposed routes/data model/security, and test/acceptance gates.
 
-**Current status:** Phase 0 audit/design proposal prepared; owner review/acceptance pending. No feature code, database schema, migration, Storage, or production data changes were made. Do not start Phase 1 until the owner explicitly accepts the Phase 0 design. Preserve the current live migration history; do not replay the consolidated baseline.
+**Current status (20 Nov 2026):** Owner accepted the Phase 0 design and explicitly authorised Phase 1 Government Jobs implementation. Phase 1 MVP code and additive database foundation are now committed/deployed; see the latest implementation checkpoint at the end of this document. Phase 2–5 remain separately gated. Preserve the current live migration history; do not replay the consolidated baseline.
+
+
+---
+
+## Phase 1 implementation checkpoint — 20 November 2026
+
+**Owner approval:** Explicit approval received to begin Phase 1 Government Jobs MVP after Phase 0 design acceptance.
+
+**Implemented in commit `464691c9542ae753ec4a7b320d097b72136e13ce`:**
+- Public routes: `/government-jobs` and `/government-jobs/:slug`.
+- Admin Government Jobs manager: create drafts, edit, publish, close, cancel, duplicate drafts, and re-verification queue.
+- Dedicated `government_jobs.manage` permission added to the permission type, staff permission matrix, Admin navigation/tab, and `public.my_permissions()`. No broad staff-type defaults grant it.
+- Additive `public.government_jobs` table with RLS, explicit grants, HTTPS source/application URL constraints, publication verification gate, Pakistan-date closing logic, update timestamp and audit triggers.
+- Public pages only read published/closed/expired records; drafts/cancelled records remain private.
+- Public sitemap includes published job pages and detail slugs. Empty job listings remain noindex until content exists.
+- Automated helper tests cover Pakistan date boundaries, closing/expired status, HTTPS/shortener validation and slug normalization.
+
+**Live migrations applied (20 Nov 2026):**
+- `20261120150330_government_jobs_mvp`
+- `20261120150410_government_jobs_allow_incomplete_drafts`
+- `20261120150416_government_jobs_require_verification_timestamp`
+- `20261120150950_government_jobs_audit_fk_indexes`
+
+Matching SQL files are tracked under `supabase/migrations/`. This environment did not have a local Supabase CLI/repository checkout; migrations were applied with the connected Supabase migration operation and the exact versioned SQL was committed to the repository. Do not replay these versions.
+
+**Verification:** GitHub Actions CI passed for the feature commit; Cloudflare Pages production deployment completed successfully. Live Supabase RLS/grants/triggers and Advisor snapshot were checked. The new table contains zero job records; Admin must add/review official-source jobs before the public page has content. Physical mobile-browser testing is still outstanding.
+
+**Scope boundary:** Government Schemes, Add Business, Owner Registration and Owner Portal enhancements are not included in this Phase 1 implementation.

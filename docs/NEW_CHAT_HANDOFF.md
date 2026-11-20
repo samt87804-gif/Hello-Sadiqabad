@@ -655,7 +655,7 @@ Official source starting points and detailed fields, routes, acceptance tests an
 
 **Phase 0 completed work:** Read-only review of current code and live Supabase schema, 81-entry migration ledger, RLS policies, Storage bucket/policies, plan configuration, permissions, Add Business, Owner Registration, Owner Portal, Admin navigation/moderation and Supabase Advisors. The report records current counts, existing controls, proposed routes/data model, permissions, publication flow and test gates.
 
-**Current status:** Phase 0 design is prepared and awaiting owner acceptance. No feature code, schema, migration, Storage, or production data changes were made. Do not start Phase 1 or make database changes until explicit owner approval.
+**Current status (latest):** Phase 0 design accepted; Phase 1 Government Jobs MVP is implemented in commit `464691c9542ae753ec4a7b320d097b72136e13ce`, CI passed and Cloudflare Pages production deployment succeeded. The live `government_jobs` table is created with RLS and audit controls. Do not treat Phase 2/3/4/5 as authorised.
 
 **Critical preservation notes:**
 - Continue from the existing `main` branch; do not rebuild from scratch.
@@ -665,3 +665,30 @@ Official source starting points and detailed fields, routes, acceptance tests an
 - The existing `Hello Sadiqabad` Storage bucket is public; never put pending/private government documents there.
 - New government-content staff permissions must be explicit and separately gated in frontend and database.
 - All user-facing updates remain in Roman Urdu.
+
+
+---
+
+## Latest handoff — Phase 1 Government Jobs implementation (20 Nov 2026)
+
+**Owner approvals:** Phase 0 design accepted; Phase 1 Government Jobs MVP explicitly authorised.
+
+**Latest code commit:** `464691c9542ae753ec4a7b320d097b72136e13ce` on `main`.
+
+**Implemented files:** `src/pages/GovernmentJobs.tsx`, `src/components/admin/GovernmentJobsManager.tsx`, `src/lib/governmentJobs.ts`, `src/lib/governmentJobs.test.ts`, `src/types/database.ts`, `src/lib/api.ts`, `src/App.tsx`, Admin navigation/portal/permission matrix, sitemap function, and versioned migrations.
+
+**Live database:** `public.government_jobs` exists. RLS exposes only published/closed/expired records to public users. Authenticated writes require Super Admin or explicit `government_jobs.manage`; no broad staff-type default grants this permission. Create/update operations are audited. Table currently has zero job rows.
+
+**Live migrations:**
+- `20261120150330_government_jobs_mvp`
+- `20261120150410_government_jobs_allow_incomplete_drafts`
+- `20261120150416_government_jobs_require_verification_timestamp`
+- `20261120150950_government_jobs_audit_fk_indexes`
+
+Matching files are tracked in `supabase/migrations/`. The execution environment lacked a local Supabase CLI/checkout, so the connected Supabase migration operation applied the versioned migrations and the matching SQL files were committed. Never replay the already-applied migrations or consolidated baseline.
+
+**Tests/deployment:** GitHub Actions CI succeeded for the implementation commit. Cloudflare Pages deployment succeeded. Supabase Security Advisor showed no new Government Jobs finding; Performance Advisor no longer reported unindexed Government Jobs foreign keys. Existing unrelated Advisor findings remain unchanged. Physical mobile-browser testing remains to be done.
+
+**Next action:** Verify the live public route and Admin tab in a real browser/mobile session; add first jobs only after manual verification against official Punjab/Federal government source pages. Keep source URL, official advertisement URL, application URL and verified date distinct. Do not upload unpublished PDFs to the public Storage bucket.
+
+**Scope guard:** Government Schemes, Add Business form redesign, Owner Registration redesign and Owner Portal plan-aware improvements remain future phases and must not be implemented without their own explicit phase approval.

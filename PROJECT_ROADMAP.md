@@ -602,6 +602,23 @@ Planning baseline inspected:
 - [x] Owner approval received for Phase 0 audit, requirements and design only.
 - [x] Read-only audit completed against the current `main` code and live Supabase schema, migration ledger, RLS, Storage policies, plan data, permission gates and relevant Owner/Admin flows.
 - [x] Detailed findings and proposed additive architecture documented in `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md`.
-- [ ] Owner review/acceptance of the Phase 0 design.
-- [ ] Phase 1 Government Jobs implementation — **not authorised until Phase 0 design is accepted**.
-- No feature code or database changes have been made. Preserve existing businesses, submissions, owner registration, plans, security policies and migration history.
+- [x] Owner accepted the Phase 0 design and authorised Phase 1 Government Jobs implementation.
+- [x] Phase 1 MVP code committed; CI and Cloudflare Pages deployment passed.
+- [x] Additive Government Jobs database table, RLS, grants, audit triggers and dedicated permission applied.
+- [ ] Phase 1 final acceptance: owner/Admin creates and verifies initial official-source job entries; complete physical mobile/browser QA.
+- [ ] Phase 2 Government Schemes — separately gated; not started.
+- Existing businesses, submissions, owner registration, plans, security policies and migration history remain preserved.
+
+
+## Government Jobs — Phase 1 implementation checkpoint (20 Nov 2026)
+
+- [x] Public jobs listing and detail routes.
+- [x] Admin create/edit/draft/publish/close/cancel/duplicate and re-verification workflow.
+- [x] Dedicated `government_jobs.manage` permission in frontend and database permission RPC.
+- [x] Public-only RLS, explicit table grants, HTTPS URL checks, publish verification gate, audit/update triggers.
+- [x] Pakistan timezone deadline status helper and automated tests.
+- [x] Public sitemap entries for published job content.
+- [x] Live migration history recorded in `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md`.
+- [x] CI success and Cloudflare Pages production deploy success for commit `464691c9542ae753ec4a7b320d097b72136e13ce`.
+- [ ] Add first manually verified official-source job records and perform owner-side mobile UX acceptance.
+- No auto-scraping or auto-publishing. Assistant may prepare drafts only when asked; Admin controls publication.

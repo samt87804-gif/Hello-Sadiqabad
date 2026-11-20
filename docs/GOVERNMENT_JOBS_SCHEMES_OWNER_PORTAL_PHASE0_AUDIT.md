@@ -192,3 +192,11 @@ The original master plan already recommends these defaults; Phase 0 audit suppor
 8. Staff access: separate explicit `government_jobs.manage` and `government_schemes.manage` grants.
 
 **Next gate:** owner reviews this audit/design and explicitly approves Phase 0 design. Only then may Phase 1 Government Jobs implementation begin. Phase 2, 3, 4 and 5 remain separately gated.
+
+---
+
+## Owner acceptance and Phase 1 follow-on — 20 November 2026
+
+The owner explicitly accepted the Phase 0 design and authorised Phase 1 Government Jobs MVP implementation. Phase 1 is now committed in `464691c9542ae753ec4a7b320d097b72136e13ce`; GitHub Actions CI and Cloudflare Pages production deployment succeeded. The implementation details and exact applied migration versions are recorded in `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md`.
+
+The Phase 0 audit remains a read-only snapshot of the original architecture. Its historical statement that Phase 1 was awaiting approval is superseded by this acceptance note. No changes were made to existing business, owner registration, moderation, plans, or public Storage content. The new Government Jobs table currently has no records; no job has been auto-imported or published.
