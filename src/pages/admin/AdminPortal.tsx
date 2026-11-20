@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
 import { NewsManager } from '../../components/admin/NewsManager';
 import { GovernmentJobsManager } from '../../components/admin/GovernmentJobsManager';
+import { GovernmentSchemesManager } from '../../components/admin/GovernmentSchemesManager';
 import { AdminChatbotKnowledge } from '../../components/admin/AdminChatbotKnowledge';
 import { LocalAuthoritiesManager } from '../../components/admin/LocalAuthoritiesManager';
 import { AuthorityProfilesManager } from '../../components/admin/AuthorityProfilesManager';
@@ -439,6 +440,8 @@ export function AdminPortal() {
         return hasPermission('announcements.manage') ? <NewsManager actorId={actorId} /> : <PermissionDenied />;
       case 'government-jobs':
         return hasPermission('government_jobs.manage') ? <GovernmentJobsManager actorId={actorId} /> : <PermissionDenied />;
+      case 'government-schemes':
+        return hasPermission('government_schemes.manage') ? <GovernmentSchemesManager actorId={actorId} /> : <PermissionDenied />;
       case 'chatbot-knowledge':
         return isSuperAdmin ? <AdminChatbotKnowledge /> : <PermissionDenied />;
       case 'announcements':
