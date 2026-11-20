@@ -747,7 +747,7 @@ Owner instructed: “ab agy ka kam shuru kro bina ruke”. Phase 2 Government Sc
 - BISP page warns that the survey is free and 8171 is the only official SMS number. Benazir Hunarmand page does not promise Sadiqabad course availability.
 - Admin Portal tab Government Schemes, permission government_schemes.manage, scheme CRUD/publish/archive/intake-status management, re-verification filter, public report queue and append-only revision history.
 - Open intake requires an official application URL and next-review date at both UI and DB level.
-- Report form stores reason + optional note only (no phone/email/CNIC/OTP/bank/application data), with a one-per-scheme/reason/hour uniqueness guard.
+- Report form stores only a fixed reason choice (no public free-text, phone/email/CNIC/OTP/bank/application data), with a one-per-scheme/reason/hour uniqueness guard.
 
 ### Supabase migrations applied and tracked
 - 20261120153621_government_schemes_mvp.sql
@@ -756,6 +756,7 @@ Owner instructed: “ab agy ka kam shuru kro bina ruke”. Phase 2 Government Sc
 - 20261120154355_government_schemes_official_seed_v1.sql
 - 20261120154533_government_schemes_open_intake_guard.sql
 - 20261120154622_government_scheme_revision_history.sql
+- 20261120155217_government_scheme_reports_no_public_note.sql
 
 ### Verification evidence
 - Five published rows exist; anonymous SQL role reads five.
