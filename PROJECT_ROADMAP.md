@@ -672,6 +672,6 @@ Latest implementation commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7` (Admin 
 - [x] Draft visibility test returned zero to anon; unauthorised authenticated scheme insert was rejected by RLS.
 - [x] Anonymous/authenticated public correction report inserts succeeded in rolled-back tests; non-admin report read returned zero.
 - [x] Security Advisor showed no new Government Schemes finding; Performance Advisor showed no unindexed foreign keys after adding indexes.
-- [x] Final Cloudflare Pages deployment ec963236-1709-4eee-9618-59185c891b96 succeeded with production alias after the latest UI refinements; npm run build passed.
+- [x] Final Cloudflare Pages deployment 67219dc5-5d3f-41c0-8a6b-5e1518bdf46c succeeded with production alias after the latest UI refinements; npm run build passed.
 - [ ] GitHub TypeScript/unit-test CI status not independently verified (combined status endpoint returned no check details).
 - [ ] Production browser fetch and physical mobile QA remain outstanding.
