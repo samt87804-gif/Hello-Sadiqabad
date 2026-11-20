@@ -616,7 +616,7 @@ export interface GovernmentJobRow {
  gender_or_quota_text:string|null; other_eligibility_text:string|null; application_steps:string|null;
  application_fee_text:string|null; apply_url:string|null; advertisement_url:string|null; official_case_number:string|null;
  application_open_at:string|null; deadline_at:string|null; status:GovernmentJobStatus; published_at:string|null;
- source_name:string|null; source_url:string|null; source_document_url:string|null; verified_at:string|null;
+ source_name:string|null; source_url:string|null; source_document_url:string|null; image_url:string|null; verified_at:string|null;
  next_review_at:string|null; created_by:string|null; updated_by:string|null; published_by:string|null;
  created_at:string; updated_at:string;
 }
