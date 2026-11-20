@@ -28,6 +28,7 @@ export function AppHeader() {
     { to: '/offers', label: t('nav.offers', 'Offers') },
     { to: '/news', label: 'News' },
     { to: '/government-jobs', label: lang === 'ur' ? 'سرکاری نوکریاں' : 'Jobs' },
+    { to: '/government-schemes', label: lang === 'ur' ? 'سرکاری اسکیمیں' : 'Schemes' },
     { to: '/map', label: t('nav.map', 'Map') },
     { to: '/emergency', label: t('nav.emergency', 'Emergency') },
   ];
