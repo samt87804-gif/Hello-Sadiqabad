@@ -638,3 +638,30 @@ Official source starting points and detailed fields, routes, acceptance tests an
 - `PROJECT_ROADMAP.md` has been updated to reflect approval and Phase 0 authorisation.
 
 **Next action for a new chat:** read the canonical master plan and permanent rules, then begin Phase 0 audit/design only. Do not rely on the previous chat transcript or assume that implementation has started.
+
+
+---
+
+## Latest handoff — Government Jobs / Schemes / Owner Portal (20 Nov 2026)
+
+**Owner decision:** The owner approved Phase 0 only (audit, requirements and design). Feature implementation and database changes require a separate explicit approval after Phase 0 design review.
+
+**Read these first in a new chat:**
+1. `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md` — canonical complete plan and rules.
+2. `docs/PROJECT_WORKING_RULES.md` — mandatory repo workflow and safeguards.
+3. `PROJECT_ROADMAP.md` — current product roadmap and checkpoints.
+4. `docs/NEW_CHAT_HANDOFF.md` — project history and latest checkpoint.
+5. `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md` — current audit findings and proposed design.
+
+**Phase 0 completed work:** Read-only review of current code and live Supabase schema, 81-entry migration ledger, RLS policies, Storage bucket/policies, plan configuration, permissions, Add Business, Owner Registration, Owner Portal, Admin navigation/moderation and Supabase Advisors. The report records current counts, existing controls, proposed routes/data model, permissions, publication flow and test gates.
+
+**Current status:** Phase 0 design is prepared and awaiting owner acceptance. No feature code, schema, migration, Storage, or production data changes were made. Do not start Phase 1 or make database changes until explicit owner approval.
+
+**Critical preservation notes:**
+- Continue from the existing `main` branch; do not rebuild from scratch.
+- Do not replay the consolidated baseline or assume the repository migration files are identical to the live migration ledger.
+- Preserve the existing `submit-suggestion` moderated flow for Add Business and the Admin-approved Owner Registration process.
+- Preserve `public.plans` as the plan/limit source of truth and all existing backend plan enforcement.
+- The existing `Hello Sadiqabad` Storage bucket is public; never put pending/private government documents there.
+- New government-content staff permissions must be explicit and separately gated in frontend and database.
+- All user-facing updates remain in Roman Urdu.
