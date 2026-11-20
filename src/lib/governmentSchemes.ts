@@ -74,11 +74,9 @@ export async function upsertGovernmentScheme(
  if(error)throw error;return data as GovernmentSchemeRow;
 }
 
-export async function submitGovernmentSchemeReport(schemeId:string,reason:GovernmentSchemeReportRow['reason'],note:string):Promise<void>{
+export async function submitGovernmentSchemeReport(schemeId:string,reason:GovernmentSchemeReportRow['reason']):Promise<void>{
  const client=getSupabaseClient();if(!client)throw new Error('Reporting requires an internet connection.');
- const cleanNote=note.trim();
- if(cleanNote.length>500)throw new Error('Report note must be 500 characters or fewer.');
- const {error}=await client.from('government_scheme_reports').insert({scheme_id:schemeId,reason,note:cleanNote||null});
+ const {error}=await client.from('government_scheme_reports').insert({scheme_id:schemeId,reason});
  if(error&&error.code==='23505')throw new Error('A similar report for this scheme was already received in the current hour. Please try later.');
  if(error)throw error;
 }
