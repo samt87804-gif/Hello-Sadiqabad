@@ -450,3 +450,16 @@ Recommended defaults are listed; the owner can change them:
 - Payment gateway, premium subscription checkout or automatic plan purchases.
 - Unsolicited SMS/WhatsApp marketing.
 - Any change to existing businesses, owners, plans, RLS or moderation without a reviewed additive migration and separate phase approval.
+
+
+---
+
+## Phase 0 audit checkpoint — 20 November 2026
+
+Owner approved Phase 0 (read-only audit, requirements and design). The detailed audit and proposed additive design are recorded in:
+
+- `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md`
+
+The audit inspected the current `main` code snapshot and live Supabase schema, migration ledger, RLS, Storage policies, plans, Admin permission gates, owner submission/registration flows and Supabase Advisors. It records the existing architecture, live counts, proposed routes/data model/security, and test/acceptance gates.
+
+**Current status:** Phase 0 audit/design proposal prepared; owner review/acceptance pending. No feature code, database schema, migration, Storage, or production data changes were made. Do not start Phase 1 until the owner explicitly accepts the Phase 0 design. Preserve the current live migration history; do not replay the consolidated baseline.
