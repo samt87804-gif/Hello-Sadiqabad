@@ -28,7 +28,7 @@
 
 ### C. Federal — Prime Minister's Youth Business & Agriculture Loan Scheme (PMYB&ALS)
 - Official portal: https://pmybals.pmyp.gov.pk/
-- Official PMYB&ALS portal: https://pmybals.pmyp.gov.pk/ (still shows the original three tiers on the page reviewed). The 10 November 2026 PID announcement directs applicants to the PMYP Digital Youth Hub at https://pmyp.gov.pk/ or the PMYP mobile app.
+- Official PMYB&ALS portal: https://pmybals.pmyp.gov.pk/ (still shows the original three tiers on the page reviewed). The Government announcement reported by Radio Pakistan on 8 November 2026 directs applicants to the PMYP Digital Youth Hub at https://pmyp.gov.pk/ or the PMYP mobile app.
 - The official programme portal describes eligibility for resident Pakistani citizens aged 21–45, with a lower age limit of 18 for IT/e-commerce businesses.
 - The official portal currently displays three tiers: up to PKR 0.5 million at 0% markup; above PKR 0.5 million to PKR 1.5 million at 5%; above PKR 1.5 million to PKR 7.5 million at 7%.
 - Radio Pakistan reported the Government announcement of 8 November 2026 raising the maximum loan limit to PKR 25 million and lowering the minimum age to 18: https://radio.gov.pk/08-11-2026/pm-increases-youth-agriculture-loan-limit-to-rs25m. The PMYB&ALS information portal still displays the older three tiers and the old age wording. The official announcement page does not state the detailed Tier 4 markup / tenor, so those details are not presented as confirmed; verify the live portal and bank terms before applying.
