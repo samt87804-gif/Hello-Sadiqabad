@@ -520,3 +520,13 @@ An optional poster upload was added to the Admin Government Jobs form. It accept
 **Verification status:** schema and Storage policies have been applied; final RLS/Storage/Advisor, CI and Pages deployment checks are pending. Physical mobile-browser testing remains outstanding. Do not mark the phase fully accepted until those checks and owner-side QA are complete.
 
 **Next phase:** Government Schemes MVP is the next roadmap phase. It remains gated until the owner confirms that this is the intended next task and approves starting Phase 2.
+
+
+### Phase 1 verification evidence update — 20 November 2026
+
+- Supabase migration version `20261120152313` (`government_jobs_optional_poster_image`) is applied and tracked by the exact matching migration file.
+- Anonymous-role SQL confirmed public read of the published Network Support Consultant row. The poster URL is NULL until the owner uploads a job image.
+- Storage write/update/delete policies are restricted to the uploader's `government-jobs/<auth.uid()>/` folder and Super Admin or explicit `government_jobs.manage` permission.
+- Security Advisor showed no new Government Jobs/Storage findings; unrelated existing findings remain. Performance Advisor unused-index warnings include the new table's indexes, expected at current low usage; do not remove them without evidence.
+- Cloudflare Pages deployment `73263626-a9f9-43ba-a4df-f0a33dca493d` succeeded with production alias `https://hellosadiqabad.com` and includes the poster upload code.
+- Pages `npm run build` succeeded. GitHub combined status returned no check details, so do not claim independent unit-test, typecheck or CI completion. Production route could not be fetched by the web browser tool; physical mobile/browser QA remains outstanding.
