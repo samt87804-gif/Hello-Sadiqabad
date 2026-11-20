@@ -782,13 +782,13 @@ Check the latest Cloudflare Pages build/deploy for the final code commits, then 
 
 ### Official source verification v3
 
-- PMYB&ALS now links to the PMYP Digital Youth Hub. Its info portal still shows three tiers; the Government's 8 Nov 2026 announcement reported by Radio Pakistan raises the ceiling to PKR 25m and changes the minimum-age policy, but detailed new Tier 4 markup / tenor are not asserted because they are not confirmed in the official portal / announcement page reviewed.
+- PMYB&ALS now links to the PMYP Digital Youth Hub. Its info portal still shows three tiers; the Government's 8 Nov 2026 announcement reported by Radio Pakistan raises the ceiling to PKR 25m and changes the minimum-age policy; the PID 10 Nov release confirms Tier 4 at 8% for up to eight years. The public record flags the age-rule discrepancy between Radio Pakistan and the PID / older portal.
 - Benazir Kafaalat now links directly to the official programme page and anti-fraud / 8171 notice. Old stipend and PMT values are not repeated as current-cycle terms.
 - Migration 20261120155746_government_schemes_official_content_review_v3.sql
 - `20261120155900_government_schemes_pmyb_source_attribution_v4.sql` is applied and tracked.
 
 
-- Additional migration 20261120155900_government_schemes_pmyb_source_attribution_v4.sql updates the PMYB source attribution to Radio Pakistan.
+- Additional migration 20261120155900_government_schemes_pmyb_source_attribution_v4.sql updates the PMYB source attribution to the PID Tier 4 release.
 
 
 - PMYB Tier 4 is now confirmed by the official PID 10 Nov release: above PKR 7.5m up to PKR 25m at 8% for up to eight years. The PMYB portal still shows three tiers. Radio Pakistan's 8 Nov report says age 18 for all, while PID / portal retain 21–45 (18 IT/e-commerce); the public record flags this conflict. Migration 20261120160458_government_schemes_pmyb_tier4_verified_v5.sql is applied and tracked.
