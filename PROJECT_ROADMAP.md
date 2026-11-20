@@ -645,14 +645,17 @@ Latest implementation commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7` (Admin 
 - [ ] Run final CI/deployment verification and owner-side browser/mobile QA. No other feature phase is claimed complete.
 
 
-## Government Schemes — Phase 2 research started (20 Nov 2026)
+## Government Schemes — Phase 2 MVP implementation (20 Nov 2026)
 
-- [x] Owner asked to begin the next planned work after the first Government Job entry; this is treated as approval for Phase 2 research/design.
-- [x] Official-source candidate research and safety/data-model proposal recorded in `docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md`.
-- [ ] Reconfirm current intake availability, exact eligibility and live application routes for each candidate scheme before publication.
-- [ ] Phase 1 final acceptance (production deployment alias and owner mobile/browser QA) remains a gate before Phase 2 schema/code implementation.
-- No Phase 2 database schema, production data or feature code has been changed yet.
-
+- [x] Owner instructed that the next work begin and continue without pausing; Phase 2 implementation authorised.
+- [x] Public /government-schemes directory and /government-schemes/:slug detail pages with search, Punjab/Federal, category and intake-status filters.
+- [x] Admin Government Schemes manager with dedicated government_schemes.manage permission, review queue, public correction reports and revision history.
+- [x] Five official-source scheme information records seeded: Apni Chhat Apna Ghar, Asaan Karobar Card, PM Youth Business & Agriculture Loan, Benazir Kafaalat and Benazir Hunarmand.
+- [x] All five schemes have intake_status='unconfirmed'; the UI does not label "Apply Now" until the official intake is verified.
+- [x] RLS, explicit grants, audit triggers, append-only scheme revision snapshots, report privacy and open-intake guard applied and tracked in migrations.
+- [ ] Complete real-browser and physical mobile acceptance for the public and Admin routes.
+- [ ] Reverify official application availability, eligibility and fees before changing any scheme intake status to open.
+- [ ] Phase 3 Public Add Business + Owner Registration UX is the next feature phase in the master plan.
 
 ### Phase 1 deployment verification update (20 Nov 2026)
 
@@ -662,3 +665,13 @@ Latest implementation commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7` (Admin 
 - [x] Cloudflare Pages production deployment `73263626-a9f9-43ba-a4df-f0a33dca493d` succeeded with alias `https://hellosadiqabad.com`; it includes the optional poster upload code and the latest code state before docs-only Phase 2 handoff updates.
 - [ ] Physical mobile/browser acceptance remains outstanding. Web browsing tool could not fetch the production detail URL; do not claim browser rendering verified.
 - GitHub combined commit status did not expose check results in this run; Pages `npm run build` succeeded. Do not mark unit tests/typecheck/CI independently passed.
+
+
+### Phase 2 verification evidence (20 Nov 2026)
+- [x] Supabase anonymous-role SQL returned five published scheme records.
+- [x] Draft visibility test returned zero to anon; unauthorised authenticated scheme insert was rejected by RLS.
+- [x] Anonymous/authenticated public correction report inserts succeeded in rolled-back tests; non-admin report read returned zero.
+- [x] Security Advisor showed no new Government Schemes finding; Performance Advisor showed no unindexed foreign keys after adding indexes.
+- [x] Cloudflare Pages deployment be6a1a2d-a0c8-4a16-96e4-06e064ee3564 succeeded with production alias. Later UI refinements require a fresh latest-deployment check.
+- [ ] GitHub TypeScript/unit-test CI status not independently verified (combined status endpoint returned no check details).
+- [ ] Production browser fetch and physical mobile QA remain outstanding.
