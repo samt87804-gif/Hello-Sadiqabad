@@ -551,7 +551,7 @@ Five records are published as information pages, all with `intake_status='unconf
 4. Federal — Benazir Kafaalat
 5. Federal — Benazir Hunarmand
 
-The PMYB&ALS record separates the three tiers still displayed by the official portal from Tier 4 announced by PID on 10 November 2026; the portal's implementation is not assumed. The Asaan Karobar Card record states the PSIC processing and annual card fees and identifies the product as repayable financing. BISP content does not reuse a stale stipend amount and warns that 8171 is the only official SMS number and the dynamic survey is free. Benazir Hunarmand content notes that an older official guide lists eight first-phase districts excluding Rahim Yar Khan / Sadiqabad; it explicitly says the old list may not reflect the current phase and advises checking before travelling.
+The PMYB&ALS record separates the three tiers still displayed by the official portal from the Government's 8 November 2026 announcement (reported by Radio Pakistan) raising the maximum to PKR 25 million; the portal's implementation is not assumed. The Asaan Karobar Card record states the PSIC processing and annual card fees and identifies the product as repayable financing. BISP content does not reuse a stale stipend amount and warns that 8171 is the only official SMS number and the dynamic survey is free. Benazir Hunarmand content notes that an older official guide lists eight first-phase districts excluding Rahim Yar Khan / Sadiqabad; it explicitly says the old list may not reflect the current phase and advises checking before travelling.
 
 ### Admin and permissions
 - New Admin tab `Government Schemes`, gated by `government_schemes.manage`.
@@ -574,6 +574,7 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
   - `20261120154622_government_scheme_revision_history.sql`
   - `20261120155217_government_scheme_reports_no_public_note.sql`
   - `20261120155622_government_schemes_official_content_review_v2.sql`
+  - `20261120155746_government_schemes_official_content_review_v3.sql`
 
 ### Verification
 - Five published rows exist; anonymous-role SQL sees all five.
@@ -593,3 +594,10 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 - PMYB application link now points to the PMYP Digital Youth Hub (pmyp.gov.pk), per PID's 10 November announcement. The PMYB&ALS information portal still shows the older three-tier details, so Tier 4 availability through the live form is not assumed.
 - Benazir Hunarmand now links its older official guide PDF and notes that the guide's first-phase district list did not include Rahim Yar Khan / Sadiqabad; because that guide may be outdated, users are told to confirm current district coverage before travelling.
 - Applied/tracked migration: 20261120155622_government_schemes_official_content_review_v2.sql.
+
+
+### Official source verification v3 — 20 November 2026
+
+- PMYB&ALS content now relies on the PMYP portal for its three currently displayed tiers and Radio Pakistan's 8 November 2026 Government announcement for the raised PKR 25 million ceiling / minimum-age change. The new Tier 4 markup and tenor are not shown as confirmed because the portal / announcement page reviewed does not state them.
+- Benazir Kafaalat now links directly to the official programme page and BISP's anti-fraud / 8171 notice. Old stipend and PMT figures on the programme page are deliberately not repeated as current-cycle terms.
+- Applied/tracked migration: 20261120155746_government_schemes_official_content_review_v3.sql.
