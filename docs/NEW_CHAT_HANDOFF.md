@@ -673,7 +673,7 @@ Official source starting points and detailed fields, routes, acceptance tests an
 
 **Owner approvals:** Phase 0 design accepted; Phase 1 Government Jobs MVP explicitly authorised.
 
-**Latest code commit:** `464691c9542ae753ec4a7b320d097b72136e13ce` on `main`.
+**Latest code commit:** `fffb81c62d7672414f5f99681604633f95da8731` on `main` (initial implementation commit `464691c9542ae753ec4a7b320d097b72136e13ce`).
 
 **Implemented files:** `src/pages/GovernmentJobs.tsx`, `src/components/admin/GovernmentJobsManager.tsx`, `src/lib/governmentJobs.ts`, `src/lib/governmentJobs.test.ts`, `src/types/database.ts`, `src/lib/api.ts`, `src/App.tsx`, Admin navigation/portal/permission matrix, sitemap function, and versioned migrations.
 
@@ -684,11 +684,15 @@ Official source starting points and detailed fields, routes, acceptance tests an
 - `20261120150410_government_jobs_allow_incomplete_drafts`
 - `20261120150416_government_jobs_require_verification_timestamp`
 - `20261120150950_government_jobs_audit_fk_indexes`
+- `20261120151230_government_jobs_bilingual_summary`
 
 Matching files are tracked in `supabase/migrations/`. The execution environment lacked a local Supabase CLI/checkout, so the connected Supabase migration operation applied the versioned migrations and the matching SQL files were committed. Never replay the already-applied migrations or consolidated baseline.
 
-**Tests/deployment:** GitHub Actions CI succeeded for the implementation commit. Cloudflare Pages deployment succeeded. Supabase Security Advisor showed no new Government Jobs finding; Performance Advisor no longer reported unindexed Government Jobs foreign keys. Existing unrelated Advisor findings remain unchanged. Physical mobile-browser testing remains to be done.
+**Tests/deployment:** GitHub Actions CI succeeded for latest code commit (`44761298472`). Cloudflare Pages deployment `e93e9f10-1cca-4539-9b6f-539c47354f9f` succeeded and carries the `https://hellosadiqabad.com` production alias. Supabase Security Advisor showed no new Government Jobs finding; Performance Advisor no longer reported unindexed Government Jobs foreign keys. Existing unrelated Advisor findings remain unchanged. Physical mobile-browser testing remains to be done.
 
-**Next action:** Verify the live public route and Admin tab in a real browser/mobile session; add first jobs only after manual verification against official Punjab/Federal government source pages. Keep source URL, official advertisement URL, application URL and verified date distinct. Do not upload unpublished PDFs to the public Storage bucket.
+**Next action:** Verify the live public route and Admin tab in a real browser/mobile session; add first jobs only after manual verification against official Punjab/Federal government source pages. English summary is mandatory for publication; Urdu summary is optional. Filters include department and job type; Upcoming/Closing Soon/Expired status uses Asia/Karachi dates. Keep source URL, official advertisement URL, application URL and verified date distinct. Do not upload unpublished PDFs to the public Storage bucket.
 
 **Scope guard:** Government Schemes, Add Business form redesign, Owner Registration redesign and Owner Portal plan-aware improvements remain future phases and must not be implemented without their own explicit phase approval.
+
+
+**Phase 1 latest delta:** Public navigation links now appear in desktop header, mobile bottom navigation and footer. Public listing supports Punjab/Federal, department, job type, archive and full-text filters. Upcoming jobs are labelled from `application_open_at`; published English summary is required and Urdu summary optional. Admin shows a likely-duplicate warning before save. The live jobs table remains empty pending manual source review; no job records were auto-imported.

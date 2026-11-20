@@ -121,8 +121,8 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
      <Field label="Job title (English)" value={form.title_en} required onChange={value=>setForm(previous=>({...previous,title_en:value,slug:previous.slug||slugifyGovernmentJobTitle(value)}))}/>
      <Field label="Job title (Urdu, optional)" value={form.title_ur} onChange={value=>update('title_ur',value)}/>
-     <Field label="English summary (required before publish)" value={form.summary_en} onChange={value=>update('summary_en',value)}/>
-     <Field label="Urdu summary (optional)" value={form.summary_ur} onChange={value=>update('summary_ur',value)}/>
+     <TextAreaField label="English summary (required before publish)" value={form.summary_en} onChange={value=>update('summary_en',value)}/>
+     <TextAreaField label="Urdu summary (optional)" value={form.summary_ur} onChange={value=>update('summary_ur',value)}/>
      <Field label="URL slug" value={form.slug} required onChange={value=>update('slug',value.toLowerCase())}/>
      <Field label="Department / authority" value={form.department_name} required onChange={value=>update('department_name',value)}/>
      <label className="block space-y-1"><span className="text-xs font-semibold">Government level *</span><select value={form.department_scope} onChange={event=>update('department_scope',event.target.value)} className="h-10 w-full rounded-xl border border-outline-variant bg-surface px-3 text-sm"><option value="punjab">Punjab Government</option><option value="federal">Federal Government</option><option value="other">Other (verified local relevance only)</option></select></label>

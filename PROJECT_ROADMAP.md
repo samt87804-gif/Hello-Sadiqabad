@@ -622,3 +622,16 @@ Planning baseline inspected:
 - [x] CI success and Cloudflare Pages production deploy success for commit `464691c9542ae753ec4a7b320d097b72136e13ce`.
 - [ ] Add first manually verified official-source job records and perform owner-side mobile UX acceptance.
 - No auto-scraping or auto-publishing. Assistant may prepare drafts only when asked; Admin controls publication.
+
+
+## Government Jobs — Phase 1 final implementation delta (20 Nov 2026)
+
+Latest implementation commit: `fffb81c62d7672414f5f99681604633f95da8731`.
+- [x] English summary required for publication; optional Urdu summary shown when available.
+- [x] Department and job-type filters added alongside government-level, active/archive and text search.
+- [x] Upcoming status uses `application_open_at` in Asia/Karachi; expired state uses Pakistan local date.
+- [x] Public navigation added to desktop header, mobile bottom navigation and footer.
+- [x] Admin duplicate warning added for matching ad number or same title/department.
+- [x] Bilingual summary migration applied and tracked.
+- [x] Latest CI passed; latest Cloudflare Pages production deployment succeeded.
+- [ ] Physical mobile/browser acceptance and first manually verified official job records.

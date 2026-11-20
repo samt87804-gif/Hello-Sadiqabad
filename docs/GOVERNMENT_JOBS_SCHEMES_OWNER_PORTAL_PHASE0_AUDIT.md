@@ -200,3 +200,8 @@ The original master plan already recommends these defaults; Phase 0 audit suppor
 The owner explicitly accepted the Phase 0 design and authorised Phase 1 Government Jobs MVP implementation. Phase 1 is now committed in `464691c9542ae753ec4a7b320d097b72136e13ce`; GitHub Actions CI and Cloudflare Pages production deployment succeeded. The implementation details and exact applied migration versions are recorded in `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md`.
 
 The Phase 0 audit remains a read-only snapshot of the original architecture. Its historical statement that Phase 1 was awaiting approval is superseded by this acceptance note. No changes were made to existing business, owner registration, moderation, plans, or public Storage content. The new Government Jobs table currently has no records; no job has been auto-imported or published.
+
+
+### Phase 1 implementation status update — 20 November 2026
+
+Phase 0 was accepted by the owner. Phase 1 Government Jobs MVP is now implemented in latest code commit `fffb81c62d7672414f5f99681604633f95da8731`; CI passed and Cloudflare Pages production deployment succeeded. The live database includes the bilingual summary fields and all five Government Jobs migrations are recorded in the master plan. Physical mobile-browser acceptance and initial manual official-source content entry remain outstanding.
