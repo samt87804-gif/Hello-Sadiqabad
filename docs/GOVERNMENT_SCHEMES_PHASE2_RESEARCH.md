@@ -10,8 +10,8 @@
 ### A. Punjab — Apni Chhat Apna Ghar
 - Official information: https://smu.punjab.gov.pk/apni-chat-apna-ghar-program
 - Official application portal referenced by the programme page: https://acag.punjab.gov.pk/
-- The Punjab SMU page describes a housing initiative and lists eligibility for Punjab residents who own a qualifying residential plot (up to 5 marla urban / 10 marla rural). The current page reviewed does **not** establish a current loan amount or financing offer, so the public listing does not state a loan amount.
-- The same page describes Punjab permanent-residency and land-ownership conditions, plus bank-default/criminal-record restrictions.
+- The current SMU page describes 100,000 affordable houses/apartments over 4.5 years through three routes: 10,000 state-land units; 20,000 private-scheme affordable units with a PKR 1 million government subsidy per unit and five-year allottee instalments; and 70,000 interest-free construction loans up to PKR 1.5 million for qualifying plot owners, over seven years in monthly instalments.
+- The same page lists permanent Punjab residence by CNIC; for the construction-loan route, sole ownership/possession of up to 5 marla urban or 10 marla rural plot; specified criminal-record restrictions; and no bank/financial-institution loan default.
 - **Publication caution:** The information page's deadline statement is stale (it refers to 2025) and does not establish the current 2026 application window. Recheck the live portal and current government notices before labelling the intake open or entering a closing date.
 - Suggested category: Housing / Home construction.
 - Source status: Official programme page found; current application availability needs fresh confirmation.
@@ -28,7 +28,7 @@
 
 ### C. Federal — Prime Minister's Youth Business & Agriculture Loan Scheme (PMYB&ALS)
 - Official portal: https://pmybals.pmyp.gov.pk/
-- Official online application route shown by the portal: https://pmyp.gov.pk/bankform/newapplicantform
+- Official PMYB&ALS portal: https://pmybals.pmyp.gov.pk/ (still shows the original three tiers on the page reviewed). The 10 November 2026 PID announcement directs applicants to the PMYP Digital Youth Hub at https://pmyp.gov.pk/ or the PMYP mobile app.
 - The official programme portal describes eligibility for resident Pakistani citizens aged 21–45, with a lower age limit of 18 for IT/e-commerce businesses.
 - The official portal currently displays three tiers: up to PKR 0.5 million at 0% markup; above PKR 0.5 million to PKR 1.5 million at 5%; above PKR 1.5 million to PKR 7.5 million at 7%.
 - A Press Information Department release dated 10 November 2026 announced a new Tier 4 above PKR 7.5 million up to PKR 25 million at 8% markup for up to eight years: https://pid.gov.pk/site/press_detail/34717. The portal page reviewed still displays the older three tiers; the new tier must not be presented as available through the application form until the official portal / participating bank confirms implementation.
@@ -51,7 +51,7 @@
 ### E. Federal — Benazir Hunarmand Programme
 - Official portal: https://hunarmand.bisp.gov.pk/
 - The official portal states that applicants must already be registered in the BISP Dynamic Registry, have at least Matric education, be aged 18–40, and only one person per family may register.
-- The portal says it is for registration only; applications are reviewed and only eligible candidates are selected. It also points to the nearest Tehsil Office as an in-person information/registration option. The portal page reviewed does not confirm current Sadiqabad district/course availability; candidates should check before travelling.
+- The portal says it is for registration only; applications are reviewed and only eligible candidates are selected. It also points to the nearest Tehsil Office as an in-person information/registration option. An older official guide PDF lists first-phase districts as Lahore, Karachi, Peshawar, Quetta, Islamabad, Rawalpindi, Gilgit and Muzaffarabad; it does not include Rahim Yar Khan / Sadiqabad. This older list may no longer reflect the current phase, so candidates must confirm current district/course availability before travelling.
 - **Publication caution:** Recheck whether registration is still open in the portal and confirm current district/course availability before labelling it open.
 - Suggested category: Skills / Training / Employment.
 - Source status: Official live portal found; intake availability and local course capacity need confirmation.
@@ -115,10 +115,10 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - Public route `/government-schemes` and detail routes `/government-schemes/:slug`, with search, Punjab/Federal filter, category filter, intake-status filter, bilingual titles, benefit type, eligibility, document checklist, steps, fees/repayment, official source links, last-verified and next-review dates.
 - Five initial official-source scheme records: Apni Chhat Apna Ghar; CM Punjab Asaan Karobar Card; Prime Minister's Youth Business & Agriculture Loan Scheme; Benazir Kafaalat; Benazir Hunarmand.
 - All five records are published as information pages, but `intake_status='unconfirmed'`. No deadline is invented and no “Apply Now” wording is shown while intake is unconfirmed. Official portals are labelled as places to check current availability.
-- The PMYB&ALS record distinguishes the three tiers still shown on the official portal from the Tier 4 announced by PID on 10 November 2026; it warns that the new tier is not yet reflected on the portal page reviewed.
+- The PMYB&ALS record distinguishes the three tiers still shown on the official portal from the Tier 4 announced by PID on 10 November 2026; it warns that the new tier is not yet reflected on the portal page reviewed and links to the PMYP Digital Youth Hub.
 - The Asaan Karobar Card record states the PSIC processing and annual card fees, the 0% borrower markup and the repayable nature of the facility.
 - BISP record avoids a stale stipend amount, states that the dynamic survey is free and 8171 is the only official SMS number.
-- Benazir Hunarmand record does not claim Sadiqabad course availability.
+- Benazir Hunarmand record flags that an older official guide lists only eight first-phase districts, excluding Rahim Yar Khan / Sadiqabad, and does not claim current local course availability.
 - Admin tab `Government Schemes` is gated by dedicated `government_schemes.manage` permission; Super Admin receives it through `my_permissions()`, and other staff require explicit permission.
 - Admin can create/edit/draft/publish/archive schemes, set intake status and verification/review dates, review public correction reports and inspect append-only revision snapshots.
 - Public “Report outdated information” accepts only a fixed reason choice; it does not accept free text or collect contact details, CNIC, OTP, bank or application data. Duplicate reports for the same scheme/reason are rate-limited to one per hour.
@@ -134,6 +134,7 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - `20261120154533_government_schemes_open_intake_guard.sql`
 - `20261120154622_government_scheme_revision_history.sql`
 - `20261120155217_government_scheme_reports_no_public_note.sql`
+- `20261120155622_government_schemes_official_content_review_v2.sql`
 
 ### Remaining acceptance
 - Reconfirm each programme's live intake, current application URL and any changed eligibility/fees immediately before changing its intake status to open.
