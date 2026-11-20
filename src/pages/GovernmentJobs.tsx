@@ -111,6 +111,7 @@ export function GovernmentJobs() {
      <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface">{bilingualText(lang,job.title_en,job.title_ur)}</h1>
      {lang==='en'&&urduHints&&job.title_ur&&<p className="font-urdu text-lg text-primary leading-[2]" dir="rtl">{job.title_ur}</p>}
      <p className="text-sm font-semibold text-on-surface-variant">{job.department_name}</p>
+     {job.image_url&&<img src={job.image_url} alt={job.title_en+" job poster"} className="w-full max-h-[520px] rounded-2xl border border-outline-variant/50 object-contain bg-surface" loading="lazy"/>}
      <p className="flex items-center gap-2 text-sm text-on-surface-variant"><MapPin className="w-4 h-4"/>{job.location_text}</p>
      {job.sadiqabad_relevance===true&&<Badge variant="primary">Sadiqabad / Rahim Yar Khan eligible (as stated in advertisement)</Badge>}
     </div>
@@ -155,6 +156,7 @@ export function GovernmentJobs() {
       const status=getGovernmentJobDisplayStatus(item);
       return <Card key={item.id} className="p-4 space-y-3">
        <div className="flex flex-wrap gap-2"><Badge variant={statusVariant(status)}>{statusLabel(status,lang)}</Badge><Badge variant="secondary">{item.department_scope==='federal'?'Federal':item.department_scope==='punjab'?'Punjab':'Other'}</Badge></div>
+       {item.image_url&&<img src={item.image_url} alt={item.title_en+" job poster"} className="h-36 w-full rounded-xl object-contain bg-surface-container-low" loading="lazy"/>}
        <div className="space-y-1"><Link to={'/government-jobs/'+item.slug} className="text-base font-bold text-on-surface hover:text-primary">{bilingualText(lang,item.title_en,item.title_ur)}</Link><p className="text-xs font-semibold text-on-surface-variant">{item.department_name}</p><p className="text-xs text-on-surface-variant flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/>{item.location_text}</p></div>
        <p className="text-sm text-on-surface-variant line-clamp-3">{bilingualText(lang,item.summary_en||item.qualification_text,item.summary_ur)}</p>
        <div className="flex items-center justify-between gap-3 border-t border-outline-variant/40 pt-3"><span className="text-xs text-on-surface-variant inline-flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5"/>{formatJobDate(item.deadline_at,lang)}</span><Link to={'/government-jobs/'+item.slug} className="text-xs font-bold text-primary">View details →</Link></div>
