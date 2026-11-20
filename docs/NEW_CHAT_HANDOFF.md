@@ -712,3 +712,10 @@ Final UI detail: English/Urdu summary fields in Admin are multiline textareas in
 - Latest code commits include `e841ec4`, `e7f449b`, `5b3b418`, `d73ed4a`, and `8079852`; check current `main` head, CI and Pages deployment before claiming live.
 - Pending: confirm public RLS visibility, Storage policies/advisors, CI and Cloudflare deployment. Physical mobile-browser acceptance remains outstanding.
 - Next roadmap phase after Phase 1 is Government Schemes MVP; do not start it until the owner confirms the intended scope/approval in the next turn.
+
+
+## Phase 2 Government Schemes research handoff (20 Nov 2026)
+
+The owner requested that the next planned work start after the first job entry. Phase 2 research/design has therefore begun; no Phase 2 feature code, schema migration or scheme record has been added. Read `docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md` for official candidate programmes, current verification caveats, proposed additive tables/RLS/permission model, public/Admin UX and acceptance gates. Candidates include Apni Chhat Apna Ghar, Asaan Karobar Card, PM Youth Business & Agriculture Loan Scheme, Benazir Kafaalat and Benazir Hunarmand. Intake windows/terms must be reverified from official sources before any scheme is published.
+
+Phase 1 remains pending final production alias/browser and owner mobile QA. Do not start Phase 2 schema/code until that acceptance gate is cleared; the user's latest instruction authorises research/design at this point.
