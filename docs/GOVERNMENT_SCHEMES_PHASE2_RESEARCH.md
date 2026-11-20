@@ -52,7 +52,7 @@
 ### E. Federal — Benazir Hunarmand Programme
 - Official portal: https://hunarmand.bisp.gov.pk/
 - The official portal states that applicants must already be registered in the BISP Dynamic Registry, have at least Matric education, be aged 18–40, and only one person per family may register.
-- The portal says it is for registration only; applications are reviewed and only eligible candidates are selected. It also points to the nearest Tehsil Office as an in-person information/registration option. An older official guide PDF lists first-phase districts as Lahore, Karachi, Peshawar, Quetta, Islamabad, Rawalpindi, Gilgit and Muzaffarabad; it does not include Rahim Yar Khan / Sadiqabad. This older list may no longer reflect the current phase, so candidates must confirm current district/course availability before travelling.
+- The portal says it is for registration only; applications are reviewed and only eligible candidates are selected. It also points to the nearest Tehsil Office as an in-person information/registration option. An older BISP user-guide PDF is marked confidential and is not linked or reproduced publicly. The current public portal does not confirm Sadiqabad / Rahim Yar Khan course availability; candidates should confirm current district coverage before travelling.
 - **Publication caution:** Recheck whether registration is still open in the portal and confirm current district/course availability before labelling it open.
 - Suggested category: Skills / Training / Employment.
 - Source status: Official live portal found; intake availability and local course capacity need confirmation.
@@ -119,7 +119,7 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - The PMYB&ALS record distinguishes the three tiers still shown on the official portal from the PID Tier 4 release (PKR 7.5m–25m at 8% for up to eight years), links to the PMYP Digital Youth Hub, and flags the age-rule conflict between Radio Pakistan and the PID/portal.
 - The Asaan Karobar Card record states the PSIC processing and annual card fees, the 0% borrower markup and the repayable nature of the facility.
 - BISP record avoids a stale stipend amount, states that the dynamic survey is free and 8171 is the only official SMS number.
-- Benazir Hunarmand record flags that an older official guide lists only eight first-phase districts, excluding Rahim Yar Khan / Sadiqabad, and does not claim current local course availability.
+- Benazir Hunarmand record does not claim Sadiqabad course availability; an older guide PDF is marked confidential and is not exposed publicly.
 - Admin tab `Government Schemes` is gated by dedicated `government_schemes.manage` permission; Super Admin receives it through `my_permissions()`, and other staff require explicit permission.
 - Admin can create/edit/draft/publish/archive schemes, set intake status and verification/review dates, review public correction reports and inspect append-only revision snapshots.
 - Public “Report outdated information” accepts only a fixed reason choice; it does not accept free text or collect contact details, CNIC, OTP, bank or application data. Duplicate reports for the same scheme/reason are rate-limited to one per hour.
