@@ -602,3 +602,10 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 - PMYB&ALS content now relies on the PMYP portal for its three currently displayed tiers and Radio Pakistan's 8 November 2026 Government announcement for the raised PKR 25 million ceiling / minimum-age change. The new Tier 4 markup and tenor are not shown as confirmed because the portal / announcement page reviewed does not state them.
 - Benazir Kafaalat now links directly to the official programme page and BISP's anti-fraud / 8171 notice. Old stipend and PMT figures on the programme page are deliberately not repeated as current-cycle terms.
 - Applied/tracked migration: 20261120155746_government_schemes_official_content_review_v3.sql.
+
+
+### PMYB Tier 4 source update v5 — 20 November 2026
+
+- The official PID release (10 Nov 2026) confirms Tier 4 loans above PKR 7.5m up to PKR 25m at 8% markup for up to eight years. The PMYB&ALS information portal still displays the older three tiers, so the record tells applicants to confirm live form implementation.
+- Radio Pakistan's 8 Nov report says the minimum age was reduced to 18 for all; the PID Tier 4 release and older portal still state 21–45 (18 for IT/e-commerce). The public record explicitly flags this conflict rather than silently choosing one rule.
+- Applied/tracked migration: 20261120160458_government_schemes_pmyb_tier4_verified_v5.sql.
