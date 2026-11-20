@@ -208,3 +208,17 @@ Phase 0 was accepted by the owner. Phase 1 Government Jobs MVP is now implemente
 
 
 The final Admin form uses multiline English/Urdu summary inputs. Latest commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7`; CI run `44761553431` and Pages deployment `f9b5688a-2642-4f01-98cb-e328440cb476` succeeded.
+
+
+---
+
+## Phase 2 / Phase 3 status update — 20 November 2026
+
+The owner subsequently instructed that the next work start and continue without pausing; this authorised Government Schemes Phase 2 implementation. The Phase 2 MVP is now implemented and deployed. See:
+- docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md
+- docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md
+- docs/NEW_CHAT_HANDOFF.md
+
+Phase 2 includes five published official-source information records (all application intake statuses remain unconfirmed), public search/filters/detail pages, an Admin manager gated by government_schemes.manage, fixed-reason-only public correction reports, revision snapshots, RLS/grants/audit triggers and tracked migrations.
+
+Phase 3 Public Add Business + Owner Registration UX is the next planned feature phase. The existing Phase 0 baseline remains valid: preserve the moderated submission workflow, owner approval, business ownership, existing area IDs/slugs, plan entitlements and current RLS. No Phase 3 production changes have been made in this update.
