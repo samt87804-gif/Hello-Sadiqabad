@@ -1,0 +1,1 @@
+revoke insert(note) on public.government_scheme_reports from anon,authenticated;
