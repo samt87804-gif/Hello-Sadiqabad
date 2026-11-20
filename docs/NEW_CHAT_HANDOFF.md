@@ -730,3 +730,42 @@ Phase 1 remains pending final production alias/browser and owner mobile QA. Do n
 - Cloudflare Pages deployment `73263626-a9f9-43ba-a4df-f0a33dca493d` succeeded and carried alias `https://hellosadiqabad.com`. It includes the optional poster upload code. Later commits only updated Markdown handoff/research documents and were still queued when checked.
 - GitHub combined commit status did not expose check results; Pages build stage (`npm run build`) succeeded. Do not claim separate TypeScript check, unit tests or GitHub CI passed.
 - Production browser route was not verified: web fetch of the detail URL was inaccessible. Physical mobile/browser QA remains the owner acceptance task.
+
+
+---
+
+## Latest handoff — Government Schemes Phase 2 MVP (20 November 2026)
+
+Owner instructed: “ab agy ka kam shuru kro bina ruke”. Phase 2 Government Schemes implementation has therefore been authorised and started. Read docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md, docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md, docs/PROJECT_WORKING_RULES.md and docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md before any further code changes.
+
+### Implemented
+- Public /government-schemes and /government-schemes/:slug routes, search, Punjab/Federal, category and intake-status filters.
+- Five published official-source information records: Apni Chhat Apna Ghar; CM Punjab Asaan Karobar Card; PM Youth Business & Agriculture Loan Scheme; Benazir Kafaalat; Benazir Hunarmand.
+- All five have intake_status='unconfirmed'; the UI says to check the official portal and never claims applications are open. No unsupported deadline or stale BISP stipend amount is shown.
+- PMYB record distinguishes three tiers still shown on the official portal from Tier 4 announced by PID on 10 Nov 2026 (up to PKR 25m at 8%, up to 8 years); it warns that the new tier is not yet reflected on the portal page reviewed.
+- Asaan Karobar Card details include PSIC processing fee PKR 500 and annual fee PKR 25,000 + FED, 0% borrower markup, 3-year repayment and 33 instalments after 3-month grace.
+- BISP page warns that the survey is free and 8171 is the only official SMS number. Benazir Hunarmand page does not promise Sadiqabad course availability.
+- Admin Portal tab Government Schemes, permission government_schemes.manage, scheme CRUD/publish/archive/intake-status management, re-verification filter, public report queue and append-only revision history.
+- Open intake requires an official application URL and next-review date at both UI and DB level.
+- Report form stores reason + optional note only (no phone/email/CNIC/OTP/bank/application data), with a one-per-scheme/reason/hour uniqueness guard.
+
+### Supabase migrations applied and tracked
+- 20261120153621_government_schemes_mvp.sql
+- 20261120154049_government_schemes_fk_indexes.sql
+- 20261120154130_government_scheme_reports_authenticated_submit.sql
+- 20261120154355_government_schemes_official_seed_v1.sql
+- 20261120154533_government_schemes_open_intake_guard.sql
+- 20261120154622_government_scheme_revision_history.sql
+
+### Verification evidence
+- Five published rows exist; anonymous SQL role reads five.
+- Draft visibility test: anon sees zero drafts. Unauthorised authenticated insert into schemes was rejected.
+- Anonymous and authenticated report-insert tests passed inside rolled-back transactions; non-admin authenticated report SELECT returned zero.
+- Security Advisor: no new Government Schemes findings. Existing unrelated findings remain: private analytics gateway token table with RLS/no policy (INFO) and leaked-password protection disabled (WARN).
+- Performance Advisor: no unindexed foreign keys after indexes; unused-index notices on the new low-volume tables are expected until queries use them.
+- Cloudflare deployment be6a1a2d-a0c8-4a16-96e4-06e064ee3564 succeeded with alias https://hellosadiqabad.com and includes the initial Schemes UI. Later refinements (open-intake guard, status filter, Admin revision history) were committed after this deployment; query latest Pages deployment before claiming final live status.
+- GitHub combined status returned no check details; do not claim TypeScript/unit-test CI passed unless a later Actions run confirms.
+- Web browser fetch of production/preview routes was inaccessible; physical mobile/browser QA remains outstanding.
+
+### Next action
+Check the latest Cloudflare Pages build/deploy for the final code commits, then finish real browser/mobile QA. Reverify official intake before changing any scheme to open. Phase 3 Public Add Business + Owner Registration UX is the next planned feature phase; do not mix it into the Schemes MVP without reviewing the master plan's scope.
