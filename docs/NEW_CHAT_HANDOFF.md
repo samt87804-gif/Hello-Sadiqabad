@@ -770,3 +770,11 @@ Owner instructed: “ab agy ka kam shuru kro bina ruke”. Phase 2 Government Sc
 
 ### Next action
 Check the latest Cloudflare Pages build/deploy for the final code commits, then finish real browser/mobile QA. Reverify official intake before changing any scheme to open. Phase 3 Public Add Business + Owner Registration UX is the next planned feature phase; do not mix it into the Schemes MVP without reviewing the master plan's scope.
+
+
+### Official scheme content review v2
+
+- Apni Chhat record now includes the SMU page's three programme routes, including interest-free construction loans up to PKR 1.5m over seven years for qualifying plot owners; application intake remains unconfirmed because the SMU page's last-date statement is from 2025.
+- PMYB application link now points to the PMYP Digital Youth Hub, per the 10 Nov 2026 PID release. The old PMYB&ALS portal still displays three tiers; Tier 4 is announced but not assumed live in the old form.
+- Benazir Hunarmand links the official guide PDF. Its older first-phase district list excludes Rahim Yar Khan / Sadiqabad, but may be outdated; the page tells users to confirm current coverage before travelling.
+- Additional migration: 20261120155622_government_schemes_official_content_review_v2.sql.
