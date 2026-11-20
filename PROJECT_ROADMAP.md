@@ -652,3 +652,13 @@ Latest implementation commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7` (Admin 
 - [ ] Reconfirm current intake availability, exact eligibility and live application routes for each candidate scheme before publication.
 - [ ] Phase 1 final acceptance (production deployment alias and owner mobile/browser QA) remains a gate before Phase 2 schema/code implementation.
 - No Phase 2 database schema, production data or feature code has been changed yet.
+
+
+### Phase 1 deployment verification update (20 Nov 2026)
+
+- [x] Anonymous-role SQL test can read the published Network Support Consultant record; its poster field is NULL until the owner uploads an image.
+- [x] Government job poster Storage INSERT/UPDATE/DELETE policies are present and restricted to the `government-jobs/<auth.uid()>/` path plus Super Admin or `government_jobs.manage`.
+- [x] Supabase Security Advisor reported no new Government Jobs/Storage finding. Existing unrelated findings remain: private analytics gateway token table with no policy (INFO) and leaked-password protection disabled (WARN).
+- [x] Cloudflare Pages production deployment `73263626-a9f9-43ba-a4df-f0a33dca493d` succeeded with alias `https://hellosadiqabad.com`; it includes the optional poster upload code and the latest code state before docs-only Phase 2 handoff updates.
+- [ ] Physical mobile/browser acceptance remains outstanding. Web browsing tool could not fetch the production detail URL; do not claim browser rendering verified.
+- GitHub combined commit status did not expose check results in this run; Pages `npm run build` succeeded. Do not mark unit tests/typecheck/CI independently passed.
