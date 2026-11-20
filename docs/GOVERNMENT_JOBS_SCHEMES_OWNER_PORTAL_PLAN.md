@@ -1,6 +1,72 @@
+# Hello Sadiqabad — Master Plan & New-Chat Handoff
+
+> **START HERE in every new chat.** This document is the canonical handoff for the approved Government Jobs, Government Schemes and Business Owner Experience expansion. Read it before doing any work. Then read the linked permanent rules and current project documents listed below. Do not rely on old chat summaries as the source of truth.
+
+## 0. Owner approval and current checkpoint
+
+- **Owner approval:** The owner approved this plan on **20 November 2026** and authorised the work to proceed with **Phase 0 (requirements, data model, permissions, security and UX design)**.
+- **Current status:** Phase 0 is authorised for inspection/design/documentation. Feature implementation, schema migrations and production data changes have **not** been authorised by this approval and must wait for the relevant phase approval.
+- **Repository:** [samt87804-gif/Hello-Sadiqabad](https://github.com/samt87804-gif/Hello-Sadiqabad), work directly on `main`.
+- **Production:** https://hellosadiqabad.com
+- **Cloudflare Pages:** `hello-sadiqabad`
+- **Supabase project ref:** `efwohfzqitevkuybnyif`
+- **Immediate next action:** perform Phase 0 re-audit of current Admin permissions, moderation, audit logs, storage policies, schema/migration ledger and current UI; prepare proposed data model/RLS/permission design and UX/wireframes; document decisions and acceptance gates. Do not run migrations or alter production records in Phase 0.
+
+## 0.1 Required reading order for every new chat
+
+1. This file — complete feature plan, owner approval, phase status, trust rules and copy/paste handoff.
+2. `docs/PROJECT_WORKING_RULES.md` — permanent owner-confirmed working and safety rules; mandatory for every change.
+3. `PROJECT_ROADMAP.md` — live application-wide feature checklist.
+4. `docs/NEW_CHAT_HANDOFF.md` — latest cross-project continuation notes; reconcile it with current GitHub `main`.
+5. `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` — domain, security, SEO decisions and verification history.
+6. Relevant feature plans before touching those areas, especially `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md`, `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`, `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`, `docs/ANALYTICS_EXPANSION_ROADMAP.md`, and `DEPLOYMENT.md`.
+
+**Source-of-truth hierarchy:** current GitHub `main` code and `supabase/migrations/` for implemented behavior/schema; `PROJECT_ROADMAP.md` for app-wide checklist; `docs/PROJECT_WORKING_RULES.md` for permanent rules; the relevant feature plan for its scope and acceptance criteria; `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` for domain/security/SEO. If a handoff or chat summary conflicts with current code, migrations or these canonical documents, inspect and reconcile—do not blindly follow the stale note.
+
+## 0.2 Permanent project rules (quick reference)
+
+The complete, authoritative rules remain in `docs/PROJECT_WORKING_RULES.md`. These mandatory rules are reproduced here so this plan remains useful when opened on its own:
+
+1. **Protect production:** Hello Sadiqabad serves real visitors. Prefer narrow, backward-compatible, additive changes; do not rewrite working architecture for convenience.
+2. **Direct main only:** commit directly to GitHub `main`. Do not create feature branches or Pull Requests unless the owner explicitly changes this rule.
+3. **Inspect before every change:** inspect current implementation, callers, tests, configuration, routes, data flow, migrations, RLS, permissions and relevant Cloudflare/Supabase settings before editing.
+4. **Preserve all existing data:** never delete, truncate, bulk-replace, re-seed over or mutate existing business, user, review, inquiry, owner, media or operational data. No destructive DB action without explicit owner approval. Prefer additive, reversible changes.
+5. **Preserve security boundaries:** never bypass or weaken RLS, authentication, authorization, moderation, validation, rate limits or privacy. Never put service-role keys, tokens or secrets in frontend code, GitHub or chat.
+6. **No collateral changes:** keep commits narrowly scoped; do not opportunistically refactor unrelated components, dependencies, styles, routes or business logic.
+7. **No fabricated public facts:** do not invent businesses, owners, contact details, opening hours, images, sources, reviews, government job/scheme facts or eligibility.
+8. **Verify with evidence:** run relevant tests, TypeScript checks, production build and CI; verify Cloudflare Pages deployment and affected production endpoints where possible. A green build is not proof of every user journey. Never claim checks that were not performed.
+9. **Keep documentation current:** after meaningful progress, update this feature plan, `PROJECT_ROADMAP.md` and `docs/NEW_CHAT_HANDOFF.md`. Mark work complete only when acceptance evidence exists. Distinguish planned, implemented, CI-passed, deployed, endpoint-tested, browser-tested and device-tested.
+10. **Respect phase gates:** follow the documented order. Do not skip blockers or mark a phase accepted before its criteria pass. Record blockers and the next safe action.
+11. **Owner-only actions:** perform technical work available through connected tools. Ask the owner only for actions genuinely requiring their dashboard/private account, factual local verification, real-world participation or explicit approval. Never ask for passwords/private keys.
+12. **Communication:** concise Roman Urdu updates. Clearly state what changed, what was tested, what is live, what remains unverified and any owner action required.
+
+### Database, deployment and offline safeguards
+
+- The live Supabase migration ledger differs from the consolidated repository baseline. Never replay the baseline, run an unreviewed schema push or assume the live ledger matches repository files.
+- Do not modify Cloudflare DNS, Pages environment variables, Workers, R2, Auth dashboard settings or infrastructure unless required, reviewed and explicitly within scope.
+- Keep `https://hellosadiqabad.com` as the canonical production domain; do not introduce a second indexable hostname.
+- Commits to `main` trigger production deployment. Check the matching CI and Pages deployment before calling a change live.
+- Never expose private customer/owner/admin data in public endpoints, logs, offline bundles or client storage.
+- Offline downloads may contain only public, anonymous-RLS-approved data. Never cache Admin/Owner/auth/private data. Never queue submissions or report server writes as successful offline. Preserve the existing PWA/service-worker compatibility and online Supabase source-of-truth behavior.
+
+## 0.3 Project-wide continuation snapshot (verify current state before acting)
+
+- Public chatbot Parts 1–3 are implemented and deployed, including public-only retrieval and a Super Admin manual full-refresh control. Owner's first authenticated refresh and physical mobile/device checks were pending in the latest handoff. No vector index or model fine-tuning exists.
+- Domain/SEO/security work has a separate master plan; Google indexing/ranking must never be claimed without Search Console evidence.
+- Offline-first PWA has its own phase plan and strict public-only cache/write safeguards.
+- Advanced analytics has its own implementation and expansion plans; retain privacy controls, permission boundaries and aggregate-only reporting.
+- Business share-card SEO and mobile share popup changes have their own recorded verification checkpoints; re-check current main/CI/deploy before making claims.
+- These notes are orientation only. Re-read the current handoff and feature-specific plans for exact commit IDs, deployment evidence and remaining checks.
+
+## 0.4 Copy/paste instruction for a new chat
+
+> We are continuing the existing **Hello Sadiqabad** project; do not start from scratch. First read `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md` (this file), `docs/PROJECT_WORKING_RULES.md`, `PROJECT_ROADMAP.md`, `docs/NEW_CHAT_HANDOFF.md`, and the relevant master/feature plans. Inspect current GitHub `main`, migrations, RLS and live configuration before any change. Work directly on `main`; no branches/PRs. Preserve production data and all security/moderation boundaries. The owner approved the Jobs, Schemes and Owner Experience plan on 20 November 2026 and authorised **Phase 0 design/audit only**. Start with Phase 0; do not implement features, apply migrations or mutate production data until the relevant later phase is explicitly authorised. Keep this document, roadmap and handoff updated with evidence. Communicate in concise Roman Urdu.
+
+---
+
 # Hello Sadiqabad — Government Jobs, Government Schemes & Owner Experience Plan
 
-**Status:** Planning approved for documentation only · No feature code or database schema changed  
+**Status:** Owner-approved plan · Phase 0 (audit/design/documentation) authorised · Feature implementation and database changes not yet authorised  
 **Prepared:** 20 November 2026  
 **Repository:** `samt87804-gif/Hello-Sadiqabad` · `main`  
 **Production:** https://hellosadiqabad.com
