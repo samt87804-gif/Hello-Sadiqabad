@@ -93,7 +93,7 @@ export async function onRequestGet({ request, env }) {
     // Only the redacted owner_public_profile_directory view is eligible.
     const [
       categories, areas, businesses, news, pages, authorityProfiles, ownerProfiles,
-      localAuthorities, emergencyContacts, offers, announcements, governmentJobs,
+      localAuthorities, emergencyContacts, offers, announcements, governmentJobs, governmentSchemes,
     ] = await Promise.all([
       fetchPublicRows(baseUrl, publicKey, 'categories', 'id,slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
       fetchPublicRows(baseUrl, publicKey, 'areas', 'id,slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
@@ -107,6 +107,7 @@ export async function onRequestGet({ request, env }) {
       fetchPublicRows(baseUrl, publicKey, 'offers', 'id,valid_from,valid_to,updated_at', { status: 'eq.active', valid_from: 'lte.' + today, valid_to: 'gte.' + today }),
       fetchPublicRows(baseUrl, publicKey, 'announcements', 'id,start_date,end_date,updated_at', { is_active: 'eq.true' }),
       fetchPublicRows(baseUrl, publicKey, 'government_jobs', 'slug,published_at,updated_at,status', { status: 'in.(published,closed,expired)', published_at: 'lte.' + nowIso }, 'slug.asc'),
+      fetchPublicRows(baseUrl, publicKey, 'government_schemes', 'slug,published_at,updated_at,status', { status: 'eq.published', published_at: 'lte.' + nowIso }, 'slug.asc'),
     ]);
 
     const activeAnnouncements = announcements.filter((row) => isCurrentAnnouncement(row, now.getTime()));
@@ -124,6 +125,7 @@ export async function onRequestGet({ request, env }) {
     if (activeAnnouncements.length > 0) entries.push({ path: '/announcements' });
     if (news.length > 0) entries.push({ path: '/news' });
     if (governmentJobs.length > 0) entries.push({ path: '/government-jobs' });
+    if (governmentSchemes.length > 0) entries.push({ path: '/government-schemes' });
     if (authorityProfiles.length > 0) entries.push({ path: '/authority-profiles' });
 
     addSlugEntries(entries, indexableTaxonomy.categories, '/category');
@@ -131,6 +133,7 @@ export async function onRequestGet({ request, env }) {
     addSlugEntries(entries, businesses, '/business');
     addSlugEntries(entries, news, '/news');
     addSlugEntries(entries, governmentJobs, '/government-jobs');
+    addSlugEntries(entries, governmentSchemes, '/government-schemes');
     addSlugEntries(entries, authorityProfiles, '/authority-profiles');
     for (const profile of ownerProfiles) {
       if (typeof profile.owner_id === 'string' && SAFE_UUID.test(profile.owner_id)) {
