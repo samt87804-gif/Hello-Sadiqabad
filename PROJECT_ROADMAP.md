@@ -576,9 +576,9 @@ The admin “Train / Sync Latest Information to Chatbot” button and its manual
 
 ## New product expansion plan — Jobs, Schemes & Owner Portal (20 November 2026)
 
-**Planning only — no implementation or database changes started.** Full specification: [Government Jobs, Schemes & Owner Portal Plan](docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md).
+**Owner approved 20 November 2026. Phase 0 audit/design/documentation is authorised; feature implementation and database changes are not yet authorised.** Canonical handoff, permanent-rule quick reference and full specification: [Hello Sadiqabad Master Plan & New-Chat Handoff](docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md).
 
-- [ ] Phase 0 — approve scope, data fields, admin permissions, official-source verification, RLS/storage design and UX.
+- [ ] Phase 0 — complete the authorised audit/design: confirm scope and fields, inspect admin permissions/moderation/audit logs/schema/migration ledger/RLS/storage, prepare additive data model and UX proposal, and obtain acceptance of the design before implementation.
 - [ ] Phase 1 — Government Jobs MVP: Admin-managed verified jobs, public listing/detail pages, filters, deadlines, official advertisement and apply links.
 - [ ] Phase 2 — Government Schemes MVP: Punjab + Federal scheme directory, benefits, source-backed eligibility/document checklists, official application/status links, scheme phase history and anti-scam guidance.
 - [ ] Phase 3 — Public Add Business + Owner Registration redesign: accessible searchable bilingual area picker for 314+ areas, no default area selection, guided form, better address/contact/location details and privacy consent.
@@ -592,4 +592,4 @@ Planning baseline inspected:
 - Owner listing editor src/components/owner/ListingEditor.tsx already has a multi-step flow, LocationPicker, opening-hours editor and some plan-aware locks. Current live plans: Free, Basic and Premium; the plan table is the source of truth for limits/features.
 - Public new-business requests continue through existing moderation; this plan must not bypass it.
 - Initial official research sources and scam-safety requirements are recorded in the feature plan.
-- Next action: owner reviews/approves the planning defaults and then authorises Phase 0/Phase 1 separately. Do not start implementation merely because this plan exists.
+- Owner approved the plan and authorised Phase 0 on 20 November 2026. Next: complete Phase 0 inspection/design/documentation only. No feature code, schema migration or production data change is authorised yet; obtain explicit approval before Phase 1 implementation.
