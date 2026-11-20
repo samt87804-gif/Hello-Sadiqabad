@@ -587,3 +587,40 @@ Read `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md` for architecture, scope and verific
 - GitHub Actions run `44607374336` passed TypeScript, automated tests, production build and Edge Function checks. Cloudflare Pages deployment `f59c46e9-e0e6-494f-ad41-8cd2ddcbba26` succeeded for final commit `700dc172b70624c539373ad185ba620b538dfff5`.
 - Production API smoke test: unauthenticated GET and POST both returned HTTP 401.
 - **Pending verification:** owner runs the first authenticated full refresh using an active Super Admin session; physical mobile/device interaction.
+
+
+## New requested work — Government Jobs, Schemes & Owner Portal (20 November 2026)
+
+**Plan saved; implementation not yet authorised.** Read docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md before starting.
+
+Owner wants Hello Sadiqabad to become a daily-use local information platform with:
+1. Government Jobs — manually Admin-managed; assistant may research official sources and prepare drafts when asked; only official-source verified listings should publish.
+2. Government Schemes — Punjab and Federal programmes clearly labelled separately (examples include housing, loans, agriculture, education, BISP and current fuel relief), with source-backed eligibility, documents, deadlines/status and official redirect URLs.
+3. Add Business and Owner Portal — guided public form, searchable bilingual area picker, improved business details, and visible but locked Premium/Basic benefits for Free users.
+
+Inspected baseline:
+- src/pages/AddBusiness.tsx: simple public request form; native Category/Area selects; currently selects first loaded area/category; business requests remain moderated.
+- Live public area dataset: 314 active rows.
+- src/pages/OwnerRegistration.tsx: pending owner account request with Admin approval; no direct account creation.
+- src/pages/owner/OwnerPortalPages.tsx, src/components/owner/OwnerNav.tsx, src/components/owner/ListingEditor.tsx, src/components/owner/OwnerModules.tsx: existing owner portal/editor and plan-aware UI.
+- Live plans table already contains Free, Basic, Premium limits/features; existing locks include some WhatsApp/social/offers. New work should complete/standardise the plan-driven experience rather than replace it.
+- Existing area IDs/slugs, business rows, submissions, ownership, moderation and RLS must remain intact.
+
+Suggested delivery order:
+- Phase 0: approve requirements, permissions, data model, source verification and UX.
+- Phase 1: Government Jobs MVP.
+- Phase 2: Government Schemes MVP.
+- Phase 3: Add Business and Owner Registration form redesign.
+- Phase 4: Owner Portal locked benefits, quotas and guided completeness.
+- Phase 5: daily-use home widgets, saved items, opt-in alerts/digests and verified chatbot integration.
+
+Trust/security:
+- Official source URL or official advertisement is required for every published job/scheme; assistant research creates drafts only, Admin controls publication.
+- No automatic scraping/auto-publishing in MVP.
+- Show last verified date, source and status; distinguish Punjab and Federal schemes.
+- Never collect CNIC, OTP, passwords, bank details or biometric data; no in-app applications or eligibility guarantees.
+- Public Add Business stays moderated; submitter private contact is never public by default.
+- UI plan locks must be backed by existing database/RPC/RLS enforcement.
+- No schema changes, code implementation, or changes to existing records have been made for this new plan.
+
+Official source starting points and detailed fields, routes, acceptance tests and owner decisions are in the feature plan. Owner must explicitly authorise a phase before implementation.
