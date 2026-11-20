@@ -128,17 +128,18 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - Scheme create/update and report review are audit logged; scheme changes also create append-only before/after snapshots.
 
 ### Applied migrations
-- `20261120153621_government_schemes_mvp.sql`
-- `20261120154049_government_schemes_fk_indexes.sql`
-- `20261120154130_government_scheme_reports_authenticated_submit.sql`
-- `20261120154355_government_schemes_official_seed_v1.sql`
-- `20261120154533_government_schemes_open_intake_guard.sql`
-- `20261120154622_government_scheme_revision_history.sql`
-- `20261120155217_government_scheme_reports_no_public_note.sql`
-- `20261120155622_government_schemes_official_content_review_v2.sql`
-- `20261120155746_government_schemes_official_content_review_v3.sql
-- `20261120155900_government_schemes_pmyb_source_attribution_v4.sql`
-- `20261120160458_government_schemes_pmyb_tier4_verified_v5.sql``
+- 20261120153621_government_schemes_mvp.sql
+- 20261120154049_government_schemes_fk_indexes.sql
+- 20261120154130_government_scheme_reports_authenticated_submit.sql
+- 20261120154355_government_schemes_official_seed_v1.sql
+- 20261120154533_government_schemes_open_intake_guard.sql
+- 20261120154622_government_scheme_revision_history.sql
+- 20261120155217_government_scheme_reports_no_public_note.sql
+- 20261120155622_government_schemes_official_content_review_v2.sql
+- 20261120155746_government_schemes_official_content_review_v3.sql
+- 20261120155900_government_schemes_pmyb_source_attribution_v4.sql
+- 20261120160458_government_schemes_pmyb_tier4_verified_v5.sql
+- 20261120160642_government_schemes_hunarmand_public_source_only_v6.sql
 
 ### Remaining acceptance
 - Reconfirm each programme's live intake, current application URL and any changed eligibility/fees immediately before changing its intake status to open.
