@@ -22,7 +22,8 @@ export type PermissionKey =
   | 'analytics.view'
   | 'announcements.manage'
   | 'settings.manage'
-  | 'government_jobs.manage';
+  | 'government_jobs.manage'
+  | 'government_schemes.manage';
 
 export type PlanCode = 'free' | 'basic' | 'premium';
 
@@ -619,4 +620,28 @@ export interface GovernmentJobRow {
  source_name:string|null; source_url:string|null; source_document_url:string|null; image_url:string|null; verified_at:string|null;
  next_review_at:string|null; created_by:string|null; updated_by:string|null; published_by:string|null;
  created_at:string; updated_at:string;
+}
+
+
+export type GovernmentSchemeScope = 'punjab' | 'federal';
+export type GovernmentSchemeCategory = 'housing' | 'business_finance' | 'agriculture' | 'education' | 'social_protection' | 'skills' | 'health' | 'other';
+export type GovernmentSchemeBenefitType = 'grant' | 'loan' | 'cash_transfer' | 'subsidy' | 'training' | 'housing' | 'service' | 'other';
+export type GovernmentSchemeIntakeStatus = 'unconfirmed' | 'upcoming' | 'open' | 'paused' | 'closed' | 'expired' | 'cancelled';
+export type GovernmentSchemeStatus = 'draft' | 'published' | 'archived';
+export type GovernmentSchemeReportReason = 'incorrect_information' | 'broken_official_link' | 'intake_status_changed' | 'other';
+
+export interface GovernmentSchemeRow {
+ id:string; slug:string; title_en:string; title_ur:string|null; summary_en:string|null; summary_ur:string|null;
+ government_scope:GovernmentSchemeScope; category:GovernmentSchemeCategory; benefit_type:GovernmentSchemeBenefitType;
+ benefit_details:string; eligibility_text:string; required_documents:string[]; application_steps:string|null; fees_and_repayment:string|null;
+ official_apply_url:string|null; source_name:string|null; source_url:string|null; source_document_url:string|null;
+ intake_status:GovernmentSchemeIntakeStatus; application_open_at:string|null; deadline_at:string|null;
+ status:GovernmentSchemeStatus; published_at:string|null; verified_at:string|null; next_review_at:string|null;
+ created_by:string|null; updated_by:string|null; published_by:string|null; created_at:string; updated_at:string;
+}
+
+export interface GovernmentSchemeReportRow {
+ id:string; scheme_id:string; reason:GovernmentSchemeReportReason; note:string|null; report_hour:string;
+ reviewed_at:string|null; reviewed_by:string|null; review_note:string|null; created_at:string;
+ scheme?:{title_en:string;slug:string}|null;
 }
