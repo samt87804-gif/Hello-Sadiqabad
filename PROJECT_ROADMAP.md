@@ -573,3 +573,23 @@ The admin “Train / Sync Latest Information to Chatbot” button and its manual
 - Production unauthenticated GET/POST tests returned HTTP 401. Positive full sync requires the owner to use their active Super Admin session.
 - Full refresh is implemented; incremental sync, vector search and model fine-tuning are not.
 - Mobile/device verification remains outstanding.
+
+## New product expansion plan — Jobs, Schemes & Owner Portal (20 November 2026)
+
+**Planning only — no implementation or database changes started.** Full specification: [Government Jobs, Schemes & Owner Portal Plan](docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md).
+
+- [ ] Phase 0 — approve scope, data fields, admin permissions, official-source verification, RLS/storage design and UX.
+- [ ] Phase 1 — Government Jobs MVP: Admin-managed verified jobs, public listing/detail pages, filters, deadlines, official advertisement and apply links.
+- [ ] Phase 2 — Government Schemes MVP: Punjab + Federal scheme directory, benefits, source-backed eligibility/document checklists, official application/status links, scheme phase history and anti-scam guidance.
+- [ ] Phase 3 — Public Add Business + Owner Registration redesign: accessible searchable bilingual area picker for 314+ areas, no default area selection, guided form, better address/contact/location details and privacy consent.
+- [ ] Phase 4 — Owner Portal improvements: visible but locked Basic/Premium benefits on Free, quota/plan clarity, guided profile completion and consistent plan enforcement through RLS/RPC.
+- [ ] Phase 5 — daily-use engagement: home-page latest jobs/schemes, saved items, opt-in alerts, digest and chatbot integration after source/public-field review.
+
+Planning baseline inspected:
+- Public Add Business is src/pages/AddBusiness.tsx; it currently collects business name, category, area, phone, optional WhatsApp, address, facilities, short description and submitter contact. Area is a native select that preselects the first area.
+- The active area table currently contains 314 areas.
+- Owner account request is /owner-register; Owner Portal navigation is src/components/owner/OwnerNav.tsx; owner page flows are in src/pages/owner/OwnerPortalPages.tsx.
+- Owner listing editor src/components/owner/ListingEditor.tsx already has a multi-step flow, LocationPicker, opening-hours editor and some plan-aware locks. Current live plans: Free, Basic and Premium; the plan table is the source of truth for limits/features.
+- Public new-business requests continue through existing moderation; this plan must not bypass it.
+- Initial official research sources and scam-safety requirements are recorded in the feature plan.
+- Next action: owner reviews/approves the planning defaults and then authorises Phase 0/Phase 1 separately. Do not start implementation merely because this plan exists.
