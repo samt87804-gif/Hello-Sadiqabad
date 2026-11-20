@@ -541,7 +541,7 @@ An optional poster upload was added to the Admin Government Jobs form. It accept
 - Search, Punjab/Federal scope, category and intake-status filters.
 - Bilingual scheme titles; benefit type, benefits, eligibility, documents, steps, fees/repayment, official information/application links, verification and next-review dates.
 - Intake-unconfirmed banner. An unconfirmed scheme is never labelled “Apply Now”; links say to check the official portal.
-- “Report outdated information” stores only a reason and optional short note (max 500 chars); no contact details or sensitive application data.
+- “Report outdated information” stores only a fixed reason code; no public free-text, contact details or sensitive application data.
 
 ### Initial official-source records
 Five records are published as information pages, all with `intake_status='unconfirmed'`:
