@@ -48,6 +48,7 @@ export async function upsertGovernmentScheme(
  }
  const status=scheme.status??'draft';
  if(status==='published'){
+  if(scheme.intake_status==='open'&&(!scheme.official_apply_url||!scheme.next_review_at))throw new Error('An open intake requires an official application URL and a next review date.');
   if(!scheme.summary_en?.trim()||scheme.summary_en.trim().length<20)throw new Error('Publishing requires an English summary of at least 20 characters.');
   if(!scheme.source_name?.trim()||!scheme.source_url?.trim()||!scheme.verified_at)throw new Error('Publishing requires an official source name, source URL and verified timestamp.');
  }
