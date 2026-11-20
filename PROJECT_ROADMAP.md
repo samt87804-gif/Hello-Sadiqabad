@@ -643,3 +643,12 @@ Latest implementation commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7` (Admin 
 - [x] Added optional job poster upload in Admin using the existing public Storage bucket, scoped Storage RLS policies, 5 MB client-side validation and JPG/PNG/WebP/AVIF support. Image is optional and can be added later; public detail and listing cards render it when supplied.
 - [x] Added nullable `government_jobs.image_url` column and tracked migration `20261120152313_government_jobs_optional_poster_image.sql`.
 - [ ] Run final CI/deployment verification and owner-side browser/mobile QA. No other feature phase is claimed complete.
+
+
+## Government Schemes — Phase 2 research started (20 Nov 2026)
+
+- [x] Owner asked to begin the next planned work after the first Government Job entry; this is treated as approval for Phase 2 research/design.
+- [x] Official-source candidate research and safety/data-model proposal recorded in `docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md`.
+- [ ] Reconfirm current intake availability, exact eligibility and live application routes for each candidate scheme before publication.
+- [ ] Phase 1 final acceptance (production deployment alias and owner mobile/browser QA) remains a gate before Phase 2 schema/code implementation.
+- No Phase 2 database schema, production data or feature code has been changed yet.
