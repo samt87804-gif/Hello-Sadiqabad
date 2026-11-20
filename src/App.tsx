@@ -38,6 +38,7 @@ const Announcements = lazy(() =>
 );
 const News = lazy(() => import('./pages/News').then((m) => ({ default: m.News })));
 const GovernmentJobs = lazy(() => import('./pages/GovernmentJobs').then((m) => ({ default: m.GovernmentJobs })));
+const GovernmentSchemes = lazy(() => import('./pages/GovernmentSchemes').then((m) => ({ default: m.GovernmentSchemes })));
 const StaticPage = lazy(() => import('./pages/StaticPage').then((m) => ({ default: m.StaticPage })));
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })));
 const OwnerRegistration = lazy(() => import('./pages/OwnerRegistration').then((m) => ({ default: m.OwnerRegistration })));
@@ -267,6 +268,7 @@ function RouteIndexing() {
       '/announcements',
       '/news',
       '/government-jobs',
+      '/government-schemes',
       '/about',
       '/advertise',
       '/contact',
@@ -398,6 +400,8 @@ export default function App() {
                     <Route path="/news/:slug" element={<News />} />
                     <Route path="/government-jobs" element={<GovernmentJobs />} />
                     <Route path="/government-jobs/:slug" element={<GovernmentJobs />} />
+                    <Route path="/government-schemes" element={<GovernmentSchemes />} />
+                    <Route path="/government-schemes/:slug" element={<GovernmentSchemes />} />
 
                     {/* Static Civic & Legal Pages */}
                     <Route path="/about" element={<StaticPage slug="about" />} />
