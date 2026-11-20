@@ -282,6 +282,7 @@ function RouteIndexing() {
       /^\/(?:category|area|business)\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
       /^\/news\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
       /^\/government-jobs\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      /^\/government-schemes\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
       /^\/authority-profiles\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
       /^\/owner-profile\/[0-9a-f-]{36}$/i,
     ];
