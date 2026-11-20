@@ -471,7 +471,7 @@ The audit inspected the current `main` code snapshot and live Supabase schema, m
 
 **Owner approval:** Explicit approval received to begin Phase 1 Government Jobs MVP after Phase 0 design acceptance.
 
-**Implemented in latest code commit `fffb81c62d7672414f5f99681604633f95da8731` (initial implementation commit `464691c9542ae753ec4a7b320d097b72136e13ce`):**
+**Implemented in latest code commit `9e86b6505737ca5d666550e9df4b3a58566a12f7` (initial implementation commit `464691c9542ae753ec4a7b320d097b72136e13ce`):**
 - Public routes: `/government-jobs` and `/government-jobs/:slug`.
 - Admin Government Jobs manager: create drafts, edit, publish, close, cancel, duplicate drafts, and re-verification queue.
 - Dedicated `government_jobs.manage` permission added to the permission type, staff permission matrix, Admin navigation/tab, and `public.my_permissions()`. No broad staff-type defaults grant it.
@@ -494,15 +494,18 @@ The audit inspected the current `main` code snapshot and live Supabase schema, m
 
 Matching SQL files are tracked under `supabase/migrations/`. This environment did not have a local Supabase CLI/repository checkout; migrations were applied with the connected Supabase migration operation and the exact versioned SQL was committed to the repository. Do not replay these versions.
 
-**Verification:** GitHub Actions CI passed for latest code commit `fffb81c62d7672414f5f99681604633f95da8731`; Cloudflare Pages production deployment completed successfully and the deployment alias includes `https://hellosadiqabad.com`. Live Supabase RLS/grants/triggers and Advisor snapshot were checked. The new table contains zero job records; Admin must add/review official-source jobs before the public page has content. Physical mobile-browser testing is still outstanding.
+**Verification:** GitHub Actions CI passed for latest code commit `9e86b6505737ca5d666550e9df4b3a58566a12f7`; Cloudflare Pages production deployment completed successfully and the deployment alias includes `https://hellosadiqabad.com`. Live Supabase RLS/grants/triggers and Advisor snapshot were checked. The new table contains zero job records; Admin must add/review official-source jobs before the public page has content. Physical mobile-browser testing is still outstanding.
 
 **Scope boundary:** Government Schemes, Add Business, Owner Registration and Owner Portal enhancements are not included in this Phase 1 implementation.
 
 
 ### Phase 1 follow-up checkpoint — 20 November 2026
 
-Latest code commit: `fffb81c62d7672414f5f99681604633f95da8731`. CI passed (GitHub Actions run `44761298472`) and Cloudflare Pages deployment `e93e9f10-1cca-4539-9b6f-539c47354f9f` succeeded with the production alias `https://hellosadiqabad.com`.
+Latest code commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7`. CI passed (GitHub Actions run `44761553431`) and Cloudflare Pages deployment `f9b5688a-2642-4f01-98cb-e328440cb476` succeeded with the production alias `https://hellosadiqabad.com`.
 
 The MVP was rounded out with bilingual English/Urdu summaries, department and job-type filters, explicit Upcoming status based on Pakistan local date, desktop/mobile/footer navigation links, and a duplicate-warning prompt in Admin. The English summary is required before publication; Urdu summary is optional. A record is still not published unless the Admin confirms official-source verification and supplies source name, HTTPS source URL and verified date.
 
 **Remaining acceptance work:** owner/Admin should test the live Admin tab and public routes on a physical mobile device, then manually add the first official-source job records. The app has not imported or published any job data automatically.
+
+
+The Admin summary fields use multiline textareas; this small UX adjustment is included in final code commit `9e86b6505737ca5d666550e9df4b3a58566a12f7`.

@@ -626,7 +626,7 @@ Planning baseline inspected:
 
 ## Government Jobs — Phase 1 final implementation delta (20 Nov 2026)
 
-Latest implementation commit: `fffb81c62d7672414f5f99681604633f95da8731`.
+Latest implementation commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7` (Admin summary fields now use multiline textareas).
 - [x] English summary required for publication; optional Urdu summary shown when available.
 - [x] Department and job-type filters added alongside government-level, active/archive and text search.
 - [x] Upcoming status uses `application_open_at` in Asia/Karachi; expired state uses Pakistan local date.

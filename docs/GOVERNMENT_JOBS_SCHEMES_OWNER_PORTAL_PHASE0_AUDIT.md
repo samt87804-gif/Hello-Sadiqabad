@@ -204,4 +204,7 @@ The Phase 0 audit remains a read-only snapshot of the original architecture. Its
 
 ### Phase 1 implementation status update — 20 November 2026
 
-Phase 0 was accepted by the owner. Phase 1 Government Jobs MVP is now implemented in latest code commit `fffb81c62d7672414f5f99681604633f95da8731`; CI passed and Cloudflare Pages production deployment succeeded. The live database includes the bilingual summary fields and all five Government Jobs migrations are recorded in the master plan. Physical mobile-browser acceptance and initial manual official-source content entry remain outstanding.
+Phase 0 was accepted by the owner. Phase 1 Government Jobs MVP is now implemented in latest code commit `9e86b6505737ca5d666550e9df4b3a58566a12f7`; CI passed and Cloudflare Pages production deployment succeeded. The live database includes the bilingual summary fields and all five Government Jobs migrations are recorded in the master plan. Physical mobile-browser acceptance and initial manual official-source content entry remain outstanding.
+
+
+The final Admin form uses multiline English/Urdu summary inputs. Latest commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7`; CI run `44761553431` and Pages deployment `f9b5688a-2642-4f01-98cb-e328440cb476` succeeded.
