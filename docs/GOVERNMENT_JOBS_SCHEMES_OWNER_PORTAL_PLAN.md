@@ -580,6 +580,6 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 - Unauthorised authenticated insert into schemes was rejected by RLS.
 - Supabase Security Advisor shows no new findings for Government Schemes. Existing unrelated warnings remain: private analytics gateway token table has RLS with no policy (INFO) and leaked-password protection disabled (WARN).
 - Performance Advisor reports no unindexed foreign keys after indexes; unused-index notices on the new low-volume tables are expected until queries use them.
-- Cloudflare Pages build/deploy success was recorded for deployment `be6a1a2d-a0c8-4a16-96e4-06e064ee3564` with production alias. This deployment includes the initial Schemes page/Admin components; a final deployment after later history/filter guard refinements must be checked.
+- Final Cloudflare Pages deployment `ec963236-1709-4eee-9618-59185c891b96` succeeded after the final UI refinements, with alias `https://hellosadiqabad.com`; its `npm run build` stage succeeded and deployed assets include the Government Schemes public page and Admin bundle.
 - GitHub combined status returned no check details. Do not claim TypeScript/unit-test CI passed unless a later Actions run confirms it.
 - Browser fetch of production and preview routes was inaccessible; physical mobile/browser QA remains outstanding.
