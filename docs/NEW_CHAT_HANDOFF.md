@@ -742,7 +742,7 @@ Owner instructed: “ab agy ka kam shuru kro bina ruke”. Phase 2 Government Sc
 - Public /government-schemes and /government-schemes/:slug routes, search, Punjab/Federal, category and intake-status filters.
 - Five published official-source information records: Apni Chhat Apna Ghar; CM Punjab Asaan Karobar Card; PM Youth Business & Agriculture Loan Scheme; Benazir Kafaalat; Benazir Hunarmand.
 - All five have intake_status='unconfirmed'; the UI says to check the official portal and never claims applications are open. No unsupported deadline or stale BISP stipend amount is shown.
-- PMYB record distinguishes three tiers still shown on the official portal from Tier 4 announced by PID on 10 Nov 2026 (up to PKR 25m at 8%, up to 8 years); it warns that the new tier is not yet reflected on the portal page reviewed.
+- PMYB record distinguishes the three tiers still shown on the official portal from the Government's 8 Nov 2026 announcement (reported by Radio Pakistan) raising the ceiling to PKR 25m; it does not claim a Tier 4 markup / tenor not shown in the official portal / announcement page reviewed.
 - Asaan Karobar Card details include PSIC processing fee PKR 500 and annual fee PKR 25,000 + FED, 0% borrower markup, 3-year repayment and 33 instalments after 3-month grace.
 - BISP page warns that the survey is free and 8171 is the only official SMS number. Benazir Hunarmand page does not promise Sadiqabad course availability.
 - Admin Portal tab Government Schemes, permission government_schemes.manage, scheme CRUD/publish/archive/intake-status management, re-verification filter, public report queue and append-only revision history.
@@ -778,3 +778,10 @@ Check the latest Cloudflare Pages build/deploy for the final code commits, then 
 - PMYB application link now points to the PMYP Digital Youth Hub, per the 10 Nov 2026 PID release. The old PMYB&ALS portal still displays three tiers; Tier 4 is announced but not assumed live in the old form.
 - Benazir Hunarmand links the official guide PDF. Its older first-phase district list excludes Rahim Yar Khan / Sadiqabad, but may be outdated; the page tells users to confirm current coverage before travelling.
 - Additional migration: 20261120155622_government_schemes_official_content_review_v2.sql.
+
+
+### Official source verification v3
+
+- PMYB&ALS now links to the PMYP Digital Youth Hub. Its info portal still shows three tiers; the Government's 8 Nov 2026 announcement reported by Radio Pakistan raises the ceiling to PKR 25m and changes the minimum-age policy, but detailed new Tier 4 markup / tenor are not asserted because they are not confirmed in the official portal / announcement page reviewed.
+- Benazir Kafaalat now links directly to the official programme page and anti-fraud / 8171 notice. Old stipend and PMT values are not repeated as current-cycle terms.
+- Migration 20261120155746_government_schemes_official_content_review_v3.sql is applied and tracked.
