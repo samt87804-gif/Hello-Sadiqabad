@@ -551,7 +551,7 @@ Five records are published as information pages, all with `intake_status='unconf
 4. Federal — Benazir Kafaalat
 5. Federal — Benazir Hunarmand
 
-The PMYB&ALS record separates the three tiers still displayed by the official portal from the Government's 8 November 2026 announcement (reported by Radio Pakistan) raising the maximum to PKR 25 million; the portal's implementation is not assumed. The Asaan Karobar Card record states the PSIC processing and annual card fees and identifies the product as repayable financing. BISP content does not reuse a stale stipend amount and warns that 8171 is the only official SMS number and the dynamic survey is free. Benazir Hunarmand content notes that an older official guide lists eight first-phase districts excluding Rahim Yar Khan / Sadiqabad; it explicitly says the old list may not reflect the current phase and advises checking before travelling.
+The PMYB&ALS record separates the three tiers still displayed by the official portal from the Government's 8 November 2026 announcement (reported by Radio Pakistan) raising the maximum to PKR 25 million; the portal's implementation is not assumed. The Asaan Karobar Card record states the PSIC processing and annual card fees and identifies the product as repayable financing. BISP content does not reuse a stale stipend amount and warns that 8171 is the only official SMS number and the dynamic survey is free. Benazir Hunarmand content does not claim Sadiqabad course availability. An older BISP guide PDF is marked confidential and is not linked or reproduced publicly.
 
 ### Admin and permissions
 - New Admin tab `Government Schemes`, gated by `government_schemes.manage`.
@@ -593,7 +593,7 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 
 - Apni Chhat record now includes the official SMU programme's 100,000-unit target and the three routes: state-land units, private-scheme units with PKR 1 million subsidy and five-year instalments, and up to PKR 1.5 million interest-free construction loans over seven years for eligible plot owners. Intake remains unconfirmed because the page's last-date text refers to 2025.
 - PMYB application link now points to the PMYP Digital Youth Hub (pmyp.gov.pk), per PID's 10 November announcement. The PMYB&ALS information portal still shows the older three-tier details, so Tier 4 availability through the live form is not assumed.
-- Benazir Hunarmand now links its older official guide PDF and notes that the guide's first-phase district list did not include Rahim Yar Khan / Sadiqabad; because that guide may be outdated, users are told to confirm current district coverage before travelling.
+- Benazir Hunarmand now links only the public portal. The older BISP guide PDF is marked confidential and is not exposed; the public page does not claim Sadiqabad / Rahim Yar Khan course availability.
 - Applied/tracked migration: 20261120155622_government_schemes_official_content_review_v2.sql.
 
 
