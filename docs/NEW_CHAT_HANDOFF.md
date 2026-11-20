@@ -624,3 +624,17 @@ Trust/security:
 - No schema changes, code implementation, or changes to existing records have been made for this new plan.
 
 Official source starting points and detailed fields, routes, acceptance tests and owner decisions are in the feature plan. Owner must explicitly authorise a phase before implementation.
+
+
+## Owner-approved product expansion — latest handoff (20 November 2026)
+
+**Canonical starting document:** [Hello Sadiqabad Master Plan & New-Chat Handoff](GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md). This file now contains the full Jobs, Schemes and Owner Experience plan, owner approval state, a permanent project-rules quick reference, required reading order, project-wide continuity notes and a copy/paste instruction for a new chat. Always read it first when continuing this work.
+
+- Owner explicitly approved the Government Jobs, Government Schemes and Business Owner Experience plan on 20 November 2026.
+- **Phase 0 only is authorised:** inspect current Admin permissions, moderation, audit logs, schema and live migration ledger, RLS/storage policies and current UI; prepare data-model/permission/security proposal and UX design; record acceptance gates.
+- **Not authorised yet:** feature implementation, database migrations, production data changes, or starting Phase 1. Obtain explicit owner approval at the appropriate phase gate.
+- The complete feature requirements, fields, public UX, Admin workflows, official sources, scam safeguards, acceptance criteria and exclusions are in `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md`.
+- Permanent working rules remain authoritative in `docs/PROJECT_WORKING_RULES.md`; work directly on `main`, no branches/PRs, inspect before every change, preserve all existing data/security/moderation, verify with evidence, and keep the plan/roadmap/handoff synchronized.
+- `PROJECT_ROADMAP.md` has been updated to reflect approval and Phase 0 authorisation.
+
+**Next action for a new chat:** read the canonical master plan and permanent rules, then begin Phase 0 audit/design only. Do not rely on the previous chat transcript or assume that implementation has started.
