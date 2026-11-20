@@ -10,7 +10,7 @@
 - **Production:** https://hellosadiqabad.com
 - **Cloudflare Pages:** `hello-sadiqabad`
 - **Supabase project ref:** `efwohfzqitevkuybnyif`
-- **Immediate next action:** verify the latest Pages deployment and complete real-browser/mobile acceptance for `/government-schemes` and `/government-jobs`; then reverify official programme intake before setting any scheme to `open`. Phase 3 Add Business / Owner Registration UX remains the next feature phase in the approved roadmap.
+- **Immediate next action:** complete real-browser/mobile acceptance for `/government-schemes` and `/government-jobs`; reverify official programme intake before setting any scheme to `open`. Phase 3 Add Business / Owner Registration UX remains the next feature phase in the approved roadmap.
 
 ## 0.1 Required reading order for every new chat
 
