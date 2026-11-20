@@ -551,7 +551,7 @@ Five records are published as information pages, all with `intake_status='unconf
 4. Federal — Benazir Kafaalat
 5. Federal — Benazir Hunarmand
 
-The PMYB&ALS record separates the three tiers still displayed by the official portal from Tier 4 announced by PID on 10 November 2026; the portal's implementation is not assumed. The Asaan Karobar Card record states the PSIC processing and annual card fees and identifies the product as repayable financing. BISP content does not reuse a stale stipend amount and warns that 8171 is the only official SMS number and the dynamic survey is free. Benazir Hunarmand content does not claim Sadiqabad course availability.
+The PMYB&ALS record separates the three tiers still displayed by the official portal from Tier 4 announced by PID on 10 November 2026; the portal's implementation is not assumed. The Asaan Karobar Card record states the PSIC processing and annual card fees and identifies the product as repayable financing. BISP content does not reuse a stale stipend amount and warns that 8171 is the only official SMS number and the dynamic survey is free. Benazir Hunarmand content notes that an older official guide lists eight first-phase districts excluding Rahim Yar Khan / Sadiqabad; it explicitly says the old list may not reflect the current phase and advises checking before travelling.
 
 ### Admin and permissions
 - New Admin tab `Government Schemes`, gated by `government_schemes.manage`.
@@ -573,6 +573,7 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
   - `20261120154533_government_schemes_open_intake_guard.sql`
   - `20261120154622_government_scheme_revision_history.sql`
   - `20261120155217_government_scheme_reports_no_public_note.sql`
+  - `20261120155622_government_schemes_official_content_review_v2.sql`
 
 ### Verification
 - Five published rows exist; anonymous-role SQL sees all five.
@@ -584,3 +585,11 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 - Final Cloudflare Pages deployment `67219dc5-5d3f-41c0-8a6b-5e1518bdf46c` succeeded after the final UI refinements, with alias `https://hellosadiqabad.com`; its `npm run build` stage succeeded and deployed assets include the Government Schemes public page and Admin bundle.
 - GitHub combined status returned no check details. Do not claim TypeScript/unit-test CI passed unless a later Actions run confirms it.
 - Browser fetch of production and preview routes was inaccessible; physical mobile/browser QA remains outstanding.
+
+
+### Official content review v2 — 20 November 2026
+
+- Apni Chhat record now includes the official SMU programme's 100,000-unit target and the three routes: state-land units, private-scheme units with PKR 1 million subsidy and five-year instalments, and up to PKR 1.5 million interest-free construction loans over seven years for eligible plot owners. Intake remains unconfirmed because the page's last-date text refers to 2025.
+- PMYB application link now points to the PMYP Digital Youth Hub (pmyp.gov.pk), per PID's 10 November announcement. The PMYB&ALS information portal still shows the older three-tier details, so Tier 4 availability through the live form is not assumed.
+- Benazir Hunarmand now links its older official guide PDF and notes that the guide's first-phase district list did not include Rahim Yar Khan / Sadiqabad; because that guide may be outdated, users are told to confirm current district coverage before travelling.
+- Applied/tracked migration: 20261120155622_government_schemes_official_content_review_v2.sql.
