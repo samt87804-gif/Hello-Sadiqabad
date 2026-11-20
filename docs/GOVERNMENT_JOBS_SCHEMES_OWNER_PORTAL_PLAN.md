@@ -574,7 +574,8 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
   - `20261120154622_government_scheme_revision_history.sql`
   - `20261120155217_government_scheme_reports_no_public_note.sql`
   - `20261120155622_government_schemes_official_content_review_v2.sql`
-  - `20261120155746_government_schemes_official_content_review_v3.sql`
+  - `20261120155746_government_schemes_official_content_review_v3.sql
+- `20261120155900_government_schemes_pmyb_source_attribution_v4.sql``
 
 ### Verification
 - Five published rows exist; anonymous-role SQL sees all five.
