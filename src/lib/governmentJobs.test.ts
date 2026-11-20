@@ -8,6 +8,7 @@ test('Pakistan date uses Asia/Karachi calendar day',()=>{
 test('job status derives expiry and closing-soon from Pakistan date',()=>{
  const job={status:'published' as const,deadline_at:'2026-11-27'};
  assert.equal(getGovernmentJobDisplayStatus(job,'2026-11-20'),'closing_soon');
+ assert.equal(getGovernmentJobDisplayStatus({...job,application_open_at:'2026-11-22'},'2026-11-20'),'upcoming');
  assert.equal(getGovernmentJobDisplayStatus(job,'2026-11-27'),'closing_soon');
  assert.equal(getGovernmentJobDisplayStatus(job,'2026-11-28'),'expired');
  assert.equal(getGovernmentJobDisplayStatus({...job,deadline_at:null},'2026-11-20'),'open');

@@ -609,7 +609,7 @@ export type GovernmentJobScope = 'punjab' | 'federal' | 'other';
 export type GovernmentJobType = 'regular' | 'contract' | 'project' | 'internship' | 'temporary' | 'other';
 export type GovernmentJobStatus = 'draft' | 'published' | 'closed' | 'expired' | 'cancelled';
 export interface GovernmentJobRow {
- id:string; slug:string; title_en:string; title_ur:string|null; department_name:string;
+ id:string; slug:string; title_en:string; title_ur:string|null; summary_en:string|null; summary_ur:string|null; department_name:string;
  department_scope:GovernmentJobScope; job_type:GovernmentJobType; scale_or_grade:string|null;
  vacancy_count:number|null; location_text:string; districts:string[]; sadiqabad_relevance:boolean|null;
  qualification_text:string; experience_text:string|null; age_text:string|null; domicile_text:string|null;

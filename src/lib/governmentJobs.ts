@@ -1,5 +1,5 @@
 export type GovernmentJobStoredStatus = 'draft' | 'published' | 'closed' | 'expired' | 'cancelled';
-export type GovernmentJobDisplayStatus = 'open' | 'closing_soon' | 'closed' | 'expired' | 'cancelled';
+export type GovernmentJobDisplayStatus = 'upcoming' | 'open' | 'closing_soon' | 'closed' | 'expired' | 'cancelled';
 
 export function getPakistanToday(now = new Date()): string {
  const parts = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
@@ -9,10 +9,11 @@ export function getPakistanToday(now = new Date()): string {
 function addIsoDays(date:string,days:number):string {
  const value=new Date(date+'T12:00:00Z'); value.setUTCDate(value.getUTCDate()+days); return value.toISOString().slice(0,10);
 }
-export function getGovernmentJobDisplayStatus(job:{status:GovernmentJobStoredStatus;deadline_at:string|null},today=getPakistanToday()):GovernmentJobDisplayStatus {
+export function getGovernmentJobDisplayStatus(job:{status:GovernmentJobStoredStatus;deadline_at:string|null;application_open_at?:string|null},today=getPakistanToday()):GovernmentJobDisplayStatus {
  if(job.status==='cancelled') return 'cancelled';
  if(job.status==='closed') return 'closed';
  if(job.status==='expired') return 'expired';
+ if(job.application_open_at && job.application_open_at>today) return 'upcoming';
  if(job.deadline_at && job.deadline_at<today) return 'expired';
  if(job.deadline_at && job.deadline_at<=addIsoDays(today,7)) return 'closing_soon';
  return 'open';

@@ -3217,6 +3217,8 @@ export async function upsertGovernmentJob(
  const slug=job.slug.trim().toLowerCase();
  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw new Error('Use a URL-safe slug with lowercase letters, numbers and hyphens.');
  if(job.title_en.trim().length<3||job.title_en.trim().length>180)throw new Error('Job title must contain between 3 and 180 characters.');
+ if(job.summary_en&&job.summary_en.length>600)throw new Error('English job summary must be 600 characters or fewer.');
+ if(job.summary_ur&&job.summary_ur.length>600)throw new Error('Urdu job summary must be 600 characters or fewer.');
  if(!job.department_name.trim()||!job.location_text.trim()||!job.qualification_text.trim())throw new Error('Department, work location and minimum qualification are required.');
  if(job.vacancy_count!==null&&job.vacancy_count!==undefined&&(!Number.isInteger(job.vacancy_count)||job.vacancy_count<0))throw new Error('Vacancies must be a whole number greater than or equal to zero.');
  if(job.application_open_at&&job.deadline_at&&job.application_open_at>job.deadline_at)throw new Error('Application opening date cannot be after the closing date.');
@@ -3224,6 +3226,7 @@ export async function upsertGovernmentJob(
  for(const [label,value] of urlFields)if(value&&!isSafeGovernmentJobUrl(value))throw new Error(label+' must be a valid HTTPS URL and cannot be a shortened link.');
  const status=job.status??'draft';
  if(status==='published'||status==='closed'||status==='expired'){
+  if(!job.summary_en?.trim()||job.summary_en.trim().length<20)throw new Error('Before publishing, provide an English summary of at least 20 characters.');
   if(!job.source_name?.trim()||!job.source_url?.trim()||!job.verified_at)throw new Error('Before publishing, provide the official source name, source URL and verified date.');
  }
  const client=getSupabaseClient();if(!client)throw new Error('Government Jobs management requires the connected database.');

@@ -8,7 +8,7 @@ import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
 
 type FormState = {
- id:string; title_en:string; title_ur:string; slug:string; department_name:string; department_scope:string; job_type:string;
+ id:string; title_en:string; title_ur:string; summary_en:string; summary_ur:string; slug:string; department_name:string; department_scope:string; job_type:string;
  scale_or_grade:string; vacancy_count:string; location_text:string; districts:string; sadiqabad_relevance:string;
  qualification_text:string; experience_text:string; age_text:string; domicile_text:string; gender_or_quota_text:string;
  other_eligibility_text:string; application_steps:string; application_fee_text:string; apply_url:string;
@@ -17,14 +17,14 @@ type FormState = {
  source_verified:boolean; published_at:string|null; created_by:string|null;
 };
 function blankForm():FormState {
- return {id:'',title_en:'',title_ur:'',slug:'',department_name:'',department_scope:'punjab',job_type:'regular',scale_or_grade:'',
+ return {id:'',title_en:'',title_ur:'',summary_en:'',summary_ur:'',slug:'',department_name:'',department_scope:'punjab',job_type:'regular',scale_or_grade:'',
   vacancy_count:'',location_text:'',districts:'',sadiqabad_relevance:'unknown',qualification_text:'',experience_text:'',age_text:'',
   domicile_text:'',gender_or_quota_text:'',other_eligibility_text:'',application_steps:'',application_fee_text:'',apply_url:'',
   advertisement_url:'',official_case_number:'',application_open_at:'',deadline_at:'',status:'draft',source_name:'',source_url:'',
   source_document_url:'',verified_date:'',next_review_date:'',source_verified:false,published_at:null,created_by:null};
 }
 function toForm(job:GovernmentJobRow):FormState {
- return {...blankForm(),id:job.id,title_en:job.title_en,title_ur:job.title_ur??'',slug:job.slug,department_name:job.department_name,
+ return {...blankForm(),id:job.id,title_en:job.title_en,title_ur:job.title_ur??'',summary_en:job.summary_en??'',summary_ur:job.summary_ur??'',slug:job.slug,department_name:job.department_name,
   department_scope:job.department_scope,job_type:job.job_type,scale_or_grade:job.scale_or_grade??'',
   vacancy_count:job.vacancy_count===null?'':String(job.vacancy_count),location_text:job.location_text,districts:(job.districts??[]).join(', '),
   sadiqabad_relevance:job.sadiqabad_relevance===true?'yes':job.sadiqabad_relevance===false?'no':'unknown',
@@ -84,7 +84,7 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
    const nextReviewAt=form.next_review_date?new Date(form.next_review_date+'T12:00:00+05:00').toISOString():null;
    await upsertGovernmentJob({
     ...(form.id?{id:form.id}:{}),slug:form.slug.trim()||slugifyGovernmentJobTitle(form.title_en),title_en:form.title_en.trim(),
-    title_ur:form.title_ur.trim()||null,department_name:form.department_name.trim(),
+    title_ur:form.title_ur.trim()||null,summary_en:form.summary_en.trim()||null,summary_ur:form.summary_ur.trim()||null,department_name:form.department_name.trim(),
     department_scope:form.department_scope as GovernmentJobRow['department_scope'],job_type:form.job_type as GovernmentJobRow['job_type'],
     scale_or_grade:form.scale_or_grade.trim()||null,vacancy_count:form.vacancy_count.trim()?Number(form.vacancy_count):null,
     location_text:form.location_text.trim(),districts:form.districts.split(',').map(value=>value.trim()).filter(Boolean),
@@ -116,10 +116,13 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
   {showForm&&<Card className="p-4 sm:p-5 space-y-4">
    <div className="flex items-center justify-between gap-3"><h3 className="font-bold">{form.id?'Edit Government Job':'New Government Job Draft'}</h3>
     <Button size="sm" variant="outline" onClick={()=>setShowForm(false)} leftIcon={<X className="w-4 h-4"/>}>Close</Button></div>
+   {jobs.some(existing=>existing.id!==form.id&&((form.official_case_number.trim()&&existing.official_case_number?.trim().toLowerCase()===form.official_case_number.trim().toLowerCase())||(form.title_en.trim().length>4&&existing.title_en.trim().toLowerCase()===form.title_en.trim().toLowerCase()&&existing.department_name.trim().toLowerCase()===form.department_name.trim().toLowerCase())))&&<p role="alert" className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs text-on-surface">Possible duplicate: another record has the same advertisement number or matching title and department. Check the existing record before publishing.</p>}
    <form onSubmit={save} className="space-y-4">
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
      <Field label="Job title (English)" value={form.title_en} required onChange={value=>setForm(previous=>({...previous,title_en:value,slug:previous.slug||slugifyGovernmentJobTitle(value)}))}/>
      <Field label="Job title (Urdu, optional)" value={form.title_ur} onChange={value=>update('title_ur',value)}/>
+     <Field label="English summary (required before publish)" value={form.summary_en} onChange={value=>update('summary_en',value)}/>
+     <Field label="Urdu summary (optional)" value={form.summary_ur} onChange={value=>update('summary_ur',value)}/>
      <Field label="URL slug" value={form.slug} required onChange={value=>update('slug',value.toLowerCase())}/>
      <Field label="Department / authority" value={form.department_name} required onChange={value=>update('department_name',value)}/>
      <label className="block space-y-1"><span className="text-xs font-semibold">Government level *</span><select value={form.department_scope} onChange={event=>update('department_scope',event.target.value)} className="h-10 w-full rounded-xl border border-outline-variant bg-surface px-3 text-sm"><option value="punjab">Punjab Government</option><option value="federal">Federal Government</option><option value="other">Other (verified local relevance only)</option></select></label>

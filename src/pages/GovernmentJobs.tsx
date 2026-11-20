@@ -17,10 +17,11 @@ function formatJobDate(value: string | null, lang: string): string {
  return new Intl.DateTimeFormat(lang === 'ur' ? 'ur-PK' : 'en-PK',{timeZone:'Asia/Karachi',day:'numeric',month:'short',year:'numeric'}).format(new Date(value.slice(0,10)+'T12:00:00+05:00'));
 }
 function statusLabel(status:ReturnType<typeof getGovernmentJobDisplayStatus>,lang:string):string {
- const labels:Record<string,[string,string]>={open:['Open','درخواستیں جاری'],closing_soon:['Closing Soon','آخری تاریخ قریب'],closed:['Closed','درخواستیں بند'],expired:['Expired','مدت ختم'],cancelled:['Cancelled','منسوخ']};
+ const labels:Record<string,[string,string]>={upcoming:['Upcoming','جلد شروع'],open:['Open','درخواستیں جاری'],closing_soon:['Closing Soon','آخری تاریخ قریب'],closed:['Closed','درخواستیں بند'],expired:['Expired','مدت ختم'],cancelled:['Cancelled','منسوخ']};
  return labels[status][lang==='ur'?1:0];
 }
 function statusVariant(status:ReturnType<typeof getGovernmentJobDisplayStatus>):'primary'|'secondary'|'warning' {
+ if(status==='upcoming') return 'secondary';
  if(status==='open') return 'primary';
  if(status==='closing_soon') return 'warning';
  return 'secondary';
@@ -40,6 +41,8 @@ export function GovernmentJobs() {
  const [retry,setRetry]=useState(0);
  const [query,setQuery]=useState('');
  const [scope,setScope]=useState('all');
+ const [departmentFilter,setDepartmentFilter]=useState('all');
+ const [jobTypeFilter,setJobTypeFilter]=useState('all');
  const [archive,setArchive]=useState(false);
 
  useEffect(()=>{
@@ -57,11 +60,11 @@ export function GovernmentJobs() {
     const status=getGovernmentJobDisplayStatus(result.job);
     updatePageSeo({
      title:result.job.title_en+' — Government Job',
-     description:[result.job.qualification_text,result.job.location_text,result.job.department_name].filter(Boolean).join(' · '),
+     description:[result.job.summary_en,result.job.location_text,result.job.department_name].filter(Boolean).join(' · '),
      canonicalPath:'/government-jobs/'+result.job.slug,
      jsonLd:status==='open'||status==='closing_soon'?{
       '@context':'https://schema.org','@type':'JobPosting',title:result.job.title_en,
-      description:[result.job.qualification_text,result.job.experience_text,result.job.application_steps].filter(Boolean).join('\n\n'),
+      description:[result.job.summary_en,result.job.qualification_text,result.job.experience_text,result.job.application_steps].filter(Boolean).join('\n\n'),
       datePosted:result.job.published_at,
       ...(result.job.deadline_at?{validThrough:result.job.deadline_at+'T23:59:59+05:00'}:{}),
       employmentType:result.job.job_type==='regular'?'FULL_TIME':result.job.job_type.toUpperCase(),
@@ -84,10 +87,12 @@ export function GovernmentJobs() {
    const isArchived=status==='closed'||status==='expired'||status==='cancelled';
    if(archive!==isArchived) return false;
    if(scope!=='all'&&item.department_scope!==scope) return false;
-   if(term&&![item.title_en,item.title_ur,item.department_name,item.location_text,item.qualification_text].filter(Boolean).join(' ').toLocaleLowerCase().includes(term)) return false;
+   if(departmentFilter!=='all'&&item.department_name!==departmentFilter) return false;
+   if(jobTypeFilter!=='all'&&item.job_type!==jobTypeFilter) return false;
+   if(term&&![item.title_en,item.title_ur,item.summary_en,item.summary_ur,item.department_name,item.location_text,item.qualification_text].filter(Boolean).join(' ').toLocaleLowerCase().includes(term)) return false;
    return true;
   });
- },[jobs,query,scope,archive]);
+ },[jobs,query,scope,departmentFilter,jobTypeFilter,archive]);
 
  const title=lang==='ur'?'سرکاری نوکریاں':'Government Jobs';
  return <AppShell><Container size="lg" className="py-6 space-y-5">
@@ -109,6 +114,7 @@ export function GovernmentJobs() {
      <p className="flex items-center gap-2 text-sm text-on-surface-variant"><MapPin className="w-4 h-4"/>{job.location_text}</p>
      {job.sadiqabad_relevance===true&&<Badge variant="primary">Sadiqabad / Rahim Yar Khan eligible (as stated in advertisement)</Badge>}
     </div>
+    {job.summary_en&&<section className="space-y-1"><h2 className="text-base font-bold text-on-surface">Job summary</h2><p className="text-sm text-on-surface-variant leading-7">{bilingualText(lang,job.summary_en,job.summary_ur)}</p>{lang==='en'&&urduHints&&job.summary_ur&&<p className="font-urdu text-sm text-on-surface leading-8" dir="rtl">{job.summary_ur}</p>}</section>}
     <Card className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
      <div><p className="text-xs text-on-surface-variant">Qualification</p><p className="text-sm font-semibold">{job.qualification_text}</p></div>
      <div><p className="text-xs text-on-surface-variant">Vacancies</p><p className="text-sm font-semibold">{job.vacancy_count??'Not specified'}</p></div>
@@ -139,6 +145,8 @@ export function GovernmentJobs() {
      <select value={scope} onChange={event=>setScope(event.target.value)} aria-label="Government level" className="min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm">
       <option value="all">Punjab + Federal</option><option value="punjab">Punjab</option><option value="federal">Federal</option><option value="other">Other</option>
      </select>
+     <select value={departmentFilter} onChange={event=>setDepartmentFilter(event.target.value)} aria-label="Department" className="min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="all">All departments</option>{Array.from(new Set(jobs.map(item=>item.department_name))).sort().map(name=><option key={name} value={name}>{name}</option>)}</select>
+     <select value={jobTypeFilter} onChange={event=>setJobTypeFilter(event.target.value)} aria-label="Job type" className="min-h-11 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="all">All job types</option><option value="regular">Regular</option><option value="contract">Contract</option><option value="project">Project</option><option value="internship">Internship</option><option value="temporary">Temporary</option><option value="other">Other</option></select>
      <Button variant={archive?'outline':'primary'} onClick={()=>setArchive(false)}>Open jobs</Button>
      <Button variant={archive?'primary':'outline'} onClick={()=>setArchive(true)}>Closed / expired</Button>
     </div>
@@ -148,7 +156,7 @@ export function GovernmentJobs() {
       return <Card key={item.id} className="p-4 space-y-3">
        <div className="flex flex-wrap gap-2"><Badge variant={statusVariant(status)}>{statusLabel(status,lang)}</Badge><Badge variant="secondary">{item.department_scope==='federal'?'Federal':item.department_scope==='punjab'?'Punjab':'Other'}</Badge></div>
        <div className="space-y-1"><Link to={'/government-jobs/'+item.slug} className="text-base font-bold text-on-surface hover:text-primary">{bilingualText(lang,item.title_en,item.title_ur)}</Link><p className="text-xs font-semibold text-on-surface-variant">{item.department_name}</p><p className="text-xs text-on-surface-variant flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/>{item.location_text}</p></div>
-       <p className="text-sm text-on-surface-variant line-clamp-3">{item.qualification_text}</p>
+       <p className="text-sm text-on-surface-variant line-clamp-3">{bilingualText(lang,item.summary_en||item.qualification_text,item.summary_ur)}</p>
        <div className="flex items-center justify-between gap-3 border-t border-outline-variant/40 pt-3"><span className="text-xs text-on-surface-variant inline-flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5"/>{formatJobDate(item.deadline_at,lang)}</span><Link to={'/government-jobs/'+item.slug} className="text-xs font-bold text-primary">View details →</Link></div>
       </Card>;
      })}</div>}
