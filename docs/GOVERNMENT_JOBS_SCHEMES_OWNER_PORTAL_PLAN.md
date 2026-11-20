@@ -462,7 +462,7 @@ Owner approved Phase 0 (read-only audit, requirements and design). The detailed 
 
 The audit inspected the current `main` code snapshot and live Supabase schema, migration ledger, RLS, Storage policies, plans, Admin permission gates, owner submission/registration flows and Supabase Advisors. It records the existing architecture, live counts, proposed routes/data model/security, and test/acceptance gates.
 
-**Current status (20 Nov 2026):** Owner accepted the Phase 0 design and explicitly authorised Phase 1 Government Jobs implementation. Phase 1 MVP code and additive database foundation are now committed/deployed; see the latest implementation checkpoint at the end of this document. Phase 2–5 remain separately gated. Preserve the current live migration history; do not replay the consolidated baseline.
+**Current status (20 Nov 2026):** Owner accepted the overall Jobs/Schemes/Owner Experience plan, authorised Phase 1 Government Jobs implementation, and later explicitly instructed that the next work begin and continue without pausing; this authorised Phase 2 Government Schemes implementation. Phase 1 and Phase 2 MVPs are committed/deployed; see the latest checkpoints at the end of this document. Phase 3–5 remain separately gated. Preserve the current live migration history; do not replay the consolidated baseline.
 
 
 ---
