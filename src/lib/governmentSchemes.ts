@@ -1,6 +1,6 @@
 import { getSupabaseClient } from './supabase';
 import { isSafeGovernmentJobUrl } from './governmentJobs';
-import type { GovernmentSchemeRow, GovernmentSchemeReportRow } from '../types/database';
+import type { GovernmentSchemeRow, GovernmentSchemeReportRow, GovernmentSchemeRevisionRow } from '../types/database';
 
 const nowIso=()=>new Date().toISOString();
 
@@ -24,6 +24,13 @@ export async function fetchAllGovernmentSchemesAdmin():Promise<GovernmentSchemeR
  const client=getSupabaseClient();if(!client)throw new Error('Government Schemes management requires the connected database.');
  const {data,error}=await client.from('government_schemes').select('*').order('updated_at',{ascending:false}).limit(500);
  if(error)throw error;return (data??[]) as GovernmentSchemeRow[];
+}
+
+
+export async function fetchGovernmentSchemeRevisions(schemeId:string):Promise<GovernmentSchemeRevisionRow[]>{
+ const client=getSupabaseClient();if(!client)throw new Error('Government Schemes history requires the connected database.');
+ const {data,error}=await client.from('government_scheme_revisions').select('*').eq('scheme_id',schemeId).order('changed_at',{ascending:false}).limit(25);
+ if(error)throw error;return (data??[]) as GovernmentSchemeRevisionRow[];
 }
 
 export async function fetchGovernmentSchemeReports():Promise<GovernmentSchemeReportRow[]>{
