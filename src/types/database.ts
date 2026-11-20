@@ -645,3 +645,9 @@ export interface GovernmentSchemeReportRow {
  reviewed_at:string|null; reviewed_by:string|null; review_note:string|null; created_at:string;
  scheme?:{title_en:string;slug:string}|null;
 }
+
+
+export interface GovernmentSchemeRevisionRow {
+ id:string; scheme_id:string; change_type:'INSERT'|'UPDATE'; previous_snapshot:Record<string,unknown>|null;
+ new_snapshot:Record<string,unknown>; changed_by:string|null; changed_at:string;
+}
