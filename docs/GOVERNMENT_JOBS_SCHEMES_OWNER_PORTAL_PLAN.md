@@ -509,3 +509,14 @@ The MVP was rounded out with bilingual English/Urdu summaries, department and jo
 
 
 The Admin summary fields use multiline textareas; this small UX adjustment is included in final code commit `9e86b6505737ca5d666550e9df4b3a58566a12f7`.
+
+
+### Phase 1 follow-up — first published job and optional poster upload (20 November 2026)
+
+The first live job record has been inserted and published: **Network Support Consultant**, Office of the Controller General of Accounts, Government of Pakistan; contract PPS-7; one vacancy; Islamabad; closing date 28 November 2026. The official National Jobs Portal detail page is `https://www.njp.gov.pk/index.php/jobs/10578`. The listing states minimum five years' networking experience, suitable technical qualification (CCNA/DAE or equivalent certifications/qualification), maximum age 45 and Islamabad location. Domicile is not stated on the portal listing, so the record says it must be confirmed on the official page; Sadiqabad/Rahim Yar Khan eligibility remains NULL/unconfirmed. No application URL was invented; the official source page is linked.
+
+An optional poster upload was added to the Admin Government Jobs form. It accepts JPG, PNG, WebP and AVIF up to 5 MB, stores the image under the existing public bucket's `government-jobs/<auth-user-id>/` folder, and is protected by Storage RLS requiring Super Admin or `government_jobs.manage`. Public detail and listing cards show the image when available. No image is required; it can be added later. The additive nullable `image_url` column and Storage policies are tracked in `20261120153000_government_jobs_optional_poster_image.sql`.
+
+**Verification status:** schema and Storage policies have been applied; final RLS/Storage/Advisor, CI and Pages deployment checks are pending. Physical mobile-browser testing remains outstanding. Do not mark the phase fully accepted until those checks and owner-side QA are complete.
+
+**Next phase:** Government Schemes MVP is the next roadmap phase. It remains gated until the owner confirms that this is the intended next task and approves starting Phase 2.
