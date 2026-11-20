@@ -742,7 +742,7 @@ Owner instructed: “ab agy ka kam shuru kro bina ruke”. Phase 2 Government Sc
 - Public /government-schemes and /government-schemes/:slug routes, search, Punjab/Federal, category and intake-status filters.
 - Five published official-source information records: Apni Chhat Apna Ghar; CM Punjab Asaan Karobar Card; PM Youth Business & Agriculture Loan Scheme; Benazir Kafaalat; Benazir Hunarmand.
 - All five have intake_status='unconfirmed'; the UI says to check the official portal and never claims applications are open. No unsupported deadline or stale BISP stipend amount is shown.
-- PMYB record distinguishes the three tiers still shown on the official portal from the Government's 8 Nov 2026 announcement (reported by Radio Pakistan) raising the ceiling to PKR 25m; it does not claim a Tier 4 markup / tenor not shown in the official portal / announcement page reviewed.
+- PMYB record distinguishes the three tiers still shown on the official portal from the PID Tier 4 release confirming PKR 7.5m–25m at 8% for up to eight years; the portal still shows three tiers. It flags the age discrepancy between Radio Pakistan's 8 Nov report and PID/portal wording.
 - Asaan Karobar Card details include PSIC processing fee PKR 500 and annual fee PKR 25,000 + FED, 0% borrower markup, 3-year repayment and 33 instalments after 3-month grace.
 - BISP page warns that the survey is free and 8171 is the only official SMS number. Benazir Hunarmand page does not promise Sadiqabad course availability.
 - Admin Portal tab Government Schemes, permission government_schemes.manage, scheme CRUD/publish/archive/intake-status management, re-verification filter, public report queue and append-only revision history.
@@ -789,3 +789,6 @@ Check the latest Cloudflare Pages build/deploy for the final code commits, then 
 
 
 - Additional migration 20261120155900_government_schemes_pmyb_source_attribution_v4.sql updates the PMYB source attribution to Radio Pakistan.
+
+
+- PMYB Tier 4 is now confirmed by the official PID 10 Nov release: above PKR 7.5m up to PKR 25m at 8% for up to eight years. The PMYB portal still shows three tiers. Radio Pakistan's 8 Nov report says age 18 for all, while PID / portal retain 21–45 (18 IT/e-commerce); the public record flags this conflict. Migration 20261120160458_government_schemes_pmyb_tier4_verified_v5.sql is applied and tracked.
