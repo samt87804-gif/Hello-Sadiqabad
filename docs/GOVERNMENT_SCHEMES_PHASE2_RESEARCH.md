@@ -82,7 +82,7 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 
 3. `public.government_scheme_reports`
    - Minimal “report outdated / broken official link” workflow.
-   - Store scheme ID, reason, optional short note and created_at only; do not request CNIC, phone, email or other sensitive data.
+   - Store scheme ID, a fixed reason code and created_at only; no public free-text or personal data is accepted.
 
 4. Dedicated permission `government_schemes.manage`
    - Super Admin and explicitly authorised staff only.
@@ -104,7 +104,7 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - Punjab/Federal labels and benefit type are unambiguous.
 - Fees, markup, repayment and non-grant nature are explicit where applicable.
 - Public users cannot read drafts, internal notes or report records.
-- Report-outdated flow stores no unnecessary personal/sensitive data.
+- Report-outdated flow stores only a fixed reason code; no public free-text or personal/sensitive data is accepted.
 - Admin writes require `government_schemes.manage` and are audited.
 - Pakistan timezone/date-boundary tests, mobile/browser QA, CI and production deployment evidence are recorded.
 
