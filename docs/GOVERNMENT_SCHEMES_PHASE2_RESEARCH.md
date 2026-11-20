@@ -137,5 +137,5 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 ### Remaining acceptance
 - Reconfirm each programme's live intake, current application URL and any changed eligibility/fees immediately before changing its intake status to open.
 - Verify public routes in a real browser and on a physical mobile device; the web browser tool could not fetch the production route.
-- Confirm the latest Cloudflare Pages deployment after the final UI commits. Pages build is not a substitute for TypeScript/unit-test CI.
+- [x] Latest Cloudflare Pages deployment after the final UI refinements: ec963236-1709-4eee-9618-59185c891b96 succeeded with alias https://hellosadiqabad.com; npm run build completed successfully. Pages build is not a substitute for TypeScript/unit-test CI.
 - Keep the public chatbot integration out of scope until a separate public-field allowlist and privacy review.
