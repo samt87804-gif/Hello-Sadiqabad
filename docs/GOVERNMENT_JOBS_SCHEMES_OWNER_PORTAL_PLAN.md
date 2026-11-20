@@ -4,13 +4,13 @@
 
 ## 0. Owner approval and current checkpoint
 
-- **Owner approval:** The owner approved this plan on **20 November 2026** and authorised the work to proceed with **Phase 0 (requirements, data model, permissions, security and UX design)**.
-- **Current status:** Phase 0 is authorised for inspection/design/documentation. Feature implementation, schema migrations and production data changes have **not** been authorised by this approval and must wait for the relevant phase approval.
+- **Owner approval:** The owner approved the overall Jobs/Schemes/Owner Experience plan on **20 November 2026**, explicitly authorised Phase 1 Government Jobs implementation, and on 20 November requested that the next planned work begin after the first job entry.
+- **Current status:** Phase 1 Government Jobs is implemented; one official-source job is published and optional poster upload is implemented. The owner’s latest instruction is treated as approval to begin **Phase 2 research/design** only. Phase 2 production code, schema migrations and data publication remain gated on Phase 1 acceptance and an explicit implementation go-ahead.
 - **Repository:** [samt87804-gif/Hello-Sadiqabad](https://github.com/samt87804-gif/Hello-Sadiqabad), work directly on `main`.
 - **Production:** https://hellosadiqabad.com
 - **Cloudflare Pages:** `hello-sadiqabad`
 - **Supabase project ref:** `efwohfzqitevkuybnyif`
-- **Immediate next action:** perform Phase 0 re-audit of current Admin permissions, moderation, audit logs, storage policies, schema/migration ledger and current UI; prepare proposed data model/RLS/permission design and UX/wireframes; document decisions and acceptance gates. Do not run migrations or alter production records in Phase 0.
+- **Immediate next action:** finish Phase 1 production/browser acceptance and continue Phase 2 Government Schemes source verification/design from `docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md`. Do not apply Phase 2 migrations or publish scheme records until the Phase 1 acceptance gate is cleared and implementation is explicitly approved.
 
 ## 0.1 Required reading order for every new chat
 
