@@ -3,7 +3,7 @@ import {Link,useParams} from 'react-router-dom';
 import {ArrowLeft,BookOpenCheck,CalendarDays,ExternalLink,Search,ShieldAlert} from 'lucide-react';
 import {fetchPublishedGovernmentSchemes,fetchPublishedGovernmentSchemeBySlug,submitGovernmentSchemeReport} from '../lib/governmentSchemes';
 import {useI18n} from '../lib/i18n';
-import {bilingualText,formatDateShort} from '../lib/format';
+import {bilingualText} from '../lib/format';
 import {updatePageSeo} from '../lib/seo';
 import type {GovernmentSchemeRow,GovernmentSchemeReportReason} from '../types/database';
 import {AppShell} from '../components/layout/AppShell';
