@@ -31,7 +31,7 @@
 - Official PMYB&ALS portal: https://pmybals.pmyp.gov.pk/ (still shows the original three tiers on the page reviewed). The Government announcement reported by Radio Pakistan on 8 November 2026 directs applicants to the PMYP Digital Youth Hub at https://pmyp.gov.pk/ or the PMYP mobile app.
 - The official programme portal describes eligibility for resident Pakistani citizens aged 21–45, with a lower age limit of 18 for IT/e-commerce businesses.
 - The official portal currently displays three tiers: up to PKR 0.5 million at 0% markup; above PKR 0.5 million to PKR 1.5 million at 5%; above PKR 1.5 million to PKR 7.5 million at 7%.
-- Radio Pakistan reported the Government announcement of 8 November 2026 raising the maximum loan limit to PKR 25 million and lowering the minimum age to 18: https://radio.gov.pk/08-11-2026/pm-increases-youth-agriculture-loan-limit-to-rs25m. The PMYB&ALS information portal still displays the older three tiers and the old age wording. The official announcement page does not state the detailed Tier 4 markup / tenor, so those details are not presented as confirmed; verify the live portal and bank terms before applying.
+- Radio Pakistan reported the Government announcement of 8 November 2026 raising the maximum loan limit to PKR 25 million and lowering the minimum age to 18: https://radio.gov.pk/08-11-2026/pm-increases-youth-agriculture-loan-limit-to-rs25m. The PMYB&ALS information portal still displays the older three tiers and old age wording. The PID press release dated 10 November 2026 confirms Tier 4 above PKR 7.5 million up to PKR 25 million at 8% markup for up to eight years. Radio Pakistan's 8 November report says the minimum age was lowered to 18 for all applicants, while the PID release and older portal still list 21–45 (18 for IT/e-commerce); this age-rule conflict is flagged for applicants to confirm through the live hub / bank.
 - The Government announcement directs applicants to the PMYP Digital Youth Hub at https://pmyp.gov.pk/ or the PMYP mobile app. The separate information portal still shows the older application details; non-resident Pakistanis and government employees should check the current official exclusions.
 - **Publication caution:** Recheck the current application form, participating banks, tier limits and terms before publishing. These are financing terms, not a grant.
 - Suggested category: Business / Agriculture finance.
@@ -116,7 +116,7 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - Public route `/government-schemes` and detail routes `/government-schemes/:slug`, with search, Punjab/Federal filter, category filter, intake-status filter, bilingual titles, benefit type, eligibility, document checklist, steps, fees/repayment, official source links, last-verified and next-review dates.
 - Five initial official-source scheme records: Apni Chhat Apna Ghar; CM Punjab Asaan Karobar Card; Prime Minister's Youth Business & Agriculture Loan Scheme; Benazir Kafaalat; Benazir Hunarmand.
 - All five records are published as information pages, but `intake_status='unconfirmed'`. No deadline is invented and no “Apply Now” wording is shown while intake is unconfirmed. Official portals are labelled as places to check current availability.
-- The PMYB&ALS record distinguishes the three tiers still shown on the official portal from the Government's 8 November 2026 announcement raising the ceiling to PKR 25 million and lowering the minimum age; it does not claim a Tier 4 markup/tenor that the official portal / announcement page reviewed does not state, and links to the PMYP Digital Youth Hub.
+- The PMYB&ALS record distinguishes the three tiers still shown on the official portal from the PID Tier 4 release (PKR 7.5m–25m at 8% for up to eight years), links to the PMYP Digital Youth Hub, and flags the age-rule conflict between Radio Pakistan and the PID/portal.
 - The Asaan Karobar Card record states the PSIC processing and annual card fees, the 0% borrower markup and the repayable nature of the facility.
 - BISP record avoids a stale stipend amount, states that the dynamic survey is free and 8171 is the only official SMS number.
 - Benazir Hunarmand record flags that an older official guide lists only eight first-phase districts, excluding Rahim Yar Khan / Sadiqabad, and does not claim current local course availability.
@@ -137,7 +137,8 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - `20261120155217_government_scheme_reports_no_public_note.sql`
 - `20261120155622_government_schemes_official_content_review_v2.sql`
 - `20261120155746_government_schemes_official_content_review_v3.sql
-- `20261120155900_government_schemes_pmyb_source_attribution_v4.sql``
+- `20261120155900_government_schemes_pmyb_source_attribution_v4.sql`
+- `20261120160458_government_schemes_pmyb_tier4_verified_v5.sql``
 
 ### Remaining acceptance
 - Reconfirm each programme's live intake, current application URL and any changed eligibility/fees immediately before changing its intake status to open.
