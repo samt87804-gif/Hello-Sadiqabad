@@ -719,3 +719,14 @@ Final UI detail: English/Urdu summary fields in Admin are multiline textareas in
 The owner requested that the next planned work start after the first job entry. Phase 2 research/design has therefore begun; no Phase 2 feature code, schema migration or scheme record has been added. Read `docs/GOVERNMENT_SCHEMES_PHASE2_RESEARCH.md` for official candidate programmes, current verification caveats, proposed additive tables/RLS/permission model, public/Admin UX and acceptance gates. Candidates include Apni Chhat Apna Ghar, Asaan Karobar Card, PM Youth Business & Agriculture Loan Scheme, Benazir Kafaalat and Benazir Hunarmand. Intake windows/terms must be reverified from official sources before any scheme is published.
 
 Phase 1 remains pending final production alias/browser and owner mobile QA. Do not start Phase 2 schema/code until that acceptance gate is cleared; the user's latest instruction authorises research/design at this point.
+
+
+### Final verification update — job poster upload and first public listing (20 Nov 2026)
+
+- The new migration is recorded in Supabase as version `20261120152313`, name `government_jobs_optional_poster_image`; matching repo file: `supabase/migrations/20261120152313_government_jobs_optional_poster_image.sql`.
+- Anonymous-role SQL query returned the published Network Support Consultant record, confirming public RLS read. `image_url` is currently NULL, as the owner has not uploaded a poster yet.
+- Storage policies exist for INSERT/UPDATE/DELETE under `government-jobs/<auth.uid()>/`, restricted to Super Admin or explicit `government_jobs.manage` permission.
+- Supabase Security Advisor: no new Government Jobs or Storage finding. Existing unrelated findings remain (private analytics gateway token table with RLS but no policy; leaked-password protection disabled). Performance Advisor's unused-index warnings include new Government Jobs indexes on a low-volume table; do not drop them without query-plan evidence.
+- Cloudflare Pages deployment `73263626-a9f9-43ba-a4df-f0a33dca493d` succeeded and carried alias `https://hellosadiqabad.com`. It includes the optional poster upload code. Later commits only updated Markdown handoff/research documents and were still queued when checked.
+- GitHub combined commit status did not expose check results; Pages build stage (`npm run build`) succeeded. Do not claim separate TypeScript check, unit tests or GitHub CI passed.
+- Production browser route was not verified: web fetch of the detail URL was inaccessible. Physical mobile/browser QA remains the owner acceptance task.
