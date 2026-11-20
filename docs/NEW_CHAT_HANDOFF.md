@@ -784,4 +784,8 @@ Check the latest Cloudflare Pages build/deploy for the final code commits, then 
 
 - PMYB&ALS now links to the PMYP Digital Youth Hub. Its info portal still shows three tiers; the Government's 8 Nov 2026 announcement reported by Radio Pakistan raises the ceiling to PKR 25m and changes the minimum-age policy, but detailed new Tier 4 markup / tenor are not asserted because they are not confirmed in the official portal / announcement page reviewed.
 - Benazir Kafaalat now links directly to the official programme page and anti-fraud / 8171 notice. Old stipend and PMT values are not repeated as current-cycle terms.
-- Migration 20261120155746_government_schemes_official_content_review_v3.sql is applied and tracked.
+- Migration 20261120155746_government_schemes_official_content_review_v3.sql
+- `20261120155900_government_schemes_pmyb_source_attribution_v4.sql` is applied and tracked.
+
+
+- Additional migration 20261120155900_government_schemes_pmyb_source_attribution_v4.sql updates the PMYB source attribution to Radio Pakistan.
