@@ -63,6 +63,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { tab: 'authority-profiles', label: 'Authority Profiles', icon: UserRound, superAdminOnly: true },
   { tab: 'announcements', label: 'Announcements', icon: Megaphone, requiredPerm: 'announcements.manage' },
   { tab: 'news', label: 'News Articles', icon: Newspaper, requiredPerm: 'announcements.manage' },
+  { tab: 'government-jobs', label: 'Government Jobs', icon: Briefcase, requiredPerm: 'government_jobs.manage' },
   { tab: 'chatbot-knowledge', label: 'Chatbot Knowledge', icon: BrainCircuit, superAdminOnly: true },
   { tab: 'staff', label: 'Staff & Roles', icon: Shield, superAdminOnly: true },
   { tab: 'settings', label: 'Settings & Pages', icon: Settings, requiredPerm: 'settings.manage' },

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
 import { NewsManager } from '../../components/admin/NewsManager';
+import { GovernmentJobsManager } from '../../components/admin/GovernmentJobsManager';
 import { AdminChatbotKnowledge } from '../../components/admin/AdminChatbotKnowledge';
 import { LocalAuthoritiesManager } from '../../components/admin/LocalAuthoritiesManager';
 import { AuthorityProfilesManager } from '../../components/admin/AuthorityProfilesManager';
@@ -436,6 +437,8 @@ export function AdminPortal() {
         );
       case 'news':
         return hasPermission('announcements.manage') ? <NewsManager actorId={actorId} /> : <PermissionDenied />;
+      case 'government-jobs':
+        return hasPermission('government_jobs.manage') ? <GovernmentJobsManager actorId={actorId} /> : <PermissionDenied />;
       case 'chatbot-knowledge':
         return isSuperAdmin ? <AdminChatbotKnowledge /> : <PermissionDenied />;
       case 'announcements':

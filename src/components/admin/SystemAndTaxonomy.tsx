@@ -503,6 +503,7 @@ const ALL_PERMISSION_KEYS: Array<{ key: PermissionKey; label: string }> = [
   { key: 'analytics.view', label: 'View Analytics' },
   { key: 'announcements.manage', label: 'Manage Announcements' },
   { key: 'settings.manage', label: 'Manage Settings & Pages' },
+  { key: 'government_jobs.manage', label: 'Manage Government Jobs' },
 ];
 
 export function StaffManager({

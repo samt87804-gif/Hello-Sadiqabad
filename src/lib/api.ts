@@ -1,4 +1,5 @@
 import { getSupabaseClient, supabaseConfig } from './supabase';
+import { isSafeGovernmentJobUrl } from './governmentJobs';
 import {
   getActiveOfflineDirectorySnapshot,
   type OfflineDirectorySnapshot,
@@ -68,6 +69,7 @@ import type {
   AuthorityProfileRow,
   MyPermissionsRpcResult,
   NewsArticleRow,
+  GovernmentJobRow,
   NotificationRow,
   OfferRow,
   ProductRow,
@@ -3187,4 +3189,51 @@ export async function fetchAdminLiveVisitorCount(): Promise<number> {
   const count = Number(data);
   if (!Number.isInteger(count) || count < 0) throw new Error('Live visitor count returned an invalid value.');
   return count;
+}
+
+export async function fetchPublishedGovernmentJobs(): Promise<GovernmentJobRow[]> {
+ const client=getSupabaseClient(); if(!client)return [];
+ const {data,error}=await client.from('government_jobs').select('*')
+  .in('status',['published','closed','expired']).not('published_at','is',null).lte('published_at',nowIso())
+  .order('deadline_at',{ascending:true,nullsFirst:false}).order('updated_at',{ascending:false});
+ if(error)throw error; return (data??[]) as GovernmentJobRow[];
+}
+export async function fetchPublishedGovernmentJobBySlug(slug:string):Promise<GovernmentJobRow|null> {
+ if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return null;
+ const client=getSupabaseClient();if(!client)return null;
+ const {data,error}=await client.from('government_jobs').select('*').eq('slug',slug)
+  .in('status',['published','closed','expired']).not('published_at','is',null).lte('published_at',nowIso()).maybeSingle();
+ if(error)throw error;return (data as GovernmentJobRow|null)??null;
+}
+export async function fetchAllGovernmentJobsAdmin():Promise<GovernmentJobRow[]> {
+ const client=getSupabaseClient();if(!client)throw new Error('Government Jobs management requires the connected database.');
+ const {data,error}=await client.from('government_jobs').select('*').order('updated_at',{ascending:false}).limit(500);
+ if(error)throw error;return (data??[]) as GovernmentJobRow[];
+}
+export async function upsertGovernmentJob(
+ job:Partial<GovernmentJobRow>&Pick<GovernmentJobRow,'slug'|'title_en'|'department_name'|'department_scope'|'job_type'|'location_text'|'qualification_text'>,
+ actorId:string,
+):Promise<GovernmentJobRow> {
+ const slug=job.slug.trim().toLowerCase();
+ if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw new Error('Use a URL-safe slug with lowercase letters, numbers and hyphens.');
+ if(job.title_en.trim().length<3||job.title_en.trim().length>180)throw new Error('Job title must contain between 3 and 180 characters.');
+ if(!job.department_name.trim()||!job.location_text.trim()||!job.qualification_text.trim())throw new Error('Department, work location and minimum qualification are required.');
+ if(job.vacancy_count!==null&&job.vacancy_count!==undefined&&(!Number.isInteger(job.vacancy_count)||job.vacancy_count<0))throw new Error('Vacancies must be a whole number greater than or equal to zero.');
+ if(job.application_open_at&&job.deadline_at&&job.application_open_at>job.deadline_at)throw new Error('Application opening date cannot be after the closing date.');
+ const urlFields=[['official source URL',job.source_url],['official source document URL',job.source_document_url],['advertisement URL',job.advertisement_url],['application URL',job.apply_url]] as const;
+ for(const [label,value] of urlFields)if(value&&!isSafeGovernmentJobUrl(value))throw new Error(label+' must be a valid HTTPS URL and cannot be a shortened link.');
+ const status=job.status??'draft';
+ if(status==='published'||status==='closed'||status==='expired'){
+  if(!job.source_name?.trim()||!job.source_url?.trim()||!job.verified_at)throw new Error('Before publishing, provide the official source name, source URL and verified date.');
+ }
+ const client=getSupabaseClient();if(!client)throw new Error('Government Jobs management requires the connected database.');
+ const payload={...job,slug,title_en:job.title_en.trim(),title_ur:job.title_ur?.trim()||null,
+  department_name:job.department_name.trim(),location_text:job.location_text.trim(),qualification_text:job.qualification_text.trim(),
+  source_name:job.source_name?.trim()||null,source_url:job.source_url?.trim()||null,
+  source_document_url:job.source_document_url?.trim()||null,advertisement_url:job.advertisement_url?.trim()||null,
+  apply_url:job.apply_url?.trim()||null,status,published_at:status==='draft'?null:(job.published_at??nowIso()),
+  published_by:status==='published'?(job.published_by??actorId):(job.published_by??null),
+  created_by:job.created_by??actorId,updated_by:actorId,updated_at:nowIso()};
+ const {data,error}=await client.from('government_jobs').upsert(payload).select().single();
+ if(error)throw error;return data as GovernmentJobRow;
 }

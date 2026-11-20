@@ -37,6 +37,7 @@ const Announcements = lazy(() =>
   import('./pages/Announcements').then((m) => ({ default: m.Announcements }))
 );
 const News = lazy(() => import('./pages/News').then((m) => ({ default: m.News })));
+const GovernmentJobs = lazy(() => import('./pages/GovernmentJobs').then((m) => ({ default: m.GovernmentJobs })));
 const StaticPage = lazy(() => import('./pages/StaticPage').then((m) => ({ default: m.StaticPage })));
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })));
 const OwnerRegistration = lazy(() => import('./pages/OwnerRegistration').then((m) => ({ default: m.OwnerRegistration })));
@@ -265,6 +266,7 @@ function RouteIndexing() {
       '/authority-profiles',
       '/announcements',
       '/news',
+      '/government-jobs',
       '/about',
       '/advertise',
       '/contact',
@@ -277,6 +279,7 @@ function RouteIndexing() {
     const publicDynamicRoutes = [
       /^\/(?:category|area|business)\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
       /^\/news\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      /^\/government-jobs\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
       /^\/authority-profiles\/[a-z0-9]+(?:-[a-z0-9]+)*$/,
       /^\/owner-profile\/[0-9a-f-]{36}$/i,
     ];
@@ -393,6 +396,8 @@ export default function App() {
                     <Route path="/announcements" element={<Announcements />} />
                     <Route path="/news" element={<News />} />
                     <Route path="/news/:slug" element={<News />} />
+                    <Route path="/government-jobs" element={<GovernmentJobs />} />
+                    <Route path="/government-jobs/:slug" element={<GovernmentJobs />} />
 
                     {/* Static Civic & Legal Pages */}
                     <Route path="/about" element={<StaticPage slug="about" />} />

@@ -21,7 +21,8 @@ export type PermissionKey =
   | 'support.read'
   | 'analytics.view'
   | 'announcements.manage'
-  | 'settings.manage';
+  | 'settings.manage'
+  | 'government_jobs.manage';
 
 export type PlanCode = 'free' | 'basic' | 'premium';
 
@@ -602,4 +603,20 @@ export interface EdgeFunctionResult<T = unknown> {
   ok: boolean;
   error?: string;
   data?: T;
+}
+
+export type GovernmentJobScope = 'punjab' | 'federal' | 'other';
+export type GovernmentJobType = 'regular' | 'contract' | 'project' | 'internship' | 'temporary' | 'other';
+export type GovernmentJobStatus = 'draft' | 'published' | 'closed' | 'expired' | 'cancelled';
+export interface GovernmentJobRow {
+ id:string; slug:string; title_en:string; title_ur:string|null; department_name:string;
+ department_scope:GovernmentJobScope; job_type:GovernmentJobType; scale_or_grade:string|null;
+ vacancy_count:number|null; location_text:string; districts:string[]; sadiqabad_relevance:boolean|null;
+ qualification_text:string; experience_text:string|null; age_text:string|null; domicile_text:string|null;
+ gender_or_quota_text:string|null; other_eligibility_text:string|null; application_steps:string|null;
+ application_fee_text:string|null; apply_url:string|null; advertisement_url:string|null; official_case_number:string|null;
+ application_open_at:string|null; deadline_at:string|null; status:GovernmentJobStatus; published_at:string|null;
+ source_name:string|null; source_url:string|null; source_document_url:string|null; verified_at:string|null;
+ next_review_at:string|null; created_by:string|null; updated_by:string|null; published_by:string|null;
+ created_at:string; updated_at:string;
 }

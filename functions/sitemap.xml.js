@@ -71,7 +71,7 @@ function addSlugEntries(entries, rows, prefix) {
 }
 
 export async function onRequestGet({ request, env }) {
-  const cacheKey = new Request(SITE_ORIGIN + '/sitemap.xml?v=2');
+  const cacheKey = new Request(SITE_ORIGIN + '/sitemap.xml?v=3');
   try {
     const cached = await caches.default.match(cacheKey);
     if (cached) return cached;
@@ -93,7 +93,7 @@ export async function onRequestGet({ request, env }) {
     // Only the redacted owner_public_profile_directory view is eligible.
     const [
       categories, areas, businesses, news, pages, authorityProfiles, ownerProfiles,
-      localAuthorities, emergencyContacts, offers, announcements,
+      localAuthorities, emergencyContacts, offers, announcements, governmentJobs,
     ] = await Promise.all([
       fetchPublicRows(baseUrl, publicKey, 'categories', 'id,slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
       fetchPublicRows(baseUrl, publicKey, 'areas', 'id,slug,updated_at', { is_active: 'eq.true' }, 'slug.asc'),
@@ -106,6 +106,7 @@ export async function onRequestGet({ request, env }) {
       fetchPublicRows(baseUrl, publicKey, 'emergency_contacts', 'id,category,updated_at', { is_active: 'eq.true' }),
       fetchPublicRows(baseUrl, publicKey, 'offers', 'id,valid_from,valid_to,updated_at', { status: 'eq.active', valid_from: 'lte.' + today, valid_to: 'gte.' + today }),
       fetchPublicRows(baseUrl, publicKey, 'announcements', 'id,start_date,end_date,updated_at', { is_active: 'eq.true' }),
+      fetchPublicRows(baseUrl, publicKey, 'government_jobs', 'slug,published_at,updated_at,status', { status: 'in.(published,closed,expired)', published_at: 'lte.' + nowIso }, 'slug.asc'),
     ]);
 
     const activeAnnouncements = announcements.filter((row) => isCurrentAnnouncement(row, now.getTime()));
@@ -122,12 +123,14 @@ export async function onRequestGet({ request, env }) {
     if (offers.length > 0) entries.push({ path: '/offers' });
     if (activeAnnouncements.length > 0) entries.push({ path: '/announcements' });
     if (news.length > 0) entries.push({ path: '/news' });
+    if (governmentJobs.length > 0) entries.push({ path: '/government-jobs' });
     if (authorityProfiles.length > 0) entries.push({ path: '/authority-profiles' });
 
     addSlugEntries(entries, indexableTaxonomy.categories, '/category');
     addSlugEntries(entries, indexableTaxonomy.areas, '/area');
     addSlugEntries(entries, businesses, '/business');
     addSlugEntries(entries, news, '/news');
+    addSlugEntries(entries, governmentJobs, '/government-jobs');
     addSlugEntries(entries, authorityProfiles, '/authority-profiles');
     for (const profile of ownerProfiles) {
       if (typeof profile.owner_id === 'string' && SAFE_UUID.test(profile.owner_id)) {
