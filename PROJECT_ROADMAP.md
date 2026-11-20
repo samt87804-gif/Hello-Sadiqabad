@@ -635,3 +635,11 @@ Latest implementation commit: `9e86b6505737ca5d666550e9df4b3a58566a12f7` (Admin 
 - [x] Bilingual summary migration applied and tracked.
 - [x] Latest CI passed; latest Cloudflare Pages production deployment succeeded.
 - [ ] Physical mobile/browser acceptance and first manually verified official job records.
+
+
+## Government Jobs — first verified entry and poster upload delta (20 Nov 2026)
+
+- [x] Added one currently open Federal Government vacancy from the official National Jobs Portal: Network Support Consultant, Office of the Controller General of Accounts, PPS-7, Islamabad, one vacancy, minimum five years' networking experience, closing 28 November 2026. Domicile eligibility is not stated in the portal listing; the public record explicitly tells applicants to confirm it rather than assuming Punjab eligibility.
+- [x] Added optional job poster upload in Admin using the existing public Storage bucket, scoped Storage RLS policies, 5 MB client-side validation and JPG/PNG/WebP/AVIF support. Image is optional and can be added later; public detail and listing cards render it when supplied.
+- [x] Added nullable `government_jobs.image_url` column and tracked migration `20261120153000_government_jobs_optional_poster_image.sql`.
+- [ ] Run final CI/deployment verification and owner-side browser/mobile QA. No other feature phase is claimed complete.
