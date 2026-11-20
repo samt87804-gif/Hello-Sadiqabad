@@ -764,7 +764,7 @@ Owner instructed: “ab agy ka kam shuru kro bina ruke”. Phase 2 Government Sc
 - Anonymous and authenticated report-insert tests passed inside rolled-back transactions; non-admin authenticated report SELECT returned zero.
 - Security Advisor: no new Government Schemes findings. Existing unrelated findings remain: private analytics gateway token table with RLS/no policy (INFO) and leaked-password protection disabled (WARN).
 - Performance Advisor: no unindexed foreign keys after indexes; unused-index notices on the new low-volume tables are expected until queries use them.
-- Final Cloudflare deployment ec963236-1709-4eee-9618-59185c891b96 succeeded with alias https://hellosadiqabad.com after the open-intake guard, public status filter and Admin revision-history refinements; its npm run build stage succeeded.
+- Final Cloudflare deployment 67219dc5-5d3f-41c0-8a6b-5e1518bdf46c succeeded with alias https://hellosadiqabad.com after the open-intake guard, public status filter and Admin revision-history refinements; its npm run build stage succeeded.
 - GitHub combined status returned no check details; do not claim TypeScript/unit-test CI passed unless a later Actions run confirms.
 - Web browser fetch of production/preview routes was inaccessible; physical mobile/browser QA remains outstanding.
 
