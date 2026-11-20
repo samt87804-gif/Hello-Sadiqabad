@@ -121,7 +121,7 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - Benazir Hunarmand record does not claim Sadiqabad course availability.
 - Admin tab `Government Schemes` is gated by dedicated `government_schemes.manage` permission; Super Admin receives it through `my_permissions()`, and other staff require explicit permission.
 - Admin can create/edit/draft/publish/archive schemes, set intake status and verification/review dates, review public correction reports and inspect append-only revision snapshots.
-- Public “Report outdated information” accepts only reason + optional short note (max 500 chars); it does not collect contact details, CNIC, OTP, bank or application data. Duplicate reports for the same scheme/reason are rate-limited to one per hour.
+- Public “Report outdated information” accepts only a fixed reason choice; it does not accept free text or collect contact details, CNIC, OTP, bank or application data. Duplicate reports for the same scheme/reason are rate-limited to one per hour.
 - An open intake is blocked unless an official application URL and next-review date are present, in both the client validation and database constraint.
 - Published scheme records are visible to anonymous users; drafts and report records are not. Reports are insert-only for public users and readable/reviewable only by authorised Admin staff.
 - Scheme create/update and report review are audit logged; scheme changes also create append-only before/after snapshots.
@@ -133,6 +133,7 @@ Recommended additive tables, subject to a fresh live-schema/migration check befo
 - `20261120154355_government_schemes_official_seed_v1.sql`
 - `20261120154533_government_schemes_open_intake_guard.sql`
 - `20261120154622_government_scheme_revision_history.sql`
+- `20261120155217_government_scheme_reports_no_public_note.sql`
 
 ### Remaining acceptance
 - Reconfirm each programme's live intake, current application URL and any changed eligibility/fees immediately before changing its intake status to open.
