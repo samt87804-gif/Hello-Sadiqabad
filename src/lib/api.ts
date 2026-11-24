@@ -1065,14 +1065,11 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
     client.from('owner_public_profile_businesses').select('owner_id,business_id').order('owner_id'),
   ]);
   const names = ['businesses','business_products','offers','reviews','ads','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings','owner_public_profile_directory','owner_public_profile_businesses'];
-  return queries.map((result, index) => {
+  const signature = queries.map((result, index) => {
     if (result.error) throw result.error;
-    const serialized = JSON.stringify(result.data ?? []);
-    const versionValue = names[index].startsWith('owner_public_profile')
-      ? hashOfflineVersionValue(serialized)
-      : serialized;
-    return names[index] + ':' + versionValue;
+    return names[index] + ':' + JSON.stringify(result.data ?? []);
   }).join('|');
+  return hashOfflineVersionValue(signature);
 }
 
 export async function fetchActiveAds(placement?: AdPlacement): Promise<AdRow[]> {
