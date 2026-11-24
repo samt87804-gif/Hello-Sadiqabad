@@ -327,9 +327,11 @@ export async function fetchSiteSettings(): Promise<SiteSettingsMap> {
   if (isBrowserOffline()) {
     const settings = parseSiteSettings(SEED_SITE_SETTINGS);
     const snapshot = await getActiveOfflineDirectorySnapshot();
-    return snapshot?.directory_image_urls
-      ? { ...settings, directory_image_urls: snapshot.directory_image_urls }
-      : settings;
+    return {
+      ...settings,
+      ...(snapshot?.hero_banner_url ? { hero_banner_url: snapshot.hero_banner_url } : {}),
+      ...(snapshot?.directory_image_urls ? { directory_image_urls: snapshot.directory_image_urls } : {}),
+    };
   }
   const client = getSupabaseClient();
   if (client) {
