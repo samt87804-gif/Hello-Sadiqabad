@@ -837,7 +837,6 @@ export function OfflineData() {
 
     const controller = beginOfflineDownload();
     if (!controller) return;
-    controllerRef.current = controller;
     const signal = controller.signal;
     setStatus('downloading');
     setProgress(5);
