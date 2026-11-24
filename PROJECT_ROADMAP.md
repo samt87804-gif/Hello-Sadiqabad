@@ -699,7 +699,7 @@ Implementation is in progress on `main`. This change expands the existing Indexe
 - [x] Add public content version checks (including crawler-only static business chunks) and a homepage notice linking to /offline-data when a newer offline package is available.
 - [x] Move the download controller/progress into app-level module state; in-app navigation no longer cancels it, and a persistent progress/cancel indicator appears across public pages.
 - [x] Require all referenced images in the supported public image allow-list to cache before activating a replacement snapshot; failed/unsupported image downloads preserve the previous snapshot.
-- [x] Cloudflare Pages production deployment for commit 1e64d76e7739c3fc87097ecc764bcea60bd30dfe succeeded; deployment ce1f613b-ec9f-4f30-a7d7-f246bcc4e08d is attached to https://hellosadiqabad.com. Configured npm run build passed.
+- [x] Cloudflare Pages production deployment for commit 9caa205c59e778f676ef1f404475777160cf8cb8 succeeded; deployment d87465cd-dc76-4c20-92df-3fc8503376ae is attached to https://hellosadiqabad.com. Configured npm run build passed.
 - [ ] TypeScript typecheck and unit tests were not run for this batch; GitHub combined status returned no checks for the final commit.
 - [ ] Real browser/physical-device testing remains pending: navigate away during a download, verify progress, complete download, then test public deep links, data and supported images in airplane mode. Third-party map tiles, live embeds and external video streams are not bulk-cached.
 - Security boundary unchanged: no admin/owner portal data, private/auth fields, drafts, submissions or server writes are included in the offline package.
