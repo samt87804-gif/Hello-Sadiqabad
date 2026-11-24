@@ -540,7 +540,7 @@ export function OfflineData() {
           return [...markdown.matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1]);
         }),
         ...activeAds.map((ad) => ad.image_url),
-      ].filter((url): url is string => typeof url === 'string' && (url.startsWith('https://') || url.startsWith('/')));
+      ].filter((url): url is string => typeof url === 'string' && url.trim().length > 0);
       const imageResult = await cacheOfflineImages(publicImageUrls, signal, (completed, total) => {
         if (total > 0) setProgress(78 + Math.round((completed / total) * 10));
       });
