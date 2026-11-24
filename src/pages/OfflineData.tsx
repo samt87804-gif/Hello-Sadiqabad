@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, HardDrive, Wifi, WifiOff, XCircle } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchPublishedNewsArticles, fetchPublicBusinessProductImageUrls, fetchSiteSettings, searchBusinesses } from '../lib/api';
+import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAnnouncementsForOffline, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchLocalAuthorities, fetchPublishedGovernmentJobs, fetchPublishedNewsArticles, fetchPublishedPagesForOffline, fetchPublicBusinessProductImageUrls, fetchSiteSettings, getPublicOfflineContentVersion, searchBusinesses } from '../lib/api';
+import { fetchPublishedGovernmentSchemes } from '../lib/governmentSchemes';
 import { cacheOfflineImages, getOfflineImageDisplayUrl } from '../lib/offlineImages';
 import { DEFAULT_SITE_SETTINGS } from '../lib/siteSettings';
+import { beginOfflineDownload, cancelOfflineDownload, finishOfflineDownload, getOfflineDownloadController, getOfflineDownloadState, publishOfflineDownloadState, subscribeOfflineDownloadState } from '../lib/offlineDownloadState';
 import { useI18n } from '../lib/i18n';
 import {
   getOfflineDirectoryMetadata,
@@ -226,10 +228,15 @@ export function OfflineData() {
   const { lang } = useI18n();
   const isUrdu = lang === 'ur';
   const [isOnline, setIsOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine);
-  const [status, setStatus] = useState<DownloadStatus>('idle');
-  const [progress, setProgress] = useState(0);
-  const [message, setMessage] = useState('');
-  const [estimatedBytes, setEstimatedBytes] = useState(0);
+  const initialDownloadState = getOfflineDownloadState();
+  const [status, setStatusLocal] = useState<DownloadStatus>(initialDownloadState.status);
+  const [progress, setProgressLocal] = useState(initialDownloadState.progress);
+  const [message, setMessageLocal] = useState(initialDownloadState.message);
+  const [estimatedBytes, setEstimatedBytesLocal] = useState(initialDownloadState.estimatedBytes);
+  const setStatus = (value: DownloadStatus) => { setStatusLocal(value); publishOfflineDownloadState({ status: value }); };
+  const setProgress = (value: number) => { setProgressLocal(value); publishOfflineDownloadState({ progress: value }); };
+  const setMessage = (value: string) => { setMessageLocal(value); publishOfflineDownloadState({ message: value }); };
+  const setEstimatedBytes = (value: number) => { setEstimatedBytesLocal(value); publishOfflineDownloadState({ estimatedBytes: value }); }
   const [storageUsage, setStorageUsage] = useState<{ usage: number; quota: number } | null>(null);
   const [metadata, setMetadata] = useState<OfflineSnapshotMetadata | null>(null);
   const [readiness, setReadiness] = useState<OfflineReadinessReport | null>(null);
@@ -237,6 +244,12 @@ export function OfflineData() {
   const controllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    const unsubscribeDownload = subscribeOfflineDownloadState((value) => {
+      setStatusLocal(value.status);
+      setProgressLocal(value.progress);
+      setMessageLocal(value.message);
+      setEstimatedBytesLocal(value.estimatedBytes);
+    });
     const onOnline = () => setIsOnline(true);
     const onOffline = () => setIsOnline(false);
     window.addEventListener('online', onOnline);
@@ -250,7 +263,7 @@ export function OfflineData() {
     return () => {
       window.removeEventListener('online', onOnline);
       window.removeEventListener('offline', onOffline);
-      controllerRef.current?.abort();
+      unsubscribeDownload();
     };
   }, []);
 
@@ -377,7 +390,7 @@ export function OfflineData() {
   };
 
   const startDownload = async () => {
-    if (controllerRef.current) return;
+    if (getOfflineDownloadController()) return;
     if (!isOnline) {
       setStatus('error');
       setMessage(isUrdu ? 'آف لائن ڈیٹا ڈاؤن لوڈ کرنے کے لیے پہلے انٹرنیٹ سے منسلک ہوں۔' : 'Connect to the internet before downloading the offline directory.');
@@ -389,12 +402,15 @@ export function OfflineData() {
       return;
     }
 
-    const controller = new AbortController();
+    const controller = beginOfflineDownload();
+    if (!controller) return;
     controllerRef.current = controller;
     const signal = controller.signal;
     setStatus('downloading');
     setProgress(5);
     setEstimatedBytes(0);
+    setMessage(isUrdu ? 'عوامی مواد کی تازہ فہرست حاصل کی جا رہی ہے…' : 'Checking the latest public content version…');
+    const versionBefore = await raceWithAbort(getPublicOfflineContentVersion(), signal);
     setMessage(isUrdu ? 'عوامی کاروباری ڈائریکٹری حاصل کی جا رہی ہے…' : 'Fetching the published public business directory…');
 
     try {
@@ -427,19 +443,43 @@ export function OfflineData() {
           return fallback;
         }
       };
-      const [siteSettings, publishedNews, authorityProfiles, activeAds, productImageUrls] = await Promise.all([
+      const [siteSettings, publishedNews, authorityProfiles, activeAds, productImageUrls, announcements, localAuthorities, governmentJobs, governmentSchemes, publicPages] = await Promise.all([
         optionalPublicRead(fetchSiteSettings(), DEFAULT_SITE_SETTINGS),
-        optionalPublicRead(fetchPublishedNewsArticles(50), []),
+        optionalPublicRead(fetchPublishedNewsArticles(500), []),
         optionalPublicRead(fetchAuthorityProfiles(), []),
         optionalPublicRead(fetchActiveAds(), []),
         optionalPublicRead(fetchPublicBusinessProductImageUrls(businesses.map((business) => business.id)), []),
+        optionalPublicRead(fetchAnnouncementsForOffline(), []),
+        optionalPublicRead(fetchLocalAuthorities(), []),
+        optionalPublicRead(fetchPublishedGovernmentJobs(), []),
+        optionalPublicRead(fetchPublishedGovernmentSchemes(), []),
+        optionalPublicRead(fetchPublishedPagesForOffline(), []),
       ]);
 
       if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
+      const versionAfter = await raceWithAbort(getPublicOfflineContentVersion(), signal);
+      if (versionBefore !== versionAfter) {
+        throw new Error('Public content changed while downloading. Please retry so every section belongs to the same update.');
+      }
+
+      const publicContent = {
+        news_articles: publishedNews.map(({ created_by, updated_by, ...row }) => row),
+        announcements: announcements.map(({ created_by, ...row }) => row),
+        local_authorities: localAuthorities.map(({ email, ...row }) => ({ ...row, public_email: email })),
+        authority_profiles: authorityProfiles.map(({ email, created_by, updated_by, ...row }) => ({
+          ...row, contact_email: row.show_contact ? email : null,
+        })),
+        government_jobs: governmentJobs.map(({ created_by, updated_by, published_by, ...row }) => row),
+        government_schemes: governmentSchemes.map(({ created_by, updated_by, published_by, ...row }) => row),
+        pages: publicPages.map(({ updated_by, ...row }) => row),
+      };
 
       const snapshot = {
         schema_version: OFFLINE_DIRECTORY_SCHEMA_VERSION,
         downloaded_at: new Date().toISOString(),
+        content_version: versionBefore,
+        hero_banner_url: siteSettings.hero_banner_url,
+        public_content: publicContent,
         businesses: businesses.map(toOfflineBusiness),
         categories: categories.filter((item) => item.is_active).map(toOfflineCategory),
         areas: areas.filter((item) => item.is_active).map(toOfflineArea),
@@ -463,6 +503,11 @@ export function OfflineData() {
           .map((url) => getOfflineImageDisplayUrl(url, window.location.origin)),
         ...publishedNews.flatMap((article) => [article.cover_image_url, ...(article.image_urls ?? [])]),
         ...authorityProfiles.map((profile) => profile.photo_url),
+        ...governmentJobs.map((job) => job.image_url),
+        ...publicPages.flatMap((page) => {
+          const markdown = [page.body_md_en, page.body_md_ur].join('\n');
+          return [...markdown.matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1]);
+        }),
         ...activeAds.map((ad) => ad.image_url),
       ].filter((url): url is string => typeof url === 'string' && url.startsWith('https://'));
       const imageResult = await cacheOfflineImages(publicImageUrls, signal, (completed, total) => {
@@ -494,6 +539,7 @@ export function OfflineData() {
       }
     } finally {
       controllerRef.current = null;
+      finishOfflineDownload();
     }
   };
 
@@ -509,7 +555,7 @@ export function OfflineData() {
     }
   }, []);
 
-  const cancelDownload = () => controllerRef.current?.abort();
+  const cancelDownload = () => cancelOfflineDownload();
 
   return (
     <AppShell>
