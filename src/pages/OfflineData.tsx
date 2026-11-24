@@ -930,6 +930,15 @@ export function OfflineData() {
 
       const directoryImages = siteSettings.directory_image_urls;
       const publicImageUrls = [
+        '/assets/hero-sadiqabad.svg',
+        '/favicon.png',
+        '/icons/groceries.svg',
+        '/icons/healthcare.svg',
+        '/icons/icon-192.png',
+        '/icons/icon-512.png',
+        '/icons/pharmacy.svg',
+        '/icons/restaurant.svg',
+        '/site-logo.png',
         ...businesses.flatMap((business) => [business.logo_url, business.cover_url, ...(business.gallery_urls ?? []), ...(business.active_offers ?? []).map((offer) => offer.image_url)]),
         ...productImageUrls,
         ...businessProducts.map((product) => product.image_url),
@@ -947,7 +956,7 @@ export function OfflineData() {
           return [...markdown.matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1]);
         }),
         ...activeAds.map((ad) => ad.image_url),
-      ].filter((url): url is string => typeof url === 'string' && url.startsWith('https://'));
+      ].filter((url): url is string => typeof url === 'string' && (url.startsWith('https://') || url.startsWith('/')));
       const imageResult = await cacheOfflineImages(publicImageUrls, signal, (completed, total) => {
         if (total > 0) setProgress(78 + Math.round((completed / total) * 10));
       });
