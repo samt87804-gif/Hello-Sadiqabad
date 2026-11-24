@@ -1,10 +1,15 @@
 import { getSupabaseClient } from './supabase';
+import { getActiveOfflineDirectorySnapshot } from './offlineDirectory';
 import { isSafeGovernmentJobUrl } from './governmentJobs';
 import type { GovernmentSchemeRow, GovernmentSchemeReportRow, GovernmentSchemeRevisionRow } from '../types/database';
 
 const nowIso=()=>new Date().toISOString();
 
 export async function fetchPublishedGovernmentSchemes():Promise<GovernmentSchemeRow[]>{
+ if (typeof navigator !== 'undefined' && !navigator.onLine) {
+  const snapshot=await getActiveOfflineDirectorySnapshot();
+  return (snapshot?.public_content?.government_schemes ?? []) as unknown as GovernmentSchemeRow[];
+ }
  const client=getSupabaseClient();if(!client)return [];
  const {data,error}=await client.from('government_schemes').select('*')
   .eq('status','published').not('published_at','is',null).lte('published_at',nowIso())
@@ -14,6 +19,10 @@ export async function fetchPublishedGovernmentSchemes():Promise<GovernmentScheme
 
 export async function fetchPublishedGovernmentSchemeBySlug(slug:string):Promise<GovernmentSchemeRow|null>{
  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return null;
+ if (typeof navigator !== 'undefined' && !navigator.onLine) {
+  const snapshot=await getActiveOfflineDirectorySnapshot();
+  return ((snapshot?.public_content?.government_schemes ?? []) as unknown as GovernmentSchemeRow[]).find((scheme)=>scheme.slug===slug) ?? null;
+ }
  const client=getSupabaseClient();if(!client)return null;
  const {data,error}=await client.from('government_schemes').select('*').eq('slug',slug).eq('status','published')
   .not('published_at','is',null).lte('published_at',nowIso()).maybeSingle();
