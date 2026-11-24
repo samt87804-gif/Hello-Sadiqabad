@@ -256,6 +256,7 @@ test('validates the complete public content package without internal account fie
     pages: [{ id: 'page-1', slug: 'about' }],
     business_products: [{ id: 'product-1', business_id: 'business-1' }],
     active_ads: [{ id: 'ad-1', business_id: 'business-1' }],
+    owner_public_profiles: [{ profile_id: 'public-profile-1', public_email: 'owner@example.com', business_ids: ['business-1'] }],
   };
   assert.equal(validateOfflineDirectorySnapshot(snapshot), true);
 });
@@ -272,6 +273,7 @@ test('rejects private email and creator fields inside downloaded public content'
     pages: [],
     business_products: [],
     active_ads: [],
+    owner_public_profiles: [],
   };
   assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
 });
