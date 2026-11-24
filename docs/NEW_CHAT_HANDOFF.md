@@ -818,7 +818,7 @@ Implementation is in progress on `main`. This change expands the existing Indexe
 - Image package includes all static public image assets plus supported public Supabase Storage and Google-hosted media referenced by the public datasets. If a referenced image fails or is unsupported, the new package is not activated; the previous verified package remains.
 - Public content version checks run on public pages, on reconnect and every five minutes while open. A stale package triggers a homepage update notice linking to `/offline-data`.
 - Download controller/progress is app-level; in-app navigation does not abort it, and a progress/cancel indicator stays visible across public pages. Browser tab closure/OS suspension is not guaranteed to continue a download.
-- Final production code commit `1e64d76e7739c3fc87097ecc764bcea60bd30dfe`; Pages deployment `ce1f613b-ec9f-4f30-a7d7-f246bcc4e08d` succeeded and has the canonical alias `https://hellosadiqabad.com`. Configured `npm run build` passed.
+- Final production code commit `9caa205c59e778f676ef1f404475777160cf8cb8`; Pages deployment `d87465cd-dc76-4c20-92df-3fc8503376ae` succeeded and has the canonical alias `https://hellosadiqabad.com`. Configured `npm run build` passed.
 - TypeScript typecheck, automated tests, GitHub CI, interactive browser checks and physical-device airplane-mode acceptance were not run for this batch. Keep offline acceptance in progress until these are tested.
 - Third-party map tiles, live embeds, external video streams and private/admin/owner portal data are not part of the offline package. Server writes remain online-only.
 
