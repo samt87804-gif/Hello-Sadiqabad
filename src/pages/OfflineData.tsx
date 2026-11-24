@@ -544,6 +544,9 @@ export function OfflineData() {
       const imageResult = await cacheOfflineImages(publicImageUrls, signal, (completed, total) => {
         if (total > 0) setProgress(78 + Math.round((completed / total) * 10));
       });
+      if (imageResult.skipped > 0) {
+        throw new Error(`${imageResult.skipped} public images could not be cached. The previous offline package was kept so the download is not marked complete with missing images.`);
+      }
 
       const bytes = new Blob([JSON.stringify(snapshot)]).size + imageResult.bytes;
       setEstimatedBytes(bytes);
