@@ -795,7 +795,45 @@ export async function fetchRelatedBusinesses(businessId:string,categoryId:string
   return (await fetchGitHubBusinesses()).filter((business)=>business.id!==businessId&&business.category_id===categoryId).slice(0,limit);
 }
 
+export async function fetchPublicOwnerProfilesForOffline(): Promise<Array<Record<string, unknown>>> {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  const [profilesResult, linksResult] = await Promise.all([
+    client.from('owner_public_profile_directory').select('owner_id,display_name,photo_url,phone,email').order('owner_id'),
+    client.from('owner_public_profile_businesses').select('owner_id,business_id').order('owner_id'),
+  ]);
+  if (profilesResult.error) throw profilesResult.error;
+  if (linksResult.error) throw linksResult.error;
+  const links = new Map<string, string[]>();
+  for (const link of (linksResult.data ?? []) as Array<{ owner_id: string; business_id: string }>) {
+    const current = links.get(link.owner_id) ?? [];
+    current.push(link.business_id);
+    links.set(link.owner_id, current);
+  }
+  return ((profilesResult.data ?? []) as Array<{ owner_id: string; display_name: string | null; photo_url: string | null; phone: string | null; email: string | null }>)
+    .map((profile) => ({
+      profile_id: profile.owner_id,
+      display_name: profile.display_name,
+      photo_url: profile.photo_url,
+      public_phone: profile.phone,
+      public_email: profile.email,
+      business_ids: links.get(profile.owner_id) ?? [],
+    }));
+}
+
 export async function fetchPublicOwnerProfile(ownerId: string): Promise<import('../types/directory').OwnerPublicProfileView | null> {
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    const row = (snapshot?.public_content?.owner_public_profiles ?? []) as Array<Record<string, unknown>>;
+    const profile = row.find((item) => item.profile_id === ownerId);
+    return profile ? {
+      owner_id: ownerId,
+      display_name: typeof profile.display_name === 'string' ? profile.display_name : null,
+      photo_url: typeof profile.photo_url === 'string' ? profile.photo_url : null,
+      phone: typeof profile.public_phone === 'string' ? profile.public_phone : null,
+      email: typeof profile.public_email === 'string' ? profile.public_email : null,
+    } : null;
+  }
   const client = getSupabaseClient();
   if (!client || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ownerId)) {
     return null;
@@ -1014,8 +1052,10 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
     client.from('government_schemes').select('id,updated_at').eq('status', 'published').not('published_at', 'is', null).lte('published_at', nowIso()).order('id'),
     client.from('pages').select('id,updated_at').eq('is_published', true).order('id'),
     client.from('site_settings').select('key,updated_at').eq('is_public', true).order('key'),
+    client.from('owner_public_profile_directory').select('owner_id,display_name,photo_url,phone,email').order('owner_id'),
+    client.from('owner_public_profile_businesses').select('owner_id,business_id').order('owner_id'),
   ]);
-  const names = ['businesses','business_products','offers','reviews','ads','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings'];
+  const names = ['businesses','business_products','offers','reviews','ads','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings','owner_public_profile_directory','owner_public_profile_businesses'];
   return queries.map((result, index) => {
     if (result.error) throw result.error;
     return names[index] + ':' + JSON.stringify(result.data ?? []);
@@ -1497,6 +1537,13 @@ export async function setOwnerPublicProfileBusinessIds(businessIds: string[]): P
   if (error) throw error;
 }
 export async function fetchPublicOwnerProfileBusinesses(ownerId: string): Promise<BusinessPublicView[]> {
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    const row = ((snapshot?.public_content?.owner_public_profiles ?? []) as Array<Record<string, unknown>>)
+      .find((item) => item.profile_id === ownerId);
+    const ids = Array.isArray(row?.business_ids) ? new Set(row.business_ids.filter((id): id is string => typeof id === 'string')) : new Set<string>();
+    return (snapshot?.businesses ?? []).filter((business) => ids.has(business.id)).map(offlineBusinessToPublicView);
+  }
   const client = getSupabaseClient(); if (!client) return [];
   const { data: selections, error: selectionError } = await client.from('owner_public_profile_businesses').select('business_id').eq('owner_id', ownerId);
   if (selectionError) throw selectionError;
