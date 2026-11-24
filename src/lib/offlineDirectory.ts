@@ -162,7 +162,7 @@ export interface OfflineSnapshotMetadata {
     categories: number;
     areas: number;
     emergency_contacts: number;
-    public_content?: { news_articles: number; announcements: number; local_authorities: number; authority_profiles: number; government_jobs: number; government_schemes: number; pages: number; business_products: number; active_ads: number };
+    public_content?: { news_articles: number; announcements: number; local_authorities: number; authority_profiles: number; government_jobs: number; government_schemes: number; pages: number; business_products: number; active_ads: number; owner_public_profiles: number };
   };
 }
 
@@ -390,7 +390,8 @@ export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnaps
         !row || typeof row !== 'object' || Array.isArray(row) ||
         !isNonEmptyString((row as Record<string, unknown>).id as string) &&
         !isNonEmptyString((row as Record<string, unknown>).slug as string) &&
-        !isNonEmptyString((row as Record<string, unknown>).key as string)
+        !isNonEmptyString((row as Record<string, unknown>).key as string) &&
+        !isNonEmptyString((row as Record<string, unknown>).profile_id as string)
       )) return false;
     }
     if (containsForbiddenKeys(snapshot.public_content)) return false;
@@ -638,6 +639,7 @@ export async function saveOfflineDirectorySnapshot(
         pages: snapshot.public_content?.pages.length ?? 0,
         business_products: snapshot.public_content?.business_products.length ?? 0,
         active_ads: snapshot.public_content?.active_ads.length ?? 0,
+        owner_public_profiles: snapshot.public_content?.owner_public_profiles.length ?? 0,
       },
     },
   };
