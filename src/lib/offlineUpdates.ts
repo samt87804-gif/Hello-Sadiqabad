@@ -40,7 +40,8 @@ export async function checkForOfflineContentUpdates(): Promise<OfflineUpdateStat
   activeCheck = (async () => {
     try {
       const saved = await getOfflineDirectoryMetadata();
-      if (!saved?.content_version) return publish({ available: false, checkedAt: new Date().toISOString(), error: null });
+      if (!saved) return publish({ available: false, checkedAt: new Date().toISOString(), error: null });
+      if (!saved.content_version) return publish({ available: true, checkedAt: new Date().toISOString(), error: null });
       const latest = await getPublicOfflineContentVersion();
       return publish({
         available: latest !== saved.content_version,
