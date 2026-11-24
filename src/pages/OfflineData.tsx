@@ -898,6 +898,7 @@ export function OfflineData() {
         government_schemes: governmentSchemes.map(({ created_by, updated_by, published_by, ...row }) => row),
         pages: publicPages.map(({ updated_by, ...row }) => row),
         business_products: businessProducts,
+        active_ads: activeAds.map(({ notes, impressions, clicks, created_by, reviewed_by, ...row }) => row),
       };
 
       const snapshot = {
