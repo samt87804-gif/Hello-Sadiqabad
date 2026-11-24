@@ -50,6 +50,7 @@ import { CategoryChip, CategoryIcon } from '../components/ui/CategoryIcon';
 import { Container, SectionHeading, Card } from '../components/ui/Surface';
 import { BusinessCardSkeleton } from '../components/ui/Feedback';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
+import { getOfflineUpdateStatus, subscribeOfflineUpdateStatus } from '../lib/offlineUpdates';
 
 const EMERGENCY_QUICK = [
   { code: '1122', en: 'Rescue', ur: 'ریسکیو' },
@@ -88,7 +89,12 @@ export function Home() {
   const [favorites, setFavorites] = useState<string[]>(() => getFavorites());
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [offlineUpdateAvailable, setOfflineUpdateAvailable] = useState(() => getOfflineUpdateStatus().available);
   const [retryKey, setRetryKey] = useState(0);
+
+  useEffect(() => subscribeOfflineUpdateStatus((value) => {
+    setOfflineUpdateAvailable(value.available);
+  }), []);
 
   useEffect(() => {
     updatePageSeo({
@@ -233,6 +239,17 @@ export function Home() {
             </p>
           </Container>
         </section>
+        {offlineUpdateAvailable && (
+          <Container>
+            <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+              <div>
+                <p className="text-sm font-extrabold text-on-surface">{lang === 'ur' ? 'آف لائن ڈائریکٹری کی نئی اپ ڈیٹ دستیاب ہے' : 'A new offline directory update is available'}</p>
+                <p className="mt-1 text-xs text-on-surface-variant">{lang === 'ur' ? 'نیا عوامی ڈیٹا اور تصاویر محفوظ کرنے کے لیے ڈاؤن لوڈ اپ ڈیٹ کریں۔' : 'Download the latest public information and images to keep your offline copy current.'}</p>
+              </div>
+              <Link to="/offline-data" className="inline-flex min-h-10 items-center justify-center rounded-xl bg-primary px-4 py-2 text-xs font-bold text-on-primary">{lang === 'ur' ? 'اپ ڈیٹ ڈاؤن لوڈ کریں' : 'Download update'}</Link>
+            </div>
+          </Container>
+        )}
         {loadError && (
           <Container>
             <div role="alert" className="p-3 rounded-xl border border-error/30 bg-error/5 text-sm text-on-surface flex flex-wrap items-center justify-between gap-3">
