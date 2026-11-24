@@ -529,7 +529,7 @@ export function OfflineData() {
           article.cover_image_url,
           ...(article.image_urls ?? []),
           ...[article.content_en, article.content_ur].flatMap((content) =>
-            [...(content ?? '').matchAll(/!\\[[^\\]]*\\]\\((https:\\/\\/[^)]+)\\)/g)].map((match) => match[1])
+            [...(content ?? '').matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1])
           ),
         ]),
         ...authorityProfiles.map((profile) => profile.photo_url),
