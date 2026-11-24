@@ -87,27 +87,30 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 **Acceptance gate:** clean CI (typecheck, tests, production build and existing Deno checks); online smoke checks for homepage/search/business profile/category/area/emergency; offline reload and search using a verified snapshot; offline write attempts show a clear connection-required message and create no local pending submission; existing install/update behavior remains intact. No production rollout if stale chunks, missing core routes, data leakage or online regressions are observed.
 
 ### Phase 2 — Complete public-content coverage and media
-**Status: in progress — public image prefetch/cache is implemented for business and other public media; category/helpline image URL mappings are now included in the offline snapshot so cached images can resolve offline. Remaining public-content snapshots and device acceptance are pending.**
+**Status: implementation deployed on 24 November 2026; actual airplane-mode route/media acceptance remains pending.**
 
-- Add offline snapshots and offline read fallbacks for active offers, published news/articles, current announcements, active local authorities, public authority profiles, public static pages and public site settings.
-- Create a deduplicated image manifest from the public business/content snapshots. Download public logos and cover images first, then galleries and other public media with bounded concurrency and explicit storage limits.
-- Use browser cache APIs safely for eligible same-origin and CORS-permitted media. If a third-party image cannot be cached, keep a graceful existing image fallback and report it as unavailable offline; do not proxy or copy images through an unapproved external service.
-- Keep ads/telemetry non-essential and do not record offline impressions/clicks as if they reached the server.
-- Provide a user-visible choice to include large gallery media where storage constraints require it; clearly state what is and is not stored.
+- [x] Snapshot and offline read fallbacks for published news/articles, announcements, active local authorities and authority profiles, public static pages, published government jobs/schemes, active ads, public business products, public site settings and opted-in public owner profiles.
+- [x] Save public directory image maps and collect media URLs from business logos/covers/galleries/offers, products, news cover/gallery/body, authority/owner photos, job posters, page Markdown, active ads, hero banner and static image assets.
+- [x] Extend offline-precache.json to include Vite-emitted images and all static images under public/; use bounded concurrency for public media caching.
+- [x] Keep media allow-listed to same-origin assets, the existing public Supabase Storage bucket and the existing Google image proxy. A new package is not activated if any referenced image fails or is unsupported; the previous verified package remains active.
+- [x] Preserve public ads and approved reviews/offers where they already appear in public business data; offline tracking remains disabled.
+- [ ] Verify newly included routes and images after a real airplane-mode reload. Third-party map tiles, external video streams and live embeds are not bulk-downloaded.
 
-**Acceptance gate:** each included public route can load from local data offline; downloaded images render where cacheable; missing third-party images fail gracefully; no private/draft data enters IndexedDB or Cache Storage.
+**Acceptance gate:** public routes use the saved data offline, supported public images are cached, and no private/draft data enters IndexedDB or Cache Storage.
 
-### Phase 3 — Updates, storage management and resilience
-**Status: not started; depends on Phases 1–2.**
+### Phase 3 — New-data notifications, background downloads and storage resilience
+**Status: requested update notice and route-persistent download features implemented and deployed; remaining storage management and browser acceptance are pending.**
 
-- Add safe update checks and a versioned data manifest, last-successful-sync timestamp and data schema version.
-- Implement incremental updates where reliable change markers exist. Where they do not, use a validated full dataset refresh staged atomically; do not claim delta sync without evidence.
-- Show available storage/quota using supported StorageManager APIs, estimate download size, handle quota failures and offer retry.
-- Support user-initiated removal of offline data without clearing favorites, auth settings or unrelated browser data.
-- Retain the last good offline generation until a replacement completes successfully.
-- Test low storage, interrupted download, app update while offline, browser eviction, corrupt/old snapshot and retry.
+- [x] Fingerprint public Supabase datasets and static crawler business chunks to detect published/changed public content.
+- [x] Check on public pages, on reconnect and every five minutes while the site remains open.
+- [x] Show a homepage notification linking to /offline-data when a newer offline package is available.
+- [x] Keep the download controller/progress state at app-module scope so in-app route navigation does not abort an active download.
+- [x] Show progress and a cancel action across public pages while the download continues.
+- [ ] Add incremental sync only where reliable change markers exist; otherwise keep validated full-snapshot replacement.
+- [ ] Improve low-storage/quota handling and add safe user-initiated offline-package removal without touching unrelated browser data.
+- [ ] Test cancellation, interrupted downloads, browser eviction, low quota, retry and reload/close behavior.
 
-**Acceptance gate:** no partial snapshot is ever presented as complete; previous valid data survives failed updates; data age and update state are accurate.
+**Acceptance gate:** a new public-content version triggers a homepage notice; in-app navigation does not cancel the download; only a fully validated data-and-image package replaces the previous snapshot.
 
 ### Phase 4 — Device verification and controlled release
 **Status: not started; depends on Phases 1–3.**
@@ -274,14 +277,14 @@ Business coordinates, filters and map/list markers can be available offline. Do 
 
 ### 24 November 2026 — Complete public offline package, background navigation and update notice
 
-Implementation is in progress on `main`. This change expands the existing IndexedDB snapshot and Cache Storage flow; it does not require a Supabase schema, RLS, Storage-policy or data migration.
+Implementation is committed to main and deployed to the production alias. This expands the existing IndexedDB snapshot and Cache Storage flow; it does not require a Supabase schema, RLS, Storage-policy or data migration.
 
 - Offline snapshot now includes published businesses, active categories and areas, active emergency contacts, published news articles, active/scheduled public announcements, active local authorities, active authority profiles, published government jobs, published government schemes, published static pages, active business products, active public ads, public site settings, and opted-in owner profiles from the redacted `owner_public_profile_directory` / `owner_public_profile_businesses` views.
 - Public records are allowlisted before storage. Internal creator/updater/approver IDs and private notes/analytics are omitted. Owner profile contact fields are taken only from the existing redacted opt-in public view; the raw owner profile tables are not queried. Public owner profile values are hashed for the update fingerprint rather than copied into the fingerprint string.
 - Offline adapters now read the saved news, announcements, authority directories, public pages, jobs, schemes, products, ads and opted-in owner profiles from the snapshot. Business listings continue to use the existing offline adapters.
 - Image package now includes all public image URL fields from the above datasets, the known shipped public site image assets, directory image maps, business logos/covers/galleries/offers, product images, news images, authority/owner profile photos and job posters. Cache Storage uses the existing public media cache. The Service Worker also serves cached same-origin public image files while offline.
-- Cacheable media sources remain deliberately restricted: the existing public Supabase bucket, the existing Google image proxy allowlist, the site's same-origin image proxy, and same-origin static image assets. Unsupported third-party image hosts can still prevent an image from being cached; the UI reports skipped images. External video streams, live embeds and third-party map tiles are not copied into the offline package.
-- Download state/controller is now module-scoped and survives React route changes inside the open app. Navigating to another in-app page no longer aborts the download; returning to Offline Data shows the shared progress and cancel control. This is not a promise that a browser will continue downloads after the tab/browser is closed or the operating system suspends the app.
+- Cacheable media sources remain deliberately restricted: the existing public Supabase bucket, the existing Google image proxy allowlist, the site's same-origin image proxy, and same-origin static image assets. Unsupported third-party image hosts or failed image requests prevent activation of the new package; the download reports the failure and preserves the previous verified package. External video streams, live embeds and third-party map tiles are not copied into the offline package.
+- Download state/controller is now module-scoped and survives React route changes inside the open app. Navigating to another in-app page no longer aborts the download; a persistent progress/cancel indicator remains visible across public pages. This is not a promise that a browser will continue downloads after the tab/browser is closed or the operating system suspends the app.
 - Public content version checking fingerprints businesses, products, offers, approved reviews, active ads, categories, areas, emergency contacts, news, announcements, authorities, authority profiles, jobs, schemes, pages, public settings and opted-in public profile views. Public pages check on reconnect and at five-minute intervals. When a saved package is stale (including legacy packages without a version fingerprint), the homepage shows a download-update notice linking to Offline Data.
 - Forms, report submissions, account/authentication flows, admin/owner portals and private user data remain online-only and are never queued or stored in the offline package.
-- Acceptance still requires green TypeScript/unit-test/production-build CI, successful Cloudflare Pages deployment, and real browser/mobile testing: start a download, navigate between several public routes, return to confirm progress, complete the package, switch to airplane mode, and verify each downloaded route and image category. Do not claim complete offline acceptance until those checks pass.
+- Cloudflare's configured production npm run build and Pages deployment succeeded for commit 1e64d76e7739c3fc87097ecc764bcea60bd30dfe (deployment ce1f613b-ec9f-4f30-a7d7-f246bcc4e08d, production alias attached). GitHub combined status returned no checks for that commit; TypeScript typecheck and unit tests were not run in this batch. Real browser/mobile testing is still required: start a download, navigate between several public routes, return to confirm progress, complete the package, switch to airplane mode, and verify each downloaded route and image category. Do not claim complete offline acceptance until those checks pass.
