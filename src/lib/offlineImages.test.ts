@@ -53,3 +53,10 @@ test('keeps unsupported external image hosts unchanged for display', () => {
   const url = 'https://example.com/category.webp';
   assert.equal(getOfflineImageDisplayUrl(url, origin), url);
 });
+
+
+test('includes same-origin static images and the approved image proxy in offline cache', () => {
+  assert.equal(getOfflineImageCacheUrl('/site-logo.png', origin), origin + '/site-logo.png');
+  const proxy = origin + '/image?url=https%3A%2F%2Fexample.com%2Fpublic-image.webp';
+  assert.equal(getOfflineImageCacheUrl(proxy, origin), proxy);
+});
