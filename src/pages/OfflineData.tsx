@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, HardDrive, Wifi, WifiOff, XCircle } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAnnouncementsForOffline, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessProductsForOffline, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchLocalAuthorities, fetchPublishedGovernmentJobs, fetchPublishedNewsArticles, fetchPublishedPagesForOffline, fetchPublicBusinessProductImageUrls, fetchSiteSettings, getPublicOfflineContentVersion, searchBusinesses } from '../lib/api';
+import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAnnouncementsForOffline, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessProductsForOffline, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchLocalAuthorities, fetchPublishedGovernmentJobs, fetchPublishedNewsArticles, fetchPublishedPagesForOffline, fetchPublicBusinessProductImageUrls, fetchPublicOwnerProfilesForOffline, fetchSiteSettings, getPublicOfflineContentVersion, searchBusinesses } from '../lib/api';
 import { fetchPublishedGovernmentSchemes } from '../lib/governmentSchemes';
 import { cacheOfflineImages, getOfflineImageDisplayUrl } from '../lib/offlineImages';
 import { beginOfflineDownload, cancelOfflineDownload, finishOfflineDownload, getOfflineDownloadController, getOfflineDownloadState, publishOfflineDownloadState, subscribeOfflineDownloadState } from '../lib/offlineDownloadState';
