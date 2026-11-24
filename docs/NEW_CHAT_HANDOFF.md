@@ -810,3 +810,15 @@ Implementation is in progress on `main`. This change expands the existing Indexe
 - Public content version checking fingerprints businesses, products, offers, approved reviews, active ads, categories, areas, emergency contacts, news, announcements, authorities, authority profiles, jobs, schemes, pages, public settings and opted-in public profile views. Public pages check on reconnect and at five-minute intervals. When a saved package is stale (including legacy packages without a version fingerprint), the homepage shows a download-update notice linking to Offline Data.
 - Forms, report submissions, account/authentication flows, admin/owner portals and private user data remain online-only and are never queued or stored in the offline package.
 - Acceptance still requires green TypeScript/unit-test/production-build CI, successful Cloudflare Pages deployment, and real browser/mobile testing: start a download, navigate between several public routes, return to confirm progress, complete the package, switch to airplane mode, and verify each downloaded route and image category. Do not claim complete offline acceptance until those checks pass.
+
+
+### Offline-first latest status — 24 November 2026
+
+- Offline public snapshot now includes businesses, categories, areas, emergency contacts, news, announcements, authorities, authority profiles, government jobs/schemes, public pages, safe public settings, active ads, products and opted-in public owner profiles.
+- Image package includes all static public image assets plus supported public Supabase Storage and Google-hosted media referenced by the public datasets. If a referenced image fails or is unsupported, the new package is not activated; the previous verified package remains.
+- Public content version checks run on public pages, on reconnect and every five minutes while open. A stale package triggers a homepage update notice linking to `/offline-data`.
+- Download controller/progress is app-level; in-app navigation does not abort it, and a progress/cancel indicator stays visible across public pages. Browser tab closure/OS suspension is not guaranteed to continue a download.
+- Final production code commit `1e64d76e7739c3fc87097ecc764bcea60bd30dfe`; Pages deployment `ce1f613b-ec9f-4f30-a7d7-f246bcc4e08d` succeeded and has the canonical alias `https://hellosadiqabad.com`. Configured `npm run build` passed.
+- TypeScript typecheck, automated tests, GitHub CI, interactive browser checks and physical-device airplane-mode acceptance were not run for this batch. Keep offline acceptance in progress until these are tested.
+- Third-party map tiles, live embeds, external video streams and private/admin/owner portal data are not part of the offline package. Server writes remain online-only.
+
