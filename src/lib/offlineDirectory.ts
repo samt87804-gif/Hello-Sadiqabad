@@ -126,16 +126,16 @@ export interface OfflinePublicSettings {
 }
 
 export interface OfflinePublicContent {
-  news_articles: Array<Record<string, unknown>>;
-  announcements: Array<Record<string, unknown>>;
-  local_authorities: Array<Record<string, unknown>>;
-  authority_profiles: Array<Record<string, unknown>>;
-  government_jobs: Array<Record<string, unknown>>;
-  government_schemes: Array<Record<string, unknown>>;
-  pages: Array<Record<string, unknown>>;
-  business_products: Array<Record<string, unknown>>;
-  active_ads: Array<Record<string, unknown>>;
-  owner_public_profiles: Array<Record<string, unknown>>;
+  news_articles: unknown[];
+  announcements: unknown[];
+  local_authorities: unknown[];
+  authority_profiles: unknown[];
+  government_jobs: unknown[];
+  government_schemes: unknown[];
+  pages: unknown[];
+  business_products: unknown[];
+  active_ads: unknown[];
+  owner_public_profiles: unknown[];
 }
 
 export interface OfflineDirectorySnapshot {
