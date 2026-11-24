@@ -135,6 +135,7 @@ export interface OfflinePublicContent {
   pages: Array<Record<string, unknown>>;
   business_products: Array<Record<string, unknown>>;
   active_ads: Array<Record<string, unknown>>;
+  owner_public_profiles: Array<Record<string, unknown>>;
 }
 
 export interface OfflineDirectorySnapshot {
@@ -381,7 +382,7 @@ export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnaps
   if (snapshot.public_content !== undefined) {
     const requiredCollections = [
       'news_articles', 'announcements', 'local_authorities', 'authority_profiles',
-      'government_jobs', 'government_schemes', 'pages', 'business_products', 'active_ads',
+      'government_jobs', 'government_schemes', 'pages', 'business_products', 'active_ads', 'owner_public_profiles',
     ] as const;
     for (const key of requiredCollections) {
       const rows = snapshot.public_content[key];
