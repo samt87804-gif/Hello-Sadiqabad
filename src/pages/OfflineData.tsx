@@ -407,11 +407,10 @@ export function OfflineData() {
     setStatus('downloading');
     setProgress(5);
     setEstimatedBytes(0);
-    setMessage(isUrdu ? 'عوامی مواد کی تازہ فہرست حاصل کی جا رہی ہے…' : 'Checking the latest public content version…');
-    const versionBefore = await raceWithAbort(getPublicOfflineContentVersion(), signal);
-    setMessage(isUrdu ? 'عوامی کاروباری ڈائریکٹری حاصل کی جا رہی ہے…' : 'Fetching the published public business directory…');
-
     try {
+      setMessage(isUrdu ? 'عوامی مواد کی تازہ فہرست حاصل کی جا رہی ہے…' : 'Checking the latest public content version…');
+      const versionBefore = await raceWithAbort(getPublicOfflineContentVersion(), signal);
+      setMessage(isUrdu ? 'عوامی کاروباری ڈائریکٹری حاصل کی جا رہی ہے…' : 'Fetching the published public business directory…');
       const businesses = await raceWithAbort(fetchBusinessesForOfflineDownload(), signal);
       if (!businesses.length) throw new Error('No published business records were returned. The previous offline package was kept.');
       setProgress(38);
