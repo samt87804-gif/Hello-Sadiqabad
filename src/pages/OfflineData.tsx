@@ -6,6 +6,7 @@ import { fetchPublishedGovernmentSchemes } from '../lib/governmentSchemes';
 import { cacheOfflineImages, getOfflineImageDisplayUrl } from '../lib/offlineImages';
 import { DEFAULT_SITE_SETTINGS } from '../lib/siteSettings';
 import { beginOfflineDownload, cancelOfflineDownload, finishOfflineDownload, getOfflineDownloadController, getOfflineDownloadState, publishOfflineDownloadState, subscribeOfflineDownloadState } from '../lib/offlineDownloadState';
+import { clearOfflineUpdateAvailable } from '../lib/offlineUpdates';
 import { useI18n } from '../lib/i18n';
 import {
   getOfflineDirectoryMetadata,
@@ -444,16 +445,16 @@ export function OfflineData() {
         }
       };
       const [siteSettings, publishedNews, authorityProfiles, activeAds, productImageUrls, announcements, localAuthorities, governmentJobs, governmentSchemes, publicPages] = await Promise.all([
-        optionalPublicRead(fetchSiteSettings(), DEFAULT_SITE_SETTINGS),
-        optionalPublicRead(fetchPublishedNewsArticles(500), []),
-        optionalPublicRead(fetchAuthorityProfiles(), []),
-        optionalPublicRead(fetchActiveAds(), []),
-        optionalPublicRead(fetchPublicBusinessProductImageUrls(businesses.map((business) => business.id)), []),
-        optionalPublicRead(fetchAnnouncementsForOffline(), []),
-        optionalPublicRead(fetchLocalAuthorities(), []),
-        optionalPublicRead(fetchPublishedGovernmentJobs(), []),
-        optionalPublicRead(fetchPublishedGovernmentSchemes(), []),
-        optionalPublicRead(fetchPublishedPagesForOffline(), []),
+        raceWithAbort(fetchSiteSettings(), signal),
+        raceWithAbort(fetchPublishedNewsArticles(500), signal),
+        raceWithAbort(fetchAuthorityProfiles(), signal),
+        raceWithAbort(fetchActiveAds(), signal),
+        raceWithAbort(fetchPublicBusinessProductImageUrls(businesses.map((business) => business.id)), signal),
+        raceWithAbort(fetchAnnouncementsForOffline(), signal),
+        raceWithAbort(fetchLocalAuthorities(), signal),
+        raceWithAbort(fetchPublishedGovernmentJobs(), signal),
+        raceWithAbort(fetchPublishedGovernmentSchemes(), signal),
+        raceWithAbort(fetchPublishedPagesForOffline(), signal),
       ]);
 
       if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
@@ -523,6 +524,7 @@ export function OfflineData() {
       if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
       const saved = await saveOfflineDirectorySnapshot(snapshot);
       setMetadata(saved);
+      clearOfflineUpdateAvailable();
       await refreshStorageEstimate();
       setProgress(100);
       setStatus('success');
