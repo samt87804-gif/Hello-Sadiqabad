@@ -109,7 +109,9 @@ self.addEventListener('fetch', (event) => {
     url.hostname === SUPABASE_MEDIA_HOST &&
     url.pathname.startsWith(SUPABASE_MEDIA_PREFIX);
   const isPublicImageProxy = url.origin === self.location.origin && url.pathname === '/image';
-  if (isPublicStorageImage || isPublicImageProxy) {
+  const isPublicSameOriginImage = url.origin === self.location.origin &&
+    /\\.(?:avif|gif|jpe?g|png|svg|webp|ico)$/i.test(url.pathname);
+  if (isPublicStorageImage || isPublicImageProxy || isPublicSameOriginImage) {
     event.respondWith(cachePublicMedia(request));
     return;
   }
