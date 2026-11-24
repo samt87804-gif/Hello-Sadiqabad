@@ -624,6 +624,7 @@ export async function getOfflineDirectoryMetadata(): Promise<OfflineSnapshotMeta
     generation: active.generation,
     schema_version: snapshot.schema_version,
     downloaded_at: snapshot.downloaded_at,
+    content_version: snapshot.content_version,
     counts: {
       businesses: snapshot.businesses.length,
       categories: snapshot.categories.length,
