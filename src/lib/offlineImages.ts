@@ -9,6 +9,12 @@ export function getOfflineImageCacheUrl(value: string, siteOrigin: string): stri
     const source = new URL(value, siteOrigin);
     if (source.protocol !== 'https:') return null;
 
+    const site = new URL(siteOrigin);
+    if (source.origin === site.origin && (
+      source.pathname === '/image' ||
+      /\\.(?:avif|gif|jpe?g|png|svg|webp|ico)$/i.test(source.pathname)
+    )) return source.toString();
+
     if (
       source.hostname === SUPABASE_STORAGE_HOST &&
       source.pathname.startsWith(SUPABASE_PUBLIC_BUCKET_PREFIX)
