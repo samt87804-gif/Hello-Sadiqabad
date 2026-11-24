@@ -496,7 +496,17 @@ export function OfflineData() {
       }
 
       const directoryImages = siteSettings.directory_image_urls;
+      const manifestResponse = await raceWithAbort(fetch('/offline-precache.json', { cache: 'no-store' }), signal);
+      if (!manifestResponse.ok) throw new Error('The public image manifest could not be verified. The previous offline package was kept.');
+      const manifestValue: unknown = await raceWithAbort(manifestResponse.json(), signal);
+      const staticImagePaths = Array.isArray(manifestValue)
+        ? manifestValue.filter((path): path is string =>
+            typeof path === 'string' && path.startsWith('/') &&
+            /\\.(?:avif|gif|jpe?g|png|svg|webp|ico)$/i.test(path)
+          )
+        : [];
       const publicImageUrls = [
+        ...staticImagePaths,
         '/assets/hero-sadiqabad.svg',
         '/favicon.png',
         '/icons/groceries.svg',
