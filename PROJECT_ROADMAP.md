@@ -690,3 +690,17 @@ Implementation is in progress on `main`. This change expands the existing Indexe
 - Public content version checking fingerprints businesses, products, offers, approved reviews, active ads, categories, areas, emergency contacts, news, announcements, authorities, authority profiles, jobs, schemes, pages, public settings and opted-in public profile views. Public pages check on reconnect and at five-minute intervals. When a saved package is stale (including legacy packages without a version fingerprint), the homepage shows a download-update notice linking to Offline Data.
 - Forms, report submissions, account/authentication flows, admin/owner portals and private user data remain online-only and are never queued or stored in the offline package.
 - Acceptance still requires green TypeScript/unit-test/production-build CI, successful Cloudflare Pages deployment, and real browser/mobile testing: start a download, navigate between several public routes, return to confirm progress, complete the package, switch to airplane mode, and verify each downloaded route and image category. Do not claim complete offline acceptance until those checks pass.
+
+
+## Offline-first PWA — 24 November 2026
+
+- [x] Expand the existing IndexedDB public snapshot to include published news, announcements, local authorities, authority profiles, government jobs/schemes, public pages, public site settings, active ads, business products and opted-in public owner profiles.
+- [x] Extend image collection to public business media, products, news/page content images, authority/owner photos, job posters, directory mappings, hero and all static image assets shipped under public/ or emitted by Vite.
+- [x] Add public content version checks (including crawler-only static business chunks) and a homepage notice linking to /offline-data when a newer offline package is available.
+- [x] Move the download controller/progress into app-level module state; in-app navigation no longer cancels it, and a persistent progress/cancel indicator appears across public pages.
+- [x] Require all referenced images in the supported public image allow-list to cache before activating a replacement snapshot; failed/unsupported image downloads preserve the previous snapshot.
+- [x] Cloudflare Pages production deployment for commit 1e64d76e7739c3fc87097ecc764bcea60bd30dfe succeeded; deployment ce1f613b-ec9f-4f30-a7d7-f246bcc4e08d is attached to https://hellosadiqabad.com. Configured npm run build passed.
+- [ ] TypeScript typecheck and unit tests were not run for this batch; GitHub combined status returned no checks for the final commit.
+- [ ] Real browser/physical-device testing remains pending: navigate away during a download, verify progress, complete download, then test public deep links, data and supported images in airplane mode. Third-party map tiles, live embeds and external video streams are not bulk-cached.
+- Security boundary unchanged: no admin/owner portal data, private/auth fields, drafts, submissions or server writes are included in the offline package.
+
