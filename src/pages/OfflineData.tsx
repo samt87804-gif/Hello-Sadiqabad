@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Download, HardDrive, Wifi, WifiOff, XCircle } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAnnouncementsForOffline, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessProductsForOffline, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchLocalAuthorities, fetchPublishedGovernmentJobs, fetchPublishedNewsArticles, fetchPublishedPagesForOffline, fetchPublicBusinessProductImageUrls, fetchSiteSettings, getPublicOfflineContentVersion, searchBusinesses } from '../lib/api';
@@ -403,16 +403,14 @@ export function OfflineData() {
 
     const controller = beginOfflineDownload();
     if (!controller) return;
-    controllerRef.current = controller;
     const signal = controller.signal;
     setStatus('downloading');
     setProgress(5);
     setEstimatedBytes(0);
     setMessage(isUrdu ? 'عوامی مواد کی تازہ فہرست حاصل کی جا رہی ہے…' : 'Checking the latest public content version…');
-    const versionBefore = await raceWithAbort(getPublicOfflineContentVersion(), signal);
-    setMessage(isUrdu ? 'عوامی کاروباری ڈائریکٹری حاصل کی جا رہی ہے…' : 'Fetching the published public business directory…');
-
     try {
+      const versionBefore = await raceWithAbort(getPublicOfflineContentVersion(), signal);
+      setMessage(isUrdu ? 'عوامی کاروباری ڈائریکٹری حاصل کی جا رہی ہے…' : 'Fetching the published public business directory…');
       const businesses = await raceWithAbort(fetchBusinessesForOfflineDownload(), signal);
       if (!businesses.length) throw new Error('No published business records were returned. The previous offline package was kept.');
       setProgress(38);
@@ -870,14 +868,6 @@ export function OfflineData() {
       setProgress(78);
 
       setMessage(isUrdu ? 'عوامی تصاویر اور بینرز حاصل کیے جا رہے ہیں…' : 'Collecting public images and banners…');
-      const optionalPublicRead = async <T,>(request: Promise<T>, fallback: T): Promise<T> => {
-        try {
-          return await raceWithAbort(request, signal);
-        } catch (error) {
-          if (signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw error;
-          return fallback;
-        }
-      };
       const [siteSettings, publishedNews, authorityProfiles, activeAds, productImageUrls, announcements, localAuthorities, governmentJobs, governmentSchemes, publicPages, businessProducts] = await Promise.all([
         raceWithAbort(fetchSiteSettings(), signal),
         raceWithAbort(fetchPublishedNewsArticles(500), signal),
