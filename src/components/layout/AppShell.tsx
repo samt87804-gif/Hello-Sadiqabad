@@ -77,7 +77,7 @@ export function AppShell({
     const check = () => { void checkForOfflineContentUpdates(); };
     check();
     window.addEventListener('online', check);
-    const timer = window.setInterval(check, 10 * 60 * 1000);
+    const timer = window.setInterval(check, 5 * 60 * 1000);
     return () => {
       window.removeEventListener('online', check);
       window.clearInterval(timer);
