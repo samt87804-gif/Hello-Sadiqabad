@@ -48,19 +48,21 @@ export async function cacheOfflineImages(
     return { total: 0, downloaded: 0, alreadyCached: 0, skipped: values.length, bytes: 0 };
   }
 
-  const urls = [...new Set(values
+  const uniqueValues = [...new Set(values.filter((value) => typeof value === 'string' && value.trim().length > 0))];
+  const urls = [...new Set(uniqueValues
     .map((value) => getOfflineImageCacheUrl(value, window.location.origin))
     .filter((value): value is string => Boolean(value)))];
+  const unsupportedImages = uniqueValues.length - urls.length;
   let cache: Cache;
   try {
     cache = await caches.open(OFFLINE_MEDIA_CACHE_NAME);
   } catch {
-    return { total: urls.length, downloaded: 0, alreadyCached: 0, skipped: urls.length, bytes: 0 };
+    return { total: uniqueValues.length, downloaded: 0, alreadyCached: 0, skipped: uniqueValues.length, bytes: 0 };
   }
   let nextIndex = 0;
   let downloaded = 0;
   let alreadyCached = 0;
-  let skipped = 0;
+  let skipped = unsupportedImages;
   let bytes = 0;
   let completed = 0;
 
@@ -97,5 +99,5 @@ export async function cacheOfflineImages(
   };
 
   await Promise.all(Array.from({ length: Math.min(4, Math.max(1, urls.length)) }, () => worker()));
-  return { total: urls.length, downloaded, alreadyCached, skipped, bytes };
+  return { total: uniqueValues.length, downloaded, alreadyCached, skipped, bytes };
 }
