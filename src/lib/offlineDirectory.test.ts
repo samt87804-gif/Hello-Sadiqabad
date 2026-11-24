@@ -231,3 +231,47 @@ test('offline snapshot rejects non-HTTPS directory image mappings', () => {
   snapshot.directory_image_urls = { categories: { showroom: 'http://example.com/showroom.webp' }, areas: {}, helplines: {}, businesses: {}, offers: {}, ads: {} };
   assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
 });
+
+
+test('validates the complete public content package without internal account fields', () => {
+  const snapshot = createSnapshot();
+  snapshot.content_version = 'public-v1';
+  snapshot.public_settings = {
+    site_name: 'Hello Sadiqabad',
+    contact_phone: '03001234567',
+    contact_whatsapp: '03001234567',
+    public_contact_email: 'public@example.com',
+    social_links: {},
+    default_language: 'en',
+    ads_enabled: true,
+    maintenance_mode: false,
+  };
+  snapshot.public_content = {
+    news_articles: [{ id: 'news-1', slug: 'public-news' }],
+    announcements: [{ id: 'announcement-1' }],
+    local_authorities: [{ id: 'authority-1', public_email: 'office@example.com' }],
+    authority_profiles: [{ id: 'profile-1', contact_email: null }],
+    government_jobs: [{ id: 'job-1', slug: 'public-job' }],
+    government_schemes: [{ id: 'scheme-1', slug: 'public-scheme' }],
+    pages: [{ id: 'page-1', slug: 'about' }],
+    business_products: [{ id: 'product-1', business_id: 'business-1' }],
+    active_ads: [{ id: 'ad-1', business_id: 'business-1' }],
+  };
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), true);
+});
+
+test('rejects private email and creator fields inside downloaded public content', () => {
+  const snapshot = createSnapshot();
+  snapshot.public_content = {
+    news_articles: [{ id: 'news-1', created_by: 'private-user' }],
+    announcements: [],
+    local_authorities: [],
+    authority_profiles: [],
+    government_jobs: [],
+    government_schemes: [],
+    pages: [],
+    business_products: [],
+    active_ads: [],
+  };
+  assert.equal(validateOfflineDirectorySnapshot(snapshot), false);
+});
