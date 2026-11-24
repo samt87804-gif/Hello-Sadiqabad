@@ -329,6 +329,16 @@ export async function fetchSiteSettings(): Promise<SiteSettingsMap> {
     const snapshot = await getActiveOfflineDirectorySnapshot();
     return {
       ...settings,
+      ...(snapshot?.public_settings ? {
+        site_name: snapshot.public_settings.site_name,
+        contact_phone: snapshot.public_settings.contact_phone,
+        contact_whatsapp: snapshot.public_settings.contact_whatsapp,
+        contact_email: snapshot.public_settings.public_contact_email,
+        social_links: snapshot.public_settings.social_links,
+        default_language: snapshot.public_settings.default_language,
+        ads_enabled: snapshot.public_settings.ads_enabled,
+        maintenance_mode: snapshot.public_settings.maintenance_mode,
+      } : {}),
       ...(snapshot?.hero_banner_url ? { hero_banner_url: snapshot.hero_banner_url } : {}),
       ...(snapshot?.directory_image_urls ? { directory_image_urls: snapshot.directory_image_urls } : {}),
     };
