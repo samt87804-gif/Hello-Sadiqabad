@@ -845,6 +845,11 @@ export async function fetchEmergencyContactsAdmin(): Promise<EmergencyContactRow
 }
 
 export async function fetchLocalAuthorities(): Promise<LocalAuthorityRow[]> {
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    const rows = (snapshot?.public_content?.local_authorities ?? []) as Array<Record<string, unknown>>;
+    return rows.map(({ public_email, ...row }) => ({ ...row, email: typeof public_email === 'string' ? public_email : null } as unknown as LocalAuthorityRow));
+  }
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('local_authorities').select('*')
@@ -868,6 +873,11 @@ export async function fetchLocalAuthoritiesAdmin(): Promise<LocalAuthorityRow[]>
 }
 
 export async function fetchAuthorityProfiles(): Promise<AuthorityProfileRow[]> {
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    const rows = (snapshot?.public_content?.authority_profiles ?? []) as Array<Record<string, unknown>>;
+    return rows.map(({ contact_email, ...row }) => ({ ...row, email: typeof contact_email === 'string' ? contact_email : null } as unknown as AuthorityProfileRow));
+  }
   const client = getSupabaseClient();
   if (!client) return [];
   const { data, error } = await client.from('authority_profiles').select('*')
@@ -923,6 +933,14 @@ export async function uploadAuthorityProfilePhoto(file: File): Promise<string> {
 }
 
 export async function fetchAnnouncements(activeOnly = true): Promise<AnnouncementRow[]> {
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    const rows = (snapshot?.public_content?.announcements ?? []) as unknown as AnnouncementRow[];
+    const now = Date.now();
+    return rows.filter((item) => !activeOnly || (item.is_active &&
+      new Date(item.start_date).getTime() <= now && new Date(item.end_date).getTime() >= now))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('announcements').select('*').order('created_at', { ascending: false });
@@ -946,6 +964,48 @@ export async function fetchAnnouncements(activeOnly = true): Promise<Announcemen
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 }
 
+export async function fetchAnnouncementsForOffline(): Promise<AnnouncementRow[]> {
+  const client = getSupabaseClient();
+  if (!client) return [...SEED_ANNOUNCEMENTS].filter((item) => item.is_active);
+  const { data, error } = await client.from('announcements').select('*')
+    .eq('is_active', true).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as AnnouncementRow[];
+}
+
+export async function fetchPublishedPagesForOffline(): Promise<PageRow[]> {
+  const client = getSupabaseClient();
+  if (!client) return SEED_PAGES.filter((page) => page.is_published);
+  const { data, error } = await client.from('pages').select('*')
+    .eq('is_published', true).order('slug');
+  if (error) throw error;
+  return (data ?? []) as PageRow[];
+}
+
+export async function getPublicOfflineContentVersion(): Promise<string> {
+  const client = getSupabaseClient();
+  if (!client) return 'seed-public-v1';
+  const queries = await Promise.all([
+    client.from('businesses').select('id,updated_at').eq('status', 'published').order('id'),
+    client.from('categories').select('id,updated_at').eq('is_active', true).order('id'),
+    client.from('areas').select('id,updated_at').eq('is_active', true).order('id'),
+    client.from('emergency_contacts').select('id,updated_at').eq('is_active', true).order('id'),
+    client.from('news_articles').select('id,updated_at').eq('status', 'published').not('published_at', 'is', null).lte('published_at', nowIso()).order('id'),
+    client.from('announcements').select('id,updated_at').eq('is_active', true).order('id'),
+    client.from('local_authorities').select('id,updated_at').eq('is_active', true).order('id'),
+    client.from('authority_profiles').select('id,updated_at').eq('is_active', true).order('id'),
+    client.from('government_jobs').select('id,updated_at').in('status', ['published','closed','expired']).not('published_at', 'is', null).lte('published_at', nowIso()).order('id'),
+    client.from('government_schemes').select('id,updated_at').eq('status', 'published').not('published_at', 'is', null).lte('published_at', nowIso()).order('id'),
+    client.from('pages').select('id,updated_at').eq('is_published', true).order('id'),
+    client.from('site_settings').select('key,updated_at').eq('is_public', true).order('key'),
+  ]);
+  const names = ['businesses','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings'];
+  return queries.map((result, index) => {
+    if (result.error) throw result.error;
+    return names[index] + ':' + JSON.stringify(result.data ?? []);
+  }).join('|');
+}
+
 export async function fetchActiveAds(placement?: AdPlacement): Promise<AdRow[]> {
   if (isBrowserOffline()) return [];
   const today = todayDateStr();
@@ -966,6 +1026,10 @@ export async function fetchActiveAds(placement?: AdPlacement): Promise<AdRow[]> 
 }
 
 export async function fetchPageBySlug(slug: string): Promise<PageRow | null> {
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    return ((snapshot?.public_content?.pages ?? []) as unknown as PageRow[]).find((page) => page.slug === slug && page.is_published) ?? null;
+  }
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.from('pages').select('*')
@@ -3029,9 +3093,13 @@ export function generateSitemapXml(baseUrl = supabaseConfig.siteUrl): string {
 }
 
 export async function fetchPublishedNewsArticles(limit = 24): Promise<NewsArticleRow[]> {
+  const safeLimit = Math.max(1, Math.min(500, Math.trunc(limit) || 24));
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    return ((snapshot?.public_content?.news_articles ?? []) as unknown as NewsArticleRow[]).slice(0, safeLimit);
+  }
   const client = getSupabaseClient();
   if (!client) return [];
-  const safeLimit = Math.max(1, Math.min(50, Math.trunc(limit) || 24));
   const { data, error } = await client
     .from('news_articles')
     .select('*')
@@ -3046,6 +3114,10 @@ export async function fetchPublishedNewsArticles(limit = 24): Promise<NewsArticl
 
 export async function fetchPublishedNewsArticleBySlug(slug: string): Promise<NewsArticleRow | null> {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return null;
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    return ((snapshot?.public_content?.news_articles ?? []) as unknown as NewsArticleRow[]).find((row) => row.slug === slug) ?? null;
+  }
   const client = getSupabaseClient();
   if (!client) return null;
   const { data, error } = await client
@@ -3192,6 +3264,10 @@ export async function fetchAdminLiveVisitorCount(): Promise<number> {
 }
 
 export async function fetchPublishedGovernmentJobs(): Promise<GovernmentJobRow[]> {
+ if (isBrowserOffline()) {
+  const snapshot=await getActiveOfflineDirectorySnapshot();
+  return (snapshot?.public_content?.government_jobs ?? []) as unknown as GovernmentJobRow[];
+ }
  const client=getSupabaseClient(); if(!client)return [];
  const {data,error}=await client.from('government_jobs').select('*')
   .in('status',['published','closed','expired']).not('published_at','is',null).lte('published_at',nowIso())
@@ -3200,6 +3276,10 @@ export async function fetchPublishedGovernmentJobs(): Promise<GovernmentJobRow[]
 }
 export async function fetchPublishedGovernmentJobBySlug(slug:string):Promise<GovernmentJobRow|null> {
  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return null;
+ if (isBrowserOffline()) {
+  const snapshot=await getActiveOfflineDirectorySnapshot();
+  return ((snapshot?.public_content?.government_jobs ?? []) as unknown as GovernmentJobRow[]).find((job)=>job.slug===slug) ?? null;
+ }
  const client=getSupabaseClient();if(!client)return null;
  const {data,error}=await client.from('government_jobs').select('*').eq('slug',slug)
   .in('status',['published','closed','expired']).not('published_at','is',null).lte('published_at',nowIso()).maybeSingle();
