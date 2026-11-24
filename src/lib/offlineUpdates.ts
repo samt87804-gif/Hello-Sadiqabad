@@ -10,6 +10,8 @@ export interface OfflineUpdateStatus {
 const EVENT_NAME = 'hs:offline-update-status';
 let status: OfflineUpdateStatus = { available: false, checkedAt: null, error: null };
 let activeCheck: Promise<OfflineUpdateStatus> | null = null;
+let lastCheckAt = 0;
+const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
 function publish(next: OfflineUpdateStatus): OfflineUpdateStatus {
   status = next;
@@ -34,6 +36,7 @@ export function subscribeOfflineUpdateStatus(listener: (value: OfflineUpdateStat
 export async function checkForOfflineContentUpdates(): Promise<OfflineUpdateStatus> {
   if (activeCheck) return activeCheck;
   if (typeof navigator !== 'undefined' && !navigator.onLine) return getOfflineUpdateStatus();
+  if (Date.now() - lastCheckAt < CHECK_INTERVAL_MS) return getOfflineUpdateStatus();
   activeCheck = (async () => {
     try {
       const saved = await getOfflineDirectoryMetadata();
@@ -55,6 +58,7 @@ export async function checkForOfflineContentUpdates(): Promise<OfflineUpdateStat
   try {
     return await activeCheck;
   } finally {
+    lastCheckAt = Date.now();
     activeCheck = null;
   }
 }
