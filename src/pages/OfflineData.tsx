@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, HardDrive, Wifi, WifiOff, XCircle } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAnnouncementsForOffline, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessProductsForOffline, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchLocalAuthorities, fetchPublishedGovernmentJobs, fetchPublishedNewsArticles, fetchPublishedPagesForOffline, fetchPublicBusinessProductImageUrls, fetchSiteSettings, getPublicOfflineContentVersion, searchBusinesses } from '../lib/api';
+import { fetchActiveAds, fetchAllAreas, fetchAllCategories, fetchAnnouncementsForOffline, fetchAuthorityProfiles, fetchBusinessBySlug, fetchBusinessProductsForOffline, fetchBusinessesForOfflineDownload, fetchEmergencyContacts, fetchLocalAuthorities, fetchPublishedGovernmentJobs, fetchPublishedNewsArticles, fetchPublishedPagesForOffline, fetchPublicBusinessProductImageUrls, fetchPublicOwnerProfilesForOffline, fetchSiteSettings, getPublicOfflineContentVersion, searchBusinesses } from '../lib/api';
 import { fetchPublishedGovernmentSchemes } from '../lib/governmentSchemes';
 import { cacheOfflineImages, getOfflineImageDisplayUrl } from '../lib/offlineImages';
 import { beginOfflineDownload, cancelOfflineDownload, finishOfflineDownload, getOfflineDownloadController, getOfflineDownloadState, publishOfflineDownloadState, subscribeOfflineDownloadState } from '../lib/offlineDownloadState';
@@ -867,7 +867,7 @@ export function OfflineData() {
       setProgress(78);
 
       setMessage(isUrdu ? 'عوامی تصاویر اور بینرز حاصل کیے جا رہے ہیں…' : 'Collecting public images and banners…');
-      const [siteSettings, publishedNews, authorityProfiles, activeAds, productImageUrls, announcements, localAuthorities, governmentJobs, governmentSchemes, publicPages, businessProducts] = await Promise.all([
+      const [siteSettings, publishedNews, authorityProfiles, activeAds, productImageUrls, announcements, localAuthorities, governmentJobs, governmentSchemes, publicPages, businessProducts, ownerPublicProfiles] = await Promise.all([
         raceWithAbort(fetchSiteSettings(), signal),
         raceWithAbort(fetchPublishedNewsArticles(500), signal),
         raceWithAbort(fetchAuthorityProfiles(), signal),
@@ -879,6 +879,7 @@ export function OfflineData() {
         raceWithAbort(fetchPublishedGovernmentSchemes(), signal),
         raceWithAbort(fetchPublishedPagesForOffline(), signal),
         raceWithAbort(fetchBusinessProductsForOffline(businesses.map((business) => business.id)), signal),
+        raceWithAbort(fetchPublicOwnerProfilesForOffline(), signal),
       ]);
 
       if (signal.aborted) throw new DOMException('Download cancelled.', 'AbortError');
@@ -899,6 +900,7 @@ export function OfflineData() {
         pages: publicPages.map(({ updated_by, ...row }) => row),
         business_products: businessProducts,
         active_ads: activeAds.map(({ notes, impressions, clicks, created_by, reviewed_by, ...row }) => row),
+        owner_public_profiles: ownerPublicProfiles,
       };
 
       const snapshot = {
@@ -950,6 +952,7 @@ export function OfflineData() {
           .map((url) => getOfflineImageDisplayUrl(url, window.location.origin)),
         ...publishedNews.flatMap((article) => [article.cover_image_url, ...(article.image_urls ?? [])]),
         ...authorityProfiles.map((profile) => profile.photo_url),
+        ...ownerPublicProfiles.map((profile) => typeof profile.photo_url === 'string' ? profile.photo_url : null),
         ...governmentJobs.map((job) => job.image_url),
         ...publicPages.flatMap((page) => {
           const markdown = [page.body_md_en, page.body_md_ur].join('\n');
@@ -1211,6 +1214,7 @@ export function OfflineData() {
                     [isUrdu ? 'کاروباری مصنوعات' : 'Business products', metadata.counts.public_content.business_products],
                     [isUrdu ? 'عوامی صفحات' : 'Public pages', metadata.counts.public_content.pages],
                     [isUrdu ? 'فعال اشتہارات' : 'Active ads', metadata.counts.public_content.active_ads],
+                    [isUrdu ? 'عوامی مالک پروفائلز' : 'Public owner profiles', metadata.counts.public_content.owner_public_profiles],
                   ].map(([label, count]) => (
                     <div key={String(label)} className="rounded-xl bg-surface-container p-3">
                       <div className="text-xl font-extrabold tabular-nums text-on-surface">{count}</div>
