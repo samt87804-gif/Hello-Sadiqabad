@@ -502,7 +502,7 @@ export function OfflineData() {
       const staticImagePaths = Array.isArray(manifestValue)
         ? manifestValue.filter((path): path is string =>
             typeof path === 'string' && path.startsWith('/') &&
-            /\\.(?:avif|gif|jpe?g|png|svg|webp|ico)$/i.test(path)
+            /\.(?:avif|gif|jpe?g|png|svg|webp|ico)$/i.test(path)
           )
         : [];
       const publicImageUrls = [
