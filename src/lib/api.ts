@@ -1069,7 +1069,27 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
     if (result.error) throw result.error;
     return names[index] + ':' + JSON.stringify(result.data ?? []);
   }).join('|');
-  return hashOfflineVersionValue(signature);
+
+  // Crawler-only directory listings live in static JSON chunks, not solely in
+  // Supabase. Include each chunk's HTTP validator so those updates also trigger
+  // the homepage's offline-download notification.
+  const basePath = import.meta.env.BASE_URL || '/';
+  const base = basePath.endsWith('/') ? basePath : basePath + '/';
+  const indexResponse = await fetch(base + 'data/businesses/index.json', { cache: 'no-store' });
+  if (!indexResponse.ok) throw new Error('The public business dataset version could not be checked.');
+  const staticIndex = await indexResponse.json() as GitHubBusinessIndex;
+  const staticChunkVersions = await Promise.all(staticIndex.chunks.map(async ({ file }) => {
+    const response = await fetch(base + 'data/businesses/' + file, { method: 'HEAD', cache: 'no-store' });
+    if (!response.ok) throw new Error('The public business dataset version could not be checked.');
+    let validator = response.headers.get('etag') || response.headers.get('last-modified') || response.headers.get('content-length');
+    if (!validator) {
+      const fallback = await fetch(base + 'data/businesses/' + file, { cache: 'no-store' });
+      if (!fallback.ok) throw new Error('The public business dataset version could not be checked.');
+      validator = await fallback.text();
+    }
+    return file + ':' + validator;
+  }));
+  return hashOfflineVersionValue(signature + '|static_index:' + JSON.stringify(staticIndex) + '|static_chunks:' + staticChunkVersions.join('|'));
 }
 
 export async function fetchActiveAds(placement?: AdPlacement): Promise<AdRow[]> {
