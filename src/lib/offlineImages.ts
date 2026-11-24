@@ -12,7 +12,7 @@ export function getOfflineImageCacheUrl(value: string, siteOrigin: string): stri
     const site = new URL(siteOrigin);
     if (source.origin === site.origin && (
       source.pathname === '/image' ||
-      /\\.(?:avif|gif|jpe?g|png|svg|webp|ico)$/i.test(source.pathname)
+      /\.(?:avif|gif|jpe?g|png|svg|webp|ico)$/i.test(source.pathname)
     )) return source.toString();
 
     if (
