@@ -987,6 +987,9 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
   if (!client) return 'seed-public-v1';
   const queries = await Promise.all([
     client.from('businesses').select('id,updated_at').eq('status', 'published').order('id'),
+    client.from('business_products').select('id,updated_at').eq('is_active', true).order('id'),
+    client.from('offers').select('id,updated_at').eq('status', 'active').lte('valid_from', todayDateStr()).gte('valid_to', todayDateStr()).order('id'),
+    client.from('reviews').select('id,updated_at').eq('status', 'approved').order('id'),
     client.from('categories').select('id,updated_at').eq('is_active', true).order('id'),
     client.from('areas').select('id,updated_at').eq('is_active', true).order('id'),
     client.from('emergency_contacts').select('id,updated_at').eq('is_active', true).order('id'),
@@ -999,7 +1002,7 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
     client.from('pages').select('id,updated_at').eq('is_published', true).order('id'),
     client.from('site_settings').select('key,updated_at').eq('is_public', true).order('key'),
   ]);
-  const names = ['businesses','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings'];
+  const names = ['businesses','business_products','offers','reviews','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings'];
   return queries.map((result, index) => {
     if (result.error) throw result.error;
     return names[index] + ':' + JSON.stringify(result.data ?? []);
@@ -1503,8 +1506,30 @@ export async function fetchPublicBusinessProductImageUrls(businessIds: string[])
   return imageUrls;
 }
 
+export async function fetchBusinessProductsForOffline(businessIds: string[]): Promise<ProductRow[]> {
+  const client = getSupabaseClient();
+  if (!client || businessIds.length === 0) return [];
+  const uniqueIds = [...new Set(businessIds.filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)))];
+  const products: ProductRow[] = [];
+  for (let index = 0; index < uniqueIds.length; index += 100) {
+    const batch = uniqueIds.slice(index, index + 100);
+    const { data, error } = await client.from('business_products').select('*')
+      .eq('is_active', true).in('business_id', batch)
+      .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+    if (error) throw error;
+    products.push(...((data ?? []) as ProductRow[]));
+  }
+  return products;
+}
+
 export async function fetchBusinessProducts(businessId: string): Promise<ProductRow[]> {
-  if (isBrowserOffline()) return [];
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    return ((snapshot?.public_content?.business_products ?? []) as unknown as ProductRow[])
+      .filter((product) => product.business_id === businessId)
+      .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at))
+      .slice(0, 2);
+  }
   const client = getSupabaseClient();
   if (!client || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(businessId)) {
     return [];
