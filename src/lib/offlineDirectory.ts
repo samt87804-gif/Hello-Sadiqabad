@@ -114,6 +114,17 @@ export interface OfflineEmergencyContact {
   verified_at: string | null;
 }
 
+export interface OfflinePublicSettings {
+  site_name: string;
+  contact_phone: string;
+  contact_whatsapp: string;
+  public_contact_email: string;
+  social_links: { facebook?: string; instagram?: string };
+  default_language: 'en' | 'ur';
+  ads_enabled: boolean;
+  maintenance_mode: boolean;
+}
+
 export interface OfflinePublicContent {
   news_articles: Array<Record<string, unknown>>;
   announcements: Array<Record<string, unknown>>;
@@ -130,6 +141,7 @@ export interface OfflineDirectorySnapshot {
   downloaded_at: string;
   content_version?: string;
   hero_banner_url?: string | null;
+  public_settings?: OfflinePublicSettings;
   public_content?: OfflinePublicContent;
   businesses: OfflineBusiness[];
   categories: OfflineCategory[];
@@ -363,6 +375,7 @@ export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnaps
   if (snapshot.directory_image_urls !== undefined && !isValidDirectoryImageMap(snapshot.directory_image_urls)) return false;
   if (snapshot.content_version !== undefined && typeof snapshot.content_version !== 'string') return false;
   if (snapshot.hero_banner_url !== undefined && !isNullableString(snapshot.hero_banner_url)) return false;
+  if (snapshot.public_settings !== undefined && (!snapshot.public_settings || typeof snapshot.public_settings !== 'object' || containsForbiddenKeys(snapshot.public_settings))) return false;
   if (snapshot.public_content !== undefined) {
     const requiredCollections = [
       'news_articles', 'announcements', 'local_authorities', 'authority_profiles',
