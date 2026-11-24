@@ -1032,6 +1032,15 @@ export async function fetchPublishedPagesForOffline(): Promise<PageRow[]> {
   return (data ?? []) as PageRow[];
 }
 
+function hashOfflineVersionValue(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
 export async function getPublicOfflineContentVersion(): Promise<string> {
   const client = getSupabaseClient();
   if (!client) return 'seed-public-v1';
@@ -1058,7 +1067,11 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
   const names = ['businesses','business_products','offers','reviews','ads','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings','owner_public_profile_directory','owner_public_profile_businesses'];
   return queries.map((result, index) => {
     if (result.error) throw result.error;
-    return names[index] + ':' + JSON.stringify(result.data ?? []);
+    const serialized = JSON.stringify(result.data ?? []);
+    const versionValue = names[index].startsWith('owner_public_profile')
+      ? hashOfflineVersionValue(serialized)
+      : serialized;
+    return names[index] + ':' + versionValue;
   }).join('|');
 }
 
