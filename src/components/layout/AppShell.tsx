@@ -11,6 +11,7 @@ import { AppFooter } from './AppFooter';
 import { PopupAdModal } from '../directory/AdBanner';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
 import { ChatbotWidget } from './ChatbotWidget';
+import { checkForOfflineContentUpdates } from '../../lib/offlineUpdates';
 
 export function PwaUpdateToast() {
   const [hasUpdate, setHasUpdate] = useState(false);
@@ -71,6 +72,18 @@ export function AppShell({
   const showBottomNav = !hideBottomNav;
   const isAdminPath = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
   const isOwnerPortalPath = location.pathname === '/owner' || location.pathname.startsWith('/owner/');
+  useEffect(() => {
+    if (isAdminPath || isOwnerPortalPath) return;
+    const check = () => { void checkForOfflineContentUpdates(); };
+    check();
+    window.addEventListener('online', check);
+    const timer = window.setInterval(check, 10 * 60 * 1000);
+    return () => {
+      window.removeEventListener('online', check);
+      window.clearInterval(timer);
+    };
+  }, [isAdminPath, isOwnerPortalPath]);
+
   const showChatbot = !hideHeader && !isAdminPath && !isOwnerPortalPath &&
     !['/login', '/owner-register', '/forgot-password', '/reset-password', '/change-password'].includes(location.pathname);
 
