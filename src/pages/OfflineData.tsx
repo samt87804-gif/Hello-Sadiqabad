@@ -525,7 +525,13 @@ export function OfflineData() {
         // Service Workers cannot intercept direct cross-origin Supabase image requests.
         ...[...Object.values(directoryImages.categories), ...Object.values(directoryImages.helplines)]
           .map((url) => getOfflineImageDisplayUrl(url, window.location.origin)),
-        ...publishedNews.flatMap((article) => [article.cover_image_url, ...(article.image_urls ?? [])]),
+        ...publishedNews.flatMap((article) => [
+          article.cover_image_url,
+          ...(article.image_urls ?? []),
+          ...[article.content_en, article.content_ur].flatMap((content) =>
+            [...(content ?? '').matchAll(/!\\[[^\\]]*\\]\\((https:\\/\\/[^)]+)\\)/g)].map((match) => match[1])
+          ),
+        ]),
         ...authorityProfiles.map((profile) => profile.photo_url),
         ...ownerPublicProfiles.map((profile) => typeof profile.photo_url === 'string' ? profile.photo_url : null),
         ...governmentJobs.map((job) => job.image_url),
