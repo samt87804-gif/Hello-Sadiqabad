@@ -659,6 +659,18 @@ export async function getOfflineDirectoryMetadata(): Promise<OfflineSnapshotMeta
       categories: snapshot.categories.length,
       areas: snapshot.areas.length,
       emergency_contacts: snapshot.emergency_contacts.length,
+      public_content: {
+        news_articles: snapshot.public_content?.news_articles.length ?? 0,
+        announcements: snapshot.public_content?.announcements.length ?? 0,
+        local_authorities: snapshot.public_content?.local_authorities.length ?? 0,
+        authority_profiles: snapshot.public_content?.authority_profiles.length ?? 0,
+        government_jobs: snapshot.public_content?.government_jobs.length ?? 0,
+        government_schemes: snapshot.public_content?.government_schemes.length ?? 0,
+        pages: snapshot.public_content?.pages.length ?? 0,
+        business_products: snapshot.public_content?.business_products.length ?? 0,
+        active_ads: snapshot.public_content?.active_ads.length ?? 0,
+        owner_public_profiles: snapshot.public_content?.owner_public_profiles.length ?? 0,
+      },
     },
   };
 }
