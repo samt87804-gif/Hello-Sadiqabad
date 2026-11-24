@@ -1002,6 +1002,7 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
     client.from('business_products').select('id,updated_at').eq('is_active', true).order('id'),
     client.from('offers').select('id,updated_at').eq('status', 'active').lte('valid_from', todayDateStr()).gte('valid_to', todayDateStr()).order('id'),
     client.from('reviews').select('id,updated_at').eq('status', 'approved').order('id'),
+    client.from('ads').select('id,updated_at').eq('status', 'active').lte('start_date', todayDateStr()).gte('end_date', todayDateStr()).order('id'),
     client.from('categories').select('id,updated_at').eq('is_active', true).order('id'),
     client.from('areas').select('id,updated_at').eq('is_active', true).order('id'),
     client.from('emergency_contacts').select('id,updated_at').eq('is_active', true).order('id'),
@@ -1014,7 +1015,7 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
     client.from('pages').select('id,updated_at').eq('is_published', true).order('id'),
     client.from('site_settings').select('key,updated_at').eq('is_public', true).order('key'),
   ]);
-  const names = ['businesses','business_products','offers','reviews','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings'];
+  const names = ['businesses','business_products','offers','reviews','ads','categories','areas','emergency_contacts','news','announcements','local_authorities','authority_profiles','government_jobs','government_schemes','pages','site_settings'];
   return queries.map((result, index) => {
     if (result.error) throw result.error;
     return names[index] + ':' + JSON.stringify(result.data ?? []);
@@ -1022,7 +1023,13 @@ export async function getPublicOfflineContentVersion(): Promise<string> {
 }
 
 export async function fetchActiveAds(placement?: AdPlacement): Promise<AdRow[]> {
-  if (isBrowserOffline()) return [];
+  if (isBrowserOffline()) {
+    const snapshot = await getActiveOfflineDirectorySnapshot();
+    const today = todayDateStr();
+    return ((snapshot?.public_content?.active_ads ?? []) as unknown as Array<Omit<AdRow, 'notes' | 'impressions' | 'clicks' | 'created_by' | 'reviewed_by'>>)
+      .filter((ad) => ad.status === 'active' && ad.start_date <= today && ad.end_date >= today && (!placement || ad.placement === placement))
+      .map((ad) => ({ ...ad, notes: null, impressions: 0, clicks: 0, created_by: null, reviewed_by: null } as AdRow));
+  }
   const today = todayDateStr();
   const client = getSupabaseClient();
   if (client) {
