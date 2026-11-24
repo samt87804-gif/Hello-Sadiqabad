@@ -114,9 +114,22 @@ export interface OfflineEmergencyContact {
   verified_at: string | null;
 }
 
+export interface OfflinePublicContent {
+  news_articles: Array<Record<string, unknown>>;
+  announcements: Array<Record<string, unknown>>;
+  local_authorities: Array<Record<string, unknown>>;
+  authority_profiles: Array<Record<string, unknown>>;
+  government_jobs: Array<Record<string, unknown>>;
+  government_schemes: Array<Record<string, unknown>>;
+  pages: Array<Record<string, unknown>>;
+}
+
 export interface OfflineDirectorySnapshot {
   schema_version: number;
   downloaded_at: string;
+  content_version?: string;
+  hero_banner_url?: string | null;
+  public_content?: OfflinePublicContent;
   businesses: OfflineBusiness[];
   categories: OfflineCategory[];
   areas: OfflineArea[];
@@ -128,6 +141,7 @@ export interface OfflineSnapshotMetadata {
   generation: string;
   schema_version: number;
   downloaded_at: string;
+  content_version?: string;
   counts: {
     businesses: number;
     categories: number;
@@ -346,6 +360,24 @@ export function validateOfflineDirectorySnapshot(snapshot: OfflineDirectorySnaps
       !Array.isArray(snapshot.areas) || !Array.isArray(snapshot.emergency_contacts)) return false;
   if (containsForbiddenKeys(snapshot)) return false;
   if (snapshot.directory_image_urls !== undefined && !isValidDirectoryImageMap(snapshot.directory_image_urls)) return false;
+  if (snapshot.content_version !== undefined && typeof snapshot.content_version !== 'string') return false;
+  if (snapshot.hero_banner_url !== undefined && !isNullableString(snapshot.hero_banner_url)) return false;
+  if (snapshot.public_content !== undefined) {
+    const requiredCollections = [
+      'news_articles', 'announcements', 'local_authorities', 'authority_profiles',
+      'government_jobs', 'government_schemes', 'pages',
+    ] as const;
+    for (const key of requiredCollections) {
+      const rows = snapshot.public_content[key];
+      if (!Array.isArray(rows) || rows.some((row) =>
+        !row || typeof row !== 'object' || Array.isArray(row) ||
+        !isNonEmptyString((row as Record<string, unknown>).id as string) &&
+        !isNonEmptyString((row as Record<string, unknown>).slug as string) &&
+        !isNonEmptyString((row as Record<string, unknown>).key as string)
+      )) return false;
+    }
+    if (containsForbiddenKeys(snapshot.public_content)) return false;
+  }
 
   const businessIds = new Set<string>();
   for (const candidate of snapshot.businesses as unknown[]) {
@@ -573,6 +605,7 @@ export async function saveOfflineDirectorySnapshot(
     generation,
     schema_version: snapshot.schema_version,
     downloaded_at: snapshot.downloaded_at,
+    content_version: snapshot.content_version,
     counts: {
       businesses: snapshot.businesses.length,
       categories: snapshot.categories.length,
