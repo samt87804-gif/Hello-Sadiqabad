@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { RefreshCw, WifiOff } from 'lucide-react';
+import { Download, RefreshCw, WifiOff, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useOnlineStatus } from '../../lib/hooks';
 import { useI18n } from '../../lib/i18n';
@@ -12,6 +12,36 @@ import { PopupAdModal } from '../directory/AdBanner';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
 import { ChatbotWidget } from './ChatbotWidget';
 import { checkForOfflineContentUpdates } from '../../lib/offlineUpdates';
+import { cancelOfflineDownload, getOfflineDownloadState, subscribeOfflineDownloadState, type OfflineDownloadState } from '../../lib/offlineDownloadState';
+
+
+function BackgroundOfflineDownloadIndicator() {
+  const [download, setDownload] = useState<OfflineDownloadState>(() => getOfflineDownloadState());
+  useEffect(() => subscribeOfflineDownloadState(setDownload), []);
+  if (download.status !== 'downloading' && download.status !== 'saving') return null;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-24 md:bottom-5 end-4 z-[70] w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 shadow-2xl"
+    >
+      <div className="flex items-center gap-2">
+        <Download className="h-4 w-4 shrink-0 text-primary" />
+        <p className="min-w-0 flex-1 truncate text-xs font-bold text-on-surface">
+          {download.status === 'saving' ? 'Saving offline directory…' : 'Downloading offline directory…'}
+        </p>
+        <span className="text-xs font-bold tabular-nums text-primary">{download.progress}%</span>
+        <button type="button" onClick={cancelOfflineDownload} aria-label="Cancel offline download" className="rounded-lg p-1 text-on-surface-variant hover:bg-surface-container">
+          <XCircle className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-container">
+        <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: download.progress + '%' }} />
+      </div>
+      {download.message && <p className="mt-2 text-[11px] leading-4 text-on-surface-variant">{download.message}</p>}
+    </div>
+  );
+}
 
 export function PwaUpdateToast() {
   const [hasUpdate, setHasUpdate] = useState(false);
@@ -142,6 +172,7 @@ export function AppShell({
 
       {showFooter && <AppFooter withBottomNavOffset={showBottomNav} />}
       {showBottomNav && <AppBottomNav />}
+      <BackgroundOfflineDownloadIndicator />
       <PwaUpdateToast />
       {!hideHeader && <PopupAdModal />}
       {showChatbot && <ChatbotWidget />}
