@@ -1008,8 +1008,8 @@ export function OfflineData() {
           </h1>
           <p className="text-sm leading-6 text-on-surface-variant">
             {isUrdu
-              ? 'ایک بار عوامی ڈائریکٹری ڈاؤن لوڈ کریں، پھر محفوظ شدہ بنیادی کاروباری معلومات انٹرنیٹ کے بغیر بھی دیکھی جا سکیں گی۔ کچھ تصاویر اور تازہ مواد کے لیے انٹرنیٹ درکار ہو سکتا ہے۔'
-              : 'Download the public directory once while online. Saved core listing data can then be browsed without internet; some photos, news and other live content may still need a connection.'}
+              ? 'عوامی ڈائریکٹری، خبریں، اعلانات، سرکاری نوکریاں اور اسکیمیں، سرکاری اداروں کے رابطے، کاروباری مصنوعات اور دستیاب تصاویر ایک ساتھ محفوظ کریں۔'
+              : 'Download the complete public directory, news, announcements, government jobs and schemes, authority contacts, business products and cacheable images. Your saved public content can then be browsed without internet.'}
           </p>
         </header>
 
@@ -1190,6 +1190,26 @@ export function OfflineData() {
                   </div>
                 ))}
               </div>
+              {metadata.counts.public_content && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    [isUrdu ? 'خبریں' : 'News', metadata.counts.public_content.news_articles],
+                    [isUrdu ? 'اعلانات' : 'Announcements', metadata.counts.public_content.announcements],
+                    [isUrdu ? 'مقامی ادارے' : 'Authorities', metadata.counts.public_content.local_authorities],
+                    [isUrdu ? 'عہدیدار پروفائلز' : 'Authority profiles', metadata.counts.public_content.authority_profiles],
+                    [isUrdu ? 'سرکاری نوکریاں' : 'Government jobs', metadata.counts.public_content.government_jobs],
+                    [isUrdu ? 'سرکاری اسکیمیں' : 'Government schemes', metadata.counts.public_content.government_schemes],
+                    [isUrdu ? 'کاروباری مصنوعات' : 'Business products', metadata.counts.public_content.business_products],
+                    [isUrdu ? 'عوامی صفحات' : 'Public pages', metadata.counts.public_content.pages],
+                    [isUrdu ? 'فعال اشتہارات' : 'Active ads', metadata.counts.public_content.active_ads],
+                  ].map(([label, count]) => (
+                    <div key={String(label)} className="rounded-xl bg-surface-container p-3">
+                      <div className="text-xl font-extrabold tabular-nums text-on-surface">{count}</div>
+                      <div className="text-[11px] text-on-surface-variant">{label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           ) : (
             <p className="text-sm text-on-surface-variant">
@@ -1202,8 +1222,8 @@ export function OfflineData() {
           <strong className="text-on-surface">{isUrdu ? 'اہم حفاظتی وضاحت' : 'Important privacy and usage note'}</strong>
           <p>
             {isUrdu
-              ? 'صرف عوامی کاروباری فہرستیں، فعال کیٹیگریز، علاقے اور ایمرجنسی نمبرز محفوظ ہوتے ہیں۔ تصاویر اور کچھ تازہ مواد آف لائن دستیاب نہ بھی ہوں۔ ایڈمن، مالک اکاؤنٹس، لاگ اِن سیشنز، نجی پروفائلز اور فارم جمع کرانے کا ڈیٹا محفوظ نہیں ہوتا۔ فارم جمع کرانے کے لیے انٹرنیٹ ضروری رہے گا۔'
-              : 'Only public business listings, active categories, areas and emergency contacts are included. Some photos and live content may remain unavailable offline. Admin/owner portal data, login sessions, private profiles and form submissions are never stored in this package. Submissions will continue to require an internet connection.'}
+              ? 'تمام محفوظ شدہ مواد عوامی صفحات کے لیے ہے۔ جو بیرونی تصویر محفوظ کرنے کی اجازت یا تکنیکی سہولت نہ دے، وہ آف لائن دستیاب نہیں ہو سکتی۔ ایڈمن/مالک پورٹل، لاگ اِن سیشنز، نجی پروفائلز اور فارم جمع کرانے کا ڈیٹا کبھی محفوظ نہیں ہوتا؛ فارم جمع کرانے کے لیے انٹرنیٹ ضروری ہے۔'
+              : 'Only public visitor content is stored. An external image may remain unavailable if its host blocks caching or does not permit it. Admin/owner portals, login sessions, private profiles and form submissions are never stored. Submissions always require an internet connection.'}
           </p>
         </aside>
       </div>
