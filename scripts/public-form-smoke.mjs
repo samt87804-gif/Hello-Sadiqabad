@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+import { chromium, request } from 'playwright';
 
 const baseUrl = (process.env.BASE_URL || 'https://hellosadiqabad.com').replace(/\/+$/, '');
 console.log(`Running public Add Business smoke checks against ${baseUrl}`);
@@ -121,10 +121,44 @@ async function testViewport(browser, name, viewport, isMobile) {
   await page.close();
 }
 
+async function testGovernmentSharePreviews(browser) {
+  const routes = [
+    '/government-jobs/network-support-consultant-cga-2026',
+    '/government-schemes/apni-chhat-apna-ghar',
+  ];
+  const api = await request.newContext();
+  try {
+    for (const route of routes) {
+      const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+      const response = await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+      assert.ok(response && response.status() < 400, route + ' should render for visitors');
+      assert.equal(await page.getByRole('link', { name: 'WhatsApp' }).count(), 1, route + ' should show WhatsApp share action');
+      assert.equal(await page.getByRole('link', { name: 'Facebook' }).count(), 1, route + ' should show Facebook share action');
+      assert.equal(await page.getByRole('button', { name: /Copy link/ }).count(), 1, route + ' should show canonical copy-link action');
+      await page.close();
+
+      const socialResponse = await api.get(baseUrl + route, {
+        headers: { 'user-agent': 'facebookexternalhit/1.1' },
+        timeout: 45_000,
+      });
+      assert.ok(socialResponse.ok(), route + ' social crawler request should succeed');
+      const html = await socialResponse.text();
+      assert.match(html, /property="og:title" content="[^"]+"/, route + ' should expose a record-specific Open Graph title');
+      assert.match(html, new RegExp('property="og:url" content="https://hellosadiqabad\\\\.com' + route.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\const browser = await chromium.launch({ headless: true });') + '"'), route + ' should expose its canonical share URL');
+      assert.match(html, /property="og:image" content="https:\\/\\/[^"]+"/, route + ' should expose an HTTPS social preview image');
+      assert.match(html, /name="twitter:card" content="summary_large_image"/, route + ' should expose a large Twitter preview');
+      console.log('PASS social preview ' + route + ': canonical URL, record title and HTTPS image');
+    }
+  } finally {
+    await api.dispose();
+  }
+}
+
 const browser = await chromium.launch({ headless: true });
 try {
   await testViewport(browser, 'mobile', { width: 390, height: 844 }, true);
   await testViewport(browser, 'desktop', { width: 1365, height: 900 }, false);
+  await testGovernmentSharePreviews(browser);
 } finally {
   await browser.close();
 }
