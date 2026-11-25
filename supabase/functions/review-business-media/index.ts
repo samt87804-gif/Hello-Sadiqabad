@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
       const { data: staff } = await db.from("staff_members").select("staff_types,permissions,is_active").eq("user_id", auth.user.id).maybeSingle();
       permitted = Boolean(staff?.is_active && (
         staff.permissions?.["moderation.review"] === true ||
-        (staff.permissions?.["moderation.review"] !== false && (staff.staff_types ?? []).includes("moderator"))
+        (staff.permissions?.["moderation.review"] !== false && ["moderator", "support"].some((type) => (staff.staff_types ?? []).includes(type)))
       ));
     }
     if (!permitted) return response(req, { ok: false, error: "Permission denied" }, 403);
