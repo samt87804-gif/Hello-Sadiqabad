@@ -104,7 +104,7 @@ export function OwnerSdkJobs() {
       setBusinesses(owned.filter((business) => business.status === 'published'));
       setAreas(allAreas.filter((area) => area.is_active));
       setJobs((result.data ?? []) as OwnerSdkJob[]);
-      setSelectedBusiness((current) => current || owned.find((business) => business.status === 'published')?.id || '');
+      setSelectedBusiness((current) => owned.some((business) => business.id === current && business.status === 'published') ? current : owned.find((business) => business.status === 'published')?.id || '');
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'SDK Jobs could not be loaded.', 'error');
     } finally {
