@@ -704,3 +704,30 @@ Implementation is in progress on `main`. This change expands the existing Indexe
 - [ ] Real browser/physical-device testing remains pending: navigate away during a download, verify progress, complete download, then test public deep links, data and supported images in airplane mode. Third-party map tiles, live embeds and external video streams are not bulk-cached.
 - Security boundary unchanged: no admin/owner portal data, private/auth fields, drafts, submissions or server writes are included in the offline package.
 
+
+
+---
+
+## 25 November 2026 — Owner-approved final product expansion plan (planning only)
+
+**Canonical plan:** `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`. Read it before starting any of the work below. It records the owner's final requirements and phase gates; none of these new workstreams is claimed implemented by this documentation update.
+
+Child plans:
+- `docs/ADMIN_PERFORMANCE_OPTIMIZATION_PLAN.md`
+- `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`
+- `docs/GOVERNMENT_CONTENT_BILINGUAL_MEDIA_PLAN.md`
+- `docs/SDK_JOBS_RECRUITMENT_PLAN.md`
+- `docs/GOV_LANDING_AND_MOBILE_NAVIGATION_PLAN.md`
+
+Owner-approved decisions:
+- Admin Business and Data Quality performance is a priority, especially desktop.
+- Add Business: bilingual details, taxonomy-missing WhatsApp guidance, per-field Admin statuses (Pending Review / Approved & Published / Rejected / Unpublished), private pending images, approval before public media, and maximum two owner image-change requests per business per calendar month.
+- Do not collect owner password in public form. Admin sends secure Supabase invitation after review; owner sets password through Supabase.
+- Government Jobs and Schemes require English + Urdu content and Admin-uploaded official/verified image before publication; published detail URLs must share with the approved image preview.
+- New SDK Jobs: only approved authenticated owners with at least one published business may submit; every job needs Admin approval; employer identity is Admin-only; public CTA uses WhatsApp 03283212342; physical CV/interview/referral workflow is Admin-managed.
+- SDK Jobs recruitment service is free through 31 January 2027 inclusive. From 1 February 2027 a candidate-only fee may apply; amount remains unset and must be Admin-configurable. No business-owner fee.
+- Default recruitment office: Monday-Friday 10:00 AM–2:00 PM Pakistan time; Saturday/Sunday closed; Admin can change schedule.
+- Gov landing includes Government Jobs, Government Schemes, Local Authorities and Authority Profiles.
+- Mobile bottom nav: Home, Search, Gov, SDK Jobs, Saved. Remove separate Jobs/Schemes and Urgent shortcuts; preserve Home Emergency card and Emergency page.
+
+**Next phase:** Phase 0 audit/design in the master plan. Do not implement before reconciling current code, migrations, RLS, permissions and Storage policies. Existing Government Jobs/Schemes and Owner workflows must be extended, not recreated. Preserve all production data and permanent working rules.
