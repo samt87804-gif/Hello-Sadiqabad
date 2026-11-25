@@ -1070,3 +1070,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Added 30-second in-memory caching for businesses, taxonomy, profiles and leads across tab switches. Global quick search shares the cache; explicit action reloads force fresh reads; failed refreshes retain last-good state and remain retryable. No local persistence or DB changes.
 - Main commit `ce1b6788c3beafab864cf577c3b046beca64a49a`; CI `45639985225` passed; Cloudflare Pages deployment `81b032d7-64e1-45c1-a63c-1a46c60a8580` succeeded with canonical alias.
 - Phase 1 remains open pending authenticated Admin desktop/mobile before/after timings and interaction/permission regression traces. Do not report invented performance numbers.
+
+## Admin Business Field Review performance — 25 November 2026
+
+- Review and media rows are fetched in parallel; private image previews use one batch `createSignedUrls` call instead of one request per image; field rows are grouped by submission once; image and submission cards are paginated at 20 per page.
+- No moderation/RLS/Storage/database semantics or existing records changed.
+- Main commit `6c237bf8b40bd93f9367cec0f126edf55d2e10c4`; CI `45640942909` passed; Pages deployment `0ab58777-c70e-4b76-a808-53af57e2a3f1` succeeded.
