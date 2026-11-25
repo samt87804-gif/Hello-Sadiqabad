@@ -731,3 +731,22 @@ Owner-approved decisions:
 - Mobile bottom nav: Home, Search, Gov, SDK Jobs, Saved. Remove separate Jobs/Schemes and Urgent shortcuts; preserve Home Emergency card and Emergency page.
 
 **Next phase:** Phase 0 audit/design in the master plan. Do not implement before reconciling current code, migrations, RLS, permissions and Storage policies. Existing Government Jobs/Schemes and Owner workflows must be extended, not recreated. Preserve all production data and permanent working rules.
+
+
+---
+
+## Final Product Expansion — owner-approved 25 November 2026
+
+Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md).
+
+- [x] Phase 0 source/schema/security audit and additive design documented in [Phase 0 Audit](docs/FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md).
+- [ ] Phase 1 Admin Business and Data Quality performance optimization — not yet implemented.
+  - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
+  - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
+- [ ] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — not implemented.
+- [ ] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — existing MVPs remain in place; expansion not implemented.
+- [ ] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — not implemented.
+- [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented.
+- [ ] Phase 6 Gov landing page and five-item mobile bottom navigation — not implemented.
+
+**Safety findings:** The current Storage bucket is public, so pending media needs a separate private bucket. The live Supabase migration ledger (95 versions) differs from the 74 repository migration files; do not replay the baseline or run an unreviewed schema push. No production schema or data was changed during Phase 0.
