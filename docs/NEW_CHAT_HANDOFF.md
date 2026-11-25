@@ -931,3 +931,16 @@ Reviewed current `/add-business`, relevant migrations, live tables/columns, RLS 
 - Live RLS policies were inspected and no public base table with RLS disabled was found.
 
 Phase 2 implementation is not started. Phase 1 remains in progress until authenticated desktop/browser and mobile QA evidence exists. Do not apply schema changes or move phase gates without resolving that blocker.
+
+
+## Phase 2 continuation handoff — 25 November 2026
+
+Owner has explicitly approved proceeding with Phase 2 and direct commits to GitHub `main`; do not create branches or PRs. The prior feature branch `feat/business-owner-field-approval` and PR #19 were closed/unmerged per owner instruction. Treat that branch as reference source only; do not represent its app code as deployed or present on `main`.
+
+Current `main` contains only the first Phase 2 migration file. It was added in `3794918e3d4929a62576e55e9b8a1cadbdb5768e`; review found a duplicated malformed SQL tail, which was removed in `1bb9d3e2e530078a6d2f7ae4c63d2b350af4ea9a`. Current file has one terminal `COMMIT`. CI run [45608741733](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45608741733) passed both build and Edge Function jobs. No SQL migration has been applied to production.
+
+Staging creation was attempted after owner approved the quoted $0/month project cost. Supabase refused because this organization already has two active Free projects (the Hello Sadiqabad production project and another project). No staging project was created. Do not use production as a test target. No production database/schema/data was modified.
+
+The second migration `20261125111000_business_field_review_rpc.sql`, frontend AddBusiness/Admin changes and Edge Function changes remain only on the closed feature branch. Before porting these directly to `main`, review the exact source again, reconcile against the live schema and fix any issues. Critical acceptance gates: both SQL migrations execute on an isolated database; field-level approve/reject/unpublish behavior; anonymous pending-media reads denied; Storage promotion; monthly owner quota; owner invitation idempotency/link/rollback; existing legacy submission flows unchanged; CI; matching Cloudflare production deployment; public and authenticated QA where available.
+
+Next safe action: get a disposable staging database by freeing an existing Free project slot or explicitly approving an appropriate paid staging option. Until then, continue static review only; do not apply migrations to production and do not ship the app code that depends on the new schema.
