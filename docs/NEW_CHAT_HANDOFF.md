@@ -1042,3 +1042,5 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Application commits: `84703741a53464d94681276ff89842848a15e944`, `58f126f392944f3598257c6e63796cdb1fc2326e`, `ea20723a0791ce79f75e696d228d8eeb9604954c`.
 - CI run `45623996190` passed. Cloudflare Pages deployment `b0e31b63-826a-4987-8c18-20ed667b823b` succeeded and is attached to `https://hellosadiqabad.com`.
 - No database, migration, Storage, Auth, existing listing or owner data was changed. Browser/device QA and real end-to-end submission/invitation delivery remain pending.
+
+- Applied migration 11, `owner_image_change_rpc_plan_guard`: the database RPC independently checks published status and cover-plan eligibility. Transaction-only tests passed for logo request creation, Free-plan cover rejection and Premium-plan cover acceptance; every test rolled back and left 0 pending objects, 0 media assets and 0 image requests. Phase 2 now has 11 applied migrations.
