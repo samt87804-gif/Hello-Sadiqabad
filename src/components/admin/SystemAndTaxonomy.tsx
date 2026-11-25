@@ -1130,6 +1130,9 @@ export function DataQualityManager({
           <p className="text-xs text-on-surface-variant">
             {withAnyIssue.length} of {categoryScoped.length} listings need attention for complete bilingual &amp; map accuracy.
           </p>
+          <p className="text-[11px] text-on-surface-variant mt-1">
+            This page only identifies data-quality issues. It never deletes, rejects or unpublishes a listing automatically; open Businesses to make an explicit Admin correction.
+          </p>
         </div>
         <Button
           size="sm"
@@ -1785,21 +1788,30 @@ export function AuditLogsViewer({ logs }: { logs: AuditLogRow[] }) {
       return (
         l.action.toLowerCase().includes(q) ||
         l.entity.toLowerCase().includes(q) ||
-        (l.entity_id ?? '').toLowerCase().includes(q)
+        (l.entity_id ?? '').toLowerCase().includes(q) ||
+        JSON.stringify(l.details ?? {}).toLowerCase().includes(q)
       );
     }
     return true;
   });
 
+  const formatAuditValue = (value: unknown) => {
+    if (value === null || value === undefined || value === '') return '—';
+    return typeof value === 'object' ? JSON.stringify(value) : String(value);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-on-surface">Audit Log History ({filtered.length})</h2>
+        <div>
+          <h2 className="text-lg font-bold text-on-surface">Audit Log History ({filtered.length})</h2>
+          <p className="text-xs text-on-surface-variant mt-1">Business record changes show the previous and new values for each changed field.</p>
+        </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter action or ID..."
+            placeholder="Filter action, ID or changed value..."
             leftAdornment={<Search className="w-3.5 h-3.5" />}
             className="h-9 text-xs"
           />
@@ -1818,17 +1830,39 @@ export function AuditLogsViewer({ logs }: { logs: AuditLogRow[] }) {
         </div>
       </div>
       <div className="space-y-2">
-        {filtered.map((log) => (
-          <Card key={log.id} className="p-3.5 flex items-center justify-between gap-3 text-xs">
-            <div>
-              <span className="font-bold text-primary">{log.action}</span>
-              <span className="ms-2 text-on-surface-variant">
-                on {log.entity} ({log.entity_id ?? '—'})
-              </span>
-            </div>
-            <span className="text-outline tabular-nums">{formatDateShort(log.created_at)}</span>
-          </Card>
-        ))}
+        {filtered.map((log) => {
+          const details = (log.details ?? {}) as Record<string, unknown>;
+          const changes = (details.changes ?? {}) as Record<string, { old?: unknown; new?: unknown }>;
+          const changeEntries = Object.entries(changes);
+          return (
+            <Card key={log.id} className="p-3.5 space-y-2 text-xs">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <span className="font-bold text-primary">{log.action}</span>
+                  <span className="ms-2 text-on-surface-variant">on {log.entity} ({log.entity_id ?? '—'})</span>
+                  <p className="text-[10px] text-on-surface-variant mt-1">Actor: {log.actor_id ?? 'System / Background'} · {formatDateShort(log.created_at)}</p>
+                </div>
+                {typeof details.source === 'string' && <span className="text-[10px] rounded-full bg-surface-container px-2 py-1 text-on-surface-variant">{details.source}</span>}
+              </div>
+              {changeEntries.length > 0 && (
+                <details className="rounded-lg bg-surface-container-low p-2">
+                  <summary className="cursor-pointer font-semibold text-primary">Field changes ({changeEntries.length})</summary>
+                  <div className="mt-2 space-y-2">
+                    {changeEntries.map(([field, change]) => (
+                      <div key={field} className="grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-1 sm:gap-3 border-t border-outline-variant/30 pt-2">
+                        <span className="font-bold text-on-surface">{field.replaceAll('_', ' ')}</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 min-w-0">
+                          <p className="min-w-0 break-words"><span className="text-[10px] text-on-surface-variant block">Previous</span>{formatAuditValue(change.old)}</p>
+                          <p className="min-w-0 break-words"><span className="text-[10px] text-on-surface-variant block">New</span>{formatAuditValue(change.new)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
