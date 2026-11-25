@@ -27,6 +27,8 @@ interface OwnerSdkJob {
   status: SdkJobStatus;
   submitted_at: string;
   created_at: string;
+  pending_media_path: string | null;
+  approved_image_url: string | null;
 }
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Temporary', 'Internship', 'Apprenticeship'];
@@ -57,6 +59,8 @@ export function OwnerSdkJobs() {
   const [jobs, setJobs] = useState<OwnerSdkJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [uploadingPosterJobId, setUploadingPosterJobId] = useState<string | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState('');
   const [titleEn, setTitleEn] = useState('');
   const [titleUr, setTitleUr] = useState('');
@@ -95,7 +99,7 @@ export function OwnerSdkJobs() {
         fetchOwnerListings(user.id),
         fetchAllAreas(),
         client.from('sdk_jobs')
-          .select('id,slug,title_en,title_ur,summary_en,summary_ur,job_category,vacancy_count,job_type,closing_date,status,submitted_at,created_at')
+          .select('id,slug,title_en,title_ur,summary_en,summary_ur,job_category,vacancy_count,job_type,closing_date,status,submitted_at,created_at,pending_media_path,approved_image_url')
           .eq('employer_owner_id', user.id)
           .order('created_at', { ascending: false })
           .limit(100),
@@ -121,7 +125,40 @@ export function OwnerSdkJobs() {
     setSalaryMin(''); setSalaryMax(''); setSalaryDisclosed(false);
     setDutiesEn(''); setDutiesUr(''); setQualificationsEn(''); setQualificationsUr('');
     setExperienceEn(''); setExperienceUr(''); setHoursEn(''); setHoursUr('');
-    setBenefitsEn(''); setBenefitsUr(''); setClosingDate('');
+    setBenefitsEn(''); setBenefitsUr(''); setClosingDate(''); setPosterFile(null);
+  };
+
+  const uploadPoster = async (jobId: string, file: File): Promise<boolean> => {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+      showToast('Poster JPEG, PNG ya WebP ho aur size 5 MB se zyada na ho.', 'error');
+      return false;
+    }
+    setUploadingPosterJobId(jobId);
+    try {
+      const client = getSupabaseClient();
+      if (!client) throw new Error('Supabase is not configured.');
+      const { data, error } = await client.functions.invoke('create-sdk-job-poster-upload', {
+        body: { job_id: jobId, mime_type: file.type, file_size_bytes: file.size },
+      });
+      if (error) throw error;
+      if (!data?.ok || !data?.data?.path || !data?.data?.token) {
+        throw new Error(data?.error || 'Secure poster upload could not be prepared.');
+      }
+      const { error: uploadError } = await client.storage.from('hs-pending-business-media')
+        .uploadToSignedUrl(data.data.path, data.data.token, file, { contentType: file.type, upsert: false });
+      if (uploadError) throw uploadError;
+      const { error: attachError } = await client.from('sdk_jobs')
+        .update({ pending_media_path: data.data.path }).eq('id', jobId).select('id').single();
+      if (attachError) throw attachError;
+      showToast('Poster private storage mein upload ho gaya. Ab Admin review karega.', 'success');
+      await reload();
+      return true;
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Poster upload failed. You can retry from the job request below.', 'error');
+      return false;
+    } finally {
+      setUploadingPosterJobId(null);
+    }
   };
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -144,7 +181,7 @@ export function OwnerSdkJobs() {
     try {
       const client = getSupabaseClient();
       if (!client) throw new Error('Supabase is not configured.');
-      const { error } = await client.from('sdk_jobs').insert({
+      const { data: created, error } = await client.from('sdk_jobs').insert({
         slug: makeSlug(titleEn),
         source_business_id: selectedBusiness,
         title_en: titleEn.trim(),
@@ -173,8 +210,9 @@ export function OwnerSdkJobs() {
         benefits_en: benefitsEn.trim() || null,
         benefits_ur: benefitsUr.trim() || null,
         closing_date: closingDate || null,
-      });
+      }).select('id').single();
       if (error) throw error;
+      if (posterFile && created?.id) await uploadPoster(created.id, posterFile);
       showToast('Job request submitted. It will stay private until Admin review and publication.', 'success');
       resetForm();
       await reload();
@@ -224,9 +262,10 @@ export function OwnerSdkJobs() {
                   <div className="grid sm:grid-cols-2 gap-3"><label className="block"><span className={labelClass}>Area</span><select className={fieldClass} value={areaId} onChange={(e)=>setAreaId(e.target.value)}><option value="">Select area (optional)</option>{areas.map((area)=><option key={area.id} value={area.id}>{area.name_en}</option>)}</select></label>{input('Work location (English)',locationEn,setLocationEn)}{input('Work location (Urdu)',locationUr,setLocationUr)}{input('Minimum salary (PKR)',salaryMin,setSalaryMin,false,'number')}{input('Maximum salary (PKR)',salaryMax,setSalaryMax,false,'number')}</div>
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={salaryDisclosed} onChange={(e)=>setSalaryDisclosed(e.target.checked)} /> Show salary range publicly if provided</label>
                 </section>
+                <section className="space-y-3 border-t border-outline-variant/40 pt-4"><h2 className="font-bold">Job poster (optional, required before publication)</h2><label className="block"><span className={labelClass}>Upload JPEG, PNG or WebP — maximum 5 MB</span><input className={fieldClass} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setPosterFile(e.target.files?.[0] ?? null)} /><span className="text-xs text-on-surface-variant">{posterFile ? posterFile.name : 'Poster pehle private storage mein jayega; Admin approval ke baad hi public hoga.'}</span></label></section>
                 <section className="space-y-3 border-t border-outline-variant/40 pt-4"><h2 className="font-bold">Requirements & work conditions</h2><div className="grid sm:grid-cols-2 gap-3">{textarea('Duties (English)',dutiesEn,setDutiesEn)}{textarea('Duties (Urdu)',dutiesUr,setDutiesUr)}{textarea('Qualifications (English)',qualificationsEn,setQualificationsEn)}{textarea('Qualifications (Urdu)',qualificationsUr,setQualificationsUr)}{textarea('Experience (English)',experienceEn,setExperienceEn, false, 2000)}{textarea('Experience (Urdu)',experienceUr,setExperienceUr,false,2000)}{input('Working hours / shift (English)',hoursEn,setHoursEn)}{input('Working hours / shift (Urdu)',hoursUr,setHoursUr)}{textarea('Benefits (English)',benefitsEn,setBenefitsEn,false,3000)}{textarea('Benefits (Urdu)',benefitsUr,setBenefitsUr,false,3000)}</div>
                 </section>
-                <div className="rounded-xl border border-warning/40 bg-warning/5 p-3 text-xs text-on-surface-variant space-y-1"><p className="font-bold text-on-surface">Important — Admin review required</p><p>Submission public nahi hoti. Admin approval aur approved job poster/image ke baghair listing publish nahi hogi. Poster upload is first UI increment mein available nahi; private poster upload + approval workflow abhi pending hai.</p><p>Public listing par aapka naam, business identity, phone, WhatsApp ya email show nahi hoga. Candidate contact CTA Admin ke approved WhatsApp par hoga.</p></div>
+                <div className="rounded-xl border border-warning/40 bg-warning/5 p-3 text-xs text-on-surface-variant space-y-1"><p className="font-bold text-on-surface">Important — Admin review required</p><p>Submission public nahi hoti. Admin approval aur approved job poster/image ke baghair listing publish nahi hogi. Poster optional taur par abhi attach kar sakte hain ya submission ke baad request list se upload kar sakte hain.</p><p>Public listing par aapka naam, business identity, phone, WhatsApp ya email show nahi hoga. Candidate contact CTA Admin ke approved WhatsApp par hoga.</p></div>
                 <div className="flex justify-end"><Button type="submit" disabled={saving || loading} leftIcon={<Send className="w-4 h-4" />}>{saving ? 'Submitting…' : 'Submit job for review'}</Button></div>
               </form>
             </Card>
