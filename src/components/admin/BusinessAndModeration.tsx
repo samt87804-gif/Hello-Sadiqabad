@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -38,6 +38,7 @@ import {
   adminUpsertBusiness,
   bulkUpdateBusinesses,
   deleteBusinessPermanently,
+  fetchAdminBusinessById,
   fetchBusinessNotes,
   findDuplicateBusinesses,
   moderateReview,
@@ -213,6 +214,8 @@ export function BusinessManager({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<'core' | 'location' | 'hours' | 'media'>('core');
   const [editing, setEditing] = useState<BusinessPublicView | null>(null);
+  const [loadingEditId, setLoadingEditId] = useState<string | null>(null);
+  const editRequestId = useRef(0);
   const [notesModalBiz, setNotesModalBiz] = useState<BusinessPublicView | null>(null);
   const [notes, setNotes] = useState<BusinessNoteRow[]>([]);
   const [newNote, setNewNote] = useState('');
@@ -423,41 +426,55 @@ export function BusinessManager({
     setModalOpen(true);
   };
 
-  const openEdit = (b: BusinessPublicView) => {
-    setEditing(b);
-    setDuplicates([]);
-    setModalTab('core');
-    setPendingMediaDeletes([]);
-    setNewlyUploadedMediaPaths([]);
-    setLogoSource(b.logo_url ? (getBusinessMediaObjectPath(b.logo_url) ? 'upload' : 'url') : null);
-    setCoverSource(b.cover_url ? (getBusinessMediaObjectPath(b.cover_url) ? 'upload' : 'url') : null);
-    setForm({
-      name_en: b.name_en,
-      name_ur: b.name_ur ?? '',
-      phone_primary: b.phone_primary,
-      whatsapp: b.whatsapp ?? '',
-      category_id: b.category_id,
-      area_id: b.area_id ?? '',
-      address_en: b.address_en ?? '',
-      address_ur: b.address_ur ?? '',
-      landmark_en: b.landmark_en ?? '',
-      description_en: b.description_en ?? '',
-      lat: b.lat,
-      lng: b.lng,
-      opening_hours: b.opening_hours ?? {},
-      is_open_24h: b.is_open_24h,
-      home_delivery: b.home_delivery,
-      logo_url: b.logo_url ?? '',
-      cover_url: b.cover_url ?? '',
-      gallery_urls: b.gallery_urls ?? [],
-      status: b.status,
-      rejection_reason: b.rejection_reason ?? '',
-      plan_code: b.plan_code,
-      owner_id: b.owner_id ?? '',
-      is_verified: b.is_verified,
-      is_featured: b.is_featured,
-    });
-    setModalOpen(true);
+  const openEdit = async (summary: BusinessPublicView) => {
+    const requestId = ++editRequestId.current;
+    setLoadingEditId(summary.id);
+    try {
+      const b = await fetchAdminBusinessById(summary.id);
+      if (requestId !== editRequestId.current) return;
+      if (!b) {
+        showToast('Business record could not be found. Refresh the list and try again.', 'error');
+        return;
+      }
+      setEditing(b);
+      setDuplicates([]);
+      setModalTab('core');
+      setPendingMediaDeletes([]);
+      setNewlyUploadedMediaPaths([]);
+      setLogoSource(b.logo_url ? (getBusinessMediaObjectPath(b.logo_url) ? 'upload' : 'url') : null);
+      setCoverSource(b.cover_url ? (getBusinessMediaObjectPath(b.cover_url) ? 'upload' : 'url') : null);
+      setForm({
+        name_en: b.name_en,
+        name_ur: b.name_ur ?? '',
+        phone_primary: b.phone_primary,
+        whatsapp: b.whatsapp ?? '',
+        category_id: b.category_id,
+        area_id: b.area_id ?? '',
+        address_en: b.address_en ?? '',
+        address_ur: b.address_ur ?? '',
+        landmark_en: b.landmark_en ?? '',
+        description_en: b.description_en ?? '',
+        lat: b.lat,
+        lng: b.lng,
+        opening_hours: b.opening_hours ?? {},
+        is_open_24h: b.is_open_24h,
+        home_delivery: b.home_delivery,
+        logo_url: b.logo_url ?? '',
+        cover_url: b.cover_url ?? '',
+        gallery_urls: b.gallery_urls ?? [],
+        status: b.status,
+        rejection_reason: b.rejection_reason ?? '',
+        plan_code: b.plan_code,
+        owner_id: b.owner_id ?? '',
+        is_verified: b.is_verified,
+        is_featured: b.is_featured,
+      });
+      setModalOpen(true);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Business details could not be loaded.', 'error');
+    } finally {
+      if (requestId === editRequestId.current) setLoadingEditId(null);
+    }
   };
 
   const handleAddAreaInline = async (e?: React.FormEvent) => {
