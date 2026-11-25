@@ -108,6 +108,10 @@ Deno.serve(async (req: Request) => {
       auth: { persistSession: false, autoRefreshToken: false },
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
+    const { error: authorizationError } = await adminDb.rpc("authorize_sdk_job_admin_action", {
+      p_job_id: job.id, p_actor_id: auth.user.id, p_action: "publish", p_image_url: null,
+    });
+    if (authorizationError) return response(req, { ok: false, error: "Secure publication authorization could not be recorded" }, 409);
     const now = new Date().toISOString();
     const { data: updated, error: updateError } = await userDb.from("sdk_jobs")
       .update({ status: "published", reviewed_by: auth.user.id, reviewed_at: now, published_at: now })
