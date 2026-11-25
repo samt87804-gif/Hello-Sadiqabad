@@ -327,3 +327,10 @@ Initial Admin performance optimizations are implemented on `main` and deployed t
 - [CI run 45587036171](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45587036171) passed TypeScript, automated tests, dependency gate, production build and Edge Function typecheck.
 - Cloudflare Pages deployment `51d981f8-e50a-400d-af08-ae5e14481940` succeeded for that exact commit at `https://hellosadiqabad.com`.
 - Phase 1 is still not accepted: authenticated desktop before/after timings and mobile/browser functional acceptance remain outstanding. Do not move the roadmap status to complete until those criteria are evidenced.
+
+
+## Phase 2 read-only preflight — 25 November 2026
+
+The detailed current implementation/live schema baseline is recorded in [Add Business & Owner Approval Plan](ADD_BUSINESS_OWNER_APPROVAL_PLAN.md). Key confirmed facts: the current Add Business form auto-selects first taxonomy options and lacks several approved fields; `submissions` uses a generic payload with no field review ledger; `private.approve_submission` currently publishes the complete new-business listing in one branch; the separate owner registration table has no business/submission association; the deployed version-3 invitation function does not link the owner to a business; and the only Storage bucket is public. Phase 2 must solve these additively without affecting other submission types or making pending media public.
+
+This is preflight only. Phase 1 authenticated browser acceptance remains outstanding, so Phase 2 implementation/schema changes have not started.
