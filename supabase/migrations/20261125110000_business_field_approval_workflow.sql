@@ -232,7 +232,9 @@ grant execute on function public.request_business_image_change(uuid,text,text,te
 -- Backfill existing submissions without rewriting any business or submission records.
 insert into public.business_field_reviews(submission_id,field_key,field_value,status)
 select s.id, item.key, item.value,
-  case when s.status='done' and s.business_id is not null then 'approved_published' else 'pending_review' end
+  case when s.status='done' then 'approved_published'
+       when s.status='rejected' then 'rejected'
+       else 'pending_review' end
 from public.submissions s
 cross join lateral jsonb_each(coalesce(s.payload,'{}'::jsonb)) item
 where s.type='new_business'
