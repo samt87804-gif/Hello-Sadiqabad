@@ -381,6 +381,7 @@ export function BusinessFieldReviewQueue({
 
     setBusy(true);
     const partialErrors: string[] = [];
+    let invitationWaiting = false;
     let result: Record<string, unknown> | null = null;
     try {
       const decisions = buildBusinessFieldDecisions(
