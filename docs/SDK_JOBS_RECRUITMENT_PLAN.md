@@ -92,7 +92,7 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Database-side owner eligibility and pending-status enforcement; owner submission simulation passed inside a rolled-back transaction.
 - [x] Dedicated `sdk_jobs.manage` added to DB permission RPC, TypeScript key and explicit staff permission editor; no broad staff-type grant.
 - [x] Consolidated RLS policies and all new FK indexes via migration `20261125210610`; no SDK Jobs-specific security/performance advisor warnings remain.
-- [ ] Owner submission form and signed private poster upload.
+- [x] First-pass Owner submission form and owner request status list added at /owner/sdk-jobs; CI run 45707087025 passed build and Edge Function jobs.\n- [ ] Signed private poster upload and approval/promotion remain open.
 - [ ] Permission-gated Admin moderation UI and workflow actions.
 - [ ] Public listing/detail/search/filter/share pages and employer-anonymity checks.
 - [x] Foundation CI and production deployment passed; database authorization/public-projection transaction tests and advisor checks passed.
@@ -127,3 +127,16 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [ ] Admin queue/actions, public listing/detail/search/share pages and adversarial privacy/browser acceptance remain open.
 
 **Current status:** Owner submission UI has been added to main but is not yet CI-verified or production-released. No poster upload, Admin moderation UI or public SDK Jobs pages are claimed complete. The form writes only to the private sdk_jobs table; the published-only public view remains the only planned public read surface.
+
+
+## Admin moderation UI increment — 26 November 2026
+
+- [x] Added SDK Jobs item to Admin navigation gated by the explicit sdk_jobs.manage permission.
+- [x] Added a lazy-loaded Admin SDK Jobs moderation workspace with queue, detail view, private employer linkage IDs, status history and private Admin notes.
+- [x] Added guarded status actions for request correction, reject, unpublish, close, return to review and archive. Publish is blocked until an approved poster exists, as required by the database constraint and privacy plan.
+- [ ] CI/typecheck/build verification for the Admin workspace and tab wiring.
+- [ ] Authenticated Admin browser test, explicit staff permission denial/allow test and live RLS verification.
+- [ ] Business name/owner-friendly identity resolution in the Admin detail view where existing Admin data permissions allow it.
+- [ ] Poster upload/promotion, public board/detail routes and privacy/SEO/offline checks.
+
+**Current code status:** Admin moderation UI is committed to main, but its CI result is pending. It does not publish jobs without an approved poster. No public SDK Jobs route has been added yet.
