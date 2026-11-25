@@ -68,6 +68,15 @@ Deno.serve(async (req: Request) => {
       return response(req, { ok: true, status: "rejected" });
     }
 
+    if (!request.business_id) {
+      return response(req, { ok: false, error: "The business must pass field approval and be published before an owner invitation can be sent" }, 409);
+    }
+    const { data: eligibleBusiness, error: businessError } = await db.from("businesses")
+      .select("id,owner_id,status").eq("id", request.business_id).maybeSingle();
+    if (businessError || !eligibleBusiness || eligibleBusiness.status !== "published" || eligibleBusiness.owner_id) {
+      return response(req, { ok: false, error: "The reviewed business is not available for owner assignment" }, 409);
+    }
+
     const { data: locked, error: lockError } = await db.from("owner_registration_requests")
       .update({ status: "processing", admin_note: note, updated_at: new Date().toISOString() })
       .eq("id", requestId).eq("status", "pending").select("id").maybeSingle();
@@ -90,17 +99,28 @@ Deno.serve(async (req: Request) => {
       throw new Error("Owner profile could not be provisioned; the invitation was rolled back");
     }
 
+    const { data: linkedBusiness, error: linkError } = await db.from("businesses")
+      .update({ owner_id: invited.user.id, claimed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", request.business_id).eq("status", "published").is("owner_id", null)
+      .select("id").maybeSingle();
+    if (linkError || !linkedBusiness) {
+      await db.auth.admin.deleteUser(invited.user.id);
+      throw new Error("The reviewed business could not be linked; the invitation was rolled back");
+    }
+
     const { error: updateError } = await db.from("owner_registration_requests").update({
       status: "approved", reviewed_by: actor.id, reviewed_at: new Date().toISOString(),
       admin_note: note, updated_at: new Date().toISOString(),
     }).eq("id", requestId).eq("status", "processing");
     if (updateError) {
+      await db.from("businesses").update({ owner_id: null, claimed_at: null, updated_at: new Date().toISOString() })
+        .eq("id", request.business_id).eq("owner_id", invited.user.id);
       await db.auth.admin.deleteUser(invited.user.id);
       throw updateError;
     }
     await db.from("audit_logs").insert({
       actor_id: actor.id, action: "owner_registration.approve", entity: "owner_registration_requests",
-      entity_id: requestId, details: { owner_user_id: invited.user.id, email: request.email },
+      entity_id: requestId, details: { owner_user_id: invited.user.id, email: request.email, business_id: request.business_id },
     });
     return response(req, { ok: true, status: "approved" });
   } catch (error) {
