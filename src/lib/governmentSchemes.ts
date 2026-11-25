@@ -1,6 +1,7 @@
 import { getSupabaseClient } from './supabase';
 import { getActiveOfflineDirectorySnapshot } from './offlineDirectory';
 import { isSafeGovernmentJobUrl } from './governmentJobs';
+import { getGovernmentPublicationErrors } from './governmentPublication';
 import type { GovernmentSchemeRow, GovernmentSchemeReportRow, GovernmentSchemeRevisionRow } from '../types/database';
 
 const nowIso=()=>new Date().toISOString();
@@ -63,6 +64,10 @@ export async function upsertGovernmentScheme(
   if(value&&!isSafeGovernmentJobUrl(value))throw new Error(label+' must be a valid HTTPS URL and cannot be a shortened link.');
  }
  const status=scheme.status??'draft';
+ if(status==='published'&&!scheme.id){
+  const publicationErrors=getGovernmentPublicationErrors({titleUr:scheme.title_ur,summaryEn:scheme.summary_en,summaryUr:scheme.summary_ur,imageUrl:scheme.image_url,sourceName:scheme.source_name,sourceUrl:scheme.source_url,verifiedAt:scheme.verified_at});
+  if(publicationErrors.length)throw new Error(publicationErrors.join(' '));
+ }
  if(status==='published'){
   if(scheme.intake_status==='open'&&(!scheme.official_apply_url||!scheme.next_review_at))throw new Error('An open intake requires an official application URL and a next review date.');
   if(!scheme.summary_en?.trim()||scheme.summary_en.trim().length<20)throw new Error('Publishing requires an English summary of at least 20 characters.');
@@ -76,6 +81,7 @@ export async function upsertGovernmentScheme(
   application_steps:scheme.application_steps?.trim()||null,fees_and_repayment:scheme.fees_and_repayment?.trim()||null,
   source_name:scheme.source_name?.trim()||null,source_url:scheme.source_url?.trim()||null,
   source_document_url:scheme.source_document_url?.trim()||null,official_apply_url:scheme.official_apply_url?.trim()||null,
+  image_url:scheme.image_url?.trim()||null,
   status,published_at:status==='draft'?null:(scheme.published_at??nowIso()),
   published_by:status==='published'?(scheme.published_by??actorId):(scheme.published_by??null),
   created_by:scheme.created_by??actorId,updated_by:actorId,updated_at:nowIso()};
