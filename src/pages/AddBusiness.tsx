@@ -40,6 +40,7 @@ export function AddBusiness() {
   const [categorySearch, setCategorySearch] = useState('');
   const [areaSearch, setAreaSearch] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [consentConfirmed, setConsentConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [metadataError, setMetadataError] = useState(false);
   const [metadataRetryKey, setMetadataRetryKey] = useState(0);
@@ -108,6 +109,7 @@ export function AddBusiness() {
   };
 
   const resetForm = () => {
+    setConsentConfirmed(false);
     setNameEn('');
     setNameUr('');
     setPhone('');
@@ -138,6 +140,10 @@ export function AddBusiness() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
+    if (!consentConfirmed) {
+      showToast(lang === 'ur' ? 'درخواست جمع کروانے سے پہلے تصدیق ضروری ہے۔' : 'Please confirm the submission consent before continuing.', 'error');
+      return;
+    }
 
     const cleanName = nameEn.trim();
     if (cleanName.length < 2 || cleanName.length > 120) {
@@ -623,6 +629,21 @@ export function AddBusiness() {
                 className="hidden"
                 aria-hidden="true"
               />
+
+              <label className="flex items-start gap-3 rounded-xl border border-outline-variant/50 p-3 text-xs text-on-surface cursor-pointer">
+                <input
+                  type="checkbox"
+                  required
+                  checked={consentConfirmed}
+                  onChange={(e) => setConsentConfirmed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-primary shrink-0"
+                />
+                <span>
+                  {lang === 'ur'
+                    ? 'میں تصدیق کرتا/کرتی ہوں کہ مجھے یہ کاروباری معلومات جمع کروانے کا اختیار ہے۔ میں سمجھتا/سمجھتی ہوں کہ صرف منظور شدہ کاروباری معلومات عوامی ڈائریکٹری میں دکھائی جائیں گی، جبکہ مالک کا نام اور Gmail صرف ایڈمن کی منظوری اور دعوت کے لیے نجی رہیں گے۔'
+                    : 'I confirm I am authorized to submit these business details. I understand that only approved business information will appear in the public directory, while the owner name and Gmail remain private for Admin review and invitation.'}
+                </span>
+              </label>
 
               <div className="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-4 space-y-2">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
