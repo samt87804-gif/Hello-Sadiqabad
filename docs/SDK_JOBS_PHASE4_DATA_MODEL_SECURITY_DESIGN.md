@@ -40,7 +40,7 @@ Create a narrowly projected public view/read model (for example `public.sdk_jobs
 - Private upload paths, Admin notes, reviewer IDs, moderation history.
 - Candidate records, interview notes, suitability/referral outcomes and internal identifiers.
 
-Anon should receive SELECT on the public view only, not the base `sdk_jobs` table. The view must apply the published-state and publication-time predicate itself. Review view ownership/security-invoker behavior and grants explicitly so the view cannot accidentally expose base-table private columns. Public routes, SEO metadata, Open Graph, sitemap, search and offline snapshots must all use the same safe projection.
+The public route must use a narrowly projected `sdk_jobs_public` view with `security_invoker=true`. Anon receives no table-level SELECT on `sdk_jobs`; it receives only the exact public columns needed by that view, protected by a published-only RLS policy. Private employer linkage, review fields and pending-media paths have no anon column grants. Direct base-table reads therefore cannot retrieve private columns. Public routes, SEO metadata, Open Graph, sitemap, search and offline snapshots must all use the same safe projection.
 
 ### 2.3 Owner eligibility and write rules
 
@@ -103,9 +103,12 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Inspected exact `areas` schema; it supports active-area FK plus bilingual names and city ID.
 - [x] Inspected staff permission editor (`ALL_PERMISSION_KEYS`), Admin tab permission switch, and all frontend permission-key locations.
 - [x] Inspected Storage buckets and object policies: public bucket is unrestricted at bucket metadata level; existing private pending-business bucket is 5 MiB JPEG/PNG/WebP and its Admin read policy is specific to business moderation.
-- [ ] Implement owner submission UI and server-side eligibility enforcement.
-- [ ] Implement permission-gated Admin moderation and append-only review history.
-- [ ] Implement public safe view, listing/detail routes, filters and share metadata.
-- [ ] Add adversarial privacy/authorization tests, CI and production verification.
+- [x] Implemented database-side owner eligibility enforcement and forced pending status.
+- [ ] Implement owner submission UI.
+- [x] Implemented dedicated Admin permission, RLS gates and append-only status history at database level.
+- [ ] Implement permission-gated Admin moderation UI.
+- [x] Implemented the published-only, security-invoker public projection.
+- [ ] Implement public listing/detail routes, filters and share metadata.
+- [ ] Add UI-level and adversarial privacy/authorization tests, CI and production browser verification.
 
 **Current gate:** Phase 4 read-only audit and design are complete. All referenced owner, area, permission, RLS/grant and Storage checks are now documented. No application code, migration, RLS, Storage policy or production data has been changed by this audit. The next implementation task is the first additive schema/permission migration, tested against the live schema and rolled back before any production application; preserve the 108-version migration ledger.
