@@ -1,3 +1,13 @@
+> ⚠️ **ARCHIVED / DO NOT IMPLEMENT — SUPERSEDED ON 26 NOVEMBER 2026**
+>
+> This document is retained only as historical context. The owner approved the replacement workflow in [Business Registration & Admin Approval — ACTIVE Implementation Plan](ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md).
+>
+> **New chats and contributors: do not continue implementation from this document, do not treat its old next-step instructions or UI flow as active, and do not create a parallel approval workflow.** Follow the ACTIVE plan above. Read historical details only when auditing compatibility or understanding already-shipped code. Preserve production functionality/data; this warning does not authorize rollback or deletion.
+>
+> If any statement here conflicts with the ACTIVE plan, the ACTIVE plan wins for future design decisions, subject to current production code/schema and permanent security rules.
+>
+> ---
+>
 # Add Business & Owner Approval Plan
 
 **Owner-approved decisions:** 25 November 2026.
