@@ -742,7 +742,7 @@ Owner-approved decisions:
 - SDK Jobs recruitment service is free through 31 January 2027 inclusive. From 1 February 2027 a candidate-only fee may apply; amount remains unset and must be Admin-configurable. No business-owner fee.
 - Default recruitment office: Monday-Friday 10:00 AM–2:00 PM Pakistan time; Saturday/Sunday closed; Admin can change schedule.
 - Gov landing includes Government Jobs, Government Schemes, Local Authorities and Authority Profiles.
-- Mobile bottom nav: Home, Search, Gov, SDK Jobs, Saved. Remove separate Jobs/Schemes and Urgent shortcuts; preserve Home Emergency card and Emergency page.
+- Mobile bottom nav final order: Home, Search, News, Gov, SDK Jobs, Saved. Preserve News `/news` shortcut. Remove separate Jobs/Schemes and Urgent shortcuts; preserve Home Emergency card and Emergency page.
 
 **Next phase:** Phase 0 audit/design in the master plan. Do not implement before reconciling current code, migrations, RLS, permissions and Storage policies. Existing Government Jobs/Schemes and Owner workflows must be extended, not recreated. Preserve all production data and permanent working rules.
 
@@ -761,7 +761,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [x] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — owner confirms all testing/acceptance checks passed on 26 November 2026.
 - [~] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — implementation, owner acceptance and production Pages deployment complete. Post-deploy Owner/Admin/public/sitemap/social-preview smoke checks remain open.
 - [~] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — read-only privacy/security design added in `docs/SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md`; implementation blocked pending owner approval of retention, consent, staff permissions, fee and referral-letter policy. No candidate PII/schema/UI created.
-- [~] Phase 6 Gov landing page and five-item mobile bottom navigation — bilingual `/gov`, four directory cards, five-item mobile nav, desktop Civic Services link, route indexing, analytics and sitemap deployed; CI passed and `/gov`/mobile nav browser smoke passed. Live sitemap and owner browser/deep-link/Urdu RTL/Emergency acceptance remain open.
+- [~] Phase 6 Gov landing page and six-item mobile bottom navigation — bilingual `/gov`, four directory cards, six-item mobile nav, desktop Civic Services link, route indexing, analytics and sitemap deployed; CI passed and `/gov`/mobile nav browser smoke passed. Live sitemap and owner browser/deep-link/Urdu RTL/Emergency acceptance remain open.
 
 **Safety findings:** The current Storage bucket is public, so pending media needs a separate private bucket. The live Supabase migration ledger (95 versions) differs from the 74 repository migration files; do not replay the baseline or run an unreviewed schema push. No production schema or data was changed during Phase 0.
 
@@ -1095,3 +1095,11 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] No Phase 5 database object, migration, UI, candidate record, CV upload, fee record or retention job was created.
 - [ ] Owner approval needed for exact retention periods, bilingual consent wording/method, staff permission matrix, fee amount/payment policy and referral-letter/public verification fields.
 - Implementation of candidate PII collection remains blocked until these decisions are approved.
+
+
+## Owner correction — News bottom-nav preservation — 26 November 2026
+
+- [x] Owner explicitly clarified that News must remain in the mobile bottom navigation, as it was before the Gov redesign.
+- [x] Updated `src/components/layout/AppBottomNav.tsx` to six items: Home, Search, News, Gov, SDK Jobs, Saved. News uses existing `/news`, `nav.news` bilingual translation and `Newspaper` icon; six-column responsive grid.
+- [ ] CI and production Pages deployment for this correction.
+- No News content, route implementation, database, analytics, Emergency route or Home Emergency card changed.
