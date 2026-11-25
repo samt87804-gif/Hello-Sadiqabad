@@ -883,3 +883,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - No database, Storage, Auth or existing listing data was changed.
 - Main commit `3e73a2d9943355d1c48370642ad8034f416571ec`; CI run `45638490612` passed; production browser smoke run `45638490221` passed on mobile 390×844 and desktop 1365×900, including assertions for the new controls; Cloudflare Pages deployment `8969830b-3848-4951-a1dd-7b01f3fda6de` succeeded with canonical alias `https://hellosadiqabad.com`.
 - Phase 2 authenticated Admin/Owner acceptance, real image approval roundtrip and invitation email/redirect remain outstanding. Phase 1 Admin performance acceptance remains open.
+
+### Phase 1 Admin performance follow-up — 25 November 2026
+
+- Current source review confirms lazy Admin manager imports, tab/permission-gated data requests, explicit business-list column selection, 50-item UI pagination in BusinessManager/DataQualityManager, and single-pass DataQuality category counts.
+- Added a 30-second in-memory cache for business, taxonomy, profile and lead datasets across Admin tab changes; global quick search shares the cache. Explicit child action reloads force refresh, and failed refreshes preserve last-good data and remain retryable.
+- CI `45639985225` passed; Cloudflare Pages deployment `81b032d7-64e1-45c1-a63c-1a46c60a8580` succeeded.
+- Phase 1 remains **in progress / not accepted** until signed-in desktop/mobile before-and-after route and interaction measurements plus functional/permission regression QA are recorded. No performance milliseconds are claimed.
