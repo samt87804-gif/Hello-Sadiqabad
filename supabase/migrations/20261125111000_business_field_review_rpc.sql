@@ -100,6 +100,8 @@ begin
     ) returning id into v_business_id;
 
     update public.submissions set business_id=v_business_id,updated_at=now() where id=p_submission_id;
+    update public.owner_registration_requests set business_id=v_business_id,updated_at=now()
+      where submission_id=p_submission_id and status='pending';
   elsif v_business_id is not null then
     -- Optional values are independently visible; rejected/unpublished values are hidden.
     update public.businesses set
