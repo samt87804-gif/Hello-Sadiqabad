@@ -75,3 +75,25 @@ Use additive schema after auditing current database and migration ledger. Separa
 - Candidate records and CV details remain private.
 - Referral and letter are auditable and not represented as a placement guarantee.
 - Every published job has a canonical share URL and approved social image.
+
+
+## Phase 4 kickoff — 26 November 2026
+
+The owner confirmed all testing through Government Jobs and Government Schemes (master workstream 4.3) is complete and correct. The next workstream is this SDK Jobs plan; do not repeat the already accepted tests unless a regression is reported.
+
+- [x] Reconciled this plan with current `main` and the Final Product Expansion Master Plan.
+- [x] Confirmed no SDK Jobs routes, table, owner submission UI, Admin manager or Edge Function exists yet; Government Jobs remains separate.
+- [x] Inspected current owner eligibility source: active `profiles.role='owner'` and at least one `businesses` row with `owner_id=auth.uid()` and `status='published'`.
+- [x] Inspected current dedicated Admin permission pattern and live RLS/grants. New permission must be `sdk_jobs.manage` and must be explicit for staff; do not add broad staff-type defaults.
+- [x] Inspected live migration ledger (108 applied versions). Existing data/schema baseline must not be replayed.
+- [x] Added detailed data-boundary/security design: [`SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`](SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md).
+- [ ] Finish exact areas schema, staff permission editor and Storage limits review.
+- [ ] Additive `sdk_jobs` schema, private employer linkage, published-only public view and append-only moderation history.
+- [ ] Owner submission form and server-side eligibility enforcement.
+- [ ] Permission-gated Admin moderation.
+- [ ] Public listing/detail/search/filter/share pages and employer-anonymity checks.
+- [ ] Run authorization, public leakage, status-transition, media privacy, CI and deployment acceptance.
+
+**Phase boundary:** candidate intake, consent records, CV details, interview notes, suitability, referrals, referral letters, fees and office-hour configuration remain Phase 5. Do not collect candidate personal data in Phase 4.
+
+**Current status:** Phase 4 audit/design is in progress. No application code, migration, RLS, Storage policy or production record was changed by the audit.
