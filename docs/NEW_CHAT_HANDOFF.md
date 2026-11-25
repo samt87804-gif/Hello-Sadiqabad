@@ -1197,3 +1197,14 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Not production-released: real authenticated Owner upload + Admin preview/approve/publish browser acceptance, final linked Owner/business display labels, production Pages deploy and public route/sitemap smoke tests remain open.
 - Do not add candidate CV/intake/referral/fee/office-hour settings in Phase 4. Those remain Phase 5.
 
+
+
+## Latest continuation note — SDK Jobs social preview and Owner correction loop (26 November 2026)
+
+- Live SDK Jobs migration ledger is now 113 versions, including poster lifecycle migration `20261125220215` and Owner feedback migration `20261125221201`.
+- Owner feedback is separate from private Admin notes; Admin must provide a reason for correction/rejection; Owner sees it and can edit/resubmit draft/changes-requested jobs. DB clears feedback on resubmission. Published-job edit UI remains disabled pending version preservation.
+- Cloudflare Pages social preview functions now exist for SDK Jobs list/detail. Detail crawler metadata reads only the public published projection; no private owner/business fields. Node tests cover metadata privacy and noindex behavior.
+- CI was updated to syntax-check both SDK Jobs Pages Functions and run their Node tests. Latest run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724) is queued/pending; recheck before claiming final CI success.
+- No live jobs/history/notes rows were created; current counts are all zero. Four active eligible Owner-to-published-business links exist.
+- Do not deploy Pages until latest CI and authenticated Owner/Admin browser acceptance pass. No passwords, OTPs or cookies should be requested/shared; use a user-controlled authenticated browser session or screenshots.
+
