@@ -4,6 +4,20 @@ This is the live application project checklist. Update it on `main` whenever a t
 
 **Domain, security and SEO work is tracked separately in [docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md). New-chat continuity and the website owner's Google/Supabase checklist are in [docs/NEW_CHAT_HANDOFF.md](docs/NEW_CHAT_HANDOFF.md).**
 
+## Owner-approved business registration workflow redesign — 26 November 2026
+
+- Active source of truth: [Business Registration & Admin Approval — ACTIVE Implementation Plan](docs/ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md).
+- Historical document retained but explicitly superseded: [ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md) — **ARCHIVED / DO NOT IMPLEMENT**. Do not follow its old workflow or create a parallel queue. Preserve compatible production functionality/data.
+- [x] Owner approved one card per Add Business request, one popup with grouped collapsible sections, per-field checkboxes, section/global Select All, private Owner details, optional Send Owner Invitation Link checkbox and one Save Approval action.
+- [x] Owner approved separation of Business Field Approval, Moderation Queue, standalone Owner Registration Requests, Businesses, Data Quality and Owners responsibilities.
+- [ ] Phase A: audit current routes, components, API, schema/RLS, invitation and media lifecycle.
+- [ ] Phase B: one-card request list and popup.
+- [ ] Phase C: atomic field decisions and retryable secure invitation.
+- [ ] Phase D: private media approval/promotion.
+- [ ] Phase E: clarify six Admin pages and audit direct edits.
+- [ ] Phase F: end-to-end QA and release.
+
+
 ## Domain, security and SEO implementation
 
 - Current source of truth: [Domain, Security & SEO Master Plan](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md).
