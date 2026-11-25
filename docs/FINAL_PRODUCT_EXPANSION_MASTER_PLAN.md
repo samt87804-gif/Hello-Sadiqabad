@@ -333,7 +333,7 @@ Initial Admin performance optimizations are implemented on `main` and deployed t
 
 The detailed current implementation/live schema baseline is recorded in [Add Business & Owner Approval Plan](ADD_BUSINESS_OWNER_APPROVAL_PLAN.md). Key confirmed facts: the current Add Business form auto-selects first taxonomy options and lacks several approved fields; `submissions` uses a generic payload with no field review ledger; `private.approve_submission` currently publishes the complete new-business listing in one branch; the separate owner registration table has no business/submission association; the deployed version-3 invitation function does not link the owner to a business; and the only Storage bucket is public. Phase 2 must solve these additively without affecting other submission types or making pending media public.
 
-This is preflight only. Phase 1 authenticated browser acceptance remains outstanding, so Phase 2 implementation/schema changes have not started.
+This was the pre-implementation preflight state. Phase 1 authenticated browser acceptance remains outstanding, but the owner subsequently authorised Phase 2 implementation in parallel; see the production rollout checkpoint below.
 
 
 ---
