@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Bookmark, BookOpenCheck, BriefcaseBusiness, Download, Grid2X2, Home, Newspaper, PhoneCall, Search } from 'lucide-react';
+import { Bookmark, BriefcaseBusiness, Home, Landmark, Search } from 'lucide-react';
 import { useI18n } from '../../lib/i18n';
 
 export function AppBottomNav() {
@@ -9,21 +9,17 @@ export function AppBottomNav() {
   const tabs = [
     { to: '/', label: t('nav.home', 'Home'), ur: 'ہوم', icon: Home, end: true },
     { to: '/search', label: t('nav.search', 'Search'), ur: 'تلاش', icon: Search },
-    { to: '/categories', label: t('nav.categories', 'Categories'), ur: 'کیٹیگریز', icon: Grid2X2 },
-    { to: '/news', label: t('nav.news', 'News'), ur: 'خبریں', icon: Newspaper },
-    { to: '/government-jobs', label: lang === 'ur' ? 'نوکریاں' : 'Jobs', ur: 'نوکریاں', icon: BriefcaseBusiness },
-    { to: '/government-schemes', label: lang === 'ur' ? 'اسکیمیں' : 'Schemes', ur: 'اسکیمیں', icon: BookOpenCheck },
-    { to: '/emergency', label: t('nav.emergency', 'Urgent'), ur: 'ایمرجنسی', icon: PhoneCall, urgent: true },
+    { to: '/gov', label: lang === 'ur' ? 'حکومت' : 'Gov', ur: 'حکومت', icon: Landmark },
+    { to: '/sdk-jobs', label: lang === 'ur' ? 'مقامی نوکریاں' : 'SDK Jobs', ur: 'مقامی نوکریاں', icon: BriefcaseBusiness },
     { to: '/favorites', label: t('nav.favorites', 'Saved'), ur: 'پسندیدہ', icon: Bookmark },
-    { to: '/offline-data', label: lang === 'ur' ? 'آف لائن' : t('nav.offline', 'Offline'), ur: 'آف لائن', icon: Download, highlight: true },
   ];
 
   return (
     <nav
-      aria-label="Mobile bottom navigation"
+      aria-label={lang === 'ur' ? 'موبائل نیویگیشن' : 'Mobile bottom navigation'}
       className="md:hidden fixed bottom-0 inset-x-0 z-40 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl border-t border-outline-variant/40 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]"
     >
-      <div className="grid grid-cols-9 h-16 max-w-lg mx-auto">
+      <div className="grid grid-cols-5 h-16 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -33,13 +29,7 @@ export function AppBottomNav() {
               end={tab.end}
               className={({ isActive }) =>
                 `hs-nav-link min-w-0 flex flex-col items-center justify-center gap-0.5 px-0.5 text-[10px] sm:text-[11px] font-semibold transition-colors ${
-                  tab.urgent
-                    ? isActive
-                      ? 'text-error font-bold'
-                      : 'text-error/85 hover:text-error'
-                    : tab.highlight
-                    ? 'mx-0.5 my-1 rounded-xl bg-primary/10 text-primary font-bold hover:bg-primary/15'
-                    : isActive
+                  isActive
                     ? 'text-primary font-bold'
                     : 'text-on-surface-variant hover:text-primary'
                 }`
