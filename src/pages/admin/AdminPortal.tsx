@@ -124,7 +124,13 @@ export function AdminPortal() {
   const [leadsLoaded, setLeadsLoaded] = useState(false);
   const [profilesLoaded, setProfilesLoaded] = useState(false);
   const quickSearchLoading = React.useRef({ businesses: false, leads: false, profiles: false });
-  const reload = useCallback(async () => {
+  const loadedAdminData = React.useRef({
+    businesses: false,
+    taxonomy: false,
+    profiles: false,
+    leads: false,
+  });
+  const reload = useCallback(async (force = true) => {
     setLoading(true);
     try {
       const can = (permission: PermissionKey) => isSuperAdmin || hasPermission(permission);
@@ -141,6 +147,16 @@ export function AdminPortal() {
       const needsBusinesses = ['businesses', 'quality', 'moderation', 'inquiries', 'import', 'export', 'owners', 'ads', 'plans', 'authority-profiles', 'analytics'].includes(tab);
       const needsTaxonomy = ['businesses', 'quality', 'import', 'export', 'categories', 'areas', 'settings'].includes(tab);
       const needsProfiles = ['businesses', 'owners', 'staff'].includes(tab) && can('owners.create');
+      const canLoadBusinesses = can('business.create') || can('business.publish');
+      const canLoadTaxonomy = can('business.create') || can('settings.manage') || can('business.publish');
+      const shouldLoadBusinesses = needsBusinesses && canLoadBusinesses &&
+        (force || !loadedAdminData.current.businesses);
+      const shouldLoadTaxonomy = needsTaxonomy && canLoadTaxonomy &&
+        (force || !loadedAdminData.current.taxonomy);
+      const shouldLoadProfiles = needsProfiles &&
+        (force || !loadedAdminData.current.profiles);
+      const shouldLoadLeads = (tab === 'leads' || tab === 'export') && can('leads.manage') &&
+        (force || !loadedAdminData.current.leads);
       const needsEmergency = ['emergency', 'export', 'settings'].includes(tab);
       const needsLocalAuthorities = ['local-authorities', 'export'].includes(tab) && isSuperAdmin;
       const needsAuthorityProfiles = ['authority-profiles', 'export'].includes(tab) && isSuperAdmin;
@@ -161,9 +177,14 @@ export function AdminPortal() {
           if (timeoutId !== undefined) window.clearTimeout(timeoutId);
         }
       };
-      if (needsBusinesses) quickSearchLoading.current.businesses = true;
-      if (needsProfiles) quickSearchLoading.current.profiles = true;
-      if (tab === 'leads') quickSearchLoading.current.leads = true;
+      let businessLoadSucceeded = false;
+      let taxonomyCategoriesLoadSucceeded = false;
+      let taxonomyAreasLoadSucceeded = false;
+      let profilesLoadSucceeded = false;
+      let leadsLoadSucceeded = false;
+      if (shouldLoadBusinesses) quickSearchLoading.current.businesses = true;
+      if (shouldLoadProfiles) quickSearchLoading.current.profiles = true;
+      if (shouldLoadLeads) quickSearchLoading.current.leads = true;
       const [
         c,
         biz,
@@ -186,15 +207,25 @@ export function AdminPortal() {
         aud,
       ] = await Promise.all([
         canViewDashboard ? safeLoad(fetchAdminDashboardCounts(), emptyCounts) : Promise.resolve(emptyCounts),
-        needsBusinesses && (can('business.create') || can('business.publish')) ? safeLoad(fetchAdminBusinesses(), []) : Promise.resolve([]),
-        needsTaxonomy ? (can('business.create') || can('settings.manage') ? safeLoad(fetchAllCategories(true), []) : can('business.publish') ? safeLoad(fetchAllCategories(false), []) : Promise.resolve([])) : Promise.resolve([]),
-        needsTaxonomy ? (can('business.create') || can('settings.manage') ? safeLoad(fetchAllAreas(true), []) : can('business.publish') ? safeLoad(fetchAllAreas(false), []) : Promise.resolve([])) : Promise.resolve([]),
+        shouldLoadBusinesses
+          ? safeLoad(fetchAdminBusinesses().then((result) => { businessLoadSucceeded = true; return result; }), [])
+          : Promise.resolve([]),
+        shouldLoadTaxonomy
+          ? safeLoad(fetchAllCategories(can('business.create') || can('settings.manage')).then((result) => { taxonomyCategoriesLoadSucceeded = true; return result; }), [])
+          : Promise.resolve([]),
+        shouldLoadTaxonomy
+          ? safeLoad(fetchAllAreas(can('business.create') || can('settings.manage')).then((result) => { taxonomyAreasLoadSucceeded = true; return result; }), [])
+          : Promise.resolve([]),
         tab === 'plans' && can('tiers.manage') ? safeLoad(fetchPlans(true), []) : Promise.resolve([]),
         tab === 'moderation' && can('moderation.review') ? safeLoad(fetchAllReviewsAdmin(), []) : Promise.resolve([]),
         (tab === 'moderation' || tab === 'quality') && can('moderation.review') ? safeLoad(fetchAllSubmissionsAdmin(), []) : Promise.resolve([]),
         tab === 'inquiries' && can('support.read') ? safeLoad(fetchAllInquiriesAdmin(), []) : Promise.resolve([]),
-        (tab === 'leads' || tab === 'export') && can('leads.manage') ? safeLoad(fetchLeads(), []) : Promise.resolve([]),
-        needsProfiles ? safeLoad(fetchProfilesAdmin(), []) : Promise.resolve([]),
+        shouldLoadLeads
+          ? safeLoad(fetchLeads().then((result) => { leadsLoadSucceeded = true; return result; }), [])
+          : Promise.resolve([]),
+        shouldLoadProfiles
+          ? safeLoad(fetchProfilesAdmin().then((result) => { profilesLoadSucceeded = true; return result; }), [])
+          : Promise.resolve([]),
         tab === 'ads' && can('ads.review') ? safeLoad(fetchAllAdsAdmin(), []) : Promise.resolve([]),
         tab === 'import' && can('import.run') ? safeLoad(fetchImportBatches(), []) : Promise.resolve([]),
         needsEmergency ? safeLoad(fetchEmergencyContactsAdmin(), []) : Promise.resolve([]),
@@ -206,13 +237,15 @@ export function AdminPortal() {
         tab === 'audit' && isSuperAdmin ? safeLoad(fetchAuditLogs(100), []) : Promise.resolve([]),
       ]);
       setCounts(c);
-      if (needsBusinesses && (can('business.create') || can('business.publish'))) {
+      if (shouldLoadBusinesses) {
         setBusinesses(biz);
-        setBusinessesLoaded(true);
+        setBusinessesLoaded(businessLoadSucceeded);
+        loadedAdminData.current.businesses = businessLoadSucceeded;
       }
-      if (needsTaxonomy) {
+      if (shouldLoadTaxonomy) {
         setCategories(cats);
         setAreas(ar);
+        loadedAdminData.current.taxonomy = taxonomyCategoriesLoadSucceeded && taxonomyAreasLoadSucceeded;
       }
       if (tab === 'plans') setPlans(pls);
       if (tab === 'moderation') {
@@ -221,13 +254,15 @@ export function AdminPortal() {
       }
       if (tab === 'quality') setSubmissions(subs);
       if (tab === 'inquiries') setInquiries(inqs);
-      if (tab === 'leads' || tab === 'export') {
+      if (shouldLoadLeads) {
         setLeads(lds);
-        setLeadsLoaded(true);
+        setLeadsLoaded(leadsLoadSucceeded);
+        loadedAdminData.current.leads = leadsLoadSucceeded;
       }
-      if (needsProfiles) {
+      if (shouldLoadProfiles) {
         setProfiles(profs);
-        setProfilesLoaded(true);
+        setProfilesLoaded(profilesLoadSucceeded);
+        loadedAdminData.current.profiles = profilesLoadSucceeded;
       }
       if (tab === 'ads') setAds(adList);
       if (tab === 'import') setBatches(imp);
@@ -257,7 +292,7 @@ export function AdminPortal() {
   }, [showToast, isSuperAdmin, hasPermission, tab]);
 
   useEffect(() => {
-    reload();
+    void reload(false);
   }, [reload]);
 
   useEffect(() => {
