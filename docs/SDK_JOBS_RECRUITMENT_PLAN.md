@@ -144,7 +144,7 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 
 ## SDK Jobs poster, publication privacy and public-board increment — 26 November 2026
 
-- [x] Applied live migration `20261125220215_sdk_jobs_poster_private_upload` and committed the matching migration file. Migration ledger is now 112 versions (111 prior + this additive migration).
+- [x] Applied live migration `20261125220215_sdk_jobs_poster_private_upload` and committed the matching migration file. Migration ledger was 112 after this migration; the later Owner-feedback migration brings it to 113.
 - [x] Reused the existing private `hs-pending-business-media` bucket without changing its 5 MiB JPEG/PNG/WebP restrictions or making it public.
 - [x] Added an Admin-only SELECT policy scoped to the `sdk-jobs/` folder and explicit `sdk_jobs.manage` / Super Admin authorization.
 - [x] Hardened the owner-write trigger and RLS: a pending-review Owner can update only the pending poster path; the path must embed that exact job ID and owner ID. New owner inserts forcibly clear any client-supplied media path. Transaction tests passed for eligible owner submission/path attachment, denial of public-content mutation while pending, and denial of a path belonging to another job; all test rows were rolled back.
@@ -166,4 +166,9 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 **Release gate:** Code and Edge Functions are committed/deployed, and the additive database policy/trigger migration is live. Do not call the public feature production-released yet: latest CI is running, no real authenticated upload/publish browser acceptance has been performed, and Pages deployment is pending. No candidate intake, CV upload, referral, fee collection or office-hour settings were added (Phase 5 remains separate).
 
 
-**Final UI/Edge CI confirmation:** run [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) completed successfully (build + Edge Functions) on commit `a5a807ee66b5772089aaa53910cec9d9ed99f6f4`. This includes the Admin private linked-record detail endpoint and the Pakistan-time closing-date publication guard.
+- [x] Added owner-visible `owner_feedback` (separate from private Admin notes), with 2,000-character limit. Only authenticated Owner/Admin can read; anon has no column grant and the public view does not include it.
+- [x] Admin must provide an Owner-facing reason when requesting correction or rejecting; Owner Portal displays it.
+- [x] Owner can edit/resubmit draft or changes-requested jobs; the server trigger returns them to `pending_review` and clears old feedback. Published-job editing remains intentionally disabled in the UI until a version-preservation design is approved.
+- [x] Rolled-back DB tests passed: Owner can read Admin feedback; Owner resubmission returns to pending review and clears feedback; Owner cannot change the feedback; anon cannot read the column. All test rows rolled back.
+
+**Final UI/Edge CI confirmation:** run [45711210914](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711210914) completed successfully (build + Edge Functions) on commit `2e50c3d6972682c70f2bbf0934a49ae1df3d5c8d`. This includes the Owner correction/resubmission UI and owner-visible feedback.
