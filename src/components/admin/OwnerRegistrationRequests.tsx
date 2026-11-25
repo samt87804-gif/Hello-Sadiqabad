@@ -98,7 +98,7 @@ export function OwnerRegistrationRequests() {
               </div>
               <Textarea rows={2} value={notes[request.id] ?? request.admin_note ?? ''} onChange={(e) => setNotes((current) => ({ ...current, [request.id]: e.target.value }))} placeholder="Optional Admin note" />
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" loading={busyId === request.id} disabled={Boolean(busyId) || request.status !== 'pending' || !request.business_id} onClick={() => void review(request.id, 'approve')} leftIcon={<CheckCircle2 className="w-4 h-4" />}>{request.business_id ? 'Approve &amp; Send Invitation' : 'Awaiting Business Approval'}</Button>
+                <Button size="sm" loading={busyId === request.id} disabled={Boolean(busyId) || request.status !== 'pending' || !request.business_id} onClick={() => void review(request.id, 'approve')} leftIcon={<CheckCircle2 className="w-4 h-4" />}>{request.business_id ? 'Approve & Send Invitation' : 'Awaiting Business Approval'}</Button>
                 <Button size="sm" variant="danger" loading={busyId === request.id} disabled={Boolean(busyId) || request.status !== 'pending'} onClick={() => void review(request.id, 'reject')} leftIcon={<XCircle className="w-4 h-4" />}>Reject</Button>
               </div>
             </Card>
