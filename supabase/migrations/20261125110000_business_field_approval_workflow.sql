@@ -113,13 +113,8 @@ create policy hs_pending_media_admin_read on storage.objects
   using (bucket_id='hs-pending-business-media'
     and (private.is_super_admin() or private.staff_has_permission('moderation.review')));
 
-drop policy if exists hs_pending_media_public_submit on storage.objects;
-create policy hs_pending_media_public_submit on storage.objects
-  for insert to anon, authenticated
-  with check (bucket_id='hs-pending-business-media'
-    and (storage.foldername(name))[1]='pending'
-    and (storage.extension(name) in ('jpg','jpeg','png','webp')));
-
+-- Anonymous visitor uploads must use a rate-limited, server-issued signed upload URL.
+-- Do not create an anon INSERT policy on this private bucket.
 drop policy if exists hs_pending_media_owner_upload on storage.objects;
 create policy hs_pending_media_owner_upload on storage.objects
   for insert to authenticated
@@ -160,23 +155,8 @@ create trigger submissions_seed_business_field_reviews
   after insert on public.submissions
   for each row execute function private.seed_business_field_reviews();
 
--- Stop the legacy all-at-once new_business approval path. Other submission types continue unchanged.
-create or replace function private.guard_legacy_new_business_approval()
-returns trigger language plpgsql set search_path=''
-as $function$
-begin
-  if old.type='new_business' and new.status='done'
-     and current_setting('app.business_field_review',true) is distinct from 'true' then
-    raise exception 'New business submissions must be reviewed field by field' using errcode='42501';
-  end if;
-  return new;
-end
-$function$;
-
-drop trigger if exists submissions_guard_legacy_new_business_approval on public.submissions;
-create trigger submissions_guard_legacy_new_business_approval
-  before update of status on public.submissions
-  for each row execute function private.guard_legacy_new_business_approval();
+-- Legacy approval guard is intentionally deferred to a separate post-UI migration.
+-- This keeps the existing Admin moderation screen functional during the additive schema rollout.
 
 -- Pakistan-local month quota. Admin review actions never consume owner quota.
 create or replace function public.request_business_image_change(
