@@ -41,8 +41,10 @@ async function testViewport(browser, name, viewport, isMobile) {
   assert.equal(await selects.count(), 2, 'Add Business should expose Category and Area selectors');
   const category = selects.nth(0);
   const area = selects.nth(1);
-  await category.locator('option').nth(1).waitFor({ timeout: 45_000 });
-  await area.locator('option').nth(1).waitFor({ timeout: 45_000 });
+  await page.waitForFunction(() => {
+    const controls = Array.from(document.querySelectorAll('select'));
+    return controls.length === 2 && controls.every((control) => control.options.length > 1);
+  }, null, { timeout: 45_000 });
   assert.equal(await category.inputValue(), '', 'Category must not auto-select the first option');
   assert.equal(await area.inputValue(), '', 'Area must not auto-select the first option');
 
@@ -54,7 +56,6 @@ async function testViewport(browser, name, viewport, isMobile) {
   assert.ok(firstArea.length > 0, 'Area taxonomy should be loaded');
 
   await categorySearch.fill(firstCategory.split(/\s+/)[0]);
-  await category.locator('option').nth(1).waitFor();
   await category.selectOption({ index: 1 });
   const selectedCategory = await category.inputValue();
   await categorySearch.fill('__no_matching_category__');
@@ -62,7 +63,6 @@ async function testViewport(browser, name, viewport, isMobile) {
   assert.equal(await category.locator('option').count(), 2, 'Selected category should remain available when the filter has no matches');
 
   await areaSearch.fill(firstArea.split(/\s+/)[0]);
-  await area.locator('option').nth(1).waitFor();
   await area.selectOption({ index: 1 });
   const selectedArea = await area.inputValue();
   await areaSearch.fill('__no_matching_area__');
