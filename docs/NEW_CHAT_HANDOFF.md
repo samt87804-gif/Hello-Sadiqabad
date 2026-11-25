@@ -1232,3 +1232,5 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Code commit `981bda1ae6a212cef613021ad1e16188e4f6ee93` passed CI run [45716487169](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716487169), including typecheck, tests, production build and Edge Function checks.
 - Cloudflare Pages production deployment for that code commit succeeded (`8c1fd329-f5fd-484c-b7c7-c8428bd49713`). Canonical alias `https://hellosadiqabad.com` is on successful descendant deployment `4f484193-c01c-4f2f-9147-c0becbdc6cbc`, commit `c2d370dcc7b557b623d042902a747b52d5dc10b`, which includes the News change.
 - Rendered production mobile acceptance for six-item layout, Urdu labels and News active-state/deep link remains unverified; do not claim it passed.
+
+- Added `scripts/mobile-bottom-nav.test.mjs` to lock the final six-item order, News route/translation/icon and six-column layout; wired into `npm test`. Latest CI run [45716860002](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716860002) was pending at handoff update; check its final result before further release claims.
