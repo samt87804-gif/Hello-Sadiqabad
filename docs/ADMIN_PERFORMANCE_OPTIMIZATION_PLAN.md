@@ -67,3 +67,17 @@ The repository/live-system findings and exact database baseline are recorded in 
 - Real browser/mobile checks for search, filters, page navigation, select-all/bulk actions, edit/detail modal, moderation actions and complete CSV export.
 - Permission/empty/error/retry regression checks in an authenticated session.
 - Do not claim a numerical UI speed improvement from the database-only 5.347 ms query baseline. The browser performance trace was not available in this session.
+
+
+## Phase 1 follow-up — narrow business list payload (25 November 2026)
+
+A second implementation slice is now on `main`:
+
+- `fetchAdminBusinesses()` uses an explicit allowlist for fields needed by BusinessManager, Data Quality and linked inquiry/review/moderation summaries instead of `select('*')`.
+- The list projection no longer fetches the full plan relation. Category and area relations are limited to the fields displayed in the list and quality audit.
+- Full business row details are fetched by ID only when an Admin opens the edit modal. Existing edit form fields and update behavior continue to use the complete row.
+- Existing list filters, 50-row client pagination, full-filter bulk selection and Data Quality complete filtered CSV export remain intact.
+
+**Verification:** latest commit `4ed8f50042928896064f3925f8e8f203e0951de7`; [GitHub CI run 45587036171](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45587036171) passed both jobs, including TypeScript, automated tests, dependency gate, production build and Deno Edge Function typecheck. Cloudflare Pages deployment `51d981f8-e50a-400d-af08-ae5e14481940` succeeded for this exact commit with canonical alias `https://hellosadiqabad.com`.
+
+**Acceptance remains open:** this is source-level optimization plus CI/deployment evidence, not authenticated browser profiling. Desktop cold/warm load and click latency, real Admin permission/action checks and mobile smoke tests still need a signed-in browser session. No performance milliseconds are claimed.
