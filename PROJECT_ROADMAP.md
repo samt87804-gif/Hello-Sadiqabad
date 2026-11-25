@@ -773,3 +773,10 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [x] Latest commit `4ed8f50042928896064f3925f8e8f203e0951de7` passed [CI run 45587036171](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45587036171): TypeScript, automated tests, dependency gate, production build and Edge Function typecheck.
 - [x] Cloudflare Pages deployment `51d981f8-e50a-400d-af08-ae5e14481940` succeeded for the exact commit and canonical domain.
 - [ ] Authenticated desktop before/after performance traces and mobile/browser interaction acceptance remain outstanding. Phase 1 remains in progress.
+
+
+### Additional audit evidence — 25 November 2026
+
+- Live SQL comparison on 697 business rows: planner-estimated row width reduced from 2,676 bytes for the former broad joined projection to 1,419 bytes for the new allowlisted projection (about 47% narrower). Query timings from the compared runs had different cache state and are not used as a speed claim.
+- Phase 2 read-only preflight is documented in `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`: current Add Business form misses several approved fields and preselects taxonomy; the legacy new-business approval branch publishes all fields at once; owner invitation has no business association; pending media needs a separate private bucket.
+- Phase 2 code/schema work has not started because Phase 1 authenticated desktop/mobile acceptance remains a gate.
