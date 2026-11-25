@@ -45,6 +45,22 @@ This document records requirements and implementation gates. It does not authori
 - Keep canonical production domain `https://hellosadiqabad.com`.
 - Public offline snapshots must remain public/anonymous-safe only. Never cache Admin/Owner portals, private candidate data, drafts or auth data.
 
+## Active business-approval workflow — owner decision 26 November 2026
+
+**Mandatory for every new chat:** The owner approved the redesigned one-card / one-popup / one-Save workflow. Follow [ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md](ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md) for all future Add Business, Business Field Approval, Owner invitation, Moderation, Businesses, Data Quality and Owners work.
+
+The former [ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](ADD_BUSINESS_OWNER_APPROVAL_PLAN.md) is retained with an ARCHIVED / DO NOT IMPLEMENT warning. It is historical reference only. Do not continue its old UI/queue flow or create a parallel implementation. Existing shipped code/data must be preserved; inspect compatibility and do not roll back production just because the design is archived.
+
+- [x] Owner approval of the new workflow and its detailed implementation plan recorded.
+- [x] Superseded plan marked ARCHIVED / DO NOT IMPLEMENT and linked to the active replacement.
+- [ ] Active Plan Phase A audit.
+- [ ] Active Plan Phase B one-card queue and popup UI.
+- [ ] Active Plan Phase C atomic decisions and invitation orchestration.
+- [ ] Active Plan Phase D private media lifecycle.
+- [ ] Active Plan Phase E six-page Admin workflow clarity and audit.
+- [ ] Active Plan Phase F end-to-end QA and release.
+
+
 ## 4. Approved workstream decisions
 
 **Owner-confirmed acceptance update — 26 November 2026:** The owner has explicitly confirmed that all testing for workstreams 4.1, 4.2 and 4.3 is complete and working correctly. Treat these three workstreams and implementation Phases 1–3 as owner-tested/accepted; do not ask the owner to repeat those tests. If a later regression is reported, investigate that specific issue. This confirmation is owner-provided acceptance, distinct from CI/deployment evidence recorded below.
