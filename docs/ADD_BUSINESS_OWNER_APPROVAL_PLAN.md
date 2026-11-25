@@ -202,3 +202,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Logo and Cover use accessible, card-style image pickers with format/size guidance, selected filename and file size, focus treatment and retry-safe input reset.
 - No database, Storage, Auth or business data was changed.
 - CI `45638490612` passed; production Playwright smoke `45638490221` passed on mobile 390×844 and desktop 1365×900, including checks for the redesigned panels and upload cards. Cloudflare deployment `8969830b-3848-4951-a1dd-7b01f3fda6de` succeeded with the canonical domain.
+
+### Current-main hotfix and live-state reconciliation — 26 November 2026
+
+- The public submission failure was traced to a session mismatch: the form created signed image paths with its one-time upload session ID, but the API wrapper replaced it with the generic browser session. The wrapper now preserves the caller's `session_id` and falls back only when none is supplied.
+- Non-2xx Edge Function responses now surface JSON `error`/`message` text where available. Successful form reset rotates the upload session. Moderation Queue shows the pending new-business count and a direct route to Business Field Review; the Business Field Review nav item also carries the count.
+- Public form smoke [45681520762](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45681520762) passed; main CI [45681595223](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45681595223) passed; production Pages deployment `b6c15c02-79fc-44de-b8df-eaca3998ced6` succeeded for main commit `3bb24fa1f97e21896fdf91092132aa21593eb5f6`.
+- Read-only live reconciliation now shows 4 pending `new_business` submissions, 39 pending field-review rows across those 4 submissions, 2 pending media assets and 0 pending owner image-change requests. The earlier count of 3 is historical. Existing records were not changed.
+- Source and production Storage log review confirm browser-side WebP compression was already running: logo max dimension 640px, cover max dimension 1800px, quality 0.84 with 0.72 retry for outputs over 4 MB. In the failed attempt, temporary compressed files were 9,064 bytes (logo) and 34,118 bytes (cover). Original files are retained only if browser encoding is unavailable or WebP would not reduce size.
+- Still pending: one owner-observed real submission with media, authenticated Admin field/media review, owner invitation email/redirect and public listing/media rendering. No test submission or invitation was created/sent during this continuation.
