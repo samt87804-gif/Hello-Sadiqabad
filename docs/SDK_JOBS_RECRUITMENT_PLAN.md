@@ -158,9 +158,12 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Added desktop header/footer navigation and dynamic sitemap entries from the published-only public view. No employer/private data is queried by the sitemap.
 - [x] Transactional security checks passed: anon cannot select `employer_owner_id`; Owner content mutation and cross-job pending path attachment were denied; test transactions rolled back. Live SDK Jobs/job-history/Admin-note counts remain zero.
 - [x] Supabase Security Advisor has no SDK Jobs-specific finding; existing unrelated project findings remain (private analytics table RLS info and leaked-password protection warning).
-- [ ] Latest combined CI run [45710562574](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710562574) is still running (build + Edge Functions) at the time of this update.
+- [x] Latest combined CI run [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) passed both build and Edge Functions for the final poster/publication/admin-detail code.
 - [ ] Authenticated Owner upload and Admin preview/approve/publish browser acceptance; verify real signed upload and real image promotion using an authorized browser session.
 - [ ] Production Pages deployment and public endpoint/sitemap smoke tests after CI and browser acceptance.
-- [ ] Confirm final Admin presentation of linked business/Owner display names (the current Admin record shows private IDs; the linked records remain in the private database).
+- [x] Added JWT-protected `get-sdk-job-employer-details` Edge Function; Admin UI now displays linked business name/contact and Owner name/contact only to active Super Admin or staff explicitly granted `sdk_jobs.manage`. No broad businesses/profiles RLS grants were added.
 
 **Release gate:** Code and Edge Functions are committed/deployed, and the additive database policy/trigger migration is live. Do not call the public feature production-released yet: latest CI is running, no real authenticated upload/publish browser acceptance has been performed, and Pages deployment is pending. No candidate intake, CV upload, referral, fee collection or office-hour settings were added (Phase 5 remains separate).
+
+
+**Final UI/Edge CI confirmation:** run [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) completed successfully (build + Edge Functions) on commit `a5a807ee66b5772089aaa53910cec9d9ed99f6f4`. This includes the Admin private linked-record detail endpoint and the Pakistan-time closing-date publication guard.
