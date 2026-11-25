@@ -937,3 +937,16 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 - [x] Added `docs/ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md` with a reproducible timing-capture snippet and desktop/mobile/permission acceptance checklist.
 - [ ] Authenticated Admin browser measurements and regression checks remain pending; the runbook is preparation, not acceptance evidence.
+
+
+### Public Add Business submission and moderation visibility hotfix — 25 November 2026
+
+- [x] Production log investigation identified the submission failure: signed media paths were created with the Add Business form's one-time upload session ID, but `submitPublicSuggestion()` overwrote that ID with the generic browser session. The Edge Function therefore rejected valid uploaded image paths and the cleanup workflow removed the temporary objects.
+- [x] Fixed `submitPublicSuggestion()` to preserve the caller's upload session ID; generic session fallback is used only when the caller did not provide one.
+- [x] Improved non-2xx error handling to surface the Edge Function's JSON error message where available; Add Business now displays actionable submission errors rather than hiding them behind a generic network message.
+- [x] Added upload-size feedback. Production Storage logs from the failed attempt confirmed browser-side WebP compression was already active: the logo object was 9,064 bytes and the cover object 34,118 bytes before cleanup. These were temporary uploads removed by the existing cleanup flow; no permanent listing or media data was lost.
+- [x] Rotated the upload-session ID after a successful form reset so subsequent submissions do not reuse a rate-limited session.
+- [x] Moderation Queue now displays a visible count and direct link for pending new-business submissions, explaining that these must be reviewed in the separate field-level approval queue and must not use legacy one-click approval.
+- [x] Business Field Review navigation now shows the pending-submission count.
+- [ ] Latest CI and public-form browser smoke are running for commit `c147cf4a7033a1601b6a52551a178bee435ec39c`; do not mark this hotfix production-accepted until both pass, deployment succeeds, and one owner-observed submission with media completes.
+- [ ] Verify the existing 3 pending submissions remain visible in Business Field Review and new submissions appear there after the fix. No existing submission, owner request, business or media data was deleted or modified by this code change.
