@@ -740,7 +740,7 @@ Owner-approved decisions:
 Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md).
 
 - [x] Phase 0 source/schema/security audit and additive design documented in [Phase 0 Audit](docs/FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md).
-- [ ] Phase 1 Admin Business and Data Quality performance optimization — not yet implemented.
+- [~] Phase 1 Admin Business and Data Quality performance optimization — initial code changes implemented and deployed; final acceptance pending authenticated desktop/browser metrics and mobile interaction QA.
   - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
 - [ ] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — not implemented.
@@ -750,3 +750,17 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [ ] Phase 6 Gov landing page and five-item mobile bottom navigation — not implemented.
 
 **Safety findings:** The current Storage bucket is public, so pending media needs a separate private bucket. The live Supabase migration ledger (95 versions) differs from the 74 repository migration files; do not replay the baseline or run an unreviewed schema push. No production schema or data was changed during Phase 0.
+
+
+### Phase 1 implementation evidence — 25 November 2026
+
+- [x] Admin tab modules lazy-loaded; inactive heavy managers are split from the initial Admin route.
+- [x] Admin data fetches are scoped to the active tab rather than the former 19-request global batch.
+- [x] Global quick search lazily loads its datasets when a query is entered.
+- [x] Business list uses 50-item pagination and memoized filtering; select-all/bulk actions still target all filtered records.
+- [x] Data Quality uses memoized issue calculations, one-pass category/issue counts and 50-item pagination; CSV export remains complete.
+- [x] GitHub CI run 45585636119 passed TypeScript, automated tests, production build, dependency gate and Edge Function typecheck.
+- [x] Cloudflare Pages production deployment 759c75f9-d12d-45ec-a94d-196953c9ba19 succeeded for commit 6009012c143e90dbbcce1dfc2fddaa79c3fa2872.
+- [ ] Authenticated desktop before/after cold/warm load and click latency traces remain outstanding.
+- [ ] Browser functional regression and mobile smoke tests remain outstanding.
+- No schema, RLS, Storage or production data changes were made for this phase.
