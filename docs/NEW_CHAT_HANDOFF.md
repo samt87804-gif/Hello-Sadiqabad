@@ -1251,10 +1251,10 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Reviewed `scripts/gov-navigation.test.mjs`, `scripts/mobile-bottom-nav.test.mjs`, `package.json`, and their current source targets.
 - Both regression scripts are included in `npm test`. Static source review confirms the expected six-item order (Home, Search, News, Gov, SDK Jobs, Saved), the four Gov card destinations, bilingual card fields, `/gov` canonical metadata and sitemap entry, and preserved Emergency route/Home card link.
 - Cloudflare Pages production deployment succeeded for the latest main commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c`: deployment `b8bc6c05-4e89-4dcf-ba73-c9b31d6dd1b7`, production alias `https://hellosadiqabad.com`. The Pages build and deploy stages both report success.
-- GitHub Actions run `45717263569` is still **not independently confirmed**: the connected GitHub status/jobs reads returned no status/job records. Do not mark CI green until its actual conclusion is checked in GitHub Actions.
+- Correction after direct Actions run lookup: `45717263569` was cancelled on older commit `b021edb1eddf7a04a5227ad713f3b1a0f3e67b60`. The actual run for app-code commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` is `45717440342` and completed successfully; both `build` and `edge-functions` jobs passed, including TypeScript, automated tests, production build, dependency gate and Edge Function typecheck.
 - No local execution of the two Node regression tests has been recorded in this checkpoint.
 - Rendered acceptance for the updated six-item mobile layout, Urdu RTL, Gov card deep links and Emergency card/route remains open. The attempted Cloudflare Browser Rendering snapshot was rate-limited with a 3,305-second cooldown; do not retry before that cooldown.
 - Earlier `/gov` 390×844 rendering evidence predates the News restoration and therefore does not prove the current six-item layout.
 - No application code, Supabase schema/data, Cloudflare DNS or environment settings were changed during this checkpoint.
 
-**Next:** confirm CI run `45717263569`; after the Browser Rendering cooldown, verify the production six-item mobile layout, Urdu RTL, all four Gov card deep links and Emergency access. Phase 6 remains open until these checks are evidenced.
+**Next:** after the Browser Rendering cooldown, verify the production six-item mobile layout, Urdu RTL, all four Gov card deep links and Emergency access. CI and the prior app-code Pages deployment are confirmed; Phase 6 remains open until rendered acceptance is evidenced.

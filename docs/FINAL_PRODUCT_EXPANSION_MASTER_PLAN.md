@@ -594,8 +594,8 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - The Gov landing has four bilingual destination cards (Government Jobs, Government Schemes, Local Authorities, Authority Profiles); each target route is registered. `/gov` has canonical SEO metadata and is included in the public sitemap.
 - Both regression tests are wired into `npm test`.
 - Latest main commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` was deployed successfully to Cloudflare Pages production (deployment `b8bc6c05-4e89-4dcf-ba73-c9b31d6dd1b7`; canonical alias `https://hellosadiqabad.com`).
-- GitHub Actions run `45717263569` could not be confirmed through the connected status/jobs reads; do not report CI as passed until its conclusion is checked.
+- GitHub Actions run `45717440342` passed for app-code commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c`; both build and Edge Functions jobs passed. Earlier run `45717263569` was cancelled on the older `b021edb1eddf7a04a5227ad713f3b1a0f3e67b60` commit.
 - No local test execution is claimed. Six-item rendered mobile layout, Urdu RTL, Gov deep links and Emergency access remain unverified after the News restoration. Browser Rendering was rate-limited at checkpoint; respect the returned cooldown.
 - No application/database/customer data or Cloudflare configuration was changed during this checkpoint.
 
-**Next action:** verify the GitHub Actions run, then complete rendered production/mobile acceptance after Browser Rendering is available. Keep Phase 6 open until evidence is recorded.
+**Next action:** complete rendered production/mobile acceptance after Browser Rendering is available. CI is green; keep Phase 6 open until six-item layout, Urdu RTL, Gov deep links and Emergency access are evidenced.

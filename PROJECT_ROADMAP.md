@@ -1113,7 +1113,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 - [x] Current-main source review confirms both new regression scripts are wired into `npm test`; assertions align with the six-item mobile navigation, Gov card routes/bilingual fields, canonical metadata, sitemap entry and preserved Emergency route/card.
 - [x] Cloudflare Pages production deployment succeeded for main commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` (`test: protect nav routes and Emergency access`); deployment `b8bc6c05-4e89-4dcf-ba73-c9b31d6dd1b7`, canonical alias `https://hellosadiqabad.com`.
-- [ ] GitHub Actions run `45717263569` conclusion still needs confirmation; connected status/jobs reads returned no records, so CI is not marked passed.
+- [x] GitHub Actions run `45717440342` passed for app-code commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` (build and edge-functions jobs; TypeScript, `npm test`, production build, dependency gate and Edge Function typecheck). Earlier run `45717263569` was cancelled on the older `b021edb1eddf7a04a5227ad713f3b1a0f3e67b60` commit.
 - [ ] Execute/confirm the Node regression tests; source review alone is not test execution.
 - [ ] Rendered production acceptance: six-item mobile layout, Urdu RTL, four Gov card deep links and Emergency card/route. Browser Rendering was rate-limited at checkpoint; wait for its cooldown before retrying.
-- **Gate remains open:** do not mark Phase 6 accepted until CI/test and rendered/owner acceptance evidence exists.
+- **Gate remains open:** CI is green, but do not mark Phase 6 accepted until rendered/owner acceptance evidence exists.
