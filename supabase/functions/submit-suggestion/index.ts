@@ -93,7 +93,11 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const payload = body.payload as Record<string, unknown>;
+    const payload = { ...(body.payload as Record<string, unknown>) };
+    const mediaInput = Array.isArray(payload.media_assets) ? payload.media_assets : [];
+    delete payload.media_assets;
+    const ownerEmail = typeof body.payload.owner_email === "string" ? body.payload.owner_email.trim().toLowerCase() : "";
+    delete payload.owner_email;
     const businessId = typeof body.business_id === "string" ? body.business_id : null;
     let submittedBy: string | null = null;
 
@@ -120,7 +124,21 @@ Deno.serve(async (req: Request) => {
       submittedBy = await authenticatedOwnerId(req);
     }
 
-    const { error: insertError } = await db.from("submissions").insert({
+    if (body.type === "new_business") {
+      if (!validString(payload.owner_name, 2, 100) || !/^[^\s@]+@gmail\.com$/i.test(ownerEmail)) {
+        return reply(req, { ok: false, error: "A valid owner name and Gmail address are required" }, 400);
+      }
+      if (!validString(payload.name_en, 2, 120) || !isValidUuid(payload.category_id) ||
+          !isValidUuid(payload.area_id) || !validString(payload.phone_primary, 10, 30) ||
+          !validString(payload.address_en, 4, 250)) {
+        return reply(req, { ok: false, error: "Complete the required business name, category, area, phone and address fields" }, 400);
+      }
+      if (!Array.isArray(mediaInput) || mediaInput.length > 2) {
+        return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
+      }
+    }
+
+    const { data: inserted, error: insertError } = await db.from("submissions").insert({
       type: body.type,
       business_id: businessId,
       payload,
@@ -128,9 +146,62 @@ Deno.serve(async (req: Request) => {
       contact_phone: typeof body.contact_phone === "string" ? body.contact_phone.trim().slice(0, 30) : null,
       submitted_by: submittedBy,
       status: "new",
-    });
-    if (insertError) return reply(req, { ok: false, error: "Could not submit request" }, 400);
-    return reply(req, { ok: true });
+    }).select("id").single();
+    if (insertError || !inserted?.id) return reply(req, { ok: false, error: "Could not submit request" }, 400);
+
+    if (body.type === "new_business") {
+      try {
+        if (!submittedBy) {
+          const { error: ownerRequestError } = await db.from("owner_registration_requests").insert({
+            full_name: String(body.payload.owner_name).trim().slice(0, 120),
+            email: ownerEmail,
+            phone: String(body.contact_phone ?? body.payload.phone_primary).trim().slice(0, 30),
+            business_name: String(body.payload.name_en).trim().slice(0, 160),
+            submission_id: inserted.id,
+            status: "pending",
+          });
+          if (ownerRequestError) throw ownerRequestError;
+        }
+
+        for (const item of mediaInput as Array<Record<string, unknown>>) {
+          const field = item.media_field;
+          const storagePath = item.storage_path;
+          const mime = item.mime_type;
+          const size = Number(item.file_size_bytes);
+          if (!(["logo", "cover"].includes(String(field)) &&
+                typeof storagePath === "string" &&
+                /^pending\/[0-9a-f-]{36}\/(logo|cover)\.(jpg|png|webp)$/i.test(storagePath) &&
+                ["image/jpeg", "image/png", "image/webp"].includes(String(mime)) &&
+                Number.isInteger(size) && size > 0 && size <= 5 * 1024 * 1024)) {
+            throw new Error("Invalid business image upload");
+          }
+          const parts = storagePath.split("/");
+          const { data: objects, error: objectError } = await db.storage
+            .from("hs-pending-business-media").list("pending/" + parts[1]);
+          if (objectError || !objects?.some((object) => object.name === parts[2])) {
+            throw new Error("A submitted business image could not be verified");
+          }
+          const { error: mediaError } = await db.from("business_media_assets").insert({
+            submission_id: inserted.id,
+            media_field: field,
+            bucket_id: "hs-pending-business-media",
+            storage_path: storagePath,
+            mime_type: mime,
+            file_size_bytes: size,
+            status: "pending_review",
+          });
+          if (mediaError) throw mediaError;
+        }
+      } catch (workflowError) {
+        await db.from("owner_registration_requests").delete().eq("submission_id", inserted.id);
+        await db.from("submissions").delete().eq("id", inserted.id);
+        const paths = (mediaInput as Array<Record<string, unknown>>)
+          .map((item) => item.storage_path).filter((path): path is string => typeof path === "string");
+        if (paths.length) await db.storage.from("hs-pending-business-media").remove(paths);
+        return reply(req, { ok: false, error: workflowError instanceof Error ? workflowError.message : "Business submission could not be completed" }, 400);
+      }
+    }
+    return reply(req, { ok: true, data: { submission_id: inserted.id } });
   } catch {
     return reply(req, { ok: false, error: "Could not process submission" }, 500);
   }
