@@ -984,8 +984,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Transactional owner insert test passed: identity forced from `auth.uid()`, requested `published` status forced to `pending_review`, no public visibility; test rolled back. Live job/history/note row counts remain zero.
 - [x] Security advisor no longer reports a SECURITY DEFINER view; performance advisor no longer reports SDK Jobs unindexed FKs or multiple permissive policies.
 - [ ] Implement and test owner job submission UI, signed private poster upload, Admin moderation and public employer-anonymous board.
-- [ ] Complete UI/adversarial privacy regression tests, CI and production browser verification.
-- No production schema, RLS, Storage, business/owner records or other existing data was changed during this audit.
+- [x] SDK Jobs database/permission foundation CI and production deployment checks passed.
+- [ ] Complete UI/adversarial privacy regression tests and authenticated production browser verification.
+- No existing business, owner, submission or operational data was changed. The three additive SDK Jobs schema/RLS migrations are recorded; no Storage bucket or policy was changed.
 
 
 ### SDK Jobs Phase 4 database foundation — 26 November 2026
