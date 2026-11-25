@@ -1933,25 +1933,16 @@ export async function fetchAdminDashboardCounts(): Promise<AdminDashboardCounts>
   };
 }
 
-const ADMIN_BUSINESS_LIST_SELECT = [
-  'id', 'owner_id', 'name_en', 'name_ur', 'category_id', 'area_id',
-  'address_en', 'address_ur', 'landmark_en', 'lat', 'lng',
-  'phone_primary', 'whatsapp', 'description_en', 'logo_url', 'cover_url',
-  'opening_hours', 'is_open_24h', 'home_delivery', 'status',
-  'rejection_reason', 'plan_code', 'plan_expires_at', 'is_verified',
-  'is_featured', 'gallery_urls', 'created_at', 'updated_at',
-].join(',');
-
 export async function fetchAdminBusinesses(): Promise<BusinessPublicView[]> {
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client
       .from('businesses')
-      .select(`${ADMIN_BUSINESS_LIST_SELECT}, categories(id,name_en,name_ur,slug), areas(id,name_en,name_ur,slug), plans(*)`)
+      .select('id,owner_id,name_en,name_ur,category_id,area_id,address_en,address_ur,landmark_en,lat,lng,phone_primary,whatsapp,description_en,logo_url,cover_url,opening_hours,is_open_24h,home_delivery,status,rejection_reason,plan_code,plan_expires_at,is_verified,is_featured,gallery_urls,created_at,updated_at,categories(id,name_en,name_ur,slug),areas(id,name_en,name_ur,slug)')
       .order('updated_at', { ascending: false });
     if (error) throw error;
     const db = loadDemoDb();
-    return ((data ?? []) as BusinessRow[]).map((b) => enrichBusiness(b, db));
+    return ((data ?? []) as unknown as BusinessRow[]).map((b) => enrichBusiness(b, db));
   }
   const db = loadDemoDb();
   return db.businesses.map((b) => enrichBusiness(b, db));
