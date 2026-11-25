@@ -962,3 +962,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Read-only live check: 4 pending new-business submissions map to 39 pending field-review rows; 2 pending media assets are present. This replaces the earlier snapshot of 3 pending submissions. No production records were changed.
 - [ ] Authenticated Business Field Review/media approval and owner invitation email/redirect roundtrip remain pending; do not approve/reject live records solely for testing.
 - [ ] Phase 1 Admin performance acceptance remains open: Businesses page and 50-row pagination were owner-confirmed working; Data Quality, authenticated desktop timings, mobile checks and permission/error regression evidence remain outstanding.
+
+
+### Add Business live submission verification — 26 November 2026
+
+- [x] Production `submit-suggestion` POST returned HTTP 200 on Edge Function v11 after two successful signed upload authorizations.
+- [x] Read-only DB check confirmed one new pending `new_business` submission and two `pending_review` media assets created in the same minute.
+- [x] Storage metadata confirms logo is WebP at 9,064 bytes and cover is WebP at 34,118 bytes (about 42.2 KiB combined). Browser compression is confirmed active before upload.
+- [ ] Authenticated Business Field Review UI visibility and media approval/public rendering remain pending; no live review action was performed.
+- **No test fixture was created and no existing submission/media/business record was modified or deleted.**
