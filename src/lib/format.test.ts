@@ -25,3 +25,20 @@ test('buildBusinessVCard outputs valid vCard 3.0 with escaped special characters
   assert.ok(vcf.includes('URL:https://hellosadiqabad.com/business/al-madina-mart'));
   assert.ok(vcf.endsWith('END:VCARD'));
 });
+
+import { isSafeGoogleMapsUrl } from './format';
+
+test('Google Maps links accept supported HTTPS Google hosts', () => {
+  assert.equal(isSafeGoogleMapsUrl('https://www.google.com/maps/place/Sadiqabad'), true);
+  assert.equal(isSafeGoogleMapsUrl('https://maps.app.goo.gl/abc123'), true);
+  assert.equal(isSafeGoogleMapsUrl('https://goo.gl/maps/abc123'), true);
+});
+
+test('Google Maps links reject insecure and lookalike hosts', () => {
+  assert.equal(isSafeGoogleMapsUrl('http://www.google.com/maps'), false);
+  assert.equal(isSafeGoogleMapsUrl('https://google.com.evil.example/maps'), false);
+  assert.equal(isSafeGoogleMapsUrl('https://google.com@evil.example/maps'), false);
+  assert.equal(isSafeGoogleMapsUrl('javascript:alert(1)'), false);
+  assert.equal(isSafeGoogleMapsUrl('not a URL'), false);
+  assert.equal(isSafeGoogleMapsUrl(null), false);
+});
