@@ -65,6 +65,7 @@ export function AddBusiness() {
   );
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [description, setDescription] = useState('');
+  const [descriptionUr, setDescriptionUr] = useState('');
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [hp, setHp] = useState('');
@@ -128,6 +129,7 @@ export function AddBusiness() {
     setAreaSearch('');
     setSelectedFacilities([]);
     setDescription('');
+    setDescriptionUr('');
     setContactName('');
     setContactPhone('');
     setHp('');
@@ -200,7 +202,7 @@ export function AddBusiness() {
         return;
       }
     }
-    if (description.trim().length > 500) {
+    if (description.trim().length > 500 || descriptionUr.trim().length > 500) {
       showToast(
         lang === 'ur'
           ? 'تعارف 500 حروف سے زیادہ نہیں ہو سکتا۔'
@@ -276,6 +278,7 @@ export function AddBusiness() {
           media_assets: mediaAssets,
           services_en: selectedFacilities.length > 0 ? selectedFacilities : undefined,
           description_en: description.trim() || undefined,
+          description_ur: descriptionUr.trim() || undefined,
         },
         contact_name: contactName.trim() || cleanName,
         contact_phone: contactPhone.trim() || phone.trim(),
@@ -562,20 +565,27 @@ export function AddBusiness() {
 
               <div className="space-y-1">
                 <Textarea
-                  label={lang === 'ur' ? 'خدمات اور مختصر تعارف' : 'Services & Short Description'}
+                  label={lang === 'ur' ? 'خدمات اور مختصر تعارف (انگریزی)' : 'Services & Short Description (English)'}
                   rows={3}
                   maxLength={500}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder={
-                    lang === 'ur'
-                      ? 'دستیاب مصنوعات، خدمات یا ہوم ڈیلیوری کی تفصیل لکھیں...'
-                      : 'Mention specialties, products, or home delivery...'
-                  }
+                  placeholder="Mention specialties, products, or home delivery..."
                 />
-                <p className="text-[11px] text-outline text-end tabular-nums">
-                  {description.length}/500 {lang === 'ur' ? 'حروف' : 'characters'}
-                </p>
+                <p className="text-[11px] text-outline text-end tabular-nums">{description.length}/500 characters</p>
+              </div>
+              <div className="space-y-1">
+                <Textarea
+                  label={lang === 'ur' ? 'خدمات اور مختصر تعارف (اردو — اختیاری)' : 'Services & Short Description (Urdu — optional)'}
+                  dir="rtl"
+                  className="font-urdu"
+                  rows={3}
+                  maxLength={500}
+                  value={descriptionUr}
+                  onChange={(e) => setDescriptionUr(e.target.value)}
+                  placeholder="اپنی دکان کی مصنوعات، خدمات یا ہوم ڈیلیوری کی تفصیل لکھیں..."
+                />
+                <p className="text-[11px] text-outline text-end tabular-nums" dir="rtl">{descriptionUr.length}/500 حروف</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
