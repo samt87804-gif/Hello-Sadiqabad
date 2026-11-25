@@ -1012,3 +1012,17 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] GitHub CI [45702011116](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45702011116) passed build and Edge Function checks.
 - [x] Cloudflare Pages deployment `3d3bf1ec-2f80-4695-886e-75aaf2b528cb` succeeded with canonical alias `https://hellosadiqabad.com`.
 - [ ] Owner submission UI/private media upload, Admin moderation UI, public SDK Jobs routes and browser/adversarial acceptance remain open. No SDK Jobs record or test fixture remains in production.
+
+
+## SDK Jobs Phase 4 progress — 26 November 2026
+
+- [x] Database foundation, owner eligibility/RLS and published-only public projection — see SDK Jobs Phase 4 design evidence.
+- [x] Owner Portal vacancy submission form and owner-only status list at /owner/sdk-jobs.
+- [x] Admin navigation item gated by sdk_jobs.manage and Admin moderation workspace with status history/private notes.
+- [x] CI run [45707358141](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45707358141) passed build and Edge Function jobs for the combined UI increment.
+- [ ] Signed private poster upload, Admin poster approval/promotion and publish readiness.
+- [ ] Public SDK Jobs list/detail/search/filter/canonical share pages and Admin WhatsApp CTA.
+- [ ] Authenticated Owner/Admin browser tests, permission adversarial tests, employer privacy checks, and production deployment.
+- [ ] Phase 5 candidate intake/referral service remains out of scope until separately designed and approved.
+
+**Release status:** UI code is CI-verified but not production-deployed. Publishing remains blocked without an approved poster; no public SDK Jobs routes have been added.
