@@ -33,6 +33,7 @@ export function OwnerRegistrationRequests() {
     try {
       const { data, error } = await client.from('owner_registration_requests')
         .select('id,full_name,email,phone,business_name,business_id,submission_id,status,admin_note,created_at')
+        .is('submission_id', null)
         .order('created_at', { ascending: false }).limit(100);
       if (error) throw error;
       setRequests((data ?? []) as OwnerRegistrationRequest[]);
@@ -74,7 +75,7 @@ export function OwnerRegistrationRequests() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-xl font-extrabold text-on-surface">Owner Registration Requests</h2>
-          <p className="text-xs text-on-surface-variant mt-1">Review requests before any Owner Portal account is created.</p>
+          <p className="text-xs text-on-surface-variant mt-1">Review only standalone Owner Portal access requests. New Business-linked invitations are managed inside Business Field Approval.</p>
         </div>
         <Button size="sm" variant="outline" onClick={() => void reload()} leftIcon={<RefreshCw className="w-4 h-4" />}>Refresh</Button>
       </div>
@@ -89,7 +90,7 @@ export function OwnerRegistrationRequests() {
                   <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-2"><Mail className="w-3.5 h-3.5" />{request.email}</p>
                   <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-2"><Phone className="w-3.5 h-3.5" />{request.phone}</p>
                   {request.business_name && <p className="text-xs text-primary mt-1">Business: {request.business_name}</p>}
-                  <p className="text-[11px] text-on-surface-variant mt-1">{request.business_id ? 'Business approved — ready for owner invitation' : request.submission_id ? 'Waiting for required business fields to be approved and published' : 'Legacy standalone owner registration'}</p>
+                  <p className="text-[11px] text-on-surface-variant mt-1">{request.business_id ? 'Business approved — ready for owner invitation' : request.submission_id ? 'Waiting for required business fields to be approved and published' : 'Standalone Owner Portal access request'}</p>
                   <p className="text-[11px] text-outline mt-2">Submitted {new Date(request.created_at).toLocaleString()}</p>
                 </div>
                 <span className="text-[11px] font-bold rounded-full px-2.5 py-1 bg-secondary-container text-on-secondary-container inline-flex items-center gap-1">

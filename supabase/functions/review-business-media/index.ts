@@ -94,12 +94,27 @@ Deno.serve(async (req: Request) => {
 
     if (action === "approved_published") {
       if (!businessId || !publicPath) {
-        return response(req, { ok: false, error: "Approve the required business fields first; the business is not published yet" }, 409);
+        const { data: deferred, error: deferError } = await db.rpc("finalize_business_media_review", {
+          p_asset_id: assetId,
+          p_action: "approved_pending_promotion",
+          p_actor_id: auth.user.id,
+          p_admin_note: note,
+        });
+        if (deferError) throw deferError;
+        return response(req, { ok: true, status: "approved_pending_promotion", waiting_for_business: true, changed: deferred === true });
       }
       const { data: business, error: businessReadError } = await db.from("businesses")
         .select("id,status,plan_code,logo_url,cover_url").eq("id", businessId).maybeSingle();
-      if (businessReadError || !business || business.status !== "published") {
-        return response(req, { ok: false, error: "The business must be published before its image can be approved" }, 409);
+      if (businessReadError) throw businessReadError;
+      if (!business || business.status !== "published") {
+        const { data: deferred, error: deferError } = await db.rpc("finalize_business_media_review", {
+          p_asset_id: assetId,
+          p_action: "approved_pending_promotion",
+          p_actor_id: auth.user.id,
+          p_admin_note: note,
+        });
+        if (deferError) throw deferError;
+        return response(req, { ok: true, status: "approved_pending_promotion", waiting_for_business: true, changed: deferred === true });
       }
       if (asset.media_field === "cover") {
         const { data: plan, error: planError } = await db.from("plans").select("features").eq("code", business.plan_code).maybeSingle();

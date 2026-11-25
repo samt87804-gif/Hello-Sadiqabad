@@ -62,6 +62,9 @@ Deno.serve(async (req: Request) => {
       .select("id,full_name,email,phone,business_name,business_id,submission_id,status")
       .eq("id", requestId).maybeSingle();
     if (readError || !request) return response(req, { ok: false, error: "Registration request not found" }, 404);
+    if (request.submission_id) {
+      return response(req, { ok: false, error: "Add Business-linked Owner invitations are managed inside Business Field Approval" }, 409);
+    }
     if (request.status !== "pending") {
       return response(req, { ok: false, error: "This request has already been reviewed or is being processed" }, 409);
     }
