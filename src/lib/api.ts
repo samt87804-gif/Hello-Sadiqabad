@@ -1,5 +1,6 @@
 import { getSupabaseClient, supabaseConfig } from './supabase';
 import { isSafeGovernmentJobUrl } from './governmentJobs';
+import { getGovernmentPublicationErrors } from './governmentPublication';
 import {
   getActiveOfflineDirectorySnapshot,
   type OfflineDirectorySnapshot,
@@ -3445,6 +3446,10 @@ export async function upsertGovernmentJob(
  const urlFields=[['official source URL',job.source_url],['official source document URL',job.source_document_url],['advertisement URL',job.advertisement_url],['application URL',job.apply_url]] as const;
  for(const [label,value] of urlFields)if(value&&!isSafeGovernmentJobUrl(value))throw new Error(label+' must be a valid HTTPS URL and cannot be a shortened link.');
  const status=job.status??'draft';
+ if(status==='published'&&!job.id){
+  const publicationErrors=getGovernmentPublicationErrors({titleUr:job.title_ur,summaryEn:job.summary_en,summaryUr:job.summary_ur,imageUrl:job.image_url,sourceName:job.source_name,sourceUrl:job.source_url,verifiedAt:job.verified_at});
+  if(publicationErrors.length)throw new Error(publicationErrors.join(' '));
+ }
  if(status==='published'||status==='closed'||status==='expired'){
   if(!job.summary_en?.trim()||job.summary_en.trim().length<20)throw new Error('Before publishing, provide an English summary of at least 20 characters.');
   if(!job.source_name?.trim()||!job.source_url?.trim()||!job.verified_at)throw new Error('Before publishing, provide the official source name, source URL and verified date.');
