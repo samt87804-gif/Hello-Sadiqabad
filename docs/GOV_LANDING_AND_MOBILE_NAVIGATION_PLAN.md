@@ -39,6 +39,7 @@ Do not alter desktop navigation unless inspection shows a necessary compatible c
 - [x] Removed the separate Government Jobs, Government Schemes and Urgent shortcuts from the bottom navigation only. The `/emergency` route and Home Emergency card remain unchanged.
 - [x] Added `/gov` to public route indexing, the sitemap (with cache key version bump) and existing analytics allowlists. Analytics uses the existing `static` page type; no database migration was needed.
 - [x] Added automated tests for the four approved destination routes and bilingual card labels/descriptions.
-- [ ] GitHub CI for the current Gov implementation.
-- [ ] Production Pages deployment and `/gov`/sitemap smoke tests.
+- [x] GitHub CI for the current Gov implementation — run [45714887257](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45714887257) passed TypeScript, tests, production build and Supabase Edge Function checks.
+- [x] Production Pages deployment — deployment `cf208161-c3da-4116-a0bc-f3eb2a983cfb` for commit `c766470a26a0325d1bc6c21d2bce65255184d06f` succeeded. `/gov` returned HTTP 200 with expected title/canonical metadata in 390×844 browser rendering; five-item mobile nav was confirmed. [ ] Live sitemap check remains pending.
 - [ ] Owner browser acceptance for desktop, mobile, Urdu RTL, card deep links and preserved Emergency access.
+
