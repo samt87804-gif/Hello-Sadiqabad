@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.cleanup-business-media-upload]
 verify_jwt = false
+
+[functions.create-sdk-job-poster-upload]
+verify_jwt = true
+
+[functions.review-sdk-job-poster]
+verify_jwt = true
