@@ -48,7 +48,7 @@
 - [ ] Confirm approved image is copied to the existing public media bucket only after Admin approval.
 - [ ] Confirm pending private object is removed where cleanup succeeds and `pending_media_path` is cleared.
 - [ ] Confirm approving a poster does not publish the job; job remains pending Admin publication.
-- [ ] Confirm Publish remains blocked if no approved poster exists.
+- [ ] Confirm Publish remains blocked if no approved poster exists.\n- [ ] Confirm a direct authenticated Supabase update cannot set `approved_image_url` or transition status to `published` without the service-role one-time authorization created by the secure Edge Function.\n- [ ] Confirm anon/authenticated roles cannot execute `authorize_sdk_job_admin_action`; only service_role can.
 
 ## 5. Correction and resubmission loop
 
@@ -99,4 +99,4 @@
 - [ ] Production smoke tests pass for Owner route, Admin permission gate, public listing/detail, social preview and sitemap.
 - [ ] Owner confirms acceptance; only then mark SDK Jobs Phase 4 complete in the Master Plan and Roadmap.
 
-**Current state at checklist creation (26 November 2026):** Code and four JWT-protected Edge Functions are committed/deployed; six additive SDK Jobs migrations are live; database transaction security tests passed and were rolled back; live SDK Jobs/history/Admin-note counts are zero. Latest CI [45712577454](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712577454) passed TypeScript, tests, production build, Node syntax checks and Supabase Edge Function checks. No authenticated browser acceptance or production Pages deployment has been claimed.
+**Current state at checklist creation (26 November 2026):** Code and four JWT-protected Edge Functions are committed/deployed; seven additive SDK Jobs migrations are live; database transaction security tests passed and were rolled back; live SDK Jobs/history/Admin-note counts are zero. Latest CI [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357) passed build and Supabase Edge Function checks after database-enforced Admin action authorization was added. No authenticated browser acceptance or production Pages deployment has been claimed.
