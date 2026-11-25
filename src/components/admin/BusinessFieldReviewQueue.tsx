@@ -169,6 +169,7 @@ export function BusinessFieldReviewQueue() {
                     {asset.status === 'approved_published' && <Button size="sm" variant="outline" disabled={Boolean(busyKey)} onClick={() => void reviewMedia(asset.id, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>}
                   </div>
                   {!canPublish && <p className="text-[11px] text-on-surface-variant">Approve required business fields before publishing this image.</p>}
+                  {asset.media_field === 'cover' && <p className="text-[11px] text-on-surface-variant">Cover images can be published only after the business has an active Basic or Premium plan. Free-plan cover approvals are blocked by the server.</p>}
                 </Card>
               );
             })}
