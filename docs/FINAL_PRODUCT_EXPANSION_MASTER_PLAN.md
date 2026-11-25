@@ -540,3 +540,4 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 
 **SDK Jobs additional checkpoint — 26 November 2026:** Added Owner-visible correction feedback and controlled draft/changes-requested resubmission (published-job editing remains disabled pending version preservation). Added Cloudflare Pages list/detail social previews using only the published public view, with privacy-safe Open Graph/Twitter metadata and JobPosting JSON-LD. Added Node privacy tests and CI syntax checks for both Pages Functions. Live SDK Jobs/history/Admin-note counts remain zero; four active eligible Owner-to-published-business links exist. Latest CI run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724) is queued/pending. Authenticated browser acceptance and Pages deployment remain mandatory release gates.
+
