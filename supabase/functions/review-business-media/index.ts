@@ -70,8 +70,8 @@ Deno.serve(async (req: Request) => {
       }
     } else if (action === "unpublished" && businessId && publicPath) {
       const column = asset.media_field === "logo" ? "logo_url" : "cover_url";
-      const { data: business } = await db.from("businesses").select(column).eq("id", businessId).maybeSingle();
-      const currentUrl = business?.[column] as string | null | undefined;
+      const { data: business } = await db.from("businesses").select("logo_url,cover_url").eq("id", businessId).maybeSingle();
+      const currentUrl = asset.media_field === "logo" ? business?.logo_url : business?.cover_url;
       if (currentUrl?.includes(publicPath)) {
         const { error: clearError } = await db.from("businesses").update({ [column]: null, updated_at: new Date().toISOString() }).eq("id", businessId);
         if (clearError) throw clearError;
