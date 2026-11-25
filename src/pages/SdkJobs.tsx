@@ -66,7 +66,7 @@ export function SdkJobs() {
         const item = result.job;
         const location = item.work_location_en || item.area_name_en || 'Sadiqabad';
         const description = [item.summary_en, item.qualifications_en, item.experience_en, item.duties_en].filter(Boolean).join('\n\n');
-        const employmentType = item.job_type.toUpperCase().replace(/[^A-Z_]/g, '_');
+        const employmentType = ({ 'full-time': 'FULL_TIME', 'part-time': 'PART_TIME', contract: 'CONTRACTOR', temporary: 'TEMPORARY', internship: 'INTERN', apprenticeship: 'INTERN' } as Record<string, string>)[item.job_type.toLowerCase()] || 'OTHER';
         updatePageSeo({
           title: item.title_en + ' — Local Job',
           description: [item.summary_en, location].filter(Boolean).join(' · '),
