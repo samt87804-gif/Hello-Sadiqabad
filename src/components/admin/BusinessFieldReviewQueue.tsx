@@ -1,11 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Clock3, RefreshCw, XCircle, EyeOff } from 'lucide-react';
+import { CheckCircle2, Clock3, EyeOff, Mail, MapPin, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase';
+import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, countApprovedCoreFields } from '../../lib/businessApproval';
+import type { AreaRow, CategoryRow } from '../../types/database';
 import { Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
+import { Textarea } from '../ui/FormFields';
+import { Modal, ConfirmDialog } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 
 type FieldStatus = 'pending_review' | 'approved_published' | 'rejected' | 'unpublished';
+type MediaStatus = 'pending_review' | 'approved_pending_promotion' | 'approved_published' | 'rejected' | 'unpublished';
+
 interface FieldReview {
   id: string;
   submission_id: string;
@@ -14,53 +20,115 @@ interface FieldReview {
   status: FieldStatus;
   admin_note: string | null;
 }
+
 interface BusinessMedia {
   id: string;
   submission_id: string | null;
   business_id: string | null;
   media_field: 'logo' | 'cover';
   storage_path: string;
-  status: FieldStatus;
+  status: MediaStatus;
   created_at: string;
+  admin_note: string | null;
   preview_url?: string;
 }
+
 interface BusinessSubmission {
   id: string;
   payload: Record<string, unknown>;
   contact_name: string | null;
   contact_phone: string | null;
+  submitted_by: string | null;
   status: string;
+  admin_note: string | null;
   created_at: string;
   business_id: string | null;
 }
 
+interface LinkedOwnerRequest {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  business_name: string | null;
+  business_id: string | null;
+  submission_id: string;
+  status: 'pending' | 'processing' | 'approved' | 'rejected';
+  invitation_requested: boolean;
+  invitation_status: 'not_requested' | 'waiting_for_business' | 'pending' | 'processing' | 'sent' | 'failed';
+  invitation_attempts: number;
+  invitation_last_error: string | null;
+  invitation_sent_at: string | null;
+}
+
 const FIELD_LABELS: Record<string, string> = {
-  name_en: 'Business name (English)', name_ur: 'Business name (Urdu)',
-  category_id: 'Category', area_id: 'Area', phone_primary: 'Primary phone',
-  whatsapp: 'WhatsApp', address_en: 'Address (English)', address_ur: 'Address (Urdu)',
-  landmark_en: 'Landmark (English)', landmark_ur: 'Landmark (Urdu)',
-  map_url: 'Google Maps URL', opening_hours: 'Opening hours',
-  description_en: 'Description (English)', description_ur: 'Description (Urdu)',
-  services_en: 'Facilities / Services (English)', services_ur: 'Facilities / Services (Urdu)',
-  owner_name: 'Owner contact name (private; not published)',
+  name_en: 'Business Name (English)',
+  name_ur: 'Business Name (Urdu)',
+  category_id: 'Category',
+  area_id: 'Area',
+  phone_primary: 'Primary Phone',
+  whatsapp: 'WhatsApp Number',
+  address_en: 'Address (English)',
+  address_ur: 'Address (Urdu)',
+  landmark_en: 'Nearby Landmark (English)',
+  landmark_ur: 'Nearby Landmark (Urdu)',
+  map_url: 'Google Maps Location',
+  opening_hours: 'Opening Hours',
+  description_en: 'Description (English)',
+  description_ur: 'Description (Urdu)',
+  services_en: 'Facilities / Services',
+  services_ur: 'Facilities / Services (Urdu)',
 };
 
-function formatValue(value: unknown): string {
+function formatValue(value: unknown, fieldKey: string, categories: CategoryRow[], areas: AreaRow[]): string {
   if (value === null || value === undefined || value === '') return '—';
-  if (typeof value === 'object') return JSON.stringify(value);
+  if (fieldKey === 'category_id' && typeof value === 'string') {
+    return categories.find((item) => item.id === value)?.name_en ?? value;
+  }
+  if (fieldKey === 'area_id' && typeof value === 'string') {
+    return areas.find((item) => item.id === value)?.name_en ?? value;
+  }
+  if (Array.isArray(value)) return value.map((item) => String(item)).join(', ');
+  if (fieldKey === 'opening_hours' && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([day, hours]) => `${day}: ${typeof hours === 'string' ? hours : JSON.stringify(hours)}`)
+      .join('\n');
+  }
+  if (typeof value === 'object') return JSON.stringify(value, null, 2);
   return String(value);
 }
 
-export function BusinessFieldReviewQueue() {
+function statusLabel(status: string) {
+  return status.replaceAll('_', ' ');
+}
+
+export function BusinessFieldReviewQueue({
+  categories = [],
+  areas = [],
+}: {
+  categories?: CategoryRow[];
+  areas?: AreaRow[];
+}) {
   const { showToast } = useToast();
   const [submissions, setSubmissions] = useState<BusinessSubmission[]>([]);
   const [fields, setFields] = useState<FieldReview[]>([]);
   const [media, setMedia] = useState<BusinessMedia[]>([]);
+  const [ownerRequests, setOwnerRequests] = useState<LinkedOwnerRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [busyKey, setBusyKey] = useState('');
-  const [submissionPage, setSubmissionPage] = useState(1);
-  const [mediaPage, setMediaPage] = useState(1);
-  const pageSize = 20;
+  const [busy, setBusy] = useState(false);
+  const [busyMediaId, setBusyMediaId] = useState('');
+  const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
+  const [approvedFieldKeys, setApprovedFieldKeys] = useState<string[]>([]);
+  const [rejectedFieldReasons, setRejectedFieldReasons] = useState<Record<string, string>>({});
+  const [unpublishFieldKeys, setUnpublishFieldKeys] = useState<string[]>([]);
+  const [approvedMediaIds, setApprovedMediaIds] = useState<string[]>([]);
+  const [rejectedMediaIds, setRejectedMediaIds] = useState<string[]>([]);
+  const [unpublishMediaIds, setUnpublishMediaIds] = useState<string[]>([]);
+  const [inviteChecked, setInviteChecked] = useState(false);
+  const [initialInviteChecked, setInitialInviteChecked] = useState(false);
+  const [adminNote, setAdminNote] = useState('');
+  const [initialAdminNote, setInitialAdminNote] = useState('');
+  const [confirmClose, setConfirmClose] = useState(false);
 
   const fieldsBySubmission = useMemo(() => {
     const grouped = new Map<string, FieldReview[]>();
@@ -71,48 +139,81 @@ export function BusinessFieldReviewQueue() {
     }
     return grouped;
   }, [fields]);
-  const submissionPageCount = Math.max(1, Math.ceil(submissions.length / pageSize));
-  const mediaPageCount = Math.max(1, Math.ceil(media.length / pageSize));
-  const visibleSubmissions = useMemo(
-    () => submissions.slice((submissionPage - 1) * pageSize, submissionPage * pageSize),
-    [submissions, submissionPage]
-  );
-  const visibleMedia = useMemo(
-    () => media.slice((mediaPage - 1) * pageSize, mediaPage * pageSize),
-    [media, mediaPage]
+
+  const mediaBySubmission = useMemo(() => {
+    const grouped = new Map<string, BusinessMedia[]>();
+    for (const asset of media) {
+      if (!asset.submission_id) continue;
+      const current = grouped.get(asset.submission_id) ?? [];
+      current.push(asset);
+      grouped.set(asset.submission_id, current);
+    }
+    return grouped;
+  }, [media]);
+
+  const ownerRequestBySubmission = useMemo(
+    () => new Map(ownerRequests.map((request) => [request.submission_id, request])),
+    [ownerRequests]
   );
 
-  useEffect(() => {
-    if (submissionPage > submissionPageCount) setSubmissionPage(submissionPageCount);
-  }, [submissionPage, submissionPageCount]);
-  useEffect(() => {
-    if (mediaPage > mediaPageCount) setMediaPage(mediaPageCount);
-  }, [mediaPage, mediaPageCount]);
+  const activeSubmission = submissions.find((item) => item.id === activeSubmissionId) ?? null;
+  const activeFields = activeSubmissionId
+    ? (fieldsBySubmission.get(activeSubmissionId) ?? []).filter((field) => field.field_key !== 'owner_name')
+    : [];
+  const activeMedia = activeSubmissionId ? (mediaBySubmission.get(activeSubmissionId) ?? []) : [];
+  const activeOwnerRequest = activeSubmissionId ? ownerRequestBySubmission.get(activeSubmissionId) ?? null : null;
+
+  const activeApprovedCore = countApprovedCoreFields(
+    activeFields,
+    approvedFieldKeys
+  );
+  const activeCoreReady = activeApprovedCore === 5;
+
+  const hasUnsavedChanges =
+    approvedFieldKeys.length > 0 ||
+    Object.keys(rejectedFieldReasons).length > 0 ||
+    unpublishFieldKeys.length > 0 ||
+    approvedMediaIds.some((id) => activeMedia.find((asset) => asset.id === id)?.status === 'pending_review') ||
+    rejectedMediaIds.length > 0 ||
+    unpublishMediaIds.length > 0 ||
+    inviteChecked !== initialInviteChecked ||
+    adminNote.trim() !== initialAdminNote.trim();
 
   const reload = useCallback(async () => {
     const client = getSupabaseClient();
     if (!client) return;
     setLoading(true);
     try {
-      const { data: rows, error } = await client.from('submissions')
-        .select('id,payload,contact_name,contact_phone,status,created_at,business_id')
-        .eq('type', 'new_business').in('status', ['new', 'in_review'])
-        .order('created_at', { ascending: false }).limit(100);
-      if (error) throw error;
+      const { data: rows, error: submissionError } = await client.from('submissions')
+        .select('id,payload,contact_name,contact_phone,submitted_by,status,admin_note,created_at,business_id')
+        .eq('type', 'new_business')
+        .in('status', ['new', 'in_review'])
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (submissionError) throw submissionError;
       const ids = (rows ?? []).map((row) => row.id);
-      const [reviewResult, mediaResult] = await Promise.all([
+
+      const [reviewResult, mediaResult, ownerResult] = await Promise.all([
         ids.length
           ? client.from('business_field_reviews')
             .select('id,submission_id,field_key,field_value,status,admin_note')
-            .in('submission_id', ids).order('field_key')
+            .in('submission_id', ids)
+            .order('field_key')
           : Promise.resolve({ data: [], error: null }),
         client.from('business_media_assets')
-          .select('id,submission_id,business_id,media_field,storage_path,status,created_at')
-          .in('status', ['pending_review', 'approved_published', 'unpublished'])
-          .order('created_at', { ascending: false }).limit(100),
+          .select('id,submission_id,business_id,media_field,storage_path,status,created_at,admin_note')
+          .in('status', ['pending_review', 'approved_pending_promotion', 'approved_published', 'unpublished'])
+          .order('created_at', { ascending: false })
+          .limit(200),
+        ids.length
+          ? client.from('owner_registration_requests')
+            .select('id,full_name,email,phone,business_name,business_id,submission_id,status,invitation_requested,invitation_status,invitation_attempts,invitation_last_error,invitation_sent_at')
+            .in('submission_id', ids)
+          : Promise.resolve({ data: [], error: null }),
       ]);
       if (reviewResult.error) throw reviewResult.error;
       if (mediaResult.error) throw mediaResult.error;
+      if (ownerResult.error) throw ownerResult.error;
 
       const mediaAssets = (mediaResult.data ?? []) as BusinessMedia[];
       const mediaPaths = mediaAssets.map((asset) => asset.storage_path);
@@ -123,13 +224,14 @@ export function BusinessFieldReviewQueue() {
       const signedUrlByPath = new Map(
         (signedRows ?? []).flatMap((item) => item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
       );
-      const mediaWithPreviews = mediaAssets.map((asset) => ({
-        ...asset,
-        preview_url: signedUrlByPath.get(asset.storage_path) ?? undefined,
-      }));
+
       setSubmissions((rows ?? []) as BusinessSubmission[]);
       setFields((reviewResult.data ?? []) as FieldReview[]);
-      setMedia(mediaWithPreviews);
+      setMedia(mediaAssets.map((asset) => ({
+        ...asset,
+        preview_url: signedUrlByPath.get(asset.storage_path) ?? undefined,
+      })));
+      setOwnerRequests((ownerResult.data ?? []) as LinkedOwnerRequest[]);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Could not load business field reviews.', 'error');
     } finally {
@@ -139,149 +241,571 @@ export function BusinessFieldReviewQueue() {
 
   useEffect(() => { void reload(); }, [reload]);
 
-  const reviewMedia = async (assetId: string, action: FieldStatus) => {
+  const openReview = (submission: BusinessSubmission) => {
+    const ownerRequest = ownerRequestBySubmission.get(submission.id);
+    setActiveSubmissionId(submission.id);
+    setApprovedFieldKeys([]);
+    setRejectedFieldReasons({});
+    setUnpublishFieldKeys([]);
+    setApprovedMediaIds((mediaBySubmission.get(submission.id) ?? [])
+      .filter((asset) => asset.status === 'approved_pending_promotion')
+      .map((asset) => asset.id));
+    setRejectedMediaIds([]);
+    setUnpublishMediaIds([]);
+    setInviteChecked(Boolean(ownerRequest?.invitation_requested || ownerRequest?.invitation_status === 'sent'));
+    setInitialInviteChecked(Boolean(ownerRequest?.invitation_requested || ownerRequest?.invitation_status === 'sent'));
+    setAdminNote(submission.admin_note ?? '');
+    setInitialAdminNote(submission.admin_note ?? '');
+    setConfirmClose(false);
+  };
+
+  const closeReview = () => {
+    if (hasUnsavedChanges) {
+      setConfirmClose(true);
+      return;
+    }
+    setActiveSubmissionId(null);
+  };
+
+  const toggleFieldApproval = (fieldKey: string, checked: boolean) => {
+    setRejectedFieldReasons((current) => {
+      const next = { ...current };
+      delete next[fieldKey];
+      return next;
+    });
+    setApprovedFieldKeys((current) => checked
+      ? [...new Set([...current, fieldKey])]
+      : current.filter((key) => key !== fieldKey));
+  };
+
+  const selectAllFields = (fieldKeys: string[]) => {
+    const eligible = activeFields.filter((field) =>
+      fieldKeys.includes(field.field_key) &&
+      ['pending_review', 'unpublished'].includes(field.status) &&
+      !(field.field_key === 'whatsapp' && !activeSubmission?.business_id)
+    ).map((field) => field.field_key);
+    setRejectedFieldReasons({});
+    setApprovedFieldKeys((current) => [...new Set([...current, ...eligible])]);
+  };
+
+  const clearAllFields = () => {
+    setApprovedFieldKeys([]);
+    setRejectedFieldReasons({});
+    setUnpublishFieldKeys([]);
+  };
+
+  const toggleFieldReject = (fieldKey: string) => {
+    setApprovedFieldKeys((current) => current.filter((key) => key !== fieldKey));
+    setRejectedFieldReasons((current) => {
+      if (Object.prototype.hasOwnProperty.call(current, fieldKey)) {
+        const next = { ...current };
+        delete next[fieldKey];
+        return next;
+      }
+      return { ...current, [fieldKey]: '' };
+    });
+  };
+
+  const toggleMediaApproval = (assetId: string, checked: boolean) => {
+    setRejectedMediaIds((current) => current.filter((id) => id !== assetId));
+    setApprovedMediaIds((current) => checked
+      ? [...new Set([...current, assetId])]
+      : current.filter((id) => id !== assetId));
+  };
+
+  const toggleMediaReject = (assetId: string) => {
+    setApprovedMediaIds((current) => current.filter((id) => id !== assetId));
+    setRejectedMediaIds((current) => current.includes(assetId)
+      ? current.filter((id) => id !== assetId)
+      : [...current, assetId]);
+  };
+
+  const retryInvitation = async () => {
+    const client = getSupabaseClient();
+    if (!client || !activeOwnerRequest) return;
+    setBusy(true);
+    try {
+      const { data, error } = await client.functions.invoke('send-business-owner-invitation', {
+        body: { request_id: activeOwnerRequest.id },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Owner invitation could not be processed.');
+      showToast(data.status === 'waiting_for_business'
+        ? 'Owner invitation is saved and will wait until the business is publishable.'
+        : 'Owner invitation processed successfully.', 'success');
+      await reload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Owner invitation failed.', 'error');
+      await reload();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveApproval = async () => {
+    const client = getSupabaseClient();
+    if (!client || !activeSubmission) return;
+    const emptyReject = Object.entries(rejectedFieldReasons).find(([, reason]) => !reason.trim());
+    if (emptyReject) {
+      showToast(`Add a rejection reason for ${FIELD_LABELS[emptyReject[0]] ?? emptyReject[0]}.`, 'error');
+      return;
+    }
+
+    setBusy(true);
+    const partialErrors: string[] = [];
+    let result: Record<string, unknown> | null = null;
+    try {
+      const decisions = buildBusinessFieldDecisions(
+        activeFields,
+        approvedFieldKeys,
+        rejectedFieldReasons,
+        unpublishFieldKeys
+      );
+      const { data, error } = await client.rpc('review_business_submission_fields', {
+        p_submission_id: activeSubmission.id,
+        p_decisions: decisions,
+        p_admin_note: adminNote.trim() || null,
+        p_request_owner_invitation: inviteChecked,
+      });
+      if (error) throw error;
+      result = (data ?? {}) as Record<string, unknown>;
+
+      const mediaActions = [
+        ...activeMedia
+          .filter((asset) => approvedMediaIds.includes(asset.id) &&
+            ['pending_review', 'approved_pending_promotion'].includes(asset.status))
+          .map((asset) => ({ assetId: asset.id, action: 'approved_published' as const })),
+        ...activeMedia
+          .filter((asset) => rejectedMediaIds.includes(asset.id) &&
+            ['pending_review', 'approved_pending_promotion'].includes(asset.status))
+          .map((asset) => ({ assetId: asset.id, action: 'rejected' as const })),
+        ...activeMedia
+          .filter((asset) => unpublishMediaIds.includes(asset.id) && asset.status === 'approved_published')
+          .map((asset) => ({ assetId: asset.id, action: 'unpublished' as const })),
+      ];
+
+      for (const mediaAction of mediaActions) {
+        try {
+          const { data: mediaResult, error: mediaError } = await client.functions.invoke('review-business-media', {
+            body: { asset_id: mediaAction.assetId, action: mediaAction.action, admin_note: adminNote.trim() || null },
+          });
+          if (mediaError) throw mediaError;
+          if (!mediaResult?.ok) throw new Error(mediaResult?.error || 'Image review failed');
+        } catch (error) {
+          partialErrors.push(error instanceof Error ? error.message : 'An image review could not be completed.');
+        }
+      }
+
+      const invitationStatus = String(result.invitation_status ?? 'not_requested');
+      if (inviteChecked && activeOwnerRequest && shouldProcessOwnerInvitation(
+        invitationStatus,
+        typeof result.business_id === 'string' ? result.business_id : activeSubmission.business_id,
+        result.core_ready === true
+      )) {
+        try {
+          const { data: inviteResult, error: inviteError } = await client.functions.invoke('send-business-owner-invitation', {
+            body: { request_id: activeOwnerRequest.id },
+          });
+          if (inviteError) throw inviteError;
+          if (!inviteResult?.ok) throw new Error(inviteResult?.error || 'Owner invitation failed');
+          if (inviteResult.status === 'waiting_for_business') {
+            partialErrors.push('Owner invitation is waiting for the minimum business fields to be approved.');
+          }
+        } catch (error) {
+          partialErrors.push(error instanceof Error ? error.message : 'Owner invitation could not be sent.');
+        }
+      }
+
+      setApprovedFieldKeys([]);
+      setRejectedFieldReasons({});
+      setUnpublishFieldKeys([]);
+      setApprovedMediaIds([]);
+      setRejectedMediaIds([]);
+      setUnpublishMediaIds([]);
+      setInitialInviteChecked(inviteChecked);
+      setInitialAdminNote(adminNote);
+      await reload();
+
+      if (partialErrors.length) {
+        showToast(`Field decisions saved. Some follow-up actions need attention: ${partialErrors.join(' · ')}`, 'error');
+      } else {
+        showToast('Business review saved. Selected fields and follow-up actions have been processed.', 'success');
+        setActiveSubmissionId(null);
+      }
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Business review could not be saved.', 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const reviewOtherMedia = async (assetId: string, action: 'approved_published' | 'rejected' | 'unpublished') => {
     const client = getSupabaseClient();
     if (!client) return;
-    const key = 'media:' + assetId;
-    setBusyKey(key);
+    setBusyMediaId(assetId);
     try {
       const { data, error } = await client.functions.invoke('review-business-media', {
         body: { asset_id: assetId, action },
       });
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || 'Media review failed.');
-      showToast('Business image review saved.', 'success');
+      showToast(data.status === 'approved_pending_promotion'
+        ? 'Image approved; it will publish when the business is ready.'
+        : 'Business image review saved.', 'success');
       await reload();
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Could not review business image.', 'error');
     } finally {
-      setBusyKey('');
+      setBusyMediaId('');
     }
   };
 
-  const review = async (submissionId: string, fieldKey: string, status: FieldStatus) => {
-    const client = getSupabaseClient();
-    if (!client) return;
-    const key = submissionId + ':' + fieldKey;
-    setBusyKey(key);
-    try {
-      const { error } = await client.rpc('review_business_submission_field', {
-        p_submission_id: submissionId,
-        p_field_key: fieldKey,
-        p_status: status,
-        p_admin_note: null,
-      });
-      if (error) throw error;
-      showToast('Field review saved.', 'success');
-      await reload();
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not save field review.', 'error');
-    } finally {
-      setBusyKey('');
-    }
-  };
+  const visibleOtherMedia = media.filter((asset) =>
+    !asset.submission_id || !submissions.some((submission) => submission.id === asset.submission_id)
+  );
+
+  const fieldGroups = BUSINESS_APPROVAL_FIELD_GROUPS.map((group) => ({
+    ...group,
+    items: activeFields.filter((field) => (group.fields as readonly string[]).includes(field.field_key)),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-xl font-extrabold text-on-surface">Business Field Approval</h2>
-          <p className="text-xs text-on-surface-variant mt-1">Approve each public field separately. A listing is published only after its required fields are approved.</p>
+          <p className="text-xs text-on-surface-variant mt-1">
+            One request card, one review popup and one Save Approval action. Unselected fields stay pending.
+          </p>
         </div>
         <Button size="sm" variant="outline" onClick={() => void reload()} leftIcon={<RefreshCw className="w-4 h-4" />}>Refresh</Button>
       </div>
-      <section className="space-y-3">
-        <h3 className="text-lg font-bold text-on-surface">Business Images Awaiting Review</h3>
-        {media.length === 0 ? <Card className="p-4 text-xs text-on-surface-variant">No pending business images.</Card> :
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {visibleMedia.map((asset) => {
-              const busy = busyKey === 'media:' + asset.id;
-              const canPublish = Boolean(asset.business_id || submissions.some((item) => item.id === asset.submission_id && item.business_id));
-              return (
-                <Card key={asset.id} className="p-4 space-y-3">
-                  {asset.preview_url ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Pending business logo' : 'Pending business cover'} className="w-full h-40 object-contain rounded-xl bg-surface-container-low" /> : <div className="h-40 rounded-xl bg-surface-container-low flex items-center justify-center text-xs text-on-surface-variant">Private image preview unavailable</div>}
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-bold capitalize">{asset.media_field} · {asset.status.replaceAll('_', ' ')}</p>
-                    <span className="text-[10px] text-on-surface-variant">{new Date(asset.created_at).toLocaleDateString()}</span>
+
+      {loading ? (
+        <Card className="p-6 text-sm text-on-surface-variant">Loading business requests…</Card>
+      ) : submissions.length === 0 ? (
+        <Card className="p-6 text-sm text-on-surface-variant">No new Business Registration requests are waiting for review.</Card>
+      ) : (
+        <div className="space-y-3">
+          {submissions.map((submission) => {
+            const submissionFields = (fieldsBySubmission.get(submission.id) ?? []).filter((field) => field.field_key !== 'owner_name');
+            const pendingCount = submissionFields.filter((field) => field.status === 'pending_review').length;
+            const approvedCount = submissionFields.filter((field) => field.status === 'approved_published').length;
+            const mediaCount = (mediaBySubmission.get(submission.id) ?? []).length;
+            const ownerRequest = ownerRequestBySubmission.get(submission.id);
+            const categoryId = submission.payload.category_id;
+            const areaId = submission.payload.area_id;
+            const category = categories.find((item) => item.id === categoryId);
+            const area = areas.find((item) => item.id === areaId);
+            return (
+              <Card key={submission.id} className="p-4 sm:p-5 space-y-3">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-on-surface break-words">{String(submission.payload.name_en ?? 'New business')}</h3>
+                    <p className="text-xs text-on-surface-variant mt-1">
+                      Submitted by {submission.contact_name || 'Public visitor'} · {new Date(submission.created_at).toLocaleString()}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-on-surface-variant">
+                      <span>{category?.name_en ?? 'Category pending'}</span>
+                      <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" />{area?.name_en ?? 'Area pending'}</span>
+                      <span>{submissionFields.length} submitted fields</span>
+                      <span>{pendingCount} pending</span>
+                      <span>{approvedCount} approved</span>
+                      <span>{mediaCount} images</span>
+                    </div>
+                    {ownerRequest && (
+                      <p className="text-[11px] text-on-surface-variant mt-1">
+                        Owner invitation: {statusLabel(ownerRequest.invitation_status)}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" loading={busy} disabled={Boolean(busyKey) || !canPublish} onClick={() => void reviewMedia(asset.id, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve &amp; Publish</Button>
-                    <Button size="sm" variant="danger" disabled={Boolean(busyKey)} onClick={() => void reviewMedia(asset.id, 'rejected')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
-                    {asset.status === 'approved_published' && <Button size="sm" variant="outline" disabled={Boolean(busyKey)} onClick={() => void reviewMedia(asset.id, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[11px] font-bold rounded-full px-2.5 py-1 bg-secondary-container text-on-secondary-container inline-flex items-center gap-1">
+                      <Clock3 className="w-3 h-3" /> {submission.status}
+                    </span>
+                    <Button size="sm" onClick={() => openReview(submission)}>View Details</Button>
                   </div>
-                  {!canPublish && <p className="text-[11px] text-on-surface-variant">Approve required business fields before publishing this image.</p>}
-                  {asset.media_field === 'cover' && <p className="text-[11px] text-on-surface-variant">Cover images can be published only after the business has an active Basic or Premium plan. Free-plan cover approvals are blocked by the server.</p>}
-                </Card>
-              );
-            })}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {visibleOtherMedia.length > 0 && (
+        <section className="space-y-3">
+          <div>
+            <h3 className="text-lg font-bold text-on-surface">Other Business Image Changes</h3>
+            <p className="text-xs text-on-surface-variant">Existing Owner image replacements and older media records remain in this separate review list.</p>
           </div>
-        }
-        {media.length > pageSize && (
-          <div className="flex items-center justify-between gap-2 text-xs text-on-surface-variant">
-            <span>Showing {(mediaPage - 1) * pageSize + 1}–{Math.min(mediaPage * pageSize, media.length)} of {media.length} images</span>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" disabled={mediaPage <= 1} onClick={() => setMediaPage((page) => Math.max(1, page - 1))}>Previous</Button>
-              <span className="tabular-nums">Page {mediaPage}/{mediaPageCount}</span>
-              <Button size="sm" variant="outline" disabled={mediaPage >= mediaPageCount} onClick={() => setMediaPage((page) => Math.min(mediaPageCount, page + 1))}>Next</Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {visibleOtherMedia.map((asset) => (
+              <Card key={asset.id} className="p-4 space-y-3">
+                {asset.preview_url
+                  ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Business logo preview' : 'Business cover preview'} className="w-full h-40 object-contain rounded-xl bg-surface-container-low" />
+                  : <div className="h-40 rounded-xl bg-surface-container-low flex items-center justify-center text-xs text-on-surface-variant">Private image preview unavailable</div>}
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold capitalize">{asset.media_field} · {statusLabel(asset.status)}</p>
+                  <span className="text-[10px] text-on-surface-variant">{new Date(asset.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {asset.status !== 'rejected' && asset.status !== 'approved_published' && (
+                    <Button size="sm" loading={busyMediaId === asset.id} disabled={Boolean(busyMediaId)} onClick={() => void reviewOtherMedia(asset.id, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve / Retry Publish</Button>
+                  )}
+                  {['pending_review', 'approved_pending_promotion'].includes(asset.status) && (
+                    <Button size="sm" variant="danger" disabled={Boolean(busyMediaId)} onClick={() => void reviewOtherMedia(asset.id, 'rejected')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
+                  )}
+                  {asset.status === 'approved_published' && (
+                    <Button size="sm" variant="outline" disabled={Boolean(busyMediaId)} onClick={() => void reviewOtherMedia(asset.id, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>
+                  )}
+                </div>
+                {asset.media_field === 'cover' && <p className="text-[11px] text-on-surface-variant">Cover publication is subject to the business plan entitlement.</p>}
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <Modal
+        open={Boolean(activeSubmission)}
+        onClose={closeReview}
+        title={activeSubmission ? `Review Business Request — ${String(activeSubmission.payload.name_en ?? 'New Business')}` : 'Review Business Request'}
+        maxWidthClass="max-w-5xl"
+      >
+        {activeSubmission && (
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold">{activeApprovedCore}/5 minimum public fields approved</p>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  {activeCoreReady
+                    ? 'Minimum public information is complete. Saving can publish the business.'
+                    : 'Selected fields will be saved, but the business stays private until all five required fields are approved.'}
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button size="sm" variant="outline" onClick={() => selectAllFields(activeFields.map((field) => field.field_key))}>Select All</Button>
+                <Button size="sm" variant="outline" onClick={clearAllFields}>Clear All</Button>
+              </div>
+            </div>
+
+            <section className="rounded-xl border border-outline-variant/40 p-3 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-bold text-sm">Approve Public Fields</h3>
+                <span className="text-xs text-on-surface-variant">{approvedFieldKeys.length} new approvals selected</span>
+              </div>
+              {fieldGroups.map((group) => (
+                <div key={group.key} className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 border-b border-outline-variant/30 pb-1">
+                    <h4 className="text-xs font-bold uppercase tracking-wide text-primary">{group.title}</h4>
+                    <div className="flex gap-2">
+                      <button type="button" className="text-[11px] font-semibold text-primary" onClick={() => selectAllFields(group.items.map((field) => field.field_key))}>Select section</button>
+                      <button type="button" className="text-[11px] font-semibold text-on-surface-variant" onClick={() => {
+                        const keys = group.items.map((field) => field.field_key);
+                        setApprovedFieldKeys((current) => current.filter((key) => !keys.includes(key)));
+                        setRejectedFieldReasons((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !keys.includes(key))));
+                      }}>Clear section</button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {group.items.map((field) => {
+                      const alreadyApproved = field.status === 'approved_published';
+                      const rejected = field.status === 'rejected';
+                      const disabledWhatsApp = field.field_key === 'whatsapp' && !activeSubmission.business_id;
+                      const checked = alreadyApproved || approvedFieldKeys.includes(field.field_key);
+                      const rejectReason = rejectedFieldReasons[field.field_key];
+                      return (
+                        <div key={field.id} className="rounded-xl bg-surface-container-low/70 p-3 space-y-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <label className="flex items-start gap-2 min-w-0 flex-1">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 h-4 w-4 accent-primary shrink-0"
+                                checked={checked}
+                                disabled={alreadyApproved || rejected || disabledWhatsApp}
+                                onChange={(event) => toggleFieldApproval(field.field_key, event.target.checked)}
+                              />
+                              <span className="min-w-0">
+                                <span className="block text-xs font-bold text-on-surface">{FIELD_LABELS[field.field_key] ?? field.field_key}</span>
+                                <span className="block text-sm text-on-surface-variant whitespace-pre-wrap break-words mt-1">{formatValue(field.field_value, field.field_key, categories, areas)}</span>
+                              </span>
+                            </label>
+                            <span className="text-[10px] text-on-surface-variant capitalize whitespace-nowrap">{statusLabel(field.status)}</span>
+                          </div>
+                          {disabledWhatsApp && <p className="text-[11px] text-on-surface-variant">WhatsApp can be reviewed after the business exists and its plan entitlement is checked.</p>}
+                          {alreadyApproved && (
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[11px] text-success inline-flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> Already approved and published</span>
+                              {activeSubmission.business_id && (
+                                <button type="button" className="text-[11px] font-semibold text-error" onClick={() => setUnpublishFieldKeys((current) => current.includes(field.field_key) ? current.filter((key) => key !== field.field_key) : [...current, field.field_key])}>
+                                  {unpublishFieldKeys.includes(field.field_key) ? 'Cancel unpublish' : 'Unpublish'}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                          {!alreadyApproved && !rejected && !disabledWhatsApp && (
+                            <div className="flex items-center justify-between gap-2">
+                              <button type="button" className="text-[11px] font-semibold text-error" onClick={() => toggleFieldReject(field.field_key)}>
+                                {rejectReason !== undefined ? 'Cancel rejection' : 'Reject this field'}
+                              </button>
+                              {field.status === 'unpublished' && <span className="text-[10px] text-warning">Previously unpublished</span>}
+                            </div>
+                          )}
+                          {rejectReason !== undefined && (
+                            <Textarea rows={2} value={rejectReason} onChange={(event) => setRejectedFieldReasons((current) => ({ ...current, [field.field_key]: event.target.value }))} placeholder="Required rejection reason" />
+                          )}
+                          {unpublishFieldKeys.includes(field.field_key) && <p className="text-[11px] text-error">This field will be removed from the public listing when saved.</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section className="rounded-xl border border-outline-variant/40 p-3 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-bold text-sm">Logo & Cover Images</h3>
+                <span className="text-xs text-on-surface-variant">{activeMedia.length} submitted image(s)</span>
+              </div>
+              {activeMedia.length === 0 ? (
+                <p className="text-xs text-on-surface-variant">No logo or cover images were submitted with this request.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {activeMedia.map((asset) => {
+                    const selected = approvedMediaIds.includes(asset.id) || asset.status === 'approved_pending_promotion' || asset.status === 'approved_published';
+                    const rejected = rejectedMediaIds.includes(asset.id);
+                    return (
+                      <div key={asset.id} className="rounded-xl bg-surface-container-low/70 p-3 space-y-2">
+                        {asset.preview_url
+                          ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Submitted business logo' : 'Submitted business cover'} className="w-full h-36 object-contain rounded-lg bg-surface-container-lowest" />
+                          : <div className="h-36 rounded-lg bg-surface-container-lowest flex items-center justify-center text-xs text-on-surface-variant">Private image preview unavailable</div>}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold capitalize">{asset.media_field}</span>
+                          <span className="text-[10px] text-on-surface-variant">{statusLabel(asset.status)}</span>
+                        </div>
+                        {asset.status === 'pending_review' && (
+                          <label className="flex items-center gap-2 text-xs font-semibold">
+                            <input type="checkbox" className="h-4 w-4 accent-primary" checked={approvedMediaIds.includes(asset.id)} disabled={rejected} onChange={(event) => toggleMediaApproval(asset.id, event.target.checked)} />
+                            Approve image for publication
+                          </label>
+                        )}
+                        {asset.status === 'approved_pending_promotion' && (
+                          <p className="text-[11px] text-warning">Approved. It will be promoted after the business is public and plan rules allow it.</p>
+                        )}
+                        {asset.status === 'approved_published' && (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] text-success">Public image</span>
+                            <button type="button" className="text-[11px] font-semibold text-error" onClick={() => setUnpublishMediaIds((current) => current.includes(asset.id) ? current.filter((id) => id !== asset.id) : [...current, asset.id])}>
+                              {unpublishMediaIds.includes(asset.id) ? 'Cancel unpublish' : 'Unpublish'}
+                            </button>
+                          </div>
+                        )}
+                        {['pending_review', 'approved_pending_promotion'].includes(asset.status) && (
+                          <button type="button" className="text-[11px] font-semibold text-error" onClick={() => toggleMediaReject(asset.id)}>
+                            {rejected ? 'Cancel image rejection' : 'Reject image'}
+                          </button>
+                        )}
+                        {rejected && <p className="text-[11px] text-error">This image will be rejected and removed from private pending storage.</p>}
+                        {unpublishMediaIds.includes(asset.id) && <p className="text-[11px] text-error">This image will be removed from the public listing.</p>}
+                        {asset.media_field === 'cover' && <p className="text-[10px] text-on-surface-variant">Cover promotion requires a Basic or Premium plan.</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-xl border border-outline-variant/40 p-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-sm">Private Owner Information</h3>
+                <span className="text-[10px] font-semibold text-on-surface-variant">Admin only · never public</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div><p className="text-[11px] text-on-surface-variant">Owner Name</p><p className="font-semibold">{String(activeSubmission.payload.owner_name ?? activeOwnerRequest?.full_name ?? 'Not provided')}</p></div>
+                <div><p className="text-[11px] text-on-surface-variant">Owner Gmail</p><p className="font-semibold break-all">{activeOwnerRequest?.email ?? 'No linked invitation email'}</p></div>
+                <div><p className="text-[11px] text-on-surface-variant">Owner Phone</p><p className="font-semibold">{activeOwnerRequest?.phone ?? activeSubmission.contact_phone ?? 'Not provided'}</p></div>
+                <div><p className="text-[11px] text-on-surface-variant">Existing authenticated submitter</p><p className="font-semibold">{activeSubmission.submitted_by ? 'Yes — account already exists' : 'No — invitation may be required'}</p></div>
+              </div>
+              {activeOwnerRequest ? (
+                <div className="space-y-2 border-t border-outline-variant/30 pt-3">
+                  <label className="flex items-start gap-2 text-sm font-semibold">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 accent-primary"
+                      checked={inviteChecked}
+                      disabled={activeOwnerRequest.invitation_status === 'sent'}
+                      onChange={(event) => setInviteChecked(event.target.checked)}
+                    />
+                    <span>Send Owner Invitation Link</span>
+                  </label>
+                  <p className="text-[11px] text-on-surface-variant">The Owner sets their own password through the secure email link. Invitation failure does not undo field approvals.</p>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-semibold">Invitation status: {statusLabel(activeOwnerRequest.invitation_status)}</span>
+                    <span className="text-on-surface-variant">Attempts: {activeOwnerRequest.invitation_attempts}</span>
+                  </div>
+                  {activeOwnerRequest.invitation_last_error && <p className="text-xs text-error">{activeOwnerRequest.invitation_last_error}</p>}
+                  {['pending', 'failed'].includes(activeOwnerRequest.invitation_status) && activeSubmission.business_id && activeCoreReady && (
+                    <Button size="sm" variant="outline" loading={busy} disabled={busy} onClick={() => void retryInvitation()} leftIcon={<Mail className="w-3.5 h-3.5" />}>Retry Owner Invitation</Button>
+                  )}
+                  {activeOwnerRequest.invitation_status === 'sent' && <p className="text-xs text-success">Invitation was processed and this Owner is linked to the reviewed business.</p>}
+                </div>
+              ) : (
+                <p className="text-xs text-on-surface-variant border-t border-outline-variant/30 pt-3">
+                  No separate invitation record exists. If this submission belongs to an already authenticated Owner, their account association is handled by the existing owner identity.
+                </p>
+              )}
+            </section>
+
+            <section className="rounded-xl border border-outline-variant/40 p-3 space-y-2">
+              <h3 className="font-bold text-sm">Public Listing Preview</h3>
+              <p className="text-[11px] text-on-surface-variant">Only fields already approved or selected in this popup are included in this preview.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {activeFields.filter((field) =>
+                  field.status === 'approved_published' || approvedFieldKeys.includes(field.field_key)
+                ).map((field) => (
+                  <div key={field.id} className="rounded-lg bg-surface-container-low p-2">
+                    <p className="text-[10px] font-bold text-on-surface-variant">{FIELD_LABELS[field.field_key] ?? field.field_key}</p>
+                    <p className="text-xs text-on-surface break-words">{formatValue(field.field_value, field.field_key, categories, areas)}</p>
+                  </div>
+                ))}
+                {activeApprovedCore === 0 && <p className="text-xs text-on-surface-variant">No public fields have been approved yet.</p>}
+              </div>
+              {!activeCoreReady && <p className="text-xs font-semibold text-warning">Not public yet — {5 - activeApprovedCore} required field(s) still need approval.</p>}
+            </section>
+
+            <section className="space-y-2">
+              <label className="text-xs font-bold text-on-surface" htmlFor="business-review-admin-note">Private Admin Note</label>
+              <Textarea id="business-review-admin-note" rows={3} value={adminNote} onChange={(event) => setAdminNote(event.target.value)} placeholder="Internal review note — never shown publicly" />
+            </section>
+
+            <div className="sticky bottom-0 -mx-4 sm:-mx-5 px-4 sm:px-5 py-3 bg-surface-container-lowest border-t border-outline-variant/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="text-xs text-on-surface-variant">
+                <p>Selected field decisions: {approvedFieldKeys.length + Object.keys(rejectedFieldReasons).length + unpublishFieldKeys.length}</p>
+                <p>Owner invitation: {inviteChecked ? 'Yes' : 'No'}</p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button size="md" variant="outline" disabled={busy} onClick={closeReview}>Cancel</Button>
+                <Button size="md" loading={busy} disabled={busy} onClick={() => void saveApproval()}>Save Approval</Button>
+              </div>
             </div>
           </div>
         )}
-      </section>
-      {loading ? <Card className="p-6 text-sm text-on-surface-variant">Loading business submissions…</Card> :
-        submissions.length === 0 ? <Card className="p-6 text-sm text-on-surface-variant">No pending business submissions.</Card> :
-        <>
-          {visibleSubmissions.map((submission) => {
-          const submissionFields = fieldsBySubmission.get(submission.id) ?? [];
-          const required = ['name_en', 'category_id', 'area_id', 'phone_primary', 'address_en'];
-          const approvedRequired = required.filter((fieldKey) =>
-            submissionFields.some((field) => field.field_key === fieldKey && field.status === 'approved_published')).length;
-          return (
-            <Card key={submission.id} className="p-4 sm:p-5 space-y-4">
-              <div className="flex items-start justify-between gap-3 flex-wrap">
-                <div>
-                  <h3 className="font-bold text-on-surface">{String(submission.payload.name_en ?? 'New business')}</h3>
-                  <p className="text-xs text-on-surface-variant mt-1">{submission.contact_name || 'Submitter'} · {submission.contact_phone || 'No contact phone'}</p>
-                  <p className="text-[11px] text-outline mt-1">{new Date(submission.created_at).toLocaleString()} · {approvedRequired}/5 required fields approved</p>
-                </div>
-                <span className="text-[11px] font-bold rounded-full px-2.5 py-1 bg-secondary-container text-on-secondary-container inline-flex items-center gap-1">
-                  <Clock3 className="w-3 h-3" /> {submission.status}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {submissionFields.map((field) => {
-                  const actionKey = submission.id + ':' + field.field_key;
-                  const busy = busyKey === actionKey;
-                  return (
-                    <div key={field.id} className="rounded-xl border border-outline-variant/50 p-3 space-y-2">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <p className="text-xs font-bold text-on-surface">{FIELD_LABELS[field.field_key] ?? field.field_key}</p>
-                        <span className="text-[10px] font-semibold text-on-surface-variant">{field.status.replaceAll('_', ' ')}</span>
-                      </div>
-                      <p className="text-sm text-on-surface break-words whitespace-pre-wrap">{formatValue(field.field_value)}</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button size="sm" loading={busy && field.status !== 'approved_published'} disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve &amp; Publish</Button>
-                        <Button size="sm" variant="danger" disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'rejected')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
-                        <Button size="sm" variant="outline" disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          );
-          })}
-          {submissions.length > pageSize && (
-            <div className="flex items-center justify-between gap-2 text-xs text-on-surface-variant">
-              <span>Showing {(submissionPage - 1) * pageSize + 1}–{Math.min(submissionPage * pageSize, submissions.length)} of {submissions.length} submissions</span>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" disabled={submissionPage <= 1} onClick={() => setSubmissionPage((page) => Math.max(1, page - 1))}>Previous</Button>
-                <span className="tabular-nums">Page {submissionPage}/{submissionPageCount}</span>
-                <Button size="sm" variant="outline" disabled={submissionPage >= submissionPageCount} onClick={() => setSubmissionPage((page) => Math.min(submissionPageCount, page + 1))}>Next</Button>
-              </div>
-            </div>
-          )}
-        </>
-      }
+      </Modal>
+
+      <ConfirmDialog
+        open={confirmClose}
+        onClose={() => setConfirmClose(false)}
+        onConfirm={() => {
+          setConfirmClose(false);
+          setActiveSubmissionId(null);
+        }}
+        title="Discard unsaved review decisions?"
+        message="Your field selections, image decisions, invitation choice and Admin note have not been saved."
+        confirmLabel="Discard Changes"
+        destructive
+      />
     </div>
   );
 }
