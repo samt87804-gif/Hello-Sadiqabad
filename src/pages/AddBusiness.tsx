@@ -388,6 +388,7 @@ export function AddBusiness() {
                 </Select>
                 <Select
                   label={lang === 'ur' ? 'علاقہ / بازار' : 'Area / Neighborhood'}
+                  required
                   value={areaId}
                   onChange={(e) => setAreaId(e.target.value)}
                 >
