@@ -72,3 +72,22 @@ This is a read-only baseline for the future implementation; no Phase 2 code or d
 - Live RLS inspection confirms public submissions and owner-registration requests have restricted insert/read policies; Admin moderation/owner permissions are enforced through private permission helpers. Keep those boundaries.
 
 **Implementation constraints:** Keep legacy `submissions` payloads and other submission types backward compatible. Add field-level review/media/quota structures additively. Preserve the current `approve_submission` branches for all non-new-business submission types and explicitly close the old whole-listing approval bypass for new-business records only when the replacement workflow is fully ready. Create a separate private pending-media bucket and test anonymous reads are denied before any public promotion. Invitation must be idempotent and associate only the exact reviewed business; failure must leave a retryable state and must not leave a half-linked account.
+
+
+## Implementation status — 25 November 2026
+
+Owner-approved execution mode: commit directly to GitHub `main`; do not create Pull Requests. The previous implementation branch and PR #19 were closed unmerged at the owner's request.
+
+### Implemented source (not released)
+- The Phase 2 implementation source exists on `feat/business-owner-field-approval`: field-level review queue/RPC, private pending media, Add Business fields/uploads, owner registration linkage and rollback, and media moderation Edge Function.
+- This is reference code only; those app/Edge Function changes and migration 2 are not in `main` and are not deployed.
+- Migration 1 is present on `main`. Its malformed duplicate trailing fragment was removed in commit `1bb9d3e2e530078a6d2f7ae4c63d2b350af4ea9a`; current source ends with one `COMMIT`.
+- CI run [45608741733](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45608741733) passed build and Edge Function jobs. CI does not execute the SQL migration.
+
+### Blocker and release gate
+- A $0/month temporary Supabase project was approved, but project creation was blocked by the organization's limit of two active Free projects. No staging project was created.
+- No Phase 2 migration has been applied to production. Production schema/data remains untouched by this work.
+- Do not ship the Add Business/Admin/Edge Function code until migration 1 and migration 2 have been tested together against an isolated database, including rollback and RLS/Storage checks.
+- Before release, resolve static concerns in media cleanup/atomicity, verify all live columns/constraints/helper functions, and test legacy `approve_submission` branches and existing owner-registration requests.
+
+**Next step:** obtain an isolated staging database (free an existing Free project slot or explicitly approve a paid staging option), validate both migrations and workflows, then port only the verified code directly to `main` in narrow commits.
