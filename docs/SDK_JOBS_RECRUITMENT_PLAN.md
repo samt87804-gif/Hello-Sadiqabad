@@ -95,7 +95,8 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [ ] Owner submission form and signed private poster upload.
 - [ ] Permission-gated Admin moderation UI and workflow actions.
 - [ ] Public listing/detail/search/filter/share pages and employer-anonymity checks.
-- [ ] Run UI/adversarial authorization, public leakage, status-transition, media privacy, CI and browser/deployment acceptance.
+- [x] Foundation CI and production deployment passed; database authorization/public-projection transaction tests and advisor checks passed.
+- [ ] Run UI/adversarial authorization, public leakage, status-transition, media privacy and authenticated browser acceptance.
 
 **Phase boundary:** candidate intake, consent records, CV details, interview notes, suitability, referrals, referral letters, fees and office-hour configuration remain Phase 5. Do not collect candidate personal data in Phase 4.
 
