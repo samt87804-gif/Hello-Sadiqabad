@@ -24,5 +24,8 @@ verify_jwt = true
 [functions.manage-owner-registration]
 verify_jwt = true
 
+[functions.review-business-media]
+verify_jwt = true
+
 [functions.track-site-analytics]
 verify_jwt = false
