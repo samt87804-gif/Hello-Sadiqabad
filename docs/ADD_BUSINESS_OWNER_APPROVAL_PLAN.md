@@ -58,7 +58,7 @@ Preserve existing anti-spam, honeypot, phone validation, moderation submission, 
 
 ## Current implementation and live-schema preflight — 25 November 2026
 
-This is a read-only baseline for the future implementation; no Phase 2 code or database changes have been applied.
+This section records the historical read-only baseline before implementation. The current implementation and production database state are documented in the rollout checkpoint below.
 
 - Public route is `/add-business`. Current form captures English/optional Urdu name, category, area, primary phone, optional WhatsApp, one English address, facilities, English description and contact name/phone. It does not yet capture Urdu address, separate landmark, map URL, daily hours, owner Gmail or logo/cover uploads.
 - The current form auto-selects the first Category and Area after loading. The approved replacement must start with an explicit empty selection and display bilingual missing-taxonomy instructions.
@@ -78,19 +78,19 @@ This is a read-only baseline for the future implementation; no Phase 2 code or d
 
 Owner-approved execution mode: commit directly to GitHub `main`; do not create Pull Requests. The previous implementation branch and PR #19 were closed unmerged at the owner's request.
 
-### Implemented source (not released)
-- The Phase 2 implementation source exists on `feat/business-owner-field-approval`: field-level review queue/RPC, private pending media, Add Business fields/uploads, owner registration linkage and rollback, and media moderation Edge Function.
-- This is reference code only; those app/Edge Function changes and migration 2 are not in `main` and are not deployed.
+### Historical implementation snapshot (superseded by production rollout checkpoint below)
+- The original Phase 2 source was first developed on `feat/business-owner-field-approval`; PR #19 was closed unmerged at the owner's request. The verified code was later ported directly to `main` and deployed, as recorded below.
+- The closed branch is now reference history only; the app, Edge Functions and migrations are on `main` and active in the existing production project.
 - Migration 1 is present on `main`. Its malformed duplicate trailing fragment was removed in commit `1bb9d3e2e530078a6d2f7ae4c63d2b350af4ea9a`; current source ends with one `COMMIT`.
 - CI run [45608741733](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45608741733) passed build and Edge Function jobs. CI does not execute the SQL migration.
 
 ### Blocker and release gate
 - A $0/month temporary Supabase project was approved, but project creation was blocked by the organization's limit of two active Free projects. No staging project was created.
-- No Phase 2 migration has been applied to production. Production schema/data remains untouched by this work.
+- Phase 2 migrations have since been applied additively to the existing production project; existing business/user records were preserved and test transactions were rolled back.
 - Do not ship the Add Business/Admin/Edge Function code until migration 1 and migration 2 have been tested together against an isolated database, including rollback and RLS/Storage checks.
 - Before release, resolve static concerns in media cleanup/atomicity, verify all live columns/constraints/helper functions, and test legacy `approve_submission` branches and existing owner-registration requests.
 
-**Next step:** obtain an isolated staging database (free an existing Free project slot or explicitly approve a paid staging option), validate both migrations and workflows, then port only the verified code directly to `main` in narrow commits.
+**Next step:** finish authenticated browser QA and the controlled end-to-end acceptance checks listed in the production rollout checkpoint below.
 
 ### Additional security review — anonymous media upload
 
@@ -100,7 +100,7 @@ Required fix before release: replace unrestricted anonymous direct uploads with 
 
 ### Data API grants review — 25 November 2026
 
-Supabase's 30 October 2026 change requires explicit grants for newly created `public` tables before the Data API can access them. The migration already grants authenticated SELECT for the admin/owner-facing tables and authenticated EXECUTE for the RPCs. Static review found the service-role Edge Functions also need access to the new media tables: `submit-suggestion` inserts/selects `business_media_assets`; `review-business-media` reads/updates `business_media_assets` and updates `business_image_change_requests`. Migration 1 was amended in commit `49569240a9d51c5922790df9ae147539487a9fb8` to grant `SELECT, INSERT, UPDATE` on `business_media_assets` and `SELECT, UPDATE` on `business_image_change_requests` to `service_role`. This is source-only; SQL remains unexecuted pending isolated staging validation.
+Supabase's 30 October 2026 change requires explicit grants for newly created `public` tables before the Data API can access them. The migration already grants authenticated SELECT for the admin/owner-facing tables and authenticated EXECUTE for the RPCs. Static review found the service-role Edge Functions also need access to the new media tables: `submit-suggestion` inserts/selects `business_media_assets`; `review-business-media` reads/updates `business_media_assets` and updates `business_image_change_requests`. Migration 1 was amended in commit `49569240a9d51c5922790df9ae147539487a9fb8` to grant `SELECT, INSERT, UPDATE` on `business_media_assets` and `SELECT, UPDATE` on `business_image_change_requests` to `service_role`. The migration was subsequently applied to the existing production project after live-schema review and rollback tests; see the production rollout checkpoint below.
 
 ### Legacy moderation compatibility review — 25 November 2026
 
