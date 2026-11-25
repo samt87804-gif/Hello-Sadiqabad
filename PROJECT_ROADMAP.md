@@ -986,3 +986,14 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Implement and test owner job submission UI, signed private poster upload, Admin moderation and public employer-anonymous board.
 - [ ] Complete UI/adversarial privacy regression tests, CI and production browser verification.
 - No production schema, RLS, Storage, business/owner records or other existing data was changed during this audit.
+
+
+### SDK Jobs Phase 4 database foundation — 26 November 2026
+
+- [x] Three SDK Jobs migrations applied and recorded in live ledger (111 total): `20261125210353`, `20261125210439`, `20261125210610`.
+- [x] Owner submit simulation passed in rollback transaction: active owner + own published business, owner ID derived from auth session, status forced to `pending_review`, pending job excluded from public view. Cross-owner business submit denied; status history recorded; all test transactions rolled back.
+- [x] Anon has no table-level SELECT/private-column access on `sdk_jobs`; the public view is `security_invoker=true` and returns only published allowlisted fields. `sdk_jobs.manage` added to permission RPC, TypeScript key and explicit staff permission editor.
+- [x] No SDK Jobs-specific SECURITY DEFINER view, unindexed-FK or multiple-permissive-policy advisor finding remains.
+- [x] GitHub CI [45702011116](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45702011116) passed build and Edge Function checks.
+- [x] Cloudflare Pages deployment `3d3bf1ec-2f80-4695-886e-75aaf2b528cb` succeeded with canonical alias `https://hellosadiqabad.com`.
+- [ ] Owner submission UI/private media upload, Admin moderation UI, public SDK Jobs routes and browser/adversarial acceptance remain open. No SDK Jobs record or test fixture remains in production.
