@@ -420,3 +420,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Logo/Cover controls use accessible card-style image pickers with format/size guidance and selected-file feedback.
 - Main CI `45638490612` and production browser smoke `45638490221` passed; Cloudflare deployment `8969830b-3848-4951-a1dd-7b01f3fda6de` succeeded. No database or existing user/business data was changed.
 - This is a visual UX checkpoint only; Phase 2 acceptance remains open pending authenticated Admin/Owner click-through, owner media approval roundtrip and real invitation email/redirect verification. Phase 1 performance acceptance also remains open.
+
+### Phase 1 implementation checkpoint — Admin data reuse — 25 November 2026
+
+- Current-main source recheck: Admin managers are already lazy-loaded; the 19-position reload Promise is permission/tab-gated rather than 19 unconditional requests; business list uses explicit columns; BusinessManager and DataQualityManager show 50 items per page; DataQuality category counts are already computed in one pass.
+- Added a 30-second in-memory cache for Admin business, taxonomy, profile and lead datasets across tab changes. Global quick search shares it; explicit child-action reloads bypass it; failed refreshes preserve the last good data and remain retryable. No local storage or database changes.
+- CI `45639985225` passed; Pages deployment `81b032d7-64e1-45c1-a63c-1a46c60a8580` succeeded with the canonical alias.
+- **Phase 1 is not accepted yet:** authenticated desktop/mobile before/after timings and interaction traces are still required. The database-only business-list query baseline is not a substitute for browser performance evidence.
