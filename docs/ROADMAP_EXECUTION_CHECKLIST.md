@@ -315,3 +315,24 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [ ] Owner manual acceptance of dropdown placement on actual mobile and desktop browsers, including English/Urdu search.
 - [ ] Real business submission acceptance for logo/cover upload; do not create a dummy production listing solely for testing.
 
+
+
+## Government Jobs / Schemes bilingual publication and sharing — 25 November 2026
+
+- [x] Add Urdu detail columns for all required job and scheme content fields.
+- [x] Add Admin bilingual form inputs and preserve existing English text/data.
+- [x] Require Urdu title/summary and bilingual required details for new publications; optional English detail fields require matching Urdu fields.
+- [x] Require matching Urdu translations for each scheme required-document entry.
+- [x] Add scheme poster image_url field and Admin upload UI with MIME/5 MB checks and WebP resize/compression when output is smaller.
+- [x] Add DB publication triggers for new/republished job and scheme records; invalid transaction-only test inserts were blocked.
+- [x] Add public scheme poster display, public bilingual detail rendering, list-card poster and search coverage.
+- [x] Add canonical WhatsApp/Facebook/copy-link actions and Cloudflare Pages social-crawler OG/Twitter metadata handlers.
+- [x] Add scheme poster URLs to offline image caching.
+- [x] Apply migrations 20261125171000_government_bilingual_poster_publication_gate and 20261125172500_government_content_bilingual_details to existing Supabase project efwohfzqitevkuybnyif.
+- [x] CI 45662891896 passed; Cloudflare deployment 5d601e4e-2e04-4478-bb2b-5b6bce833f6e succeeded with canonical alias.
+- [ ] Browser smoke run 45662892354: verify public share buttons and social-crawler metadata; mark only after the run completes successfully.
+- [ ] Owner Admin review of new bilingual fields and scheme poster upload UI.
+- [ ] Owner-approved official poster upload and end-to-end public card/detail/share-preview check.
+- [ ] Resolve legacy exception: 1 published job and 5 published schemes currently have no poster. Existing rows were preserved and not unpublished. Add verified official posters or ask owner whether these legacy rows should be moved to draft; do not invent artwork or alter status without approval.
+- [ ] Verify the private-draft/public-approved image handling for uploaded scheme posters before Phase 3 acceptance; current scheme poster upload writes to the existing public bucket under Admin-only paths, so the object URL itself is publicly readable.
+
