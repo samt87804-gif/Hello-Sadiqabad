@@ -37,41 +37,65 @@ async function testViewport(browser, name, viewport, isMobile) {
 
   await openForm(page);
 
-  const selects = page.locator('select');
-  assert.equal(await selects.count(), 2, 'Add Business should expose Category and Area selectors');
+  const categoryTrigger = page.locator('#business-category-trigger');
+  const areaTrigger = page.locator('#business-area-trigger');
+  assert.equal(await categoryTrigger.count(), 1, 'A custom Category dropdown trigger should be present');
+  assert.equal(await areaTrigger.count(), 1, 'A custom Area dropdown trigger should be present');
   assert.equal(await page.getByText(/Business category|کاروبار کی کیٹیگری/).count(), 1, 'Styled category panel heading should be visible');
   assert.equal(await page.getByText(/Business area|کاروبار کا علاقہ/).count(), 1, 'Styled area panel heading should be visible');
   assert.equal(await page.getByText(/Choose image|تصویر منتخب کریں/).count(), 2, 'Both image upload cards should show their styled choose-image action');
   assert.equal(await page.getByText(/Business images|کاروبار کی تصاویر/).count(), 1, 'Image upload section heading should be visible');
-  const category = selects.nth(0);
-  const area = selects.nth(1);
-  await page.waitForFunction(() => {
-    const controls = Array.from(document.querySelectorAll('select'));
-    return controls.length === 2 && controls.every((control) => control.options.length > 1);
-  }, null, { timeout: 45_000 });
-  assert.equal(await category.inputValue(), '', 'Category must not auto-select the first option');
-  assert.equal(await area.inputValue(), '', 'Area must not auto-select the first option');
 
   const categorySearch = page.locator('#business-category-search');
   const areaSearch = page.locator('#business-area-search');
-  const firstCategory = (await category.locator('option').nth(1).textContent())?.trim() || '';
-  const firstArea = (await area.locator('option').nth(1).textContent())?.trim() || '';
-  assert.ok(firstCategory.length > 0, 'Category taxonomy should be loaded');
-  assert.ok(firstArea.length > 0, 'Area taxonomy should be loaded');
+  await page.waitForFunction(() => {
+    const trigger = document.querySelector('#business-category-trigger');
+    return trigger && !trigger.textContent?.includes('Select a category') && !trigger.textContent?.includes('شعبہ منتخب کریں')
+      ? true
+      : document.querySelectorAll('#business-category-search').length === 1;
+  }, null, { timeout: 45_000 });
 
-  await categorySearch.fill(firstCategory.split(/\s+/)[0]);
-  await category.selectOption({ index: 1 });
-  const selectedCategory = await category.inputValue();
+  await categoryTrigger.click();
+  const categoryList = page.getByRole('listbox', { name: /Categories|کیٹیگریز/ });
+  await categoryList.waitFor();
+  const categoryOptions = categoryList.getByRole('option');
+  assert.ok(await categoryOptions.count() > 1, 'Category taxonomy should be loaded');
+  const categoryBox = await categoryList.boundingBox();
+  assert.ok(categoryBox && categoryBox.height <= 230 && categoryBox.height < 0.4 * viewport.height, 'Category menu must remain a compact scrollable panel, not cover the screen');
+  const firstCategory = (await categoryOptions.nth(1).innerText()).trim();
+  assert.ok(firstCategory.length > 0, 'Category options should have labels');
+  await categorySearch.fill(firstCategory.split(/\\s+/)[0]);
+  await categoryTrigger.click();
+  await categoryList.waitFor();
+  await categoryList.getByRole('option').nth(1).click();
+  const selectedCategory = await categoryTrigger.innerText();
   await categorySearch.fill('__no_matching_category__');
-  assert.equal(await category.inputValue(), selectedCategory, 'Category selection should survive filtering');
-  assert.equal(await category.locator('option').count(), 2, 'Selected category should remain available when the filter has no matches');
+  await categoryTrigger.click();
+  await categoryList.waitFor();
+  assert.equal(await categoryList.getByRole('option').count(), 1, 'Category filtering should show the empty-state option only');
+  assert.ok((await categoryTrigger.innerText()).includes(selectedCategory.trim()), 'Category selection should survive filtering');
+  await categoryTrigger.click();
 
-  await areaSearch.fill(firstArea.split(/\s+/)[0]);
-  await area.selectOption({ index: 1 });
-  const selectedArea = await area.inputValue();
+  await areaTrigger.click();
+  const areaList = page.getByRole('listbox', { name: /Areas|علاقے/ });
+  await areaList.waitFor();
+  const areaOptions = areaList.getByRole('option');
+  assert.ok(await areaOptions.count() > 1, 'Area taxonomy should be loaded');
+  const areaBox = await areaList.boundingBox();
+  assert.ok(areaBox && areaBox.height <= 230 && areaBox.height < 0.4 * viewport.height, 'Area menu must remain a compact scrollable panel, not cover the screen');
+  const firstArea = (await areaOptions.nth(1).innerText()).trim();
+  assert.ok(firstArea.length > 0, 'Area options should have labels');
+  await areaSearch.fill(firstArea.split(/\\s+/)[0]);
+  await areaTrigger.click();
+  await areaList.waitFor();
+  await areaList.getByRole('option').nth(1).click();
+  const selectedArea = await areaTrigger.innerText();
   await areaSearch.fill('__no_matching_area__');
-  assert.equal(await area.inputValue(), selectedArea, 'Area selection should survive filtering');
-  assert.equal(await area.locator('option').count(), 2, 'Selected area should remain available when the filter has no matches');
+  await areaTrigger.click();
+  await areaList.waitFor();
+  assert.equal(await areaList.getByRole('option').count(), 1, 'Area filtering should show the empty-state option only');
+  assert.ok((await areaTrigger.innerText()).includes(selectedArea.trim()), 'Area selection should survive filtering');
+  await areaTrigger.click();
 
   const nameInput = page.getByLabel(/Business \/ Clinic Name \(English\)|کاروبار \/ کلینک کا نام \(انگریزی\)/);
   await nameInput.fill('QA Preview Check');
