@@ -146,7 +146,7 @@ async function testGovernmentSharePreviews(browser) {
       assert.match(html, /property="og:title" content="[^"]+"/, route + ' should expose a record-specific Open Graph title');
       const expectedCanonical = 'property="og:url" content="https://hellosadiqabad.com' + route + '"';
       assert.ok(html.includes(expectedCanonical), route + ' should expose its canonical share URL');
-      assert.match(html, /property="og:image" content="https:\\/\\/[^"]+"/, route + ' should expose an HTTPS social preview image');
+      assert.ok(html.includes('property="og:image" content="https://'), route + ' should expose an HTTPS social preview image');
       assert.match(html, /name="twitter:card" content="summary_large_image"/, route + ' should expose a large Twitter preview');
       console.log('PASS social preview ' + route + ': canonical URL, record title and HTTPS image');
     }
