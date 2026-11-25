@@ -464,12 +464,12 @@ export function AddBusiness() {
                 </div>
               </div>
 
-              {(!categories.length || !areas.length) && (
-                <p className="text-xs text-error" role="alert">
-                  {lang === 'ur' ? 'اگر مطلوبہ شعبہ یا علاقہ فہرست میں موجود نہیں تو ایڈمن کو واٹس ایپ کریں، اندراج شامل ہونے کے بعد فارم دوبارہ کھولیں۔' : 'If your category or area is missing, WhatsApp Admin and return after the taxonomy value has been added.'}
-                  {' '}<a className="font-bold underline" href="https://wa.me/923283212342" target="_blank" rel="noreferrer">WhatsApp Admin</a>
-                </p>
-              )}
+              <p className="text-xs text-on-surface-variant" role="note">
+                {lang === 'ur'
+                  ? 'اگر آپ کا مطلوبہ شعبہ یا علاقہ فہرست میں موجود نہیں تو کوئی غلط متبادل منتخب نہ کریں۔ ایڈمن کو واٹس ایپ پر درخواست دیں؛ اندراج شامل ہونے کے بعد واپس آ کر فارم جمع کروائیں۔'
+                  : 'If your required category or area is not listed, do not choose an incorrect substitute. WhatsApp Admin to request it; return and submit after it has been added.'}
+                {' '}<a className="font-bold underline" href="https://wa.me/923283212342" target="_blank" rel="noreferrer">WhatsApp Admin</a>
+              </p>
               <Input
                 label={lang === 'ur' ? 'دکان کا پتہ (انگریزی)' : 'Business Address (English)'}
                 required
