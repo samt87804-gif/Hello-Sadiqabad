@@ -103,6 +103,13 @@ Deno.serve(async (req: Request) => {
       return response(req, { ok: false, error: "Too many cleanup requests" }, 429);
     }
 
+    const { data: registeredAssets, error: assetLookupError } = await db.from("business_media_assets")
+      .select("id").in("storage_path", paths as string[]).limit(1);
+    if (assetLookupError) return response(req, { ok: false, error: "Could not verify temporary image ownership" }, 503);
+    if (registeredAssets?.length) {
+      return response(req, { ok: false, error: "These images are already attached to a business submission" }, 409);
+    }
+
     const { error } = await db.storage.from(bucket).remove(paths as string[]);
     if (error) return response(req, { ok: false, error: "Temporary business images could not be cleaned up" }, 503);
     return response(req, { ok: true });
