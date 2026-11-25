@@ -212,6 +212,11 @@ Deno.serve(async (req: Request) => {
           !isSafeGoogleMapsUrl(payload.map_url)) {
         return reply(req, { ok: false, error: "Enter a valid Google Maps URL" }, 400);
       }
+      if (payload.services_en !== undefined &&
+          (!Array.isArray(payload.services_en) || payload.services_en.length > 2 ||
+           payload.services_en.some((value) => typeof value !== "string" || value.length > 80))) {
+        return reply(req, { ok: false, error: "Select no more than 2 business facilities" }, 400);
+      }
       if (!Array.isArray(mediaInput) || mediaInput.length > 2) {
         return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
       }
