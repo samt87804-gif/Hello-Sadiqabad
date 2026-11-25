@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -32,6 +32,7 @@ import type {
 } from '../../types/database';
 import type { BusinessPublicView } from '../../types/directory';
 import { effectivePlanCode } from '../../lib/searchFilter';
+import { getSupabaseClient } from '../../lib/supabase';
 import { isValidHttpsUrl, normalizePkPhone } from '../../lib/phone';
 import { validateOpeningHoursRanges } from '../../lib/hours';
 import { Badge, Card } from '../ui/Surface';
@@ -48,6 +49,24 @@ import {
   parseStepParam,
   type WizardStep,
 } from '../../lib/listingWizard';
+
+interface OwnerImageChangeRequest {
+  id: string;
+  media_field: 'logo' | 'cover';
+  status: string;
+  requested_at: string;
+}
+
+function pakistanMonthKey(value: string | Date): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Karachi',
+    year: 'numeric',
+    month: '2-digit',
+  }).formatToParts(new Date(value));
+  const year = parts.find((part) => part.type === 'year')?.value ?? '';
+  const month = parts.find((part) => part.type === 'month')?.value ?? '';
+  return `${year}-${month}`;
+}
 
 function buildInitialForm(business: BusinessPublicView): Partial<BusinessRow> {
   return {
@@ -103,6 +122,11 @@ export function ListingEditor({
   const [searchParams, setSearchParams] = useSearchParams();
   const [step, setStep] = useState<WizardStep>(() => parseStepParam(searchParams.get('step')));
   const [saving, setSaving] = useState(false);
+  const [imageRequests, setImageRequests] = useState<OwnerImageChangeRequest[]>([]);
+  const [loadingImageRequests, setLoadingImageRequests] = useState(false);
+  const [imageChangeBusy, setImageChangeBusy] = useState<'logo' | 'cover' | ''>('');
+  const [logoChangeFile, setLogoChangeFile] = useState<File | null>(null);
+  const [coverChangeFile, setCoverChangeFile] = useState<File | null>(null);
 
   const [form, setForm] = useState<Partial<BusinessRow>>(() => buildInitialForm(business));
   const [samePhone, setSamePhone] = useState(() => {
@@ -131,6 +155,27 @@ export function ListingEditor({
       setStep(parseStepParam(paramStep));
     }
   }, [searchParams]);
+
+  const reloadImageRequests = useCallback(async () => {
+    const client = getSupabaseClient();
+    if (!client) return;
+    setLoadingImageRequests(true);
+    try {
+      const { data, error } = await client.from('business_image_change_requests')
+        .select('id,media_field,status,requested_at')
+        .eq('business_id', business.id)
+        .order('requested_at', { ascending: false })
+        .limit(12);
+      if (error) throw error;
+      setImageRequests((data ?? []) as OwnerImageChangeRequest[]);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Image-change requests could not be loaded.', 'error');
+    } finally {
+      setLoadingImageRequests(false);
+    }
+  }, [business.id, showToast]);
+
+  useEffect(() => { void reloadImageRequests(); }, [reloadImageRequests]);
 
   const goStep = (next: WizardStep) => {
     setStep(next);
@@ -339,6 +384,75 @@ export function ListingEditor({
       showToast(err instanceof Error ? err.message : 'Failed to save listing.', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const requestImageChange = async (mediaField: 'logo' | 'cover', file: File | null) => {
+    if (!file || imageChangeBusy) return;
+    if (imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2) {
+      showToast('Monthly image-change limit reached (2 per business).', 'error');
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+      showToast('Choose a JPG, PNG or WebP image no larger than 5 MB.', 'error');
+      return;
+    }
+    if (mediaField === 'cover' && !activePlan?.features.cover) {
+      showToast('A Basic or Premium plan is required to request a cover image.', 'error');
+      return;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      showToast('Connect to the live service before requesting an image change.', 'error');
+      return;
+    }
+
+    setImageChangeBusy(mediaField);
+    let storagePath: string | null = null;
+    let requestCreated = false;
+    try {
+      const { data: authorization, error: authorizationError } = await client.functions.invoke('create-business-media-upload', {
+        body: {
+          mode: 'owner_change',
+          business_id: business.id,
+          media_field: mediaField,
+          mime_type: file.type,
+          file_size_bytes: file.size,
+        },
+      });
+      if (authorizationError || !authorization?.ok ||
+          typeof authorization.data?.path !== 'string' || typeof authorization.data?.token !== 'string') {
+        throw new Error(authorization?.error || authorizationError?.message || 'A secure image upload could not be prepared.');
+      }
+
+      storagePath = authorization.data.path;
+      const { error: uploadError } = await client.storage.from('hs-pending-business-media')
+        .uploadToSignedUrl(storagePath, authorization.data.token, file, { contentType: file.type, upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { data: requestId, error: requestError } = await client.rpc('request_business_image_change', {
+        p_business_id: business.id,
+        p_media_field: mediaField,
+        p_storage_path: storagePath,
+        p_mime_type: file.type,
+        p_file_size_bytes: file.size,
+      });
+      if (requestError || !requestId) throw requestError ?? new Error('The image-change request could not be recorded.');
+      requestCreated = true;
+      if (mediaField === 'logo') setLogoChangeFile(null);
+      else setCoverChangeFile(null);
+      showToast('Image change request sent to Admin. Your current image stays public until approval.', 'success');
+      await reloadImageRequests().catch(() => undefined);
+    } catch (error) {
+      if (storagePath && !requestCreated) {
+        await client.functions.invoke('cleanup-business-media-upload', {
+          body: { mode: 'owner_change', business_id: business.id, storage_paths: [storagePath] },
+        }).catch(() => undefined);
+      }
+      showToast(error instanceof Error ? error.message : 'The image-change request could not be sent.', 'error');
+    } finally {
+      setImageChangeBusy('');
     }
   };
 
@@ -952,7 +1066,18 @@ export function ListingEditor({
             <div className="space-y-1">
               <h2 className="text-base font-bold text-on-surface">Store Images &amp; Branding</h2>
               <p className="text-xs text-on-surface-variant">
-                Business logo, cover and gallery images are managed by Hello Sadiqabad Admin to keep the directory consistent and safe. Contact Admin if an image needs to be added or changed.
+                Request a logo or cover replacement here. Admin reviews every request; your current public image remains in place until the replacement is approved. You may request up to 2 logo/cover changes per business per Pakistan calendar month.
+              </p>
+            </div>
+            <div className="rounded-xl border border-outline-variant/40 bg-surface-container-low p-3 space-y-1">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <p className="text-xs font-bold text-on-surface">Monthly image-change allowance</p>
+                <Badge variant={imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2 ? 'danger' : 'success'}>
+                  {Math.max(0, 2 - imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length)} remaining
+                </Badge>
+              </div>
+              <p className="text-[11px] text-on-surface-variant">
+                {loadingImageRequests ? 'Checking this month’s requests…' : `${imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length} of 2 changes used this Pakistan calendar month (logo and cover combined).`}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -969,6 +1094,51 @@ export function ListingEditor({
                 </div>
               )}
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Card className="p-3 space-y-2">
+                <p className="text-xs font-bold text-on-surface">Request logo replacement</p>
+                <Input
+                  label="New logo (JPG, PNG or WebP · max 5 MB)"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={imageChangeBusy !== '' || imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2}
+                  onChange={(event) => setLogoChangeFile(event.target.files?.[0] ?? null)}
+                />
+                {logoChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{logoChangeFile.name}</p>}
+                <Button size="sm" block disabled={!logoChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'logo'} onClick={() => void requestImageChange('logo', logoChangeFile)}>Send logo for Admin review</Button>
+              </Card>
+              <Card className="p-3 space-y-2">
+                <p className="text-xs font-bold text-on-surface">Request cover replacement</p>
+                {activePlan?.features.cover ? (
+                  <>
+                    <Input
+                      label="New cover (JPG, PNG or WebP · max 5 MB)"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={imageChangeBusy !== '' || imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2}
+                      onChange={(event) => setCoverChangeFile(event.target.files?.[0] ?? null)}
+                    />
+                    {coverChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{coverChangeFile.name}</p>}
+                    <Button size="sm" block disabled={!coverChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'cover'} onClick={() => void requestImageChange('cover', coverChangeFile)}>Send cover for Admin review</Button>
+                  </>
+                ) : (
+                  <p className="text-xs text-on-surface-variant">Cover images require an active Basic or Premium plan. <Link to="/owner/plan" className="font-bold text-primary underline">View plans</Link></p>
+                )}
+              </Card>
+            </div>
+            {imageRequests.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-on-surface">Recent image-change requests</p>
+                {imageRequests.slice(0, 5).map((request) => (
+                  <div key={request.id} className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant/30 px-3 py-2 text-xs">
+                    <span className="capitalize">{request.media_field} · {new Date(request.requested_at).toLocaleDateString()}</span>
+                    <Badge variant={request.status === 'approved_published' ? 'success' : request.status === 'rejected' ? 'danger' : 'warning'}>
+                      {request.status.replaceAll('_', ' ')}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
             {(business.gallery_urls ?? []).length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-bold">Current photo gallery</p>
