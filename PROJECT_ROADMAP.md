@@ -1054,3 +1054,5 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Latest CI run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724) queued/pending at this update.
 - [ ] Authenticated Owner/Admin browser acceptance and production Pages deployment.
 
+
+- [x] Added [SDK Jobs Phase 4 authenticated acceptance checklist](docs/SDK_JOBS_PHASE4_ACCEPTANCE_CHECKLIST.md); all browser/production acceptance boxes intentionally remain unchecked until tested.
