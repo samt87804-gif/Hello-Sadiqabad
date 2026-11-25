@@ -44,3 +44,9 @@ verify_jwt = true
 
 [functions.get-sdk-job-employer-details]
 verify_jwt = true
+
+[functions.review-business-media]
+verify_jwt = true
+
+[functions.send-business-owner-invitation]
+verify_jwt = true
