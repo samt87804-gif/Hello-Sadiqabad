@@ -70,24 +70,35 @@ export function BusinessFieldReviewQueue() {
         .order('created_at', { ascending: false }).limit(100);
       if (error) throw error;
       const ids = (rows ?? []).map((row) => row.id);
-      const { data: reviewRows, error: reviewError } = ids.length
-        ? await client.from('business_field_reviews')
-          .select('id,submission_id,field_key,field_value,status,admin_note')
-          .in('submission_id', ids).order('field_key')
+      const [reviewResult, mediaResult] = await Promise.all([
+        ids.length
+          ? client.from('business_field_reviews')
+            .select('id,submission_id,field_key,field_value,status,admin_note')
+            .in('submission_id', ids).order('field_key')
+          : Promise.resolve({ data: [], error: null }),
+        client.from('business_media_assets')
+          .select('id,submission_id,business_id,media_field,storage_path,status,created_at')
+          .in('status', ['pending_review', 'approved_published', 'unpublished'])
+          .order('created_at', { ascending: false }).limit(100),
+      ]);
+      if (reviewResult.error) throw reviewResult.error;
+      if (mediaResult.error) throw mediaResult.error;
+
+      const mediaAssets = (mediaResult.data ?? []) as BusinessMedia[];
+      const mediaPaths = mediaAssets.map((asset) => asset.storage_path);
+      const { data: signedRows, error: signedError } = mediaPaths.length
+        ? await client.storage.from('hs-pending-business-media').createSignedUrls(mediaPaths, 900)
         : { data: [], error: null };
-      if (reviewError) throw reviewError;
-      const { data: mediaRows, error: mediaError } = await client.from('business_media_assets')
-        .select('id,submission_id,business_id,media_field,storage_path,status,created_at')
-        .in('status', ['pending_review', 'approved_published', 'unpublished'])
-        .order('created_at', { ascending: false }).limit(100);
-      if (mediaError) throw mediaError;
-      const mediaWithPreviews = await Promise.all((mediaRows ?? []).map(async (asset) => {
-        const { data: signed } = await client.storage.from('hs-pending-business-media')
-          .createSignedUrl(asset.storage_path, 900);
-        return { ...asset, preview_url: signed?.signedUrl } as BusinessMedia;
+      if (signedError) throw signedError;
+      const signedUrlByPath = new Map(
+        (signedRows ?? []).flatMap((item) => item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
+      );
+      const mediaWithPreviews = mediaAssets.map((asset) => ({
+        ...asset,
+        preview_url: signedUrlByPath.get(asset.storage_path) ?? undefined,
       }));
       setSubmissions((rows ?? []) as BusinessSubmission[]);
-      setFields((reviewRows ?? []) as FieldReview[]);
+      setFields((reviewResult.data ?? []) as FieldReview[]);
       setMedia(mediaWithPreviews);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Could not load business field reviews.', 'error');
