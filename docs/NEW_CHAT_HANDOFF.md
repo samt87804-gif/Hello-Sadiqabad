@@ -1107,7 +1107,7 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Owner approved partial image caching: unsupported/unavailable images are counted and warned about but do not block a valid public-data offline snapshot.
 - Source commits: `b4abe5a98bf303477a72f6a29f6b7b237902db14` (downloader behavior), `c51ddd6a4ae59cbf5176bed5ebd5127a25504ee1` (regression test).
 - The public IndexedDB snapshot still uses its atomic generation activation. Core-data validation/fetch/save failures and cancellation must preserve the prior verified package.
-- CI run `45668460310` passed TypeScript, automated tests, production build and Edge Function checks. Cloudflare Pages deployment `b162f9ca-f575-445f-aeb6-14711b7ff30c` succeeded for the source commit and carries the canonical alias.
+- CI run `45668460310` passed TypeScript, automated tests, production build and Edge Function checks. Cloudflare Pages deployment `b162f9ca-f575-445f-aeb6-14711b7ff30c` succeeded for the feature commit. The canonical alias was subsequently confirmed on descendant deployment `3e856645-fe2b-47b6-84d8-885a6593b6a1` (commit `c181ea930802afa9186674e1be7e19aec4eff988`), which includes the feature. Current documentation-only main commit CI run `45669324532` also passed.
 - Production browser test saved 748 businesses, 29 categories, 315 areas and 12 emergency contacts; 953 images cached and 235 unavailable/unsupported images were warned about without blocking the snapshot. Offline-emulation smoke at 390×844 verified homepage, categories, emergency and a business detail with `navigator.onLine=false`; no page errors.
 - Physical-device airplane-mode and Service Worker update/rollback acceptance remain pending.
 
