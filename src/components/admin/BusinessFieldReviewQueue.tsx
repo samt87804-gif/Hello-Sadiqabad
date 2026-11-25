@@ -540,7 +540,9 @@ export function BusinessFieldReviewQueue({
             const submissionFields = (fieldsBySubmission.get(submission.id) ?? []).filter((field) => field.field_key !== 'owner_name');
             const pendingCount = submissionFields.filter((field) => field.status === 'pending_review').length;
             const approvedCount = submissionFields.filter((field) => field.status === 'approved_published').length;
-            const mediaCount = (mediaBySubmission.get(submission.id) ?? []).length;
+            const rejectedCount = submissionFields.filter((field) => field.status === 'rejected').length;
+            const submissionMedia = mediaBySubmission.get(submission.id) ?? [];
+            const mediaCount = submissionMedia.length;
             const ownerRequest = ownerRequestBySubmission.get(submission.id);
             const categoryId = submission.payload.category_id;
             const areaId = submission.payload.area_id;
@@ -551,17 +553,32 @@ export function BusinessFieldReviewQueue({
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="min-w-0">
                     <h3 className="font-bold text-on-surface break-words">{String(submission.payload.name_en ?? 'New business')}</h3>
-                    <p className="text-xs text-on-surface-variant mt-1">
-                      Submitted by {submission.contact_name || 'Public visitor'} · {new Date(submission.created_at).toLocaleString()}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-on-surface-variant mt-1">
+                      <span>Request ID: {submission.id.slice(0, 8)}</span>
+                      <span>Submitted by {submission.contact_name || 'Public visitor'}</span>
+                      <span>{new Date(submission.created_at).toLocaleString()}</span>
+                    </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-on-surface-variant">
                       <span>{category?.name_en ?? 'Category pending'}</span>
                       <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" />{area?.name_en ?? 'Area pending'}</span>
                       <span>{submissionFields.length} submitted fields</span>
                       <span>{pendingCount} pending</span>
                       <span>{approvedCount} approved</span>
+                      <span>{rejectedCount} rejected</span>
                       <span>{mediaCount} images</span>
                     </div>
+                    {submissionMedia.length > 0 && (
+                      <div className="flex items-center gap-2 mt-3">
+                        {submissionMedia.slice(0, 2).map((asset) => (
+                          <div key={asset.id} className="w-14 h-12 rounded-lg border border-outline-variant/40 bg-surface-container-low overflow-hidden flex items-center justify-center">
+                            {asset.preview_url
+                              ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Submitted logo thumbnail' : 'Submitted cover thumbnail'} className="w-full h-full object-contain" />
+                              : <span className="text-[9px] text-on-surface-variant">No preview</span>}
+                          </div>
+                        ))}
+                        {submissionMedia.length > 2 && <span className="text-[10px] text-on-surface-variant">+{submissionMedia.length - 2} more</span>}
+                      </div>
+                    )}
                     {ownerRequest && (
                       <p className="text-[11px] text-on-surface-variant mt-1">
                         Owner invitation: {statusLabel(ownerRequest.invitation_status)}
@@ -644,10 +661,13 @@ export function BusinessFieldReviewQueue({
                 <span className="text-xs text-on-surface-variant">{approvedFieldKeys.length} new approvals selected</span>
               </div>
               {fieldGroups.map((group) => (
-                <div key={group.key} className="space-y-2">
-                  <div className="flex items-center justify-between gap-2 border-b border-outline-variant/30 pb-1">
-                    <h4 className="text-xs font-bold uppercase tracking-wide text-primary">{group.title}</h4>
-                    <div className="flex gap-2">
+                <details key={group.key} open className="rounded-xl border border-outline-variant/30">
+                  <summary className="cursor-pointer list-none flex items-center justify-between gap-3 px-3 py-3">
+                    <span className="text-xs font-bold uppercase tracking-wide text-primary">{group.title}</span>
+                    <span className="text-[10px] text-on-surface-variant">{group.items.length} fields · tap to collapse</span>
+                  </summary>
+                  <div className="px-3 pb-3 space-y-2">
+                    <div className="flex items-center justify-end gap-3 border-b border-outline-variant/30 pb-2">
                       <button type="button" disabled={activeSubmission.status === 'done'} className="text-[11px] font-semibold text-primary disabled:opacity-40" onClick={() => selectAllFields(group.items.map((field) => field.field_key))}>Select section</button>
                       <button type="button" disabled={activeSubmission.status === 'done'} className="text-[11px] font-semibold text-on-surface-variant disabled:opacity-40" onClick={() => {
                         const keys = group.items.map((field) => field.field_key);
@@ -656,8 +676,6 @@ export function BusinessFieldReviewQueue({
                         setUnpublishFieldKeys((current) => current.filter((key) => !keys.includes(key)));
                       }}>Clear section</button>
                     </div>
-                  </div>
-                  <div className="space-y-2">
                     {group.items.map((field) => {
                       const alreadyApproved = field.status === 'approved_published';
                       const rejected = field.status === 'rejected';
@@ -709,7 +727,7 @@ export function BusinessFieldReviewQueue({
                       );
                     })}
                   </div>
-                </div>
+                </details>
               ))}
             </section>
 
