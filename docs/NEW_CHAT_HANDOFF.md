@@ -1276,3 +1276,41 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - No application code, database schema, production business/user data, Storage objects, Cloudflare settings or Auth accounts were changed during Phase A.
 
 **Next:** Phase B one-card request list and grouped review popup, with the atomic field-save and retryable invitation/media interfaces designed before the production release.
+
+
+## Business Registration & Admin Approval — implementation continuation (26 November 2026)
+
+Owner approved the active workflow in `docs/ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md`. Do not implement the archived Add Business / Owner Approval plan. Canonical flow: one Add Business request card → one field-review popup → explicit field decisions → one Save Approval → optional secure Owner invitation → Owner Portal → Owner change requests through Moderation Queue.
+
+### Production state on main
+
+- Main commit: `84d72a4746d69a08eeb87238856a3b92a687b7ca`.
+- GitHub Actions run `45722802681`: success (build, tests, typecheck, production build and Edge Function checks).
+- Cloudflare Pages production deployment: `a77f3156-deed-4d69-a208-d98e4d5ec468`, successful, alias `https://hellosadiqabad.com`.
+- Applied migrations: `20261125232726_business_approval_bulk_review_invitation_media`, `20261125233525_business_review_defer_plan_gated_decisions`, `20261125233716_business_review_api_privilege_and_policy_tuning`.
+- Active Edge Functions: `send-business-owner-invitation` v1, `review-business-media` v4, `manage-owner-registration` v6; all require JWT.
+- Current data baseline: 2 new + 2 in-review Add Business submissions; 36 pending + 100 approved field reviews; 2 pending media assets; 1 linked Owner request pending with invitation not requested; 3 standalone Owner requests pending; 0 processing.
+- Transactional tests verified bulk field approval, five-field publication gate, private Owner-name exclusion, pending invitation state without sending email, and deferred media promotion; all synthetic records were rolled back. No test rows remain.
+- No Owner invitation email or new Auth account has been created during this work.
+
+### Current feature branch — not merged/deployed
+
+Branch: `feature/admin-business-workflow-phase-e`.
+
+- Collapsible field sections, request ID and media thumbnails in Business Field Approval.
+- Desktop Admin navigation grouped into Review & Approvals, Directory Management, Owner Management and Other Operations.
+- Owners page now manages existing accounts only; new accounts are created through invitation workflows, and password resets send a secure link so the Owner chooses their own password.
+- Moderation, Businesses and Data Quality page responsibilities are clarified; Audit Logs displays old/new values.
+- Migration `20261125235000_business_admin_field_change_audit.sql` adds before/after business-field details while excluding private legacy owner profile fields. This migration is branch-only and **must not be applied to production until PR approval/merge**.
+
+### Open acceptance gates
+
+1. Complete branch CI and open/review the PR before merging Phase E.
+2. After merge, apply the Admin before/after audit migration and verify a transactional before/after audit test.
+3. Authenticated Admin browser walkthrough of Business Field Approval; confirm Save, partial approval, rejection, unpublish, invitation retry and follow-up media handling.
+4. Verify anonymous access is denied for pending media and public access is granted only after approved promotion.
+5. Test real Owner invitation, password setup, business isolation and Owner edit → Moderation Queue → approval. Use an owner-approved test account; do not send invitations to real pending contacts without explicit approval.
+
+### Working-process correction
+
+The initial Phase B/C implementation was committed directly to main in this session. That did not follow the uploaded Website Builder Master Prompt v5. From this checkpoint onward, all new code changes must use a feature branch, passing CI and Pull Request; do not commit directly to main. This newer process supersedes older handoff wording that suggested direct-main work.

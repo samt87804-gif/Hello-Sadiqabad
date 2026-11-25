@@ -1139,3 +1139,18 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 - [x] Owner confirms the production mobile `/gov` page and bottom navigation look correct.
 - [ ] Gov destination deep links and Emergency card/route remain separate acceptance checks; do not infer them from the visual confirmation.
+
+
+## Business Registration & Admin Approval — implementation status (26 November 2026)
+
+- [x] Owner-approved active workflow and Phase A audit.
+- [x] Phase B/C first production release on main: one request card, grouped review popup, field decisions, one Save Approval, minimum-safe-listing gate, private Owner details and optional invitation task.
+- [x] Server-side invitation and media follow-up Edge Functions deployed with JWT enforcement; linked Owner invitations are no longer handled by the standalone Owner Registration Requests endpoint.
+- [x] Transactional database tests for bulk field decisions, private Owner-name exclusion, invitation task persistence without sending email, and deferred media promotion; synthetic rows rolled back.
+- [x] Main CI run `45722802681` passed; Cloudflare Pages deployment `a77f3156-deed-4d69-a208-d98e4d5ec468` succeeded.
+- [~] Phase E feature branch `feature/admin-business-workflow-phase-e`: collapsible sections, navigation groups, Owners page invitation/reset behavior and before/after Admin audit viewer/migration are prepared but not merged.
+- [ ] Manual authenticated Admin/Owner journey, real invite retry, anonymous Storage read denial and media promotion acceptance.
+
+Live baseline at checkpoint: 4 active Add Business submissions (2 new, 2 in review); 36 pending / 100 approved field reviews; 2 pending media assets; 1 linked Owner request pending with invitation not requested; 3 standalone Owner requests pending; 0 processing.
+
+No real invitation email or Auth account was created during transactional tests. The audit migration in the feature branch is not applied to production until PR approval/merge. Future changes follow Website Builder Master Prompt v5: feature branch → CI → Pull Request; no direct commits to main.
