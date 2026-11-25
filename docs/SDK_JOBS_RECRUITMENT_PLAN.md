@@ -85,7 +85,7 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Confirmed no SDK Jobs routes, table, owner submission UI, Admin manager or Edge Function exists yet; Government Jobs remains separate.
 - [x] Inspected current owner eligibility source: active `profiles.role='owner'` and at least one `businesses` row with `owner_id=auth.uid()` and `status='published'`.
 - [x] Inspected current dedicated Admin permission pattern and live RLS/grants. New permission must be `sdk_jobs.manage` and must be explicit for staff; do not add broad staff-type defaults.
-- [x] Inspected live migration ledger (108 applied versions). Existing data/schema baseline must not be replayed.
+- [x] Inspected live migration ledger (108 prior versions); three SDK Jobs migrations are now applied and recorded (111 total). Existing data/schema baseline must not be replayed.
 - [x] Added detailed data-boundary/security design: [`SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`](SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md).
 - [x] Finish exact areas schema, staff permission editor/Admin tab gates and Storage limits review; findings are in the Phase 4 design document.
 - [x] Additive `sdk_jobs`, `sdk_job_status_history` and `sdk_job_admin_notes` tables; private employer linkage and published-only invoker-security public view applied via migrations `20261125210353` and `20261125210439`.
@@ -99,4 +99,4 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 
 **Phase boundary:** candidate intake, consent records, CV details, interview notes, suitability, referrals, referral letters, fees and office-hour configuration remain Phase 5. Do not collect candidate personal data in Phase 4.
 
-**Current status:** Phase 4 audit/design is in progress. No application code, migration, RLS, Storage policy or production record was changed by the audit.
+**Current status:** Phase 4 audit/design and database foundation are complete. Migrations `20261125210353`, `20261125210439` and `20261125210610` are applied and recorded. The private job tables, owner eligibility guard, `sdk_jobs.manage` permission, Admin-only notes/status history and published-only invoker-security projection are live. Owner and cross-owner authorization tests ran in rollback transactions; all temporary rows were rolled back and live job/history/note counts remain zero. Security/performance advisor checks show no SDK Jobs-specific security-definer-view, unindexed-FK or multiple-permissive-policy finding. Remaining Phase 4 work is owner UI/media upload, Admin moderation UI, public board/share routes and browser/adversarial acceptance.
