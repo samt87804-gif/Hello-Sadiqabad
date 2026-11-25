@@ -868,3 +868,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Added separate English and Urdu business descriptions (500 characters each, with server-side validation for the Urdu field), a live public-field preview that excludes owner-private details, and a required bilingual consent confirmation before submission.
 - Category and Area now have labelled search filters; missing taxonomy guidance is always visible and directs users to Admin rather than selecting an incorrect substitute. Image file controls reset after selection so the same file can be reselected after a failed attempt.
 - Latest app commit `cc6c7ebcbd31ca2660cc7a470baf50bf13751008`; CI run `45625706344` passed; Cloudflare Pages deployment `9c109325-f411-44f0-8183-8d40c940ff70` succeeded with canonical alias.
+
+### Public Add Business browser QA — 25 November 2026
+
+- Added a Playwright production smoke workflow and ran it against `https://hellosadiqabad.com/add-business` on mobile (390×844) and desktop (1365×900). Both passed.
+- Verified live Category/Area data, no automatic first-option selection, search filtering while preserving the chosen option, live preview updates, owner-email privacy in the preview, unchecked required consent, logo file preview/reselection, and no horizontal overflow at either viewport.
+- Browser workflow run `45627086704` passed; main CI run `45627086518` passed; Cloudflare Pages deployment `15c9b434-bc45-495b-814f-a00fe391cbf0` succeeded with the canonical alias.
+- Still pending: authenticated Admin/Owner Portal browser click-through, a real owner image-upload-to-Admin-approval roundtrip, and real invitation email/redirect verification.
