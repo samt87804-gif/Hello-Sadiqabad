@@ -162,3 +162,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Cloudflare Pages deployment containing the application code from `a1b210633c23747b91758fa515e83b8941425080` succeeded for commit `8b778ba2dc7eb04192c5159696353f88ea44334a` with canonical alias `https://hellosadiqabad.com`.
 - Latest active Edge Function versions: `create-business-media-upload` v2, `cleanup-business-media-upload` v3, `submit-suggestion` v10, `review-business-media` v3, `manage-owner-registration` v5.
 - Total Phase 2 migrations applied to the existing project: **9**. No separate Supabase project was created. Test-only database writes were all rolled back; verification found no test media URLs, test submissions, test owner links or pending Storage objects.
+
+
+### Add Business taxonomy usability follow-up — 25 November 2026
+
+- The Category and Area selectors now have separate, labelled text filters that narrow their native select options without changing taxonomy IDs or auto-selecting a value. The selected option remains available while filtering, and search text clears when the form resets.
+- The form now always displays bilingual instructions to contact Admin through the approved WhatsApp link when the required category or area is missing; it explicitly tells submitters not to choose an incorrect substitute.
+- Commits: `84703741a53464d94681276ff89842848a15e944` (taxonomy guidance), `58f126f392944f3598257c6e63796cdb1fc2326e` (search filters), `ea20723a0791ce79f75e696d228d8eeb9604954c` (reset behavior).
+- GitHub CI run `45623996190` passed; Cloudflare Pages deployment `b0e31b63-826a-4987-8c18-20ed667b823b` succeeded with canonical alias `https://hellosadiqabad.com`.
+- These are implementation/CI/deployment checks only. Authenticated browser QA, mobile form interaction, actual submission and invitation email delivery remain unverified.
