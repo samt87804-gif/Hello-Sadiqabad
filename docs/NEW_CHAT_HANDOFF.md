@@ -1185,3 +1185,15 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Public view is `security_invoker=true`; anon has no table-level SELECT or private-column grants on the base table. Security advisor no longer reports a SECURITY DEFINER view; performance advisor no longer reports SDK Jobs unindexed FKs or multiple permissive policies.
 - CI [45702011116](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45702011116) passed build and Edge Function jobs. Cloudflare Pages deployment `3d3bf1ec-2f80-4695-886e-75aaf2b528cb` succeeded for commit `12b9599f24765105972715681501ee5447d664eb` with canonical alias `https://hellosadiqabad.com`.
 - Next: build owner vacancy form and signed private media upload, then permission-gated Admin moderation and published-only public listing/detail/search/filter/share routes. Candidate intake/PII remains Phase 5, not Phase 4. No existing business/owner/submission data was changed.
+
+
+## Latest SDK Jobs status — 26 November 2026
+
+- Database foundation and poster lifecycle migration are live; migration ledger now 112 versions. Existing private `hs-pending-business-media` bucket reused with no bucket limit changes.
+- Owner Portal poster upload UI, Admin private poster preview/approve/reject UI, and server-side publication privacy gate are committed. Edge Functions `create-sdk-job-poster-upload`, `review-sdk-job-poster`, and `publish-sdk-job` are deployed with JWT verification required.
+- Public `/sdk-jobs` and `/sdk-jobs/:slug` routes, filters, privacy-safe metadata, Admin WhatsApp CTA, approved office-hours instruction, navigation and sitemap integration are committed.
+- Rolled-back DB tests passed for Owner submission/path attachment, pending content mutation denial, cross-job path denial and anon employer-ID denial. No live SDK Jobs rows were created; live job/history/note counts remain zero.
+- Latest CI run [45710562574](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710562574) was still running at handoff update. Recheck before claiming CI passed.
+- Not production-released: real authenticated Owner upload + Admin preview/approve/publish browser acceptance, final linked Owner/business display labels, production Pages deploy and public route/sitemap smoke tests remain open.
+- Do not add candidate CV/intake/referral/fee/office-hour settings in Phase 4. Those remain Phase 5.
+
