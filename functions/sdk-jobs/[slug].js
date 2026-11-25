@@ -99,7 +99,7 @@ function notFoundResponse() {
 }
 
 async function fetchPublishedJob(env, slug) {
-  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\\/+$/, '');
+  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const publicKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !publicKey) throw new Error('Public Supabase configuration is unavailable.');
   const url = new URL(baseUrl + '/rest/v1/sdk_jobs_public');
