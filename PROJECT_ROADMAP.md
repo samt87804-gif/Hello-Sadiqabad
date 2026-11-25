@@ -759,9 +759,9 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
 - [x] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — owner confirms all testing/acceptance checks passed on 26 November 2026.
 - [x] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — owner confirms all testing/acceptance checks passed on 26 November 2026.
-- [~] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — implementation complete; owner personally confirmed all acceptance checklist testing passed. Production Pages deployment and post-deploy smoke tests remain open.
+- [~] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — implementation, owner acceptance and production Pages deployment complete. Post-deploy Owner/Admin/public/sitemap/social-preview smoke checks remain open.
 - [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented; candidate PII must wait for retention/consent/security design.
-- [~] Phase 6 Gov landing page and five-item mobile bottom navigation — bilingual `/gov`, four directory cards, five-item mobile nav, desktop Civic Services link, route indexing, analytics and sitemap code committed; CI, production deploy and browser/mobile acceptance pending.
+- [~] Phase 6 Gov landing page and five-item mobile bottom navigation — bilingual `/gov`, four directory cards, five-item mobile nav, desktop Civic Services link, route indexing, analytics and sitemap deployed; CI passed and `/gov`/mobile nav browser smoke passed. Live sitemap and owner browser/deep-link/Urdu RTL/Emergency acceptance remain open.
 
 **Safety findings:** The current Storage bucket is public, so pending media needs a separate private bucket. The live Supabase migration ledger (95 versions) differs from the 74 repository migration files; do not replay the baseline or run an unreviewed schema push. No production schema or data was changed during Phase 0.
 
@@ -1075,3 +1075,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Latest CI, Cloudflare Pages production deployment and `/gov`/sitemap smoke tests.
 - [ ] Owner browser acceptance for Gov card navigation, desktop/mobile responsive layout, Urdu RTL and Emergency preservation.
 - No Gov database/schema changes or authority record edits were made. SDK Jobs Phase 5 candidate intake and personal-data workflows remain untouched.
+
+## SDK Jobs production release + Gov landing deployment — 26 November 2026
+
+- [x] Owner personally confirmed all SDK Jobs Phase 4 acceptance checklist items in Sections 1–8 passed. No repeat testing requested.
+- [x] Latest CI run [45714887257](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45714887257) passed TypeScript, automated tests (including Gov navigation and analytics allowlist tests), production build and Supabase Edge Function checks.
+- [x] Cloudflare Pages production deployment `cf208161-c3da-4116-a0bc-f3eb2a983cfb` succeeded for commit `c766470a26a0325d1bc6c21d2bce65255184d06f`; canonical alias is `https://hellosadiqabad.com`.
+- [x] Public `/gov` rendered successfully at 390×844 with HTTP 200, expected page title and canonical URL; bilingual four-card directory layout was present in the rendered DOM.
+- [x] Mobile bottom navigation was confirmed in the 390×844 rendered DOM with exactly Home, Search, Gov, SDK Jobs and Saved; no separate Jobs, Schemes or Urgent item appears in the bottom bar.
+- [ ] Post-deployment SDK Jobs Owner/Admin/public listing/detail/social-preview/sitemap smoke checks.
+- [ ] Live sitemap `/gov` entry check (the browser-rendering request was rate-limited; no success claim).
+- [ ] Gov owner browser acceptance: all four deep links, Urdu RTL, desktop Civic Services menu and preserved Emergency route/Home card.
+- No database/schema changes or authority record edits were made for Gov. SDK Jobs Phase 5 candidate intake/PII/referral work remains unimplemented pending its own retention/consent/security design.
