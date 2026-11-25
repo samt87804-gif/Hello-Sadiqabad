@@ -1043,3 +1043,14 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Admin detail now resolves linked business and Owner name/contact through JWT-protected `get-sdk-job-employer-details`, gated by explicit `sdk_jobs.manage`; no broad RLS grants added.
 
 **Release status:** Database migration and three JWT-protected Edge Functions are live. Code is committed to main, but production Pages deployment is intentionally held until latest CI and authenticated browser acceptance. No candidate intake, CVs, referrals, referral letters or fee collection in Phase 4.
+
+
+## SDK Jobs — final Owner feedback and social-preview increment (26 November 2026)
+
+- [x] Migration `20261125221201_sdk_jobs_owner_visible_feedback`; ledger now 113 versions.
+- [x] Owner-facing correction/rejection message separate from private Admin notes; Admin must give reason; Owner can read and resubmit draft/changes-requested jobs; database clears feedback on resubmit.
+- [x] Cloudflare Pages social-preview routes for list/detail use privacy-safe metadata and published-only public view.
+- [x] Node tests cover social-preview metadata, private-field exclusion, unpublished 404/noindex and crawler pass-through; CI now runs these tests and Node syntax checks.
+- [ ] Latest CI run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724) queued/pending at this update.
+- [ ] Authenticated Owner/Admin browser acceptance and production Pages deployment.
+
