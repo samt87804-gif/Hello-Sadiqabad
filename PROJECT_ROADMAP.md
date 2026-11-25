@@ -1051,7 +1051,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Owner-facing correction/rejection message separate from private Admin notes; Admin must give reason; Owner can read and resubmit draft/changes-requested jobs; database clears feedback on resubmit.
 - [x] Cloudflare Pages social-preview routes for list/detail use privacy-safe metadata and published-only public view.
 - [x] Node tests cover social-preview metadata, private-field exclusion, unpublished 404/noindex and crawler pass-through; CI now runs these tests and Node syntax checks.
-- [ ] Latest CI run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724) queued/pending at this update.
+- [ ] Latest CI [45712577454](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712577454) passed TypeScript, tests, production build, Node syntax checks and Supabase Edge Function checks.
 - [ ] Authenticated Owner/Admin browser acceptance and production Pages deployment.
 
 
