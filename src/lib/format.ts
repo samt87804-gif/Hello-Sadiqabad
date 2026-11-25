@@ -81,6 +81,20 @@ export function extractSafeEmbedUrl(url: string): string | null {
   return null;
 }
 
+export function isSafeGoogleMapsUrl(value: string | null | undefined): value is string {
+  if (!value) return false;
+  try {
+    const parsed = new URL(value.trim());
+    const host = parsed.hostname.toLowerCase();
+    const allowedHost = host === 'google.com' || host.endsWith('.google.com') ||
+      host === 'maps.app.goo.gl' || host === 'goo.gl';
+    return parsed.protocol === 'https:' && allowedHost &&
+      !parsed.username && !parsed.password && (!parsed.port || parsed.port === '443');
+  } catch {
+    return false;
+  }
+}
+
 export function buildGoogleMapsDirectionsUrl(
   lat: number | null | undefined,
   lng: number | null | undefined,
