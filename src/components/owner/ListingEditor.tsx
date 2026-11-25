@@ -426,9 +426,10 @@ export function ListingEditor({
         throw new Error(authorization?.error || authorizationError?.message || 'A secure image upload could not be prepared.');
       }
 
-      storagePath = authorization.data.path;
+      const uploadPath = authorization.data.path;
+      storagePath = uploadPath;
       const { error: uploadError } = await client.storage.from('hs-pending-business-media')
-        .uploadToSignedUrl(storagePath, authorization.data.token, file, { contentType: file.type, upsert: false });
+        .uploadToSignedUrl(uploadPath, authorization.data.token, file, { contentType: file.type, upsert: false });
       if (uploadError) throw uploadError;
 
       const { data: requestId, error: requestError } = await client.rpc('request_business_image_change', {
