@@ -50,3 +50,12 @@ Do not alter desktop navigation unless inspection shows a necessary compatible c
 
 
 - [x] Added regression tests in `scripts/mobile-bottom-nav.test.mjs` for the six destination routes/order, News translation/icon and six-column layout; included in `npm test`. CI run [45716860002](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716860002) was queued/running at checkpoint; await its result.
+
+
+## Regression test continuation — 26 November 2026
+
+- [x] Added `scripts/mobile-bottom-nav.test.mjs`: verifies the six routes in exact order, News `/news` + bilingual translation + Newspaper icon, and six-column grid.
+- [x] Added `scripts/gov-navigation.test.mjs`: verifies the four existing directory routes, bilingual title/description fields, public `/gov` route, canonical SEO and sitemap inclusion.
+- [x] Both tests are included in `npm test`.
+- [ ] Latest CI run [45717263569](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45717263569) was queued at checkpoint; verify final result.
+- [ ] Owner acceptance still needed for rendered six-item mobile layout, Urdu RTL, each Gov card/deep link and Emergency card/route.
