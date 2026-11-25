@@ -743,7 +743,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [~] Phase 1 Admin Business and Data Quality performance optimization — initial code changes implemented and deployed; final acceptance pending authenticated desktop/browser metrics and mobile interaction QA.
   - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
-- [~] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — implementation source exists on the closed feature branch; only migration 1 is on main, not applied; isolated database QA is blocked by Supabase free-project limit.
+- [x] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — additive schema migrations and app/Edge Function workflow are deployed to the existing production project; authenticated browser acceptance remains pending.
 - [ ] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — existing MVPs remain in place; expansion not implemented.
 - [ ] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — not implemented.
 - [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented.
@@ -778,22 +778,22 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 ### Additional audit evidence — 25 November 2026
 
 - Live SQL comparison on 697 business rows: planner-estimated row width reduced from 2,676 bytes for the former broad joined projection to 1,419 bytes for the new allowlisted projection (about 47% narrower). Query timings from the compared runs had different cache state and are not used as a speed claim.
-- Phase 2 read-only preflight is documented in `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`: current Add Business form misses several approved fields and preselects taxonomy; the legacy new-business approval branch publishes all fields at once; owner invitation has no business association; pending media needs a separate private bucket.
-- Phase 2 code/schema work has not started because Phase 1 authenticated desktop/mobile acceptance remains a gate.
+- Phase 2 read-only preflight is a historical baseline documented in `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`; its findings have since been addressed in the production rollout checkpoint below.
+- Owner explicitly authorised Phase 2 to proceed while Phase 1 authenticated desktop/mobile acceptance remains outstanding; Phase 1 is still not accepted.
 
 
 ### Phase 2 continuation — 25 November 2026
 
 - Owner approved proceeding with Phase 2 and direct `main` commits; no PRs are to be created.
-- Phase 2 implementation source was developed on `feat/business-owner-field-approval`; PR #19 was closed unmerged on owner instruction. The application/Edge Function/admin UI changes and second migration are therefore not in `main`.
+- The original feature branch and PR #19 were closed unmerged as instructed; verified implementation was subsequently ported directly to `main` and deployed. No PRs are used.
 - Migration `20261125110000_business_field_approval_workflow.sql` was added to `main` in commit `3794918e`, then a malformed trailing duplicate SQL fragment was removed in commit `1bb9d3e2`. Current file ends at its single `COMMIT` statement.
 - CI for `1bb9d3e2` passed both `build` and `edge-functions` jobs (run 45608741733). This validates repository build checks, not SQL execution.
-- Supabase staging project creation was blocked because the organization has reached its two-active-Free-project limit. No project was created; no production schema/data was modified. Do not apply either Phase 2 migration to production until isolated SQL validation and rollback testing are complete.
+- A separate staging project was not created because the Free-project limit was reached. Owner then explicitly directed work in the existing Hello Sadiqabad project; additive migrations were applied there after transaction/rollback checks.
 - Next: obtain an isolated PostgreSQL/Supabase test target by freeing an existing Free project slot or approving an appropriate paid staging option; then validate both migrations against the live schema shape, RLS/Storage behavior, owner invite rollback and media workflow before porting the remaining code directly to `main`.
 
 ### Data API grants review — 25 November 2026
 
-Supabase's 30 October 2026 change requires explicit grants for newly created `public` tables before the Data API can access them. The migration already grants authenticated SELECT for the admin/owner-facing tables and authenticated EXECUTE for the RPCs. Static review found the service-role Edge Functions also need access to the new media tables: `submit-suggestion` inserts/selects `business_media_assets`; `review-business-media` reads/updates `business_media_assets` and updates `business_image_change_requests`. Migration 1 was amended in commit `49569240a9d51c5922790df9ae147539487a9fb8` to grant `SELECT, INSERT, UPDATE` on `business_media_assets` and `SELECT, UPDATE` on `business_image_change_requests` to `service_role`. This is source-only; SQL remains unexecuted pending isolated staging validation.
+Supabase's 30 October 2026 change requires explicit grants for newly created `public` tables before the Data API can access them. The migration already grants authenticated SELECT for the admin/owner-facing tables and authenticated EXECUTE for the RPCs. Static review found the service-role Edge Functions also need access to the new media tables: `submit-suggestion` inserts/selects `business_media_assets`; `review-business-media` reads/updates `business_media_assets` and updates `business_image_change_requests`. Migration 1 was amended in commit `49569240a9d51c5922790df9ae147539487a9fb8` to grant `SELECT, INSERT, UPDATE` on `business_media_assets` and `SELECT, UPDATE` on `business_image_change_requests` to `service_role`. The migration was subsequently applied to the existing production project after live-schema review and rollback checks; see the production rollout checkpoint below.
 
 ## Phase 2 production rollout checkpoint — 25 November 2026
 
