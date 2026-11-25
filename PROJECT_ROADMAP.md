@@ -1103,3 +1103,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Updated `src/components/layout/AppBottomNav.tsx` to six items: Home, Search, News, Gov, SDK Jobs, Saved. News uses existing `/news`, `nav.news` bilingual translation and `Newspaper` icon; six-column responsive grid.
 - [ ] CI and production Pages deployment for this correction.
 - No News content, route implementation, database, analytics, Emergency route or Home Emergency card changed.
+
+
+- [x] News bottom-nav preservation: final order Home, Search, News, Gov, SDK Jobs, Saved. Code commit `981bda1ae6a212cef613021ad1e16188e4f6ee93` passed CI [45716487169](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716487169) and Cloudflare Pages production deployment `8c1fd329-f5fd-484c-b7c7-c8428bd49713` succeeded. Canonical production alias is on successful descendant deployment `4f484193-c01c-4f2f-9147-c0becbdc6cbc`, which includes the News change.
+- [ ] Rendered production mobile acceptance for all six items, Urdu labels and News route active-state/deep link.
