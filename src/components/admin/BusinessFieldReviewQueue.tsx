@@ -188,7 +188,7 @@ export function BusinessFieldReviewQueue({
       const { data: rows, error: submissionError } = await client.from('submissions')
         .select('id,payload,contact_name,contact_phone,submitted_by,status,admin_note,created_at,business_id')
         .eq('type', 'new_business')
-        .in('status', ['new', 'in_review'])
+        .in('status', ['new', 'in_review', 'done'])
         .order('created_at', { ascending: false })
         .limit(100);
       if (submissionError) throw submissionError;
@@ -226,13 +226,29 @@ export function BusinessFieldReviewQueue({
         (signedRows ?? []).flatMap((item) => item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
       );
 
-      setSubmissions((rows ?? []) as BusinessSubmission[]);
-      setFields((reviewResult.data ?? []) as FieldReview[]);
+      const candidateRows = (rows ?? []) as BusinessSubmission[];
+      const fieldRows = (reviewResult.data ?? []) as FieldReview[];
+      const linkedOwnerRows = (ownerResult.data ?? []) as LinkedOwnerRequest[];
+      const activeRows = candidateRows.filter((submission) => {
+        if (submission.status === 'new' || submission.status === 'in_review') return true;
+        if (submission.status !== 'done') return false;
+        const hasOutstandingMedia = mediaAssets.some((asset) =>
+          asset.submission_id === submission.id && ['pending_review', 'approved_pending_promotion'].includes(asset.status)
+        );
+        const invitation = linkedOwnerRows.find((item) => item.submission_id === submission.id);
+        const hasOutstandingInvitation = Boolean(
+          invitation?.invitation_requested && invitation.invitation_status !== 'sent'
+        );
+        return hasOutstandingMedia || hasOutstandingInvitation;
+      });
+      const activeIds = new Set(activeRows.map((submission) => submission.id));
+      setSubmissions(activeRows);
+      setFields(fieldRows.filter((field) => activeIds.has(field.submission_id)));
       setMedia(mediaAssets.map((asset) => ({
         ...asset,
         preview_url: signedUrlByPath.get(asset.storage_path) ?? undefined,
       })));
-      setOwnerRequests((ownerResult.data ?? []) as LinkedOwnerRequest[]);
+      setOwnerRequests(linkedOwnerRows.filter((item) => activeIds.has(item.submission_id)));
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Could not load business field reviews.', 'error');
     } finally {
@@ -373,14 +389,25 @@ export function BusinessFieldReviewQueue({
         rejectedFieldReasons,
         unpublishFieldKeys
       );
-      const { data, error } = await client.rpc('review_business_submission_fields', {
-        p_submission_id: activeSubmission.id,
-        p_decisions: decisions,
-        p_admin_note: adminNote.trim() || null,
-        p_request_owner_invitation: inviteChecked,
-      });
-      if (error) throw error;
-      result = (data ?? {}) as Record<string, unknown>;
+      const needsFieldSave = decisions.length > 0 || inviteChecked !== initialInviteChecked || adminNote.trim() !== initialAdminNote.trim();
+      if (needsFieldSave && activeSubmission.status === 'done') {
+        throw new Error('This registration review is complete. Use the invitation or image retry controls for remaining follow-up work.');
+      }
+      result = {
+        business_id: activeSubmission.business_id,
+        core_ready: activeCoreReady,
+        invitation_status: activeOwnerRequest?.invitation_status ?? 'not_requested',
+      };
+      if (needsFieldSave) {
+        const { data, error } = await client.rpc('review_business_submission_fields', {
+          p_submission_id: activeSubmission.id,
+          p_decisions: decisions,
+          p_admin_note: adminNote.trim() || null,
+          p_request_owner_invitation: inviteChecked,
+        });
+        if (error) throw error;
+        result = (data ?? {}) as Record<string, unknown>;
+      }
 
       const mediaActions = [
         ...activeMedia
@@ -597,7 +624,7 @@ export function BusinessFieldReviewQueue({
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={selectAllRequest}>Select All</Button>
+                <Button size="sm" variant="outline" disabled={activeSubmission.status === 'done'} onClick={selectAllRequest}>Select All</Button>
                 <Button size="sm" variant="outline" onClick={clearAllFields}>Clear All</Button>
               </div>
             </div>
@@ -612,8 +639,8 @@ export function BusinessFieldReviewQueue({
                   <div className="flex items-center justify-between gap-2 border-b border-outline-variant/30 pb-1">
                     <h4 className="text-xs font-bold uppercase tracking-wide text-primary">{group.title}</h4>
                     <div className="flex gap-2">
-                      <button type="button" className="text-[11px] font-semibold text-primary" onClick={() => selectAllFields(group.items.map((field) => field.field_key))}>Select section</button>
-                      <button type="button" className="text-[11px] font-semibold text-on-surface-variant" onClick={() => {
+                      <button type="button" disabled={activeSubmission.status === 'done'} className="text-[11px] font-semibold text-primary disabled:opacity-40" onClick={() => selectAllFields(group.items.map((field) => field.field_key))}>Select section</button>
+                      <button type="button" disabled={activeSubmission.status === 'done'} className="text-[11px] font-semibold text-on-surface-variant disabled:opacity-40" onClick={() => {
                         const keys = group.items.map((field) => field.field_key);
                         setApprovedFieldKeys((current) => current.filter((key) => !keys.includes(key)));
                         setRejectedFieldReasons((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !keys.includes(key))));
@@ -636,7 +663,7 @@ export function BusinessFieldReviewQueue({
                                 type="checkbox"
                                 className="mt-0.5 h-4 w-4 accent-primary shrink-0"
                                 checked={checked}
-                                disabled={alreadyApproved || rejected || disabledWhatsApp}
+                                disabled={activeSubmission.status === 'done' || alreadyApproved || rejected || disabledWhatsApp}
                                 onChange={(event) => toggleFieldApproval(field.field_key, event.target.checked)}
                               />
                               <span className="min-w-0">
@@ -650,21 +677,21 @@ export function BusinessFieldReviewQueue({
                           {alreadyApproved && (
                             <div className="flex items-center justify-between gap-2">
                               <span className="text-[11px] text-success inline-flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> Already approved and published</span>
-                              {activeSubmission.business_id && (
+                              {activeSubmission.business_id && activeSubmission.status !== 'done' && (
                                 <button type="button" className="text-[11px] font-semibold text-error" onClick={() => setUnpublishFieldKeys((current) => current.includes(field.field_key) ? current.filter((key) => key !== field.field_key) : [...current, field.field_key])}>
                                   {unpublishFieldKeys.includes(field.field_key) ? 'Cancel unpublish' : 'Unpublish'}
                                 </button>
                               )}
                             </div>
                           )}
-                          {!alreadyApproved && !rejected && !disabledWhatsApp && (
+                          {!activeSubmission || activeSubmission.status !== 'done' ? (!alreadyApproved && !rejected && !disabledWhatsApp && (
                             <div className="flex items-center justify-between gap-2">
                               <button type="button" className="text-[11px] font-semibold text-error" onClick={() => toggleFieldReject(field.field_key)}>
                                 {rejectReason !== undefined ? 'Cancel rejection' : 'Reject this field'}
                               </button>
                               {field.status === 'unpublished' && <span className="text-[10px] text-warning">Previously unpublished</span>}
                             </div>
-                          )}
+                          )) : null}
                           {rejectReason !== undefined && (
                             <Textarea rows={2} value={rejectReason} onChange={(event) => setRejectedFieldReasons((current) => ({ ...current, [field.field_key]: event.target.value }))} placeholder="Required rejection reason" />
                           )}
@@ -754,7 +781,7 @@ export function BusinessFieldReviewQueue({
                       type="checkbox"
                       className="mt-0.5 h-4 w-4 accent-primary"
                       checked={inviteChecked}
-                      disabled={activeOwnerRequest.invitation_status === 'sent'}
+                      disabled={activeOwnerRequest.invitation_status === 'sent' || activeSubmission.status === 'done'}
                       onChange={(event) => setInviteChecked(event.target.checked)}
                     />
                     <span>Send Owner Invitation Link</span>
@@ -797,7 +824,7 @@ export function BusinessFieldReviewQueue({
             <section className="space-y-2">
               <label className="text-xs font-bold text-on-surface" htmlFor="business-review-admin-note">Add Private Admin Note</label>
               {activeSubmission.admin_note && <p className="text-xs text-on-surface-variant whitespace-pre-wrap rounded-lg bg-surface-container-low p-2">Previous note: {activeSubmission.admin_note}</p>}
-              <Textarea id="business-review-admin-note" rows={3} value={adminNote} onChange={(event) => setAdminNote(event.target.value)} placeholder="Add an internal note — never shown publicly" />
+              <Textarea id="business-review-admin-note" rows={3} disabled={activeSubmission.status === 'done'} value={adminNote} onChange={(event) => setAdminNote(event.target.value)} placeholder="Add an internal note — never shown publicly" />
             </section>
 
             <div className="sticky bottom-0 -mx-4 sm:-mx-5 px-4 sm:px-5 py-3 bg-surface-container-lowest border-t border-outline-variant/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
