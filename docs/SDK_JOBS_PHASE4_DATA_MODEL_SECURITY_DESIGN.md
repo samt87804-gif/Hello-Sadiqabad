@@ -106,7 +106,7 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Implemented database-side owner eligibility enforcement and forced pending status.
 - [x] Implemented first-pass Owner vacancy submission UI and owner-only request status list at /owner/sdk-jobs; authenticated owner route and navigation added. Poster upload remains a separate open item.
 - [x] Implemented dedicated Admin permission, RLS gates and append-only status history at database level.
-- [ ] Permission-gated Admin moderation workspace added in code (CI verification pending); authenticated browser and live permission acceptance still open.
+- [x] Implemented permission-gated Admin SDK Jobs moderation workspace, navigation gate and status/history/private-note UI; CI run 45707358141 passed build and Edge Function jobs. Authenticated browser and live permission acceptance remain open.
 - [x] Implemented the published-only, security-invoker public projection.
 - [ ] Implement public listing/detail routes, filters and share metadata.
 - [x] Foundation GitHub CI and production Pages deployment passed for the permission/database foundation.
