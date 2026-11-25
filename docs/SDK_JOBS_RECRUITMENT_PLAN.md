@@ -188,3 +188,7 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [ ] Production Pages deployment and live public route/sitemap/social-crawler smoke tests.
 
 **Release gate remains closed:** Do not deploy Pages or claim the feature production-released until latest CI passes and authenticated Owner/Admin browser acceptance is completed.
+
+
+- [x] Added slug/path safety migration `20261125222053_sdk_jobs_slug_path_safety`: strict lowercase hyphenated slug constraint; Owner cannot set an unsafe slug or change an existing slug. This prevents a crafted slug from affecting the public poster storage path.
+- [x] Rolled-back DB tests passed: unsafe slug insert denied and Owner slug mutation denied. Live SDK Jobs/history/notes counts remain zero; Security Advisor still reports only the two pre-existing unrelated items.
