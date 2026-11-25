@@ -40,3 +40,8 @@
 - Tests for loading, empty, error/retry, pagination, search, filters, detail panel, approve/reject/edit and export.
 - Confirm only authorized Admin users can access records/actions.
 - TypeScript, relevant tests, production build, CI and deployment evidence recorded separately.
+
+
+## Phase 0 audit findings
+
+The repository/live-system findings and exact database baseline are recorded in [Final Product Expansion Phase 0 Audit](FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md). Confirmed code-level causes include all-tab data fetching on every reload, eager imports of large Admin manager modules, an unbounded business-card list and repeated full-array scans for Data Quality category counts. The joined business query returned 697 rows and executed in 5.347 ms in the audit database context; this is not a browser or authenticated UI timing. Capture real desktop and mobile before/after interaction traces before acceptance.
