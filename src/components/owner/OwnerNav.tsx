@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   BarChart3,
+  BriefcaseBusiness,
   Bell,
   Crown,
   Edit3,
@@ -26,6 +27,7 @@ export function OwnerNav({ unreadCount = 0 }: { unreadCount?: number }) {
     { to: '/owner', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/owner/businesses', label: 'My Businesses', icon: Store },
     { to: '/owner/listing', label: 'Edit Listing', icon: Edit3 },
+    { to: '/owner/sdk-jobs', label: 'SDK Jobs', icon: BriefcaseBusiness },
     { to: '/add-business', label: 'Add Business', icon: PlusCircle },
     { to: '/owner/products', label: 'Products', icon: Package },
     { to: '/owner/offers', label: 'Offers', icon: Tag },
