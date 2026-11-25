@@ -58,7 +58,7 @@ async function testViewport(browser, name, viewport, isMobile) {
   assert.ok(categoryBox && categoryBox.height <= 230 && categoryBox.height < 0.4 * viewport.height, 'Category menu must remain a compact scrollable panel, not cover the screen');
   const firstCategory = (await categoryOptions.nth(1).innerText()).trim();
   assert.ok(firstCategory.length > 0, 'Category options should have labels');
-  await categorySearch.fill(firstCategory.split(/\\s+/)[0]);
+  await categorySearch.fill(firstCategory.split(/\s+/)[0]);
   await categoryList.getByRole('option').nth(1).click();
   const selectedCategory = await categoryTrigger.innerText();
   await categorySearch.fill('__no_matching_category__');
@@ -78,7 +78,7 @@ async function testViewport(browser, name, viewport, isMobile) {
   assert.ok(areaBox && areaBox.height <= 230 && areaBox.height < 0.4 * viewport.height, 'Area menu must remain a compact scrollable panel, not cover the screen');
   const firstArea = (await areaOptions.nth(1).innerText()).trim();
   assert.ok(firstArea.length > 0, 'Area options should have labels');
-  await areaSearch.fill(firstArea.split(/\\s+/)[0]);
+  await areaSearch.fill(firstArea.split(/\s+/)[0]);
   await areaList.getByRole('option').nth(1).click();
   const selectedArea = await areaTrigger.innerText();
   await areaSearch.fill('__no_matching_area__');
