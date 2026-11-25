@@ -35,6 +35,7 @@ import { useI18n } from '../lib/i18n';
 import {
   bilingualText,
   buildGoogleMapsDirectionsUrl,
+  isSafeGoogleMapsUrl,
   extractSafeEmbedUrl,
   formatDateShort,
 } from '../lib/format';
@@ -240,11 +241,13 @@ export function BusinessProfile() {
       ? [business.cover_url]
       : []
     : [];
-  const directionsUrl = buildGoogleMapsDirectionsUrl(
-    business.lat,
-    business.lng,
-    `${business.name_en} ${business.address_en ?? ''}`
-  );
+  const directionsUrl = isSafeGoogleMapsUrl(business.map_url)
+    ? business.map_url
+    : buildGoogleMapsDirectionsUrl(
+        business.lat,
+        business.lng,
+        `${business.name_en} ${business.address_en ?? ''}`
+      );
   const activeOffer = business.active_offers?.[0];
   const reviews = business.approved_reviews ?? [];
   const displayedServices =
@@ -835,7 +838,7 @@ export function BusinessProfile() {
                 </div>
 
                 {/* Address, Landmark & Embedded Mini-Map */}
-                {(business.address_en || business.landmark_en || (business.lat && business.lng)) && (
+                {(business.address_en || business.address_ur || business.landmark_en || business.landmark_ur || business.map_url || (business.lat && business.lng)) && (
                   <div className="pt-3 border-t border-outline-variant/25 space-y-2 text-xs">
                     <span className="font-bold text-on-surface uppercase tracking-wider block">
                       {t('profile.locationAddress', 'Location & Address')}
@@ -851,6 +854,11 @@ export function BusinessProfile() {
                     {business.landmark_en && (
                       <p className="text-primary font-semibold">
                         {lang === 'ur' ? 'قریبی نشانی:' : 'Landmark:'} {business.landmark_en}
+                      </p>
+                    )}
+                    {business.landmark_ur && (
+                      <p className="font-urdu text-primary font-semibold leading-[2.0]" dir="rtl">
+                        {business.landmark_ur}
                       </p>
                     )}
                     {typeof business.lat === 'number' && typeof business.lng === 'number' && (
