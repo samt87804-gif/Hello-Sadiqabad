@@ -143,7 +143,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const now = new Date().toISOString();
-    const { data: claimed, error: claimError } = await db.from("owner_registration_requests")
+    let claimQuery = db.from("owner_registration_requests")
       .update({
         status: "processing",
         invitation_status: "processing",
@@ -153,7 +153,13 @@ Deno.serve(async (req: Request) => {
         updated_at: now,
       })
       .eq("id", requestId)
-      .eq("status", request.status)
+      .eq("status", request.status);
+    if (request.status === "processing") {
+      claimQuery = request.invitation_processing_started_at
+        ? claimQuery.eq("invitation_processing_started_at", request.invitation_processing_started_at)
+        : claimQuery.is("invitation_processing_started_at", null);
+    }
+    const { data: claimed, error: claimError } = await claimQuery
       .select("id")
       .maybeSingle();
     if (claimError || !claimed) return response(req, { ok: false, error: "This Owner invitation was claimed by another Admin action" }, 409);

@@ -793,8 +793,8 @@ export function BusinessFieldReviewQueue({
                     <span className="text-on-surface-variant">Attempts: {activeOwnerRequest.invitation_attempts}</span>
                   </div>
                   {activeOwnerRequest.invitation_last_error && <p className="text-xs text-error">{activeOwnerRequest.invitation_last_error}</p>}
-                  {['pending', 'failed'].includes(activeOwnerRequest.invitation_status) && activeSubmission.business_id && activeCoreReady && (
-                    <Button size="sm" variant="outline" loading={busy} disabled={busy} onClick={() => void retryInvitation()} leftIcon={<Mail className="w-3.5 h-3.5" />}>Retry Owner Invitation</Button>
+                  {['pending', 'failed', 'processing'].includes(activeOwnerRequest.invitation_status) && activeSubmission.business_id && activeCoreReady && (
+                    <Button size="sm" variant="outline" loading={busy} disabled={busy} onClick={() => void retryInvitation()} leftIcon={<Mail className="w-3.5 h-3.5" />}>{activeOwnerRequest.invitation_status === 'processing' ? 'Check / Retry Owner Invitation' : 'Retry Owner Invitation'}</Button>
                   )}
                   {activeOwnerRequest.invitation_status === 'sent' && <p className="text-xs text-success">Invitation was processed and this Owner is linked to the reviewed business.</p>}
                 </div>
