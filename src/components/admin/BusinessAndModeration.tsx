@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -195,6 +195,8 @@ export function BusinessManager({
 }) {
   const { showToast } = useToast();
   const [search, setSearch] = useState(initialSearch);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 50;
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [featuredFilter, setFeaturedFilter] = useState<string>('all');
@@ -231,6 +233,10 @@ export function BusinessManager({
     if (initialSearch) setSearch(initialSearch);
   }, [initialSearch]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter, categoryFilter, featuredFilter]);
+
   const staffAssignees = profiles.filter((p) => p.role === 'staff' || p.role === 'super_admin');
   const ownerAssignees = profiles.filter((p) => p.role === 'owner' && (p.is_active !== false || p.id === editing?.owner_id));
   const canDeleteBusiness = profiles.some((profile) => profile.id === actorId && profile.role === 'super_admin');
@@ -264,7 +270,7 @@ export function BusinessManager({
 
   const [form, setForm] = useState<AdminBusinessForm>(emptyForm);
 
-  const filtered = businesses.filter((b) => {
+  const filtered = useMemo(() => businesses.filter((b) => {
     if (statusFilter !== 'all' && b.status !== statusFilter) return false;
     if (categoryFilter !== 'all' && b.category_id !== categoryFilter) return false;
     if (featuredFilter === 'featured' && !b.is_featured) return false;
@@ -279,7 +285,18 @@ export function BusinessManager({
       );
     }
     return true;
-  });
+  }), [businesses, statusFilter, categoryFilter, featuredFilter, search]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
+  const firstVisible = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const lastVisible = Math.min(page * PAGE_SIZE, filtered.length);
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
 
   const allFilteredSelected =
     filtered.length > 0 && filtered.every((b) => selectedIds.includes(b.id));
@@ -778,6 +795,19 @@ export function BusinessManager({
         </div>
       )}
 
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-on-surface-variant">
+        <span>Showing {firstVisible}–{lastVisible} of {filtered.length} businesses · {PAGE_SIZE} per page</span>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>
+            Previous
+          </Button>
+          <span className="tabular-nums font-semibold">Page {page} of {pageCount}</span>
+          <Button size="sm" variant="outline" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}>
+            Next
+          </Button>
+        </div>
+      </div>
+
       {/* Desktop Data Table */}
       <Card className="hidden xl:block overflow-hidden">
         <div className="overflow-x-auto">
@@ -801,7 +831,7 @@ export function BusinessManager({
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
-              {filtered.map((b) => {
+              {pageItems.map((b) => {
                 const isChecked = selectedIds.includes(b.id);
                 return (
                   <tr
@@ -899,7 +929,7 @@ export function BusinessManager({
 
       {/* Mobile / Tablet Stacked Cards */}
       <div className="space-y-2.5 xl:hidden">
-        {filtered.map((b) => {
+        {pageItems.map((b) => {
           const isChecked = selectedIds.includes(b.id);
           return (
             <Card
