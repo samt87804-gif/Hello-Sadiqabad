@@ -54,3 +54,21 @@ Preserve existing anti-spam, honeypot, phone validation, moderation submission, 
 - Owner invite is Admin-authorized and audited.
 - Monthly image quota is enforced server-side.
 - Existing business/submission data and workflows remain intact.
+
+
+## Current implementation and live-schema preflight — 25 November 2026
+
+This is a read-only baseline for the future implementation; no Phase 2 code or database changes have been applied.
+
+- Public route is `/add-business`. Current form captures English/optional Urdu name, category, area, primary phone, optional WhatsApp, one English address, facilities, English description and contact name/phone. It does not yet capture Urdu address, separate landmark, map URL, daily hours, owner Gmail or logo/cover uploads.
+- The current form auto-selects the first Category and Area after loading. The approved replacement must start with an explicit empty selection and display bilingual missing-taxonomy instructions.
+- Public form submits a generic `new_business` item through `submitPublicSuggestion()` into `public.submissions`; no Auth account is created at initial submission.
+- Live `public.submissions` has generic `payload` JSON plus `contact_name`, `contact_phone`, `submitted_by`, status and assignment fields. It has no per-field review ledger.
+- Live `public.businesses` has the current directory fields and is RLS-enabled. Existing public read is published-only; authenticated read has owner/Admin/staff scopes. No field-level visibility state exists.
+- Existing `private.approve_submission(uuid,text)` is a SECURITY DEFINER routine with multiple branches for new businesses, claims, corrections, reports and owner content. Its current `new_business` approval branch inserts the whole listing as `published` in one operation and sets submitted logo/cover to NULL. Do not remove or rewrite other submission branches.
+- Live `owner_registration_requests` is a separate table with full name, email, phone, business name and review status; it has no submission/business foreign key.
+- Deployed `manage-owner-registration` is ACTIVE version 3 with JWT verification. It validates the Admin actor, locks a pending request, invites by email, creates an owner profile and rolls back some provisioning failures. It currently does not attach the invited owner to a business.
+- The only live Storage bucket is `Hello Sadiqabad`, configured `public=true`. Existing business media policies govern authenticated writes, not anonymous reads; a folder inside this bucket is not private.
+- Live RLS inspection confirms public submissions and owner-registration requests have restricted insert/read policies; Admin moderation/owner permissions are enforced through private permission helpers. Keep those boundaries.
+
+**Implementation constraints:** Keep legacy `submissions` payloads and other submission types backward compatible. Add field-level review/media/quota structures additively. Preserve the current `approve_submission` branches for all non-new-business submission types and explicitly close the old whole-listing approval bypass for new-business records only when the replacement workflow is fully ready. Create a separate private pending-media bucket and test anonymous reads are denied before any public promotion. Invitation must be idempotent and associate only the exact reviewed business; failure must leave a retryable state and must not leave a half-linked account.
