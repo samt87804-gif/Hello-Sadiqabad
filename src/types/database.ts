@@ -635,7 +635,7 @@ export interface GovernmentSchemeRow {
  id:string; slug:string; title_en:string; title_ur:string|null; summary_en:string|null; summary_ur:string|null;
  government_scope:GovernmentSchemeScope; category:GovernmentSchemeCategory; benefit_type:GovernmentSchemeBenefitType;
  benefit_details:string; eligibility_text:string; required_documents:string[]; application_steps:string|null; fees_and_repayment:string|null;
- official_apply_url:string|null; source_name:string|null; source_url:string|null; source_document_url:string|null;
+ official_apply_url:string|null; source_name:string|null; source_url:string|null; source_document_url:string|null; image_url:string|null;
  intake_status:GovernmentSchemeIntakeStatus; application_open_at:string|null; deadline_at:string|null;
  status:GovernmentSchemeStatus; published_at:string|null; verified_at:string|null; next_review_at:string|null;
  created_by:string|null; updated_by:string|null; published_by:string|null; created_at:string; updated_at:string;
