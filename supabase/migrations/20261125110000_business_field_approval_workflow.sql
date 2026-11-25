@@ -218,4 +218,20 @@ $function$;
 revoke all on function public.request_business_image_change(uuid,text,text,text,bigint) from public, anon;
 grant execute on function public.request_business_image_change(uuid,text,text,text,bigint) to authenticated;
 
+
+-- Backfill existing submissions without rewriting any business or submission records.
+insert into public.business_field_reviews(submission_id,field_key,field_value,status)
+select s.id, item.key, item.value,
+  case when s.status='done' and s.business_id is not null then 'approved_published' else 'pending_review' end
+from public.submissions s
+cross join lateral jsonb_each(coalesce(s.payload,'{}'::jsonb)) item
+where s.type='new_business'
+  and item.key = any(array[
+    'name_en','name_ur','category_id','area_id','phone_primary','whatsapp',
+    'address_en','address_ur','landmark_en','landmark_ur','map_url',
+    'opening_hours','description_en','description_ur','services_en','services_ur',
+    'owner_name'
+  ])
+on conflict(submission_id,field_key) do nothing;
+
 commit;
