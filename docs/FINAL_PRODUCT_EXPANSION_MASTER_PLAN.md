@@ -334,3 +334,26 @@ Initial Admin performance optimizations are implemented on `main` and deployed t
 The detailed current implementation/live schema baseline is recorded in [Add Business & Owner Approval Plan](ADD_BUSINESS_OWNER_APPROVAL_PLAN.md). Key confirmed facts: the current Add Business form auto-selects first taxonomy options and lacks several approved fields; `submissions` uses a generic payload with no field review ledger; `private.approve_submission` currently publishes the complete new-business listing in one branch; the separate owner registration table has no business/submission association; the deployed version-3 invitation function does not link the owner to a business; and the only Storage bucket is public. Phase 2 must solve these additively without affecting other submission types or making pending media public.
 
 This is preflight only. Phase 1 authenticated browser acceptance remains outstanding, so Phase 2 implementation/schema changes have not started.
+
+
+---
+
+## Phase 2 execution checkpoint — owner-authorized continuation (25 November 2026)
+
+The owner explicitly authorized starting Phase 2 without waiting for the outstanding Phase 1 authenticated browser/mobile acceptance, and changed the Git workflow to direct `main` commits only. Phase 1 remains **in progress / not accepted**; this authorization changes the work order, not the acceptance evidence.
+
+- No feature branches or Pull Requests are to be created. Prior Phase 2 PR #19 was closed unmerged at the owner's instruction.
+- Phase 2 implementation source exists on the closed reference branch `feat/business-owner-field-approval`; the frontend, Admin UI and Edge Function changes plus migration 2 are not in `main` and are not deployed.
+- Migration 1 is on `main`. Static review found and corrected a malformed duplicate SQL tail, added explicit `service_role` grants needed by the Edge Functions, and corrected legacy backfill statuses. Latest migration-source fix: `ac3b54d58f106d20eb2ce02e00decd05915cc56f`.
+- Read-only production inspection confirms the new Phase 2 tables and private Storage bucket do not exist in production; no Phase 2 SQL has been applied and no production schema/data has been modified.
+- CI for commit `1bb9d3e2e530078a6d2f7ae4c63d2b350af4ea9a` passed both build and Edge Function jobs. Latest docs/migration-source CI and Cloudflare deployment are still being verified separately; CI does not execute SQL.
+- Supabase staging creation was blocked because the organization has reached its two-active-Free-project limit. No project was created and no cost was incurred.
+
+### Additional release blockers found during static review
+1. Anonymous clients can currently upload directly to the private pending-media bucket before the Edge Function's rate limit runs. Replace this with a rate-limited server-issued signed upload authorization and remove unrestricted anonymous INSERT policy.
+2. Newly created public tables require explicit Data API grants after Supabase's 30 October 2026 change. Migration 1 now grants the service-role permissions required by media submission/moderation Edge Functions.
+3. Existing legacy `ModerationManager` still shows `new_business` rows and calls `approve_submission`. The coordinated release must route/hide those rows there and make the new field-level queue the sole new-business moderation path, preserving other submission types.
+4. Existing legacy `done` new-business submissions may have `business_id IS NULL`; the live legacy approval function creates the business without backfilling that FK. Migration backfill must preserve `done` as approved and must not guess-link existing businesses by name/phone.
+5. Media approval must be made retry-safe across Storage copy, business URL update, review-status update and audit write; rejected/approved pending objects need a retention/cleanup policy. Owner-invitation reject/approve audit and duplicate-invite rollback paths require tests.
+
+**Release gate:** Do not apply migration 1 alone or deploy the dependent application/Edge Function changes as a partial release. First obtain an isolated database (free an existing Free project slot or explicitly approve a paid staging option), validate both migrations together against the live schema shape, test rollback/RLS/Storage/legacy workflows and resolve the blockers above. Then port only validated code directly to `main` in narrow commits and verify matching Cloudflare production deployment plus QA.
