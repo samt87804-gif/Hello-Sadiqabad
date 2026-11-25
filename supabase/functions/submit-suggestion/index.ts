@@ -1,5 +1,61 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { extractBearerToken, hashRateKey, isValidUuid, readJsonObject } from "../_shared/validation.ts";
+function extractBearerToken(header: string | null): string | null {
+  if (!header) return null;
+  const match = /^Bearer\\s+(.+)$/i.exec(header.trim());
+  return match?.[1]?.trim() || null;
+}
+
+function isValidUuid(value: unknown): value is string {
+  return typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+async function hashRateKey(value: string): Promise<string> {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function readJsonObject(req: Request, maxBytes = 16_384): Promise<Record<string, unknown> | null> {
+  const declaredLength = Number(req.headers.get("content-length") ?? 0);
+  if (declaredLength > maxBytes) {
+    await req.body?.cancel();
+    return null;
+  }
+  const reader = req.body?.getReader();
+  if (!reader) return null;
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return null;
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 const url = Deno.env.get("SUPABASE_URL");
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
