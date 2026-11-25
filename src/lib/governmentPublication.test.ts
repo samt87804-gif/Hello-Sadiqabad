@@ -33,3 +33,30 @@ test('government content publication requires meaningful English and Urdu summar
   assert.ok(errors.some((error) => error.includes('English summary')));
   assert.ok(errors.some((error) => error.includes('Urdu summary')));
 });
+
+test('job publication requires Urdu qualification and paired optional details', () => {
+  const errors = getGovernmentPublicationErrors({
+    ...complete,
+    qualificationEn: 'Bachelor degree or equivalent',
+    qualificationUr: '',
+    experienceEn: 'Two years experience',
+    experienceUr: '',
+  });
+  assert.ok(errors.some((error) => error.includes('qualification')));
+  assert.ok(errors.some((error) => error.includes('experience')));
+});
+
+test('scheme publication requires bilingual benefit, eligibility and matching document translations', () => {
+  const errors = getGovernmentPublicationErrors({
+    ...complete,
+    benefitDetailsEn: 'A verified programme benefit description.',
+    benefitDetailsUr: '',
+    eligibilityEn: 'Eligibility criteria are listed in the official notice.',
+    eligibilityUr: '',
+    requiredDocumentsEn: ['CNIC copy', 'Domicile certificate'],
+    requiredDocumentsUr: ['شناختی کارڈ کی نقل'],
+  });
+  assert.ok(errors.some((error) => error.includes('benefit')));
+  assert.ok(errors.some((error) => error.includes('eligibility')));
+  assert.ok(errors.some((error) => error.includes('required document')));
+});
