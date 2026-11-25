@@ -565,3 +565,11 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] No candidate table, migration, UI, data collection, CV upload, fee record or destructive retention job created.
 - [ ] Owner approval required for exact retention periods, consent wording/method, staff permission matrix, fee amount/payment policy and referral-letter/public verification fields.
 - Implementation remains blocked until the required privacy and operational decisions are approved.
+
+
+### News bottom-navigation correction — 26 November 2026
+
+- [x] Owner explicitly requested that the existing News bottom-nav button be retained; final mobile order is Home, Search, News, Gov, SDK Jobs, Saved.
+- [x] Code commit `981bda1ae6a212cef613021ad1e16188e4f6ee93` passed CI run [45716487169](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716487169) (typecheck, automated tests, production build, Edge Function checks).
+- [x] Cloudflare Pages production build/deploy for that code commit succeeded (`8c1fd329-f5fd-484c-b7c7-c8428bd49713`). Canonical production alias is on successful descendant deployment `4f484193-c01c-4f2f-9147-c0becbdc6cbc` for commit `c2d370dcc7b557b623d042902a747b52d5dc10b`, which includes the News change.
+- [ ] Rendered production mobile acceptance for all six items, Urdu labels and News active-state/deep link remains to be confirmed; do not claim visual acceptance until tested.
