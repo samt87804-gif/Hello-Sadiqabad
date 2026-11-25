@@ -1295,7 +1295,7 @@ export async function submitPublicInquiry(input: {
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.functions.invoke('submit-inquiry', {
-      body: { ...input, session_id: input.session_id ?? getOrCreateSessionId() },
+      body: { ...input, session_id: getOrCreateSessionId() },
     });
     if (error) return { ok: false, error: error.message };
     return (data as EdgeFunctionResult) ?? { ok: true };
