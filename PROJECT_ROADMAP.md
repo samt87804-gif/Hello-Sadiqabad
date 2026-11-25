@@ -743,7 +743,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [~] Phase 1 Admin Business and Data Quality performance optimization — initial code changes implemented and deployed; final acceptance pending authenticated desktop/browser metrics and mobile interaction QA.
   - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
-- [ ] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — not implemented.
+- [~] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — implementation is on feature branch / Draft PR #19; isolated SQL validation, human review and release gates remain pending.
 - [ ] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — existing MVPs remain in place; expansion not implemented.
 - [ ] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — not implemented.
 - [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented.
@@ -779,4 +779,4 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 
 - Live SQL comparison on 697 business rows: planner-estimated row width reduced from 2,676 bytes for the former broad joined projection to 1,419 bytes for the new allowlisted projection (about 47% narrower). Query timings from the compared runs had different cache state and are not used as a speed claim.
 - Phase 2 read-only preflight is documented in `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`: current Add Business form misses several approved fields and preselects taxonomy; the legacy new-business approval branch publishes all fields at once; owner invitation has no business association; pending media needs a separate private bucket.
-- Phase 2 code/schema work has not started because Phase 1 authenticated desktop/mobile acceptance remains a gate.
+- Phase 2 implementation is proceeding on a feature branch under the owner-approved plan; Phase 1 authenticated desktop/mobile acceptance remains outstanding and is not marked complete. No Phase 2 production schema/data changes have been applied.
