@@ -134,9 +134,9 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Added SDK Jobs item to Admin navigation gated by the explicit sdk_jobs.manage permission.
 - [x] Added a lazy-loaded Admin SDK Jobs moderation workspace with queue, detail view, private employer linkage IDs, status history and private Admin notes.
 - [x] Added guarded status actions for request correction, reject, unpublish, close, return to review and archive. Publish is blocked until an approved poster exists, as required by the database constraint and privacy plan.
-- [ ] CI/typecheck/build verification for the Admin workspace and tab wiring.
+- [x] CI/typecheck/build verification for the Admin workspace and tab wiring passed in run 45707358141 (build + Edge Function jobs).
 - [ ] Authenticated Admin browser test, explicit staff permission denial/allow test and live RLS verification.
 - [ ] Business name/owner-friendly identity resolution in the Admin detail view where existing Admin data permissions allow it.
 - [ ] Poster upload/promotion, public board/detail routes and privacy/SEO/offline checks.
 
-**Current code status:** Admin moderation UI is committed to main, but its CI result is pending. It does not publish jobs without an approved poster. No public SDK Jobs route has been added yet.
+**Current code status:** Owner submission UI and Admin moderation workspace are committed to main; CI run 45707358141 passed both build and Edge Function jobs. These UI increments are not yet production-deployed or authenticated-browser-tested. It does not publish jobs without an approved poster. No public SDK Jobs route has been added yet.
