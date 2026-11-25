@@ -1083,3 +1083,13 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Public logo/cover images are resized and WebP-compressed client-side before the existing secure signed upload. Logo cap 640px; cover cap 1800px; quality 0.84 with 0.72 retry for larger outputs. Original is retained if browser encoding is unavailable or output would be larger. Existing upload authorization, 5 MB input limit, private pending bucket and cleanup flow remain in place.
 - Main commit `3c2c45895d24e7ffaef8ae929b4703da456873da`; CI `45658737972` passed; Playwright mobile/desktop public form smoke `45658737929` passed; Cloudflare production deployment `db7b67c2-29a0-4f2a-bf86-fcda74fdb2e1` succeeded with canonical alias `https://hellosadiqabad.com`.
 - Owner manual checks still requested: dropdown containment and bilingual search on a real phone/desktop browser; confirm image upload when submitting a genuine business. No dummy production business should be created.
+
+
+## Government Jobs / Schemes Phase 3 checkpoint — 25 November 2026
+
+- Added Urdu detailed content columns and Admin form inputs for job qualifications/experience/age/domicile/quota/other eligibility/application steps/fees; schemes benefits/eligibility/documents/application steps/fees.
+- Added government_schemes.image_url, Admin scheme poster upload with MIME and 5 MB checks and WebP compression when smaller, public poster cards/details, bilingual public rendering, canonical share actions, social-crawler OG/Twitter metadata and offline image caching.
+- Applied Supabase migrations 20261125171000_government_bilingual_poster_publication_gate and 20261125172500_government_content_bilingual_details to the existing production project. Database publication triggers require bilingual title/summary/details, official HTTPS source and poster for new publications/transitions. Invalid transaction-only test inserts were blocked and left zero test rows.
+- CI 45662891896 passed; Cloudflare Pages deployment 5d601e4e-2e04-4478-bb2b-5b6bce833f6e succeeded with canonical alias.
+- Existing 1 job + 5 schemes remain published and unchanged despite having no poster. Do not fabricate or unpublish; owner must approve official posters or decide whether to move legacy records to draft.
+- Remaining Phase 3 gates: browser smoke run 45662892354 completion; authenticated Admin UI review; official poster upload and share-preview roundtrip; resolve private-draft/public-approved image handling (scheme poster uploads currently go to the existing public bucket under Admin-only write policies; object URLs remain publicly readable).
