@@ -44,6 +44,7 @@ Deno.serve(async (req: Request) => {
 
   let lockedId: string | null = null;
   let invitedUserId: string | null = null;
+  let note: string | null = null;
   try {
     const actor = await getActor(req);
     if (!actor) return response(req, { ok: false, error: "Unauthorized" }, 401);
@@ -52,7 +53,7 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => null) as Record<string, unknown> | null;
     const requestId = typeof body?.request_id === "string" ? body.request_id : "";
     const action = body?.action;
-    const note = typeof body?.admin_note === "string" ? body.admin_note.trim().slice(0, 1000) : null;
+    note = typeof body?.admin_note === "string" ? body.admin_note.trim().slice(0, 1000) : null;
     if (!/^[0-9a-f-]{36}$/i.test(requestId) || !["approve", "reject"].includes(String(action))) {
       return response(req, { ok: false, error: "Invalid request details" }, 400);
     }
