@@ -146,3 +146,7 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Rolled-back DB tests passed for feedback read/write, resubmission reset and anon denial. Live SDK Jobs/history/notes counts remain zero.
 - [ ] Final CI run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724) queued/pending at this update.
 - [ ] Authenticated browser acceptance and production Pages deployment.
+
+
+- [x] Added `sdk_jobs_slug_path_safety` migration: DB check constraint enforces safe slug format and Owner cannot change slug. Prevents path injection into public poster storage promotion.
+- [x] Rolled-back tests passed for unsafe slug rejection and Owner slug immutability; no live job rows remain.
