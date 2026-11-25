@@ -130,4 +130,8 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 **No candidate intake, CV/PII, referral letters, fee ledger or recruitment-hour settings have been implemented.** Those remain Phase 5 and require a separate retention/security design.
 
 
-**Final CI evidence:** [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) passed both build and Edge Function jobs for commit `a5a807ee66b5772089aaa53910cec9d9ed99f6f4`.
+- [x] Added Owner-visible correction feedback, separate from private Admin notes; Owner can read but cannot change it, and anon/public view cannot read it.
+- [x] Owner can edit/resubmit draft or changes-requested jobs; DB trigger returns the row to pending review and clears old feedback. Published-job edit UI remains disabled pending an approved version-preservation design.
+- [x] Rolled-back tests passed for Owner feedback read, resubmission reset, Owner feedback write denial and anon feedback denial.
+
+**Final CI evidence:** [45711210914](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711210914) passed both build and Edge Function jobs for commit `2e50c3d6972682c70f2bbf0934a49ae1df3d5c8d`.
