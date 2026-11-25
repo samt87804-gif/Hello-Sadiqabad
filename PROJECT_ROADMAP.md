@@ -931,3 +931,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Offline-emulation smoke at 390×844 verified homepage, categories, emergency contacts and a business detail from the saved snapshot with navigator.onLine=false; no page errors.
 - [ ] Physical-device airplane-mode testing and Service Worker update/rollback acceptance remain open.
 - **Status:** Option 2 is implemented, CI-passed, deployed and browser-emulation tested. Overall offline Phase 1–4 acceptance remains open. Existing verified package preservation on core-data failure/cancellation remains required.
+
+
+### Admin performance acceptance runbook — 25 November 2026
+
+- [x] Added `docs/ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md` with a reproducible timing-capture snippet and desktop/mobile/permission acceptance checklist.
+- [ ] Authenticated Admin browser measurements and regression checks remain pending; the runbook is preparation, not acceptance evidence.
