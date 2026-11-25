@@ -23,7 +23,7 @@ jobs:
         run: |
           node --check 'functions/sdk-jobs/[slug].js'
           node --check functions/sdk-jobs/index.js
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
