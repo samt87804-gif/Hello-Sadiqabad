@@ -150,4 +150,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Public business profiles now consume the approved `map_url`, show approved Urdu landmarks, and retain safe fallback directions. Google Maps links are restricted to exact Google-owned hosts and validated both in the browser and in `submit-suggestion`.
 - Latest CI: [45615114991](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45615114991) passed. Latest Cloudflare Pages production deployment for commit `1187b47bbe24bc59b31f72c2c3e2e9a45803f1f2` succeeded at `https://hellosadiqabad.com`.
 - Latest active Edge Function versions: `create-business-media-upload` v2, `cleanup-business-media-upload` v2, `submit-suggestion` v9, `review-business-media` v2, `manage-owner-registration` v5.
-- Total Phase 2 migrations applied to the existing project: 8. No new Supabase project was created.
+- Total Phase 2 migrations applied to the existing project: 9. No new Supabase project was created.
+
+
+### Final validation and database-advisor follow-up — 25 November 2026
+
+- Added and applied the ninth Phase 2 migration, `phase2_index_and_policy_cleanup`: indexes all Phase 2 foreign-key columns flagged by the advisor and consolidates the owner/admin read policies for image-change requests. Re-check confirms no unindexed-FK or duplicate-permissive-policy warnings remain for the three new Phase 2 tables.
+- Added server-side validation for the seven-day opening-hours structure, optional Urdu/landmark fields, safe Google Maps hostnames and the existing two-facility limit. Add Business enforces the same two-facility limit in the UI.
+- Public business profile fetch now includes `map_url`, uses only validated Google Maps URLs for directions, and displays approved Urdu landmarks.
+- Latest [GitHub CI run 45616069591](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45616069591) passed both build and Edge Function checks.
+- Cloudflare Pages production deployment for `main` commit `a1b210633c23747b91758fa515e83b8941425080` succeeded at `https://hellosadiqabad.com`.
+- Latest active Edge Function versions: `create-business-media-upload` v2, `cleanup-business-media-upload` v3, `submit-suggestion` v10, `review-business-media` v3, `manage-owner-registration` v5.
+- Total Phase 2 migrations applied to the existing project: **9**. No separate Supabase project was created. Test-only database writes were all rolled back; verification found no test media URLs, test submissions, test owner links or pending Storage objects.
