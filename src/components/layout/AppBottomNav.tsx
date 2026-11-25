@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Bookmark, BriefcaseBusiness, Home, Landmark, Search } from 'lucide-react';
+import { Bookmark, BriefcaseBusiness, Home, Landmark, Newspaper, Search } from 'lucide-react';
 import { useI18n } from '../../lib/i18n';
 
 export function AppBottomNav() {
@@ -9,6 +9,7 @@ export function AppBottomNav() {
   const tabs = [
     { to: '/', label: t('nav.home', 'Home'), ur: 'ہوم', icon: Home, end: true },
     { to: '/search', label: t('nav.search', 'Search'), ur: 'تلاش', icon: Search },
+    { to: '/news', label: t('nav.news', 'News'), ur: 'خبریں', icon: Newspaper },
     { to: '/gov', label: lang === 'ur' ? 'حکومت' : 'Gov', ur: 'حکومت', icon: Landmark },
     { to: '/sdk-jobs', label: lang === 'ur' ? 'مقامی نوکریاں' : 'SDK Jobs', ur: 'مقامی نوکریاں', icon: BriefcaseBusiness },
     { to: '/favorites', label: t('nav.favorites', 'Saved'), ur: 'پسندیدہ', icon: Bookmark },
@@ -19,7 +20,7 @@ export function AppBottomNav() {
       aria-label={lang === 'ur' ? 'موبائل نیویگیشن' : 'Mobile bottom navigation'}
       className="md:hidden fixed bottom-0 inset-x-0 z-40 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl border-t border-outline-variant/40 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]"
     >
-      <div className="grid grid-cols-5 h-16 max-w-lg mx-auto">
+      <div className="grid grid-cols-6 h-16 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
