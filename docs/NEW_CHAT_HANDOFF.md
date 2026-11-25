@@ -822,3 +822,40 @@ Implementation is in progress on `main`. This change expands the existing Indexe
 - TypeScript typecheck, automated tests, GitHub CI, interactive browser checks and physical-device airplane-mode acceptance were not run for this batch. Keep offline acceptance in progress until these are tested.
 - Third-party map tiles, live embeds, external video streams and private/admin/owner portal data are not part of the offline package. Server writes remain online-only.
 
+
+
+---
+
+# NEW OWNER-APPROVED PLAN — 25 NOVEMBER 2026 (READ FIRST FOR THIS WORK)
+
+The owner has approved the requirements recorded in `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`. This is a planning record, not proof of implementation. For any new chat continuing this scope, read the master plan and all child plans before coding.
+
+## Required new-chat reading order
+1. `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`
+2. `docs/PROJECT_WORKING_RULES.md`
+3. `PROJECT_ROADMAP.md`
+4. This handoff; reconcile older notes below against current main.
+5. `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md`
+6. `docs/ADMIN_PERFORMANCE_OPTIMIZATION_PLAN.md`
+7. `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`
+8. `docs/GOVERNMENT_CONTENT_BILINGUAL_MEDIA_PLAN.md`
+9. `docs/SDK_JOBS_RECRUITMENT_PLAN.md`
+10. `docs/GOV_LANDING_AND_MOBILE_NAVIGATION_PLAN.md`
+
+## Owner-confirmed constants and decisions
+- Recruitment WhatsApp: **03283212342**.
+- Recruitment free period through **31 January 2027 inclusive**; fee may start 1 February 2027, amount intentionally unset and Admin-configurable. Candidate pays; business owner does not.
+- Default office days Monday-Friday; hours 10:00 AM–2:00 PM Pakistan time. Saturday/Sunday closed. Admin may change schedule. Do not invent office address.
+- SDK Jobs only for authenticated Admin-approved owners with at least one published business. Every job needs Admin approval. Employer identity is private/Admin-only on all public surfaces.
+- Candidate brings physical CV; Admin interviews and, if suitable, refers to employer and issues an auditable referral letter. No job placement guarantee.
+- Add Business form does not collect password. Admin sends secure Supabase invitation after review; owner sets password through Supabase.
+- Each submitted business field has Pending Review / Approved & Published / Rejected / Unpublished status. Pending images remain private until approved. Owner can request maximum two profile/logo/cover image changes per business per calendar month.
+- Government Jobs/Schemes require English and Urdu, official/verified Admin-uploaded image before publishing, canonical share URL and approved social preview image.
+- Gov landing cards: Government Jobs, Government Schemes, Local Authorities, Authority Profiles.
+- Mobile bottom nav: Home, Search, Gov, SDK Jobs, Saved. Remove separate Jobs/Schemes and Urgent shortcuts only; preserve Home Emergency card and Emergency route.
+- Admin Business and Data Quality performance issue is worse on desktop and is a priority.
+
+## Next safe action
+Start with Phase 0 audit/design in the master plan. Inspect current main code, exact routes, Supabase live migration ledger, RLS, permission model, Storage policies, tests and deployment state. Do not implement schema changes in the audit phase. Existing Government Jobs/Schemes/Owner workflows must be extended, not recreated. Preserve all production data and follow `docs/PROJECT_WORKING_RULES.md`.
+
+Older historical notes in this handoff are retained as evidence; if they conflict with this latest approved plan or current code, inspect and reconcile rather than following stale instructions.
