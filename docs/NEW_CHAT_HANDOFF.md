@@ -878,3 +878,26 @@ Read [`docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`](FINAL_PRODUCT_EXPANSION_MAS
 - No application code, production schema/data, Storage objects, Auth settings or deployment configuration changed during Phase 0.
 
 **Next approved workstream:** Phase 1 — Admin Business and Data Quality performance. Do not mark it complete until before/after desktop and mobile measurements, pagination/filter/action/export/permission tests, typecheck, automated tests, production build, CI and deployment evidence are recorded.
+
+
+---
+
+## Phase 1 Admin performance — current handoff (25 November 2026)
+
+**Latest implementation commit:** `6009012c143e90dbbcce1dfc2fddaa79c3fa2872`.
+
+Implemented and deployed:
+- Lazy-loaded Admin managers.
+- Active-tab-only data loading; the previous 19-request all-tab reload was removed.
+- Global quick-search data loads only when a query is entered and required datasets are not already present.
+- Business list: 50-item pagination, memoized filters, full-filter selection/bulk actions preserved.
+- Data Quality: memoized issue calculations, one-pass category/issue counts, 50-item pagination, complete filtered CSV export preserved.
+
+Verification:
+- GitHub CI [45585636119](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45585636119) passed both jobs: npm dependency gate, TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment `759c75f9-d12d-45ec-a94d-196953c9ba19` succeeded for the same commit and has canonical alias `https://hellosadiqabad.com`.
+- No Supabase migration, RLS, Storage policy, Auth setting or production data change.
+
+**Do not mark Phase 1 complete yet:** no authenticated browser was available to capture before/after desktop timings or test click latency, mobile behavior, pagination/filter/bulk actions, modal editing, moderation and export. Do not invent milliseconds or claim browser QA. The code changes are deployed; interactive acceptance remains pending.
+
+**Next approved workstream after Phase 1 acceptance:** Phase 2 — Add Business field-level approval and secure owner invitation. Before schema changes, reconcile each additive migration against the live 95-version Supabase ledger (repository currently has 74 migration files); use a separate private pending-media bucket because the current `Hello Sadiqabad` bucket is public. The existing owner invitation Edge Function (version 3) does not yet link the invited owner to the reviewed business.
