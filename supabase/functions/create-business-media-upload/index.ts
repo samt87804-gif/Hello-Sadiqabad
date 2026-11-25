@@ -85,6 +85,27 @@ async function limited(key: string, limit: number, seconds: number) {
   return !error && data === true;
 }
 
+function extractBearerToken(header: string | null): string | null {
+  if (!header) return null;
+  const value = header.trim();
+  if (!value.toLowerCase().startsWith("bearer ")) return null;
+  return value.slice(7).trim() || null;
+}
+function isValidUuid(value: unknown): value is string {
+  return typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+function pakistanMonthRange() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Karachi", year: "numeric", month: "2-digit",
+  }).formatToParts(new Date());
+  const year = parts.find((part) => part.type === "year")?.value ?? "";
+  const month = parts.find((part) => part.type === "month")?.value ?? "";
+  const start = new Date(`${year}-${month}-01T00:00:00+05:00`);
+  const end = new Date(Date.UTC(Number(year), Number(month), 1) - 5 * 60 * 60 * 1000);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return response(req, { ok: true });
   if (req.method !== "POST") return response(req, { ok: false, error: "Method not allowed" }, 405);
@@ -96,12 +117,12 @@ Deno.serve(async (req: Request) => {
     const field = body.media_field;
     const mime = body.mime_type;
     const size = Number(body.file_size_bytes);
+    const mode = body.mode === "owner_change" ? "owner_change" : "submission";
     const sessionId = body.session_id;
 
     if (!["logo", "cover"].includes(String(field)) ||
         !["image/jpeg", "image/png", "image/webp"].includes(String(mime)) ||
-        !Number.isInteger(size) || size <= 0 || size > 5 * 1024 * 1024 ||
-        typeof sessionId !== "string" || sessionId.length < 8 || sessionId.length > 128) {
+        !Number.isInteger(size) || size <= 0 || size > 5 * 1024 * 1024) {
       return response(req, { ok: false, error: "Invalid image upload details" }, 400);
     }
 
@@ -114,13 +135,67 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const sessionKey = await hashRateKey(sessionId);
-    if (!await limited(`business-media:session:${sessionKey}`, 4, 3_600)) {
-      return response(req, { ok: false, error: "Too many image uploads for this session. Please try again later." }, 429);
+    const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
+    let storagePath: string;
+
+    if (mode === "owner_change") {
+      if (!isValidUuid(body.business_id)) {
+        return response(req, { ok: false, error: "A valid business is required for an owner image change" }, 400);
+      }
+      const token = extractBearerToken(req.headers.get("authorization"));
+      if (!token) return response(req, { ok: false, error: "Please sign in to change business images" }, 401);
+      const { data: auth, error: authError } = await db.auth.getUser(token);
+      if (authError || !auth.user) return response(req, { ok: false, error: "Please sign in to change business images" }, 401);
+
+      const { data: profile, error: profileError } = await db.from("profiles")
+        .select("role,is_active").eq("id", auth.user.id).maybeSingle();
+      if (profileError || profile?.role !== "owner" || profile.is_active !== true) {
+        return response(req, { ok: false, error: "An active approved owner account is required" }, 403);
+      }
+
+      const { data: business, error: businessError } = await db.from("businesses")
+        .select("id,owner_id,status,plan_code")
+        .eq("id", body.business_id).eq("owner_id", auth.user.id).maybeSingle();
+      if (businessError || !business || business.status !== "published") {
+        return response(req, { ok: false, error: "You can change images only for your own published business" }, 403);
+      }
+
+      if (field === "cover") {
+        const { data: plan, error: planError } = await db.from("plans")
+          .select("features").eq("code", business.plan_code).maybeSingle();
+        if (planError || !plan?.features?.cover) {
+          return response(req, { ok: false, error: "A Basic or Premium plan is required to request a cover image" }, 403);
+        }
+      }
+
+      const month = pakistanMonthRange();
+      const { count, error: usageError } = await db.from("business_image_change_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("business_id", business.id)
+        .eq("owner_id", auth.user.id)
+        .gte("requested_at", month.start)
+        .lt("requested_at", month.end);
+      if (usageError) return response(req, { ok: false, error: "Image-change allowance could not be checked" }, 503);
+      if ((count ?? 0) >= 2) {
+        return response(req, { ok: false, error: "Monthly image-change limit reached (2 per business)" }, 429);
+      }
+
+      const ownerKey = await hashRateKey(`${auth.user.id}:${business.id}`);
+      if (!await limited(`business-media:owner:${ownerKey}`, 5, 3_600)) {
+        return response(req, { ok: false, error: "Too many image-change attempts. Please try again later." }, 429);
+      }
+      storagePath = `owners/${auth.user.id}/${crypto.randomUUID()}.${extension}`;
+    } else {
+      if (typeof sessionId !== "string" || sessionId.length < 8 || sessionId.length > 128) {
+        return response(req, { ok: false, error: "Invalid upload session" }, 400);
+      }
+      const sessionKey = await hashRateKey(sessionId);
+      if (!await limited(`business-media:session:${sessionKey}`, 4, 3_600)) {
+        return response(req, { ok: false, error: "Too many image uploads for this session. Please try again later." }, 429);
+      }
+      storagePath = `pending/${sessionKey}/${crypto.randomUUID()}/${field}.${extension}`;
     }
 
-    const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
-    const storagePath = `pending/${sessionKey}/${crypto.randomUUID()}/${field}.${extension}`;
     const { data, error } = await db.storage.from(bucket).createSignedUploadUrl(storagePath, { upsert: false });
     if (error || !data?.token || !data?.signedUrl) {
       return response(req, { ok: false, error: "A secure image upload could not be prepared" }, 503);
