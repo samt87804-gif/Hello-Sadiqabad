@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 const baseUrl = (process.env.BASE_URL || 'https://hellosadiqabad.com').replace(/\/+$/, '');
+console.log(`Running public Add Business smoke checks against ${baseUrl}`);
+
 const png = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/Kf8AAAAASUVORK5CYII=',
   'base64',
