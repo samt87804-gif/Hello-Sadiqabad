@@ -41,7 +41,7 @@ export function classifySiteAnalyticsPath(pathname: string): string | null {
     '/': 'home',
     '/search': 'search',
     '/categories': 'categories',
-    '/gov': 'gov',
+    '/gov': 'static',
     '/offers': 'offers',
     '/map': 'map',
     '/emergency': 'emergency',
