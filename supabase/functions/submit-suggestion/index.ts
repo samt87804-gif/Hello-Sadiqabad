@@ -231,7 +231,7 @@ Deno.serve(async (req: Request) => {
           const mime = item.mime_type;
           const size = Number(item.file_size_bytes);
           const pathMatch = typeof storagePath === "string"
-            ? /^pending\\/([a-f0-9]{64})\\/([0-9a-f-]{36})\\/(logo|cover)\\.(jpg|png|webp)$/i.exec(storagePath)
+            ? /^pending[/]([a-f0-9]{64})[/]([0-9a-f-]{36})[/](logo|cover)[.](jpg|png|webp)$/i.exec(storagePath)
             : null;
           if (!(["logo", "cover"].includes(String(field)) &&
                 pathMatch && pathMatch[1] === mediaSessionHash && pathMatch[3] === field &&
