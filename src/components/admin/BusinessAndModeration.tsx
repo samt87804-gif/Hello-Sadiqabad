@@ -1456,7 +1456,6 @@ export function BusinessManager({
 
 type SubmissionFilterGroup =
   | 'all'
-  | 'new_business'
   | 'corrections'
   | 'claim'
   | 'plan_upgrade'
@@ -1484,11 +1483,10 @@ export function ModerationManager({
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
 
   const pendingReviews = reviews.filter((r) => r.status === 'pending');
-  const openSubs = submissions.filter((s) => s.status === 'new' || s.status === 'in_review');
+  const openSubs = submissions.filter((s) => (s.status === 'new' || s.status === 'in_review') && s.type !== 'new_business');
 
   const filteredSubs = openSubs.filter((s) => {
     if (typeFilter === 'all') return true;
-    if (typeFilter === 'new_business') return s.type === 'new_business';
     if (typeFilter === 'corrections')
       return s.type === 'correction' || s.type === 'phone_suggestion';
     if (typeFilter === 'claim') return s.type === 'claim';
@@ -1531,10 +1529,6 @@ export function ModerationManager({
             {(
               [
                 { id: 'all', label: `All (${openSubs.length})` },
-                {
-                  id: 'new_business',
-                  label: `New Listings (${openSubs.filter((s) => s.type === 'new_business').length})`,
-                },
                 {
                   id: 'corrections',
                   label: `Corrections / Phones (${
