@@ -504,7 +504,7 @@ export function AddBusiness() {
                       required
                       value={categoryId}
                       onChange={(e) => { setCategoryId(e.target.value); setCategorySearch(''); }}
-                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pr-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pe-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
                     >
                       <option value="">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</option>
                       {categories.filter((item) => {
@@ -517,7 +517,7 @@ export function AddBusiness() {
                         </option>
                       ))}
                     </Select>
-                    <ChevronDown className="pointer-events-none absolute bottom-[13px] right-3.5 h-4 w-4 text-primary" aria-hidden="true" />
+                    <ChevronDown className="pointer-events-none absolute bottom-[13px] end-3.5 h-4 w-4 text-primary" aria-hidden="true" />
                   </div>
                   <p className="text-[10px] leading-relaxed text-on-surface-variant">{lang === 'ur' ? 'فہرست میں سے اپنے کاروبار سے مطابقت رکھنے والا شعبہ منتخب کریں۔' : 'Select the category that best describes your business.'}</p>
                 </section>
@@ -551,7 +551,7 @@ export function AddBusiness() {
                       required
                       value={areaId}
                       onChange={(e) => { setAreaId(e.target.value); setAreaSearch(''); }}
-                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pr-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pe-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
                     >
                       <option value="">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</option>
                       {areas.filter((item) => {
@@ -564,7 +564,7 @@ export function AddBusiness() {
                         </option>
                       ))}
                     </Select>
-                    <ChevronDown className="pointer-events-none absolute bottom-[13px] right-3.5 h-4 w-4 text-secondary" aria-hidden="true" />
+                    <ChevronDown className="pointer-events-none absolute bottom-[13px] end-3.5 h-4 w-4 text-secondary" aria-hidden="true" />
                   </div>
                   <p className="text-[10px] leading-relaxed text-on-surface-variant">{lang === 'ur' ? 'اپنی دکان کا درست بازار یا محلہ منتخب کریں۔' : 'Choose the correct market or neighborhood for this business.'}</p>
                 </section>
