@@ -116,12 +116,6 @@ create policy hs_pending_media_public_submit on storage.objects
     and (storage.foldername(name))[1]='pending'
     and (storage.extension(name) in ('jpg','jpeg','png','webp')));
 
-drop policy if exists hs_pending_media_public_cleanup on storage.objects;
-create policy hs_pending_media_public_cleanup on storage.objects
-  for delete to anon, authenticated
-  using (bucket_id='hs-pending-business-media'
-    and (storage.foldername(name))[1]='pending');
-
 drop policy if exists hs_pending_media_owner_upload on storage.objects;
 create policy hs_pending_media_owner_upload on storage.objects
   for insert to authenticated
