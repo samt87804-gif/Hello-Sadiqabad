@@ -204,3 +204,12 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Privilege check passed: anon=false, authenticated=false, service_role=true for authorization RPC execute.
 - [x] Security Advisor after this migration still shows only the same two unrelated project findings; no SDK Jobs-specific security warning.
 - [x] CI [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357) passed build and Supabase Edge Function checks for the authorization-gated functions.
+ 
+
+## Phase 4 owner acceptance and production release — 26 November 2026
+
+- Owner explicitly confirmed they personally tested and passed every item in `docs/SDK_JOBS_PHASE4_ACCEPTANCE_CHECKLIST.md` Sections 1–8. This confirmation supersedes the earlier pre-release browser acceptance blockers in historical checkpoints; no repeat testing is requested.
+- CI [45714887257](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45714887257) passed TypeScript, tests, production build and Edge Function checks.
+- Cloudflare Pages production deployment `cf208161-c3da-4116-a0bc-f3eb2a983cfb` succeeded for commit `c766470a26a0325d1bc6c21d2bce65255184d06f`; canonical alias `https://hellosadiqabad.com` is active.
+- Remaining post-deployment smoke checks: Owner/Admin protected routes, public SDK Jobs listing/detail, social-preview handlers and sitemap published-only behavior. Do not claim these specific smoke checks until performed.
+- Candidate intake, consent/retention, CV/PII, interviews, referrals, letters, fees and office-hour settings remain Phase 5 and are not implemented.
