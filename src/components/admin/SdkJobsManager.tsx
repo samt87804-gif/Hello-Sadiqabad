@@ -17,7 +17,7 @@ interface AdminSdkJob {
   experience_en: string | null; experience_ur: string | null; duties_en: string | null; duties_ur: string | null;
   working_hours_en: string | null; working_hours_ur: string | null; benefits_en: string | null; benefits_ur: string | null;
   closing_date: string | null; pending_media_path: string | null;
-  approved_image_url: string | null; status: JobStatus; submitted_at: string;
+  approved_image_url: string | null; owner_feedback: string | null; status: JobStatus; submitted_at: string;
 }
 interface JobHistory { id: string; action: string; old_status: string | null; new_status: string | null; created_at: string; }
 interface JobNote { id: string; note: string; created_at: string; }
@@ -46,6 +46,7 @@ export function SdkJobsManager() {
   const [employerDetails, setEmployerDetails] = useState<PrivateEmployerDetails | null>(null);
   const [privacyReviewed, setPrivacyReviewed] = useState(false);
   const [note, setNote] = useState('');
+  const [ownerFeedback, setOwnerFeedback] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -67,7 +68,7 @@ export function SdkJobsManager() {
   useEffect(() => { void reload(); }, [reload]);
 
   const loadDetail = async (job: AdminSdkJob) => {
-    setSelected(job); setNote(''); setPosterPreviewUrl(null); setPrivacyReviewed(false); setEmployerDetails(null);
+    setSelected(job); setNote(''); setOwnerFeedback(job.owner_feedback || ''); setPosterPreviewUrl(null); setPrivacyReviewed(false); setEmployerDetails(null);
     const client = getSupabaseClient();
     if (!client) return;
     const [employer, poster, historyResult, notesResult] = await Promise.all([
@@ -90,6 +91,9 @@ export function SdkJobsManager() {
 
   const changeStatus = async (status: JobStatus) => {
     if (!selected || !user) return;
+    if (['changes_requested','rejected'].includes(status) && !ownerFeedback.trim()) {
+      showToast('Owner ko reason bhejne ke liye feedback message likhein.', 'error'); return;
+    }
     if (status === 'published' && !selected.approved_image_url) {
       showToast('Publication is blocked until an approved public poster is attached.', 'error'); return;
     }
@@ -101,6 +105,7 @@ export function SdkJobsManager() {
       const { data, error } = await client.from('sdk_jobs').update({
         status, reviewed_by: user.id, reviewed_at: now,
         published_at: status === 'published' ? now : null,
+        owner_feedback: ['changes_requested','rejected'].includes(status) ? ownerFeedback.trim() : null,
       }).eq('id', selected.id).select('*').single();
       if (error) throw error;
       showToast('SDK Job status updated.', 'success');
@@ -182,6 +187,7 @@ export function SdkJobsManager() {
             <div className="grid grid-cols-2 gap-2 text-xs"><p>Location: {selected.work_location_en || 'Not specified'}</p><p>Closing: {selected.closing_date || 'Not specified'}</p><p>Salary disclosed: {selected.salary_disclosed ? 'Yes' : 'No'}</p><p>Salary range: {selected.salary_disclosed ? [selected.salary_min, selected.salary_max].filter((v) => v !== null).join(' – ') || 'Not specified' : 'Hidden'}</p></div>
             {[['Duties',selected.duties_en,selected.duties_ur],['Qualifications',selected.qualifications_en,selected.qualifications_ur],['Experience',selected.experience_en,selected.experience_ur],['Working hours',selected.working_hours_en,selected.working_hours_ur],['Benefits',selected.benefits_en,selected.benefits_ur]].map(([label,en,ur]) => (en || ur) ? <section key={String(label)} className="space-y-1"><p className="text-xs font-bold">{label}</p><p className="text-sm whitespace-pre-wrap">{en || ''}</p>{ur && <p className="font-urdu text-sm whitespace-pre-wrap" dir="rtl">{ur}</p>}</section> : null)}
             {selected.status === 'pending_review' && selected.approved_image_url && <label className="flex items-start gap-2 rounded-xl border border-outline-variant/40 p-3 text-xs"><input type="checkbox" checked={privacyReviewed} onChange={(event) => setPrivacyReviewed(event.target.checked)} className="mt-0.5" /><span>I have reviewed every public text field AND the poster image. Neither reveals the employer/business identity, owner name, phone, email or external contact details. Server-side text privacy checks will also run.</span></label>}
+            <div className="border-t border-outline-variant/40 pt-3 space-y-2"><h4 className="text-sm font-bold">Owner-facing review message</h4><p className="text-xs text-on-surface-variant">This message is visible only to the linked Owner in their portal; keep private Admin observations in the separate Admin notes section.</p><textarea className="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm" rows={3} maxLength={2000} value={ownerFeedback} onChange={(event) => setOwnerFeedback(event.target.value)} placeholder="Explain the correction required or reason for rejection…" /></div>
             <div className="flex flex-wrap gap-2 border-t border-outline-variant/40 pt-3">
               {selected.status === 'pending_review' && <><Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('changes_requested')}>Request correction</Button><Button size="sm" variant="danger" disabled={saving} onClick={() => void changeStatus('rejected')}>Reject</Button><Button size="sm" disabled={saving || !selected.approved_image_url || !privacyReviewed} onClick={() => void publishJob()}>Publish after privacy check</Button></>}
               {selected.status === 'published' && <Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('unpublished')}>Unpublish</Button>}
