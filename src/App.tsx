@@ -53,6 +53,8 @@ const ChangePassword = lazy(() =>
 );
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
+const OwnerSdkJobs = lazy(() => import('./pages/owner/OwnerSdkJobs').then((m) => ({ default: m.OwnerSdkJobs })));
+
 const OwnerBusinesses = lazy(() =>
   import('./pages/owner/OwnerPortalPages').then((m) => ({ default: m.OwnerBusinesses }))
 );
@@ -429,6 +431,16 @@ export default function App() {
                     />
 
                     {/* Owner Portal Routes */}
+                    <Route
+                      path="/owner/sdk-jobs"
+                      element={
+                        <RequireAuth>
+                          <RequireRole roles={['owner']}>
+                            <OwnerSdkJobs />
+                          </RequireRole>
+                        </RequireAuth>
+                      }
+                    />
                     <Route
                       path="/owner/businesses"
                       element={
