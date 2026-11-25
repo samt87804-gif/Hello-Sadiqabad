@@ -81,3 +81,14 @@ A second implementation slice is now on `main`:
 **Verification:** latest commit `4ed8f50042928896064f3925f8e8f203e0951de7`; [GitHub CI run 45587036171](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45587036171) passed both jobs, including TypeScript, automated tests, dependency gate, production build and Deno Edge Function typecheck. Cloudflare Pages deployment `51d981f8-e50a-400d-af08-ae5e14481940` succeeded for this exact commit with canonical alias `https://hellosadiqabad.com`.
 
 **Acceptance remains open:** this is source-level optimization plus CI/deployment evidence, not authenticated browser profiling. Desktop cold/warm load and click latency, real Admin permission/action checks and mobile smoke tests still need a signed-in browser session. No performance milliseconds are claimed.
+
+
+### Database projection comparison (read-only, 25 November 2026)
+
+A fresh `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` comparison was run against the live 697-row business dataset after the explicit projection change:
+
+- Prior broad projection (business + full category + full area + full plan): planner estimated row width **2,676 bytes**.
+- New projection (27 business columns + four Category columns + four Area columns; no Plan join): planner estimated row width **1,419 bytes**.
+- Estimated row-width reduction: approximately **47%**.
+- Both queries returned 697 rows. The observed execution times in this pair were not treated as a valid before/after speed comparison because cache state differed; no UI or database speed percentage is claimed.
+- This is SQL planner evidence only. Network payload and authenticated browser timings remain outstanding.
