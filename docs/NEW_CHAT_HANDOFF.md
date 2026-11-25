@@ -3,7 +3,7 @@
 This repository now has two separate active workstreams that must not be confused:
 
 1. **Business Registration/Admin approval redesign:** follow [docs/ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md](ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md). The old [docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](ADD_BUSINESS_OWNER_APPROVAL_PLAN.md) is marked **ARCHIVED / DO NOT IMPLEMENT**. Keep it only for history/compatibility audit; do not continue its old workflow, do not create a parallel queue, and do not roll back compatible production code.
-2. **SDK Jobs:** continue Phase 4 from [docs/SDK_JOBS_RECRUITMENT_PLAN.md](SDK_JOBS_RECRUITMENT_PLAN.md) and [docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md](SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md). The DB foundation is complete; Owner submission UI, Admin moderation UI, private poster flow, public listing/detail pages and end-to-end tests remain open.
+2. **SDK Jobs:** continue Phase 4 from [docs/SDK_JOBS_RECRUITMENT_PLAN.md](SDK_JOBS_RECRUITMENT_PLAN.md) and [docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md](SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md). The DB foundation is complete. A first-pass authenticated Owner submission form and /owner/sdk-jobs route are now committed to main; CI/typecheck/build verification is pending. Private poster upload, Admin moderation UI, public listing/detail pages and end-to-end tests remain open. Do not enable owner edits to published jobs until the old approved public version can remain visible during review.
 
 ## Mandatory current status and next actions
 
