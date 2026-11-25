@@ -1,4 +1,4 @@
-import { onRequestGovernmentSocialPreview } from '../../_shared/governmentSocialPreview.js';
+import { onRequestGovernmentSocialPreview } from '../_shared/governmentSocialPreview.js';
 
 export async function onRequest(context) {
   return onRequestGovernmentSocialPreview(context, {
