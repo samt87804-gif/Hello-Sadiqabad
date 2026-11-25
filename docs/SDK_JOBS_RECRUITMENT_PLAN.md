@@ -100,3 +100,14 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 **Phase boundary:** candidate intake, consent records, CV details, interview notes, suitability, referrals, referral letters, fees and office-hour configuration remain Phase 5. Do not collect candidate personal data in Phase 4.
 
 **Current status:** Phase 4 audit/design and database foundation are complete. Migrations `20261125210353`, `20261125210439` and `20261125210610` are applied and recorded. The private job tables, owner eligibility guard, `sdk_jobs.manage` permission, Admin-only notes/status history and published-only invoker-security projection are live. Owner and cross-owner authorization tests ran in rollback transactions; all temporary rows were rolled back and live job/history/note counts remain zero. Security/performance advisor checks show no SDK Jobs-specific security-definer-view, unindexed-FK or multiple-permissive-policy finding. Remaining Phase 4 work is owner UI/media upload, Admin moderation UI, public board/share routes and browser/adversarial acceptance.
+
+
+### Database foundation acceptance — 26 November 2026
+
+- [x] Live migrations `20261125210353`, `20261125210439` and `20261125210610` applied and recorded; migration ledger is 111 versions.
+- [x] Owner submission transaction test passed: identity derived from `auth.uid()`, selected published business checked server-side, status forced to `pending_review`, no pending job visible in public projection.
+- [x] Cross-owner business submission denied; status history trigger verified; all tests rolled back. Live counts: 0 jobs, 0 history rows, 0 Admin notes.
+- [x] Anon has no table-level SELECT/private-column access; published public view is invoker-security. `sdk_jobs.manage` is wired through the DB permission RPC, TypeScript type and explicit staff permission editor.
+- [x] No SDK Jobs-specific security-definer-view, unindexed-FK or multiple-permissive-policy advisor finding remains.
+- [x] CI [45702011116](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45702011116) passed; production Pages deployment `3d3bf1ec-2f80-4695-886e-75aaf2b528cb` succeeded with canonical alias.
+- [ ] Owner form/private poster upload, Admin moderation UI, public routes and end-to-end browser tests remain in progress.
