@@ -90,6 +90,7 @@ Deno.serve(async (req: Request) => {
     const extension = asset.mime_type === "image/jpeg" ? "jpg" : asset.mime_type === "image/png" ? "png" : "webp";
     const publicPath = businessId ? `businesses/${businessId}/${asset.media_field}/${asset.id}.${extension}` : null;
     const column = asset.media_field === "logo" ? "logo_url" : "cover_url";
+    let approvalRollback: { businessId: string; column: string; previousUrl: string | null; publicUrl: string; publicPath: string } | null = null;
 
     if (action === "approved_published") {
       if (!businessId || !publicPath) {
@@ -107,6 +108,7 @@ Deno.serve(async (req: Request) => {
         }
       }
 
+      const previousUrl = (asset.media_field === "logo" ? business.logo_url : business.cover_url) ?? null;
       if (!await hasObject(publicBucket, publicPath)) {
         const { error: copyError } = await db.storage.from(pendingBucket).copy(asset.storage_path, publicPath, { destinationBucket: publicBucket });
         if (copyError && !await hasObject(publicBucket, publicPath)) throw copyError;
@@ -116,8 +118,10 @@ Deno.serve(async (req: Request) => {
         .update({ [column]: publicData.publicUrl, updated_at: new Date().toISOString() })
         .eq("id", businessId).eq("status", "published").select("id").maybeSingle();
       if (businessUpdateError || !updatedBusiness) {
+        await removeIfPresent(publicBucket, publicPath).catch(() => undefined);
         throw businessUpdateError ?? new Error("The published business could not be updated");
       }
+      approvalRollback = { businessId, column, previousUrl, publicUrl: publicData.publicUrl, publicPath };
     } else if ((action === "unpublished" || action === "rejected") && businessId && publicPath) {
       const { data: business, error: businessReadError } = await db.from("businesses")
         .select("logo_url,cover_url").eq("id", businessId).maybeSingle();
@@ -137,7 +141,19 @@ Deno.serve(async (req: Request) => {
       p_actor_id: auth.user.id,
       p_admin_note: note,
     });
-    if (finalizeError) throw finalizeError;
+    if (finalizeError) {
+      const { data: latestAsset } = await db.from("business_media_assets").select("status").eq("id", assetId).maybeSingle();
+      if (latestAsset?.status !== action) {
+        if (action === "approved_published" && approvalRollback) {
+          await db.from("businesses").update({
+            [approvalRollback.column]: approvalRollback.previousUrl,
+            updated_at: new Date().toISOString(),
+          }).eq("id", approvalRollback.businessId).eq(approvalRollback.column, approvalRollback.publicUrl);
+          await removeIfPresent(publicBucket, approvalRollback.publicPath).catch(() => undefined);
+        }
+        throw finalizeError;
+      }
+    }
 
     let privateCleanupPending = false;
     if (action === "rejected") {
