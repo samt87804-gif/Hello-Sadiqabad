@@ -12,6 +12,7 @@ import { canTrackSiteAnalytics, classifySiteAnalyticsPath, trackSiteAnalyticsEve
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const Search = lazy(() => import('./pages/Search').then((m) => ({ default: m.Search })));
 const Categories = lazy(() => import('./pages/Categories').then((m) => ({ default: m.Categories })));
+const Gov = lazy(() => import('./pages/Gov').then((m) => ({ default: m.Gov })));
 const CategoryDetail = lazy(() =>
   import('./pages/CategoryDetail').then((m) => ({ default: m.CategoryDetail }))
 );
@@ -262,6 +263,7 @@ function RouteIndexing() {
     const publicStaticRoutes = new Set([
       '/',
       '/categories',
+      '/gov',
       '/offers',
       '/map',
       '/emergency',
@@ -387,6 +389,7 @@ export default function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/search" element={<Search />} />
                     <Route path="/categories" element={<Categories />} />
+                    <Route path="/gov" element={<Gov />} />
                     <Route path="/category/:slug" element={<CategoryDetail />} />
                     <Route path="/area/:slug" element={<AreaDetail />} />
                     <Route path="/business/:slug" element={<BusinessProfile />} />
