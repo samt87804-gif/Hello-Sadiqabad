@@ -190,6 +190,10 @@ No online CV upload is required in the initial release. Candidate personal data 
 
 **Acceptance:** Only eligible owners can submit; all posts pending until Admin approval; employer identity is Admin-only across every public surface; candidate CTA uses exact WhatsApp number; office-hour/weekend rules are enforced/displayed; fee is zero through 31 Jan 2027 and configurable thereafter without invented amount; candidate-only payment; referrals and letters are auditable; public jobs are shareable; candidate data is private.
 
+
+
+**SDK Jobs Phase 4 implementation checkpoint — 26 November 2026:** The additive database/security foundation is live and recorded. The Owner Portal submission form/status list and permission-gated Admin moderation workspace are now implemented in code; CI run [45707358141](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45707358141) passed build and Edge Function jobs. This is not a production release: signed private poster upload/promotion, public SDK Jobs pages, authenticated browser/adversarial privacy acceptance and deployment remain open. Do not publish a job without its approved poster. Candidate intake/referral/fee workflows remain Phase 5.
+
 ### 4.5 Gov landing page and mobile navigation
 
 **Gov landing page:** New public Gov route/landing page with a responsive two-column (or adaptive) category-card grid matching the existing category-card visual language. Four cards:
