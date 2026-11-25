@@ -117,6 +117,14 @@ Deno.serve(async (req: Request) => {
     if (copyError) return response(req, { ok: false, error: "Approved poster could not be promoted to public media" }, 503);
     copiedPath = publicPath;
     const { data: publicData } = adminDb.storage.from(publicBucket).getPublicUrl(publicPath);
+    const { error: authorizationError } = await adminDb.rpc("authorize_sdk_job_admin_action", {
+      p_job_id: job.id, p_actor_id: auth.user.id, p_action: "approve_poster", p_image_url: publicData.publicUrl,
+    });
+    if (authorizationError) {
+      await removeIfPresent(publicBucket, publicPath).catch(() => undefined);
+      copiedPath = null;
+      return response(req, { ok: false, error: "Poster approval authorization could not be recorded" }, 409);
+    }
     const { data: updated, error: updateError } = await userDb.from("sdk_jobs")
       .update({ approved_image_url: publicData.publicUrl, pending_media_path: null })
       .eq("id", job.id).eq("status", "pending_review").select("id").single();
