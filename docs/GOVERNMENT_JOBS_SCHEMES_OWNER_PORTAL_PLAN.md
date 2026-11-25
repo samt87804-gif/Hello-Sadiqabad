@@ -609,3 +609,19 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 - The official PID release (10 Nov 2026) confirms Tier 4 loans above PKR 7.5m up to PKR 25m at 8% markup for up to eight years. The PMYB&ALS information portal still displays the older three tiers, so the record tells applicants to confirm live form implementation.
 - Radio Pakistan's 8 Nov report says the minimum age was reduced to 18 for all; the PID Tier 4 release and older portal still state 21–45 (18 for IT/e-commerce). The public record explicitly flags this conflict rather than silently choosing one rule.
 - Applied/tracked migrations: 20261120160458_government_schemes_pmyb_tier4_verified_v5.sql and 20261120160642_government_schemes_hunarmand_public_source_only_v6.sql.
+
+
+---
+
+## 25 November 2026 — New owner-approved expansion plan
+
+The final owner-approved expansion scope is now documented in `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`. That master plan is the canonical new-chat starting point for the next workstreams and must be read alongside permanent project rules and current handoff.
+
+Child plans:
+- `docs/ADMIN_PERFORMANCE_OPTIMIZATION_PLAN.md`
+- `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`
+- `docs/GOVERNMENT_CONTENT_BILINGUAL_MEDIA_PLAN.md`
+- `docs/SDK_JOBS_RECRUITMENT_PLAN.md`
+- `docs/GOV_LANDING_AND_MOBILE_NAVIGATION_PLAN.md`
+
+This plan remains the historical/feature-specific baseline for existing Government Jobs, Government Schemes and Owner Portal behavior. Do not replace its existing implementation evidence. The new master plan extends the scope; reconcile both documents with current code and migrations before implementation.
