@@ -174,7 +174,7 @@ export function AddBusiness() {
       showToast(lang === 'ur' ? 'مالک کا درست نام درج کریں۔' : 'Please enter the business owner name.', 'error');
       return;
     }
-    if (!/^[^\\s@]+@gmail\\.com$/i.test(ownerEmail.trim())) {
+    if (!/^[^\s@]+@gmail\.com$/i.test(ownerEmail.trim())) {
       showToast(lang === 'ur' ? 'براہ کرم Gmail ایڈریس درج کریں۔' : 'Please enter a valid Gmail address.', 'error');
       return;
     }
