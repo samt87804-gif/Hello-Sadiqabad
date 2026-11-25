@@ -141,3 +141,13 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Run one owner-approved end-to-end test with a clearly marked disposable submission and remove only that test data afterward; do not use a real business record for testing.
 - Verify email delivery/redirect in the actual owner invitation flow and confirm public listing/image rendering.
 - Phase 1 remains in progress/not accepted until its separate authenticated desktop/mobile performance acceptance is evidenced.
+
+
+### Latest hardening follow-up — 25 November 2026
+
+- Added and applied `owner_image_metadata_check` migration. Owner-uploaded image-change requests now compare the declared MIME type and size with actual Supabase Storage object metadata before creating a review request.
+- Add Business uploads now use session-hash-bound paths. Cleanup is rate-limited, can delete only paths belonging to that upload session, and refuses to delete media already attached to a business submission.
+- Public business profiles now consume the approved `map_url`, show approved Urdu landmarks, and retain safe fallback directions. Google Maps links are restricted to exact Google-owned hosts and validated both in the browser and in `submit-suggestion`.
+- Latest CI: [45615114991](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45615114991) passed. Latest Cloudflare Pages production deployment for commit `1187b47bbe24bc59b31f72c2c3e2e9a45803f1f2` succeeded at `https://hellosadiqabad.com`.
+- Latest active Edge Function versions: `create-business-media-upload` v2, `cleanup-business-media-upload` v2, `submit-suggestion` v9, `review-business-media` v2, `manage-owner-registration` v5.
+- Total Phase 2 migrations applied to the existing project: 8. No new Supabase project was created.
