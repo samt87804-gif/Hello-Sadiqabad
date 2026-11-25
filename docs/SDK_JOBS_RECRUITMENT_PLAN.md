@@ -98,7 +98,7 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Foundation CI and production deployment passed; database authorization/public-projection transaction tests and advisor checks passed.
 - [ ] Run UI/adversarial authorization, public leakage, status-transition, media privacy and authenticated browser acceptance.
 
-**Phase boundary:** candidate intake, consent records, CV details, interview notes, suitability, referrals, referral letters, fees and office-hour configuration remain Phase 5. Do not collect candidate personal data in Phase 4.
+**Phase boundary:** candidate intake, consent records, CV details, interview notes, suitability, referrals, referral letters, fees and office-hour configuration remain Phase 5. Do not collect candidate personal data until the owner-approved Phase 5 retention/consent/security gates are met. See `docs/SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md`.
 
 **Current status:** Phase 4 audit/design and database foundation are complete. Migrations `20261125210353`, `20261125210439` and `20261125210610` are applied and recorded. The private job tables, owner eligibility guard, `sdk_jobs.manage` permission, Admin-only notes/status history and published-only invoker-security projection are live. Owner and cross-owner authorization tests ran in rollback transactions; all temporary rows were rolled back and live job/history/note counts remain zero. Security/performance advisor checks show no SDK Jobs-specific security-definer-view, unindexed-FK or multiple-permissive-policy finding. Remaining Phase 4 work is owner UI/media upload, Admin moderation UI, public board/share routes and browser/adversarial acceptance.
 
@@ -213,3 +213,8 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - Cloudflare Pages production deployment `cf208161-c3da-4116-a0bc-f3eb2a983cfb` succeeded for commit `c766470a26a0325d1bc6c21d2bce65255184d06f`; canonical alias `https://hellosadiqabad.com` is active.
 - Remaining post-deployment smoke checks: Owner/Admin protected routes, public SDK Jobs listing/detail, social-preview handlers and sitemap published-only behavior. Do not claim these specific smoke checks until performed.
 - Candidate intake, consent/retention, CV/PII, interviews, referrals, letters, fees and office-hour settings remain Phase 5 and are not implemented.
+
+
+## Phase 5 design checkpoint — 26 November 2026
+
+Read-only design proposal: [`SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md`](SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md). No Phase 5 schema, UI, candidate data, CV upload or fee ledger has been created. Candidate collection is blocked pending owner approval of retention periods, bilingual consent wording/method, staff permissions, fee amount/payment policy and referral-letter/verification fields.
