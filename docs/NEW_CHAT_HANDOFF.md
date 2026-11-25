@@ -1024,3 +1024,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - GitHub CI run `45623551108` passed.
 - Cloudflare Pages production deployment `a749cbf3-223c-465f-9e08-3d484c208667` succeeded for the same application commit and carries canonical alias `https://hellosadiqabad.com`.
 - Remaining Phase 2 acceptance is unchanged: authenticated Admin browser QA, one controlled disposable end-to-end submission, actual invitation email/redirect verification, and public listing/media rendering. No fake accounts, test submissions or emails were created/sent in this follow-up.
+
+
+## Add Business taxonomy UX follow-up — 25 November 2026
+
+- Added accessible, bilingual text filters above Category and Area selectors. Filtering preserves the current selection, keeps the existing taxonomy IDs/relations intact, and clears filter text when the form resets.
+- The form now always explains what to do if the required category/area is missing and links to the approved Admin WhatsApp number; users are told not to select an incorrect substitute.
+- Application commits: `84703741a53464d94681276ff89842848a15e944`, `58f126f392944f3598257c6e63796cdb1fc2326e`, `ea20723a0791ce79f75e696d228d8eeb9604954c`.
+- CI run `45623996190` passed. Cloudflare Pages deployment `b0e31b63-826a-4987-8c18-20ed667b823b` succeeded and is attached to `https://hellosadiqabad.com`.
+- No database, migration, Storage, Auth, existing listing or owner data was changed. Browser/device QA and real end-to-end submission/invitation delivery remain pending.
