@@ -71,7 +71,7 @@ The former [ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](ADD_BUSINESS_OWNER_APPROVAL_PLA
 - [x] 4.2 Public Add Business and owner onboarding — owner confirms tests passed.
 - [x] 4.3 Government Jobs and Government Schemes — owner confirms tests passed.
 - [~] 4.4 SDK Jobs — implementation and all owner acceptance testing confirmed; production Pages deployment/smoke gate pending.
-- [~] 4.5 Gov landing page and mobile navigation — implementation underway on `main`; CI and production/browser acceptance pending.
+- [~] 4.5 Gov landing page and mobile navigation — CI and production deployment passed; `/gov` and mobile nav browser smoke passed; owner deep-link/Urdu RTL/Emergency acceptance and live sitemap check remain open.
 
 
 ### 4.1 Admin Business and Data Quality performance
@@ -266,9 +266,10 @@ Phases are ordered for dependency and risk. The owner has approved this plan, bu
 - **Gate:** owner acceptance and production deployment are complete; post-deployment smoke evidence remains pending.
 
 ### Phase 5 — SDK Jobs recruitment operations
-- Candidate intake, private records, interview/suitability tracking, referrals, referral letter, fee ledger and Admin settings.
-- Office schedule and WhatsApp integration.
-- **Gate:** candidate privacy, role/permission, free-period and fee configuration, letter auditability and office schedule acceptance.
+- [x] Read-only candidate privacy/security design proposal added: `docs/SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md`.
+- Candidate intake, private records, interview/suitability tracking, referrals, referral letter, fee ledger and Admin settings remain unimplemented.
+- Office schedule and WhatsApp integration remain unimplemented.
+- **Gate:** owner approval of retention/deletion, consent wording, permission matrix, fee configuration, referral-letter fields and office schedule before any candidate PII collection.
 
 ### Phase 6 — Gov landing and mobile navigation
 - Four Gov cards, bilingual content and route linking.
@@ -554,3 +555,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Approved 4.5 implementation started: bilingual `/gov` landing with four existing-directory cards; mobile bottom navigation is reduced to Home, Search, Gov, SDK Jobs and Saved; Emergency page and Home Emergency card are preserved. Desktop Civic Services menu now links to the Gov landing while retaining the existing directory links.
 - Gov landing is included in the public route index, analytics allowlist (using the existing `static` analytics page type, avoiding a database migration) and sitemap. No authority records or database schema/data were changed.
 - Gov CI and production deployment passed. `/gov` returned HTTP 200 with expected title/canonical metadata in a 390×844 rendered browser session; the five-item mobile bottom nav was confirmed in the rendered DOM. Full Gov card/deep-link, Urdu RTL and Emergency regression acceptance remains pending. SDK Jobs Phase 5 candidate intake/PII/referral operations remain a separate, not-yet-implemented scope.
+
+
+### Phase 5 design checkpoint — 26 November 2026
+
+- [x] Read-only Phase 5 privacy/security design drafted from the owner-approved recruitment plan.
+- [x] Explicitly separated candidate PII, consent events, interview records, referrals, referral letters, fees and office settings; proposed least-privilege permissions and RLS boundaries.
+- [x] No candidate table, migration, UI, data collection, CV upload, fee record or destructive retention job created.
+- [ ] Owner approval required for exact retention periods, consent wording/method, staff permission matrix, fee amount/payment policy and referral-letter/public verification fields.
+- Implementation remains blocked until the required privacy and operational decisions are approved.
