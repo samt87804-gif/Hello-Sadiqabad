@@ -307,7 +307,7 @@ Implementation is committed to main and deployed to the production alias. This e
 
 - [x] Corrected the shared download-state type to support a successful download with image warnings.
 - [x] GitHub CI run [45668460310](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45668460310) passed TypeScript, automated tests, production build and Supabase Edge Function checks.
-- [x] Cloudflare Pages production deployment `b162f9ca-f575-445f-aeb6-14711b7ff30c` succeeded for commit `f5289c6c91ea06680252f22dae2decde615605ce`; canonical alias `https://hellosadiqabad.com` is attached.
+- [x] Cloudflare Pages production deployment `b162f9ca-f575-445f-aeb6-14711b7ff30c` succeeded for feature commit `f5289c6c91ea06680252f22dae2decde615605ce`. The canonical alias `https://hellosadiqabad.com` was subsequently confirmed on deployment `3e856645-fe2b-47b6-84d8-885a6593b6a1` for descendant commit `c181ea930802afa9186674e1be7e19aec4eff988`, which includes the feature.
 - [x] Production Browser Rendering test saved a fresh package with **748 businesses, 29 categories, 315 areas and 12 emergency contacts**. It cached **953 images** and reported **235 unavailable/unsupported images** without blocking the package save.
 - [x] Browser offline-emulation smoke (390×844) explicitly set `navigator.onLine=false` and network offline, then verified homepage, categories (29 category links), emergency contacts and a business detail page from the saved snapshot. No page-level JavaScript errors were recorded.
 - [ ] Physical Android/iOS/desktop airplane-mode testing and worker update/rollback acceptance remain open. The browser-emulation test is not a physical-device test and does not close overall offline Phase 1–4 acceptance.
