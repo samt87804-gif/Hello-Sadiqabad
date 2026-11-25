@@ -312,8 +312,8 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Compress public logo/cover images client-side before secure upload: 640px logo cap, 1800px cover cap, WebP quality 0.84 then 0.72 for large output; retain source when encoding is unavailable or would increase file size.
 - [x] Keep existing 5 MB source-file limit, signed upload authorization, private pending bucket, rate limits and cleanup semantics. Send compressed MIME type and byte size to upload authorization and review metadata.
 - [x] CI run `45658737972` passed; browser smoke run `45658737929` passed at 390×844 and 1365×900; Cloudflare production deployment `db7b67c2-29a0-4f2a-bf86-fcda74fdb2e1` succeeded with `https://hellosadiqabad.com` alias (main commit `3c2c45895d24e7ffaef8ae929b4703da456873da`).
-- [ ] Owner manual acceptance of dropdown placement on actual mobile and desktop browsers, including English/Urdu search.
-- [ ] Real business submission acceptance for logo/cover upload; do not create a dummy production listing solely for testing.
+- [x] Owner confirmed all requested Add Business manual tests passed, including dropdown placement/search and image-upload checks.
+- [ ] No dummy business was created. A separate genuine business submission is only required if a real listing is being added.
 
 
 
