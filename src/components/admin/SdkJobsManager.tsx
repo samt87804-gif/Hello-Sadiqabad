@@ -70,7 +70,7 @@ export function SdkJobsManager() {
     setSelected(job); setNote(''); setPosterPreviewUrl(null); setPrivacyReviewed(false); setEmployerDetails(null);
     const client = getSupabaseClient();
     if (!client) return;
-    const [employer, h, n] = await Promise.all([
+    const [employer, poster, historyResult, notesResult] = await Promise.all([
       client.functions.invoke('get-sdk-job-employer-details', { body: { job_id: job.id } }),
       job.pending_media_path
         ? client.storage.from('hs-pending-business-media').createSignedUrl(job.pending_media_path, 300)
@@ -80,10 +80,8 @@ export function SdkJobsManager() {
     ]);
     if (employer.data?.ok) setEmployerDetails(employer.data as PrivateEmployerDetails);
     else if (employer.error) showToast('Private employer details could not be loaded.', 'error');
-    if (job.pending_media_path && h.data?.signedUrl) setPosterPreviewUrl(h.data.signedUrl);
+    if (job.pending_media_path && poster.data?.signedUrl) setPosterPreviewUrl(poster.data.signedUrl);
     else if (job.approved_image_url) setPosterPreviewUrl(job.approved_image_url);
-    const historyResult = arguments[0];
-    const notesResult = arguments[1];
     if (historyResult.error) showToast('Status history could not be loaded.', 'error');
     else setHistory((historyResult.data ?? []) as JobHistory[]);
     if (notesResult.error) showToast('Admin notes could not be loaded.', 'error');
