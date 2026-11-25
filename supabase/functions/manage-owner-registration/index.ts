@@ -20,7 +20,7 @@ function response(req: Request, data: unknown, status = 200) {
 
 async function getActor(req: Request) {
   const authHeader = req.headers.get("authorization") ?? "";
-  const token = /^Bearer\\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim() ?? null;
+  const token = authHeader.toLowerCase().startsWith("bearer ") ? authHeader.slice(7).trim() : null;
   if (!token) return null;
   const { data, error } = await db.auth.getUser(token);
   return error ? null : data.user;
@@ -96,7 +96,8 @@ Deno.serve(async (req: Request) => {
     if (lockError || !locked) return response(req, { ok: false, error: "This request is already being processed" }, 409);
     lockedId = requestId;
 
-    const siteUrl = (Deno.env.get("SITE_URL") ?? "https://hellosadiqabad.com").replace(/\\/$/, "");
+    const siteUrlRaw = Deno.env.get("SITE_URL") ?? "https://hellosadiqabad.com";
+    const siteUrl = siteUrlRaw.endsWith("/") ? siteUrlRaw.slice(0, -1) : siteUrlRaw;
     const { data: invited, error: inviteError } = await db.auth.admin.inviteUserByEmail(request.email, {
       data: { full_name: request.full_name },
       redirectTo: siteUrl + "/reset-password",
