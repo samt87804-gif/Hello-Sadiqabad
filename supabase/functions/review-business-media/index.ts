@@ -40,7 +40,8 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return response(req, { ok: true });
   if (req.method !== "POST") return response(req, { ok: false, error: "Method not allowed" }, 405);
   try {
-    const token = /^Bearer\\s+(.+)$/i.exec(req.headers.get("authorization") ?? "")?.[1]?.trim();
+    const authorization = req.headers.get("authorization") ?? "";
+    const token = authorization.toLowerCase().startsWith("bearer ") ? authorization.slice(7).trim() : null;
     if (!token) return response(req, { ok: false, error: "Unauthorized" }, 401);
     const { data: auth, error: authError } = await db.auth.getUser(token);
     if (authError || !auth.user) return response(req, { ok: false, error: "Unauthorized" }, 401);
