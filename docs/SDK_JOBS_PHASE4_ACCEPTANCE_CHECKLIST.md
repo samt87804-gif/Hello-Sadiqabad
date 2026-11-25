@@ -26,7 +26,7 @@
 - [ ] Confirm upload is sent through `create-sdk-job-poster-upload` and goes to the private `hs-pending-business-media` bucket under the SDK Jobs pending prefix.
 - [ ] Confirm Owner list reports poster uploaded / Admin review pending; no public image URL is exposed.
 - [ ] Confirm unsupported MIME types and files larger than 5 MiB are rejected.
-- [ ] Confirm Owner cannot attach a path containing another job ID or Owner ID.
+- [ ] Confirm Owner cannot attach a path containing another job ID or Owner ID.\n- [ ] Confirm unsafe slugs (slashes, traversal strings, uppercase or spaces) are rejected and Owner cannot change a slug after submission.
 - [ ] Confirm Owner cannot change job content while the row is `pending_review`; only the pending poster path can be attached.
 - [ ] Confirm Owner cannot read private Admin notes or modify `owner_feedback`.
 
