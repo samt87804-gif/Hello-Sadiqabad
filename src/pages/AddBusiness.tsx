@@ -329,6 +329,14 @@ export function AddBusiness() {
         if (!file) continue;
         if (!client) throw new Error('Connect to the live service before uploading business images.');
         const uploadFile = await compressBusinessImage(file, mediaField);
+        const savedBytes = Math.max(0, file.size - uploadFile.size);
+        const savedPercent = file.size > 0 ? Math.round((savedBytes / file.size) * 100) : 0;
+        showToast(
+          savedBytes > 0
+            ? `${mediaField === 'logo' ? 'Logo' : 'Cover'} compressed: ${(file.size / 1024).toFixed(0)} KB to ${(uploadFile.size / 1024).toFixed(0)} KB (${savedPercent}% saved).`
+            : `${mediaField === 'logo' ? 'Logo' : 'Cover'} is already compact; optimized WebP will be uploaded.`,
+          'success'
+        );
         const { data: authorization, error: authorizationError } = await client.functions.invoke('create-business-media-upload', {
           body: {
             media_field: mediaField,
@@ -396,7 +404,7 @@ export function AddBusiness() {
           : 'Business submitted for moderation review!',
         'success'
       );
-    } catch {
+    } catch (error) {
       const cleanupClient = getSupabaseClient();
       if (uploadedMediaPaths.length && cleanupClient) {
         await cleanupClient.functions.invoke('cleanup-business-media-upload', {
@@ -404,7 +412,7 @@ export function AddBusiness() {
         }).catch(() => undefined);
       }
       showToast(
-        lang === 'ur' ? 'درخواست جمع نہیں ہو سکی۔ انٹرنیٹ چیک کر کے دوبارہ کوشش کریں۔' : 'The request could not be sent. Check your connection and try again.',
+        error instanceof Error ? error.message : (lang === 'ur' ? 'درخواست جمع نہیں ہو سکی۔ انٹرنیٹ چیک کر کے دوبارہ کوشش کریں۔' : 'The request could not be sent. Check your connection and try again.'),
         'error'
       );
     } finally {
