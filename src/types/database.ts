@@ -227,7 +227,7 @@ export interface BusinessRow {
   area_id: string | null;
   address_en: string | null;
   address_ur: string | null;
-  map_url: string | null;
+  map_url?: string | null;
   landmark_en: string | null;
   landmark_ur: string | null;
   lat: number | null;
