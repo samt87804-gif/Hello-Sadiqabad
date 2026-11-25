@@ -614,7 +614,7 @@ export function AddBusiness() {
                 aria-hidden="true"
               />
 
-              <div className="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-4 space-y-2" aria-live="polite">
+              <div className="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-4 space-y-2">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <h3 className="text-sm font-bold text-on-surface">{lang === 'ur' ? 'لسٹنگ کا پیش نظارہ' : 'Listing Preview'}</h3>
                   <span className="text-[10px] font-semibold text-on-surface-variant">{lang === 'ur' ? 'صرف پیش نظارہ — منظوری تک عوامی نہیں' : 'Preview only — not public until approved'}</span>
@@ -626,8 +626,8 @@ export function AddBusiness() {
                     .filter(Boolean).map((item) => bilingualText(lang, item?.name_en, item?.name_ur)).join(' · ') || (lang === 'ur' ? 'شعبہ اور علاقہ منتخب کریں' : 'Choose a category and area')}
                 </p>
                 {phone.trim() && <p className="text-sm text-on-surface" dir="ltr">{phone.trim()}{(sameAsPhone ? phone : whatsapp).trim() ? ` · WhatsApp: ${(sameAsPhone ? phone : whatsapp).trim()}` : ''}</p>}
-                {addressEn.trim() && <p className="text-xs text-on-surface-variant">{addressEn.trim()}</p>}
-                {landmarkEn.trim() && <p className="text-xs text-on-surface-variant">{lang === 'ur' ? 'قریبی جگہ: ' : 'Near: '}{landmarkEn.trim()}</p>}
+                {(addressEn.trim() || addressUr.trim()) && <p className="text-xs text-on-surface-variant">{bilingualText(lang, addressEn, addressUr)}</p>}
+                {(landmarkEn.trim() || landmarkUr.trim()) && <p className="text-xs text-on-surface-variant">{lang === 'ur' ? 'قریبی جگہ: ' : 'Near: '}{bilingualText(lang, landmarkEn, landmarkUr)}</p>}
                 {selectedFacilities.length > 0 && <p className="text-xs text-on-surface-variant">{selectedFacilities.join(' · ')}</p>}
                 {logoFile && <p className="text-[11px] text-on-surface-variant">{lang === 'ur' ? 'لوگو منتخب: ' : 'Logo selected: '}{logoFile.name}</p>}
                 {coverFile && <p className="text-[11px] text-on-surface-variant">{lang === 'ur' ? 'کور تصویر منتخب: ' : 'Cover selected: '}{coverFile.name}</p>}
