@@ -23,9 +23,11 @@ This document records requirements and implementation gates. It does not authori
 2. `docs/PROJECT_WORKING_RULES.md` — permanent mandatory rules.
 3. `PROJECT_ROADMAP.md` — live application checklist and latest status.
 4. `docs/NEW_CHAT_HANDOFF.md` — latest continuation notes; reconcile with current main.
-5. `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md` — existing Jobs/Schemes/Owner baseline.
-6. The workstream plans linked below.
-7. `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`, `DEPLOYMENT.md`, relevant tests, migrations and code before touching affected areas.
+5. `docs/ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md` — mandatory active Add Business/Admin workflow. Do not implement the archived `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`.
+6. `docs/SDK_JOBS_RECRUITMENT_PLAN.md` and `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md` — active SDK Jobs Phase 4 continuation.
+7. `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md` — existing Jobs/Schemes/Owner baseline.
+8. The other workstream plans linked below.
+9. `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`, `DEPLOYMENT.md`, relevant tests, migrations and code before touching affected areas.
 
 **Source-of-truth order:** current `main` code and tracked migrations for implemented behavior; permanent working rules for how to work; roadmap for application-wide status; this master plan and its child plans for the owner-approved target behavior. If documents conflict with code or live schema, inspect and reconcile; never assume.
 
