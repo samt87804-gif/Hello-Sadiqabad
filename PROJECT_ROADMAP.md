@@ -918,3 +918,13 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - CI 45662891896 passed; Cloudflare Pages deployment 5d601e4e-2e04-4478-bb2b-5b6bce833f6e succeeded with https://hellosadiqabad.com.
 - Existing 1 published job and 5 published schemes without posters remain unchanged. They are grandfathered; no data was unpublished or invented. Phase 3 is not accepted until Admin UI and real poster/share-preview acceptance, plus an owner decision on those legacy records and private-draft/public-approved poster handling.
 - Initial browser smoke run 45662892354 failed to locate the WhatsApp share control; the test now accepts English/Urdu labels and waits for the share UI. Corrected public browser smoke run 45663702714 passed: Add Business mobile/desktop and Government Jobs/Schemes share buttons plus Facebook-crawler OG/Twitter metadata.
+
+
+## Offline download — partial image caching policy — 25 November 2026
+
+- [x] Owner approved Option 2: unsupported or unavailable public images must not block saving an otherwise valid offline public-data package.
+- [x] Updated `/offline-data` so the public IndexedDB snapshot can be saved when some images fail or use unsupported hosts; completion reports cached and skipped image counts and warns that skipped images may not appear offline.
+- [x] Added a regression test covering one successfully cached image, one unsupported host and one unavailable image response.
+- [ ] GitHub CI, production deployment and production browser verification for this change.
+- [ ] Download a fresh package and verify public routes/content plus missing-image warnings in airplane mode on browser/device.
+- **Status:** partial-image policy implemented in source; overall offline Phase 1–4 acceptance remains open. Existing verified package preservation on core-data failure/cancellation remains required.
