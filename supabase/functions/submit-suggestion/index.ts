@@ -94,7 +94,11 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload = { ...(body.payload as Record<string, unknown>) };
-    const mediaInput = Array.isArray(payload.media_assets) ? payload.media_assets : [];
+    const rawMediaInput = payload.media_assets;
+    if (rawMediaInput !== undefined && !Array.isArray(rawMediaInput)) {
+      return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
+    }
+    const mediaInput = Array.isArray(rawMediaInput) ? rawMediaInput : [];
     delete payload.media_assets;
     const ownerEmail = typeof body.payload.owner_email === "string" ? body.payload.owner_email.trim().toLowerCase() : "";
     delete payload.owner_email;
