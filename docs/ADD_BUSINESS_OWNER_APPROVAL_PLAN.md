@@ -72,3 +72,27 @@ This is a read-only baseline for the future implementation; no Phase 2 code or d
 - Live RLS inspection confirms public submissions and owner-registration requests have restricted insert/read policies; Admin moderation/owner permissions are enforced through private permission helpers. Keep those boundaries.
 
 **Implementation constraints:** Keep legacy `submissions` payloads and other submission types backward compatible. Add field-level review/media/quota structures additively. Preserve the current `approve_submission` branches for all non-new-business submission types and explicitly close the old whole-listing approval bypass for new-business records only when the replacement workflow is fully ready. Create a separate private pending-media bucket and test anonymous reads are denied before any public promotion. Invitation must be idempotent and associate only the exact reviewed business; failure must leave a retryable state and must not leave a half-linked account.
+
+
+---
+
+## Phase 2 implementation status — 25 November 2026
+
+**In progress on** `feat/business-owner-field-approval`; Draft PR [#19](https://github.com/samt87804-gif/Hello-Sadiqabad/pull/19).
+
+Implemented in branch code:
+- Expanded Add Business fields, removed default Category/Area selection, validates Gmail and uploads logo/cover into a separate private pending bucket.
+- Added additive per-field review ledger, legacy new-business approval guard, and non-destructive backfill of existing new-business payload fields.
+- Added field review RPC and Admin queue; approved required core fields create the public listing, optional fields are individually controlled.
+- Added private media review/promotion Edge Function and owner image-change request quota RPC (2 per business per Pakistan-local calendar month).
+- Added owner registration request linkage and secure invitation/business association with rollback handling.
+- Added cleanup for pending uploads when submission fails before the moderation workflow is established; owner image-change RPC verifies the private object exists.
+
+Verification / blockers:
+- Earlier branch head passed CI and preview deployment; latest follow-up commits require fresh CI confirmation.
+- Cloudflare preview is not production. No production migration, Storage bucket, business row, owner request, Auth user or other production data has been changed.
+- Supabase isolated branch could not be created on the current plan. Both SQL migrations still require execution and rollback testing against an isolated database; do not merge/apply them to production yet.
+- Human SQL/security review and verification of repository branch protection/required checks remain outstanding.
+- Phase 1 authenticated desktop/mobile acceptance is still outstanding; Phase 2 is proceeding as the owner-approved next workstream, not as a claim that Phase 1 passed acceptance.
+
+**Release gate:** Keep PR #19 Draft and do not merge until latest CI passes, SQL validation/rollback testing succeeds on an isolated database, human review is complete, and branch protection is verified.
