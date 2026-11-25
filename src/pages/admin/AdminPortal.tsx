@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
+const SdkJobsManager = React.lazy(() => import('../../components/admin/SdkJobsManager').then((m) => ({ default: m.SdkJobsManager })));
 const BusinessFieldReviewQueue = React.lazy(() => import('../../components/admin/BusinessFieldReviewQueue').then((m) => ({ default: m.BusinessFieldReviewQueue })));
 const OwnerRegistrationRequests = React.lazy(() => import('../../components/admin/OwnerRegistrationRequests').then((m) => ({ default: m.OwnerRegistrationRequests })));
 const NewsManager = React.lazy(() => import('../../components/admin/NewsManager').then((m) => ({ default: m.NewsManager })));
@@ -390,6 +391,8 @@ export function AdminPortal() {
         ) : (
           <PermissionDenied />
         );
+      case 'sdk-jobs':
+        return hasPermission('sdk_jobs.manage') ? <SdkJobsManager /> : <PermissionDenied />;
       case 'moderation':
         return hasPermission('moderation.review') ? (
           <ModerationManager
