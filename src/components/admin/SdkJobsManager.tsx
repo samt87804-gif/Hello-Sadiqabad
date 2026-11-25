@@ -21,6 +21,10 @@ interface AdminSdkJob {
 }
 interface JobHistory { id: string; action: string; old_status: string | null; new_status: string | null; created_at: string; }
 interface JobNote { id: string; note: string; created_at: string; }
+interface PrivateEmployerDetails {
+  business: { name_en: string; name_ur: string | null; phone_primary: string | null; whatsapp: string | null; email: string | null };
+  owner: { full_name: string | null; phone: string | null; email: string | null };
+}
 
 const labels: Record<JobStatus, string> = {
   draft:'Draft', pending_review:'Pending review', changes_requested:'Changes requested',
@@ -39,6 +43,7 @@ export function SdkJobsManager() {
   const [history, setHistory] = useState<JobHistory[]>([]);
   const [notes, setNotes] = useState<JobNote[]>([]);
   const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
+  const [employerDetails, setEmployerDetails] = useState<PrivateEmployerDetails | null>(null);
   const [privacyReviewed, setPrivacyReviewed] = useState(false);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
@@ -62,21 +67,27 @@ export function SdkJobsManager() {
   useEffect(() => { void reload(); }, [reload]);
 
   const loadDetail = async (job: AdminSdkJob) => {
-    setSelected(job); setNote(''); setPosterPreviewUrl(null); setPrivacyReviewed(false);
+    setSelected(job); setNote(''); setPosterPreviewUrl(null); setPrivacyReviewed(false); setEmployerDetails(null);
     const client = getSupabaseClient();
     if (!client) return;
-    if (job.pending_media_path) {
-      const { data: signed } = await client.storage.from('hs-pending-business-media').createSignedUrl(job.pending_media_path, 300);
-      if (signed?.signedUrl) setPosterPreviewUrl(signed.signedUrl);
-    } else if (job.approved_image_url) setPosterPreviewUrl(job.approved_image_url);
-    const [h, n] = await Promise.all([
+    const [employer, h, n] = await Promise.all([
+      client.functions.invoke('get-sdk-job-employer-details', { body: { job_id: job.id } }),
+      job.pending_media_path
+        ? client.storage.from('hs-pending-business-media').createSignedUrl(job.pending_media_path, 300)
+        : Promise.resolve({ data: null, error: null }),
       client.from('sdk_job_status_history').select('id,action,old_status,new_status,created_at').eq('job_id', job.id).order('created_at', { ascending: false }).limit(30),
       client.from('sdk_job_admin_notes').select('id,note,created_at').eq('job_id', job.id).order('created_at', { ascending: false }).limit(30),
     ]);
-    if (h.error) showToast('Status history could not be loaded.', 'error');
-    else setHistory((h.data ?? []) as JobHistory[]);
-    if (n.error) showToast('Admin notes could not be loaded.', 'error');
-    else setNotes((n.data ?? []) as JobNote[]);
+    if (employer.data?.ok) setEmployerDetails(employer.data as PrivateEmployerDetails);
+    else if (employer.error) showToast('Private employer details could not be loaded.', 'error');
+    if (job.pending_media_path && h.data?.signedUrl) setPosterPreviewUrl(h.data.signedUrl);
+    else if (job.approved_image_url) setPosterPreviewUrl(job.approved_image_url);
+    const historyResult = arguments[0];
+    const notesResult = arguments[1];
+    if (historyResult.error) showToast('Status history could not be loaded.', 'error');
+    else setHistory((historyResult.data ?? []) as JobHistory[]);
+    if (notesResult.error) showToast('Admin notes could not be loaded.', 'error');
+    else setNotes((notesResult.data ?? []) as JobNote[]);
   };
 
   const changeStatus = async (status: JobStatus) => {
@@ -167,7 +178,7 @@ export function SdkJobsManager() {
           {selected ? <Card className="p-4 sm:p-5 space-y-4">
             <div className="flex items-center justify-between gap-2"><h3 className="font-bold">Review job</h3><Badge variant={variant(selected.status)}>{labels[selected.status]}</Badge></div>
             <div className="space-y-1"><p className="font-bold">{selected.title_en}</p>{selected.title_ur && <p className="font-urdu text-sm" dir="rtl">{selected.title_ur}</p>}<p className="text-xs text-on-surface-variant">{selected.summary_en}</p>{selected.summary_ur && <p className="font-urdu text-xs" dir="rtl">{selected.summary_ur}</p>}</div>
-            <div className="rounded-xl bg-surface-container-low p-3 text-xs space-y-1"><p className="font-bold flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Private employer linkage — Admin only</p><p>Owner user ID: {selected.employer_owner_id}</p><p>Source business ID: {selected.source_business_id}</p><p>Job record ID: {selected.id}</p><p>Pending media path: {selected.pending_media_path || 'No poster uploaded'}</p><p>Approved public poster: {selected.approved_image_url ? 'Attached' : 'Not attached'}</p></div>
+            <div className="rounded-xl bg-surface-container-low p-3 text-xs space-y-1"><p className="font-bold flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Private employer linkage — Admin only</p><p>Owner: {employerDetails?.owner.full_name || 'Name not available'}</p><p>Owner email: {employerDetails?.owner.email || 'Not available'}</p><p>Owner phone: {employerDetails?.owner.phone || 'Not available'}</p><p>Business: {employerDetails?.business.name_en || 'Name not available'}</p><p>Business phone: {employerDetails?.business.phone_primary || 'Not available'}</p><p>Business WhatsApp: {employerDetails?.business.whatsapp || 'Not available'}</p><p>Business email: {employerDetails?.business.email || 'Not available'}</p><p>Owner user ID: {selected.employer_owner_id}</p><p>Source business ID: {selected.source_business_id}</p><p>Job record ID: {selected.id}</p><p>Pending media path: {selected.pending_media_path || 'No poster uploaded'}</p><p>Approved public poster: {selected.approved_image_url ? 'Attached' : 'Not attached'}</p></div>
             {posterPreviewUrl && <div className="space-y-2"><p className="text-xs font-bold">{selected.pending_media_path ? 'Private pending poster preview' : 'Approved public poster'}</p><img src={posterPreviewUrl} alt="SDK Job poster preview" className="w-full max-h-64 object-contain rounded-xl border border-outline-variant/40 bg-surface-container-low" />{selected.pending_media_path && <div className="flex flex-wrap gap-2"><Button size="sm" disabled={saving} onClick={() => void reviewPoster('approve')}>Approve poster</Button><Button size="sm" variant="danger" disabled={saving} onClick={() => void reviewPoster('reject')}>Reject poster</Button></div>}</div>}
             <div className="space-y-1"><p className="text-xs font-bold">Full description</p><p className="text-sm whitespace-pre-wrap">{selected.description_en}</p>{selected.description_ur && <p className="font-urdu text-sm whitespace-pre-wrap" dir="rtl">{selected.description_ur}</p>}</div>
             <div className="grid grid-cols-2 gap-2 text-xs"><p>Location: {selected.work_location_en || 'Not specified'}</p><p>Closing: {selected.closing_date || 'Not specified'}</p><p>Salary disclosed: {selected.salary_disclosed ? 'Yes' : 'No'}</p><p>Salary range: {selected.salary_disclosed ? [selected.salary_min, selected.salary_max].filter((v) => v !== null).join(' – ') || 'Not specified' : 'Hidden'}</p></div>
