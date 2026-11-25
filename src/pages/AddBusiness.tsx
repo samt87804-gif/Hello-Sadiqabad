@@ -37,6 +37,8 @@ export function AddBusiness() {
   const isOwner = role === 'owner';
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [areas, setAreas] = useState<AreaRow[]>([]);
+  const [categorySearch, setCategorySearch] = useState('');
+  const [areaSearch, setAreaSearch] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [metadataError, setMetadataError] = useState(false);
@@ -405,32 +407,60 @@ export function AddBusiness() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                  label={lang === 'ur' ? 'شعبہ / کیٹیگری' : 'Category'}
-                  required
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                >
-                  <option value="">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {bilingualText(lang, c.name_en, c.name_ur)}
-                    </option>
-                  ))}
-                </Select>
-                <Select
-                  label={lang === 'ur' ? 'علاقہ / بازار' : 'Area / Neighborhood'}
-                  required
-                  value={areaId}
-                  onChange={(e) => setAreaId(e.target.value)}
-                >
-                  <option value="">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</option>
-                  {areas.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {bilingualText(lang, a.name_en, a.name_ur)}
-                    </option>
-                  ))}
-                </Select>
+                <div className="space-y-2">
+                  <Input
+                    id="business-category-search"
+                    label={lang === 'ur' ? 'شعبہ تلاش کریں' : 'Find a category'}
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
+                    placeholder={lang === 'ur' ? 'شعبے کا نام لکھیں' : 'Type a category name'}
+                    autoComplete="off"
+                  />
+                  <Select
+                    label={lang === 'ur' ? 'شعبہ / کیٹیگری' : 'Category'}
+                    required
+                    value={categoryId}
+                    onChange={(e) => { setCategoryId(e.target.value); setCategorySearch(''); }}
+                  >
+                    <option value="">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</option>
+                    {categories.filter((item) => {
+                      const query = categorySearch.trim().toLocaleLowerCase();
+                      return item.id === categoryId || !query ||
+                        [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
+                    }).map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {bilingualText(lang, item.name_en, item.name_ur)}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    id="business-area-search"
+                    label={lang === 'ur' ? 'علاقہ تلاش کریں' : 'Find an area'}
+                    value={areaSearch}
+                    onChange={(e) => setAreaSearch(e.target.value)}
+                    placeholder={lang === 'ur' ? 'علاقے کا نام لکھیں' : 'Type an area name'}
+                    autoComplete="off"
+                  />
+                  <Select
+                    label={lang === 'ur' ? 'علاقہ / بازار' : 'Area / Neighborhood'}
+                    required
+                    value={areaId}
+                    onChange={(e) => { setAreaId(e.target.value); setAreaSearch(''); }}
+                  >
+                    <option value="">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</option>
+                    {areas.filter((item) => {
+                      const query = areaSearch.trim().toLocaleLowerCase();
+                      return item.id === areaId || !query ||
+                        [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
+                    }).map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {bilingualText(lang, item.name_en, item.name_ur)}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
