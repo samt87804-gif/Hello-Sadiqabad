@@ -80,6 +80,7 @@ export function OwnerSdkJobs() {
   const [saving, setSaving] = useState(false);
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
+  const [editingJobHasPoster, setEditingJobHasPoster] = useState(false);
   const [uploadingPosterJobId, setUploadingPosterJobId] = useState<string | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState('');
   const [titleEn, setTitleEn] = useState('');
@@ -145,11 +146,12 @@ export function OwnerSdkJobs() {
     setSalaryMin(''); setSalaryMax(''); setSalaryDisclosed(false);
     setDutiesEn(''); setDutiesUr(''); setQualificationsEn(''); setQualificationsUr('');
     setExperienceEn(''); setExperienceUr(''); setHoursEn(''); setHoursUr('');
-    setBenefitsEn(''); setBenefitsUr(''); setClosingDate(''); setPosterFile(null); setEditingJobId(null);
+    setBenefitsEn(''); setBenefitsUr(''); setClosingDate(''); setPosterFile(null); setEditingJobId(null); setEditingJobHasPoster(false);
   };
 
   const beginEdit = (job: OwnerSdkJob) => {
     setEditingJobId(job.id);
+    setEditingJobHasPoster(Boolean(job.pending_media_path || job.approved_image_url));
     setSelectedBusiness(job.source_business_id);
     setTitleEn(job.title_en); setTitleUr(job.title_ur || '');
     setSummaryEn(job.summary_en); setSummaryUr(job.summary_ur || '');
@@ -304,7 +306,7 @@ export function OwnerSdkJobs() {
                   <div className="grid sm:grid-cols-2 gap-3"><label className="block"><span className={labelClass}>Area</span><select className={fieldClass} value={areaId} onChange={(e)=>setAreaId(e.target.value)}><option value="">Select area (optional)</option>{areas.map((area)=><option key={area.id} value={area.id}>{area.name_en}</option>)}</select></label>{input('Work location (English)',locationEn,setLocationEn)}{input('Work location (Urdu)',locationUr,setLocationUr)}{input('Minimum salary (PKR)',salaryMin,setSalaryMin,false,'number')}{input('Maximum salary (PKR)',salaryMax,setSalaryMax,false,'number')}</div>
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={salaryDisclosed} onChange={(e)=>setSalaryDisclosed(e.target.checked)} /> Show salary range publicly if provided</label>
                 </section>
-                <section className="space-y-3 border-t border-outline-variant/40 pt-4"><h2 className="font-bold">Job poster (optional, required before publication)</h2><label className="block"><span className={labelClass}>Upload JPEG, PNG or WebP — maximum 5 MB</span><input className={fieldClass} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setPosterFile(e.target.files?.[0] ?? null)} /><span className="text-xs text-on-surface-variant">{posterFile ? posterFile.name : 'Poster pehle private storage mein jayega; Admin approval ke baad hi public hoga.'}</span></label></section>
+                <section className="space-y-3 border-t border-outline-variant/40 pt-4"><h2 className="font-bold">Job poster (optional, required before publication)</h2>{editingJobHasPoster ? <p className="text-xs text-on-surface-variant">Is request ke sath poster pehle se attached hai. Agar Admin poster reject karega to request list se naya poster upload kar sakenge.</p> : <label className="block"><span className={labelClass}>Upload JPEG, PNG or WebP — maximum 5 MB</span><input className={fieldClass} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setPosterFile(e.target.files?.[0] ?? null)} /><span className="text-xs text-on-surface-variant">{posterFile ? posterFile.name : 'Poster pehle private storage mein jayega; Admin approval ke baad hi public hoga.'}</span></label>}</section>
                 <section className="space-y-3 border-t border-outline-variant/40 pt-4"><h2 className="font-bold">Requirements & work conditions</h2><div className="grid sm:grid-cols-2 gap-3">{textarea('Duties (English)',dutiesEn,setDutiesEn)}{textarea('Duties (Urdu)',dutiesUr,setDutiesUr)}{textarea('Qualifications (English)',qualificationsEn,setQualificationsEn)}{textarea('Qualifications (Urdu)',qualificationsUr,setQualificationsUr)}{textarea('Experience (English)',experienceEn,setExperienceEn, false, 2000)}{textarea('Experience (Urdu)',experienceUr,setExperienceUr,false,2000)}{input('Working hours / shift (English)',hoursEn,setHoursEn)}{input('Working hours / shift (Urdu)',hoursUr,setHoursUr)}{textarea('Benefits (English)',benefitsEn,setBenefitsEn,false,3000)}{textarea('Benefits (Urdu)',benefitsUr,setBenefitsUr,false,3000)}</div>
                 </section>
                 <div className="rounded-xl border border-warning/40 bg-warning/5 p-3 text-xs text-on-surface-variant space-y-1"><p className="font-bold text-on-surface">Important — Admin review required</p><p>Submission public nahi hoti. Admin approval aur approved job poster/image ke baghair listing publish nahi hogi. Poster optional taur par abhi attach kar sakte hain ya submission ke baad request list se upload kar sakte hain.</p><p>Public listing par aapka naam, business identity, phone, WhatsApp ya email show nahi hoga. Candidate contact CTA Admin ke approved WhatsApp par hoga.</p></div>
