@@ -48,16 +48,10 @@ async function testViewport(browser, name, viewport, isMobile) {
 
   const categorySearch = page.locator('#business-category-search');
   const areaSearch = page.locator('#business-area-search');
-  await page.waitForFunction(() => {
-    const trigger = document.querySelector('#business-category-trigger');
-    return trigger && !trigger.textContent?.includes('Select a category') && !trigger.textContent?.includes('شعبہ منتخب کریں')
-      ? true
-      : document.querySelectorAll('#business-category-search').length === 1;
-  }, null, { timeout: 45_000 });
-
   await categoryTrigger.click();
   const categoryList = page.getByRole('listbox', { name: /Categories|کیٹیگریز/ });
   await categoryList.waitFor();
+  await page.waitForFunction(() => document.querySelectorAll('[role="listbox"] [role="option"]').length > 1, null, { timeout: 45_000 });
   const categoryOptions = categoryList.getByRole('option');
   assert.ok(await categoryOptions.count() > 1, 'Category taxonomy should be loaded');
   const categoryBox = await categoryList.boundingBox();
@@ -77,6 +71,7 @@ async function testViewport(browser, name, viewport, isMobile) {
   await areaTrigger.click();
   const areaList = page.getByRole('listbox', { name: /Areas|علاقے/ });
   await areaList.waitFor();
+  await page.waitForFunction(() => document.querySelectorAll('[role="listbox"] [role="option"]').length > 1, null, { timeout: 45_000 });
   const areaOptions = areaList.getByRole('option');
   assert.ok(await areaOptions.count() > 1, 'Area taxonomy should be loaded');
   const areaBox = await areaList.boundingBox();
