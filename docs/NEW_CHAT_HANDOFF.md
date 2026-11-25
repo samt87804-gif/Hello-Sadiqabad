@@ -1234,3 +1234,12 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Rendered production mobile acceptance for six-item layout, Urdu labels and News active-state/deep link remains unverified; do not claim it passed.
 
 - Added `scripts/mobile-bottom-nav.test.mjs` to lock the final six-item order, News route/translation/icon and six-column layout; wired into `npm test`. Latest CI run [45716860002](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716860002) was pending at handoff update; check its final result before further release claims.
+
+
+## Gov/mobile navigation test continuation — 26 November 2026
+
+- Added `scripts/gov-navigation.test.mjs` to verify all four existing Gov directory routes, English/Urdu card titles/descriptions, public `/gov` route, canonical SEO and sitemap inclusion.
+- Added `scripts/mobile-bottom-nav.test.mjs` to verify six routes in exact order (Home, Search, News, Gov, SDK Jobs, Saved), News route/translation/icon and six-column grid.
+- Both scripts are wired into `npm test`.
+- Latest CI run [45717263569](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45717263569) was queued at checkpoint. Recheck status and fix any failure before claiming test pass or deploying the test-only commits.
+- Remaining owner acceptance: rendered mobile layout, Urdu RTL, Gov card deep links and preserved Emergency card/route. Phase 5 PII implementation remains blocked by owner policy approvals in `docs/SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md`.
