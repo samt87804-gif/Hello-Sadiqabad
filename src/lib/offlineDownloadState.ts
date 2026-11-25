@@ -1,4 +1,4 @@
-export type OfflineDownloadStatus = 'idle' | 'downloading' | 'saving' | 'success' | 'error' | 'cancelled';
+export type OfflineDownloadStatus = 'idle' | 'downloading' | 'saving' | 'success' | 'success-with-warnings' | 'error' | 'cancelled';
 
 export interface OfflineDownloadState {
   status: OfflineDownloadStatus;
