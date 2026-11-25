@@ -764,3 +764,12 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [ ] Authenticated desktop before/after cold/warm load and click latency traces remain outstanding.
 - [ ] Browser functional regression and mobile smoke tests remain outstanding.
 - No schema, RLS, Storage or production data changes were made for this phase.
+
+
+### Phase 1 follow-up — 25 November 2026
+
+- [x] Admin Business list now uses an explicit field allowlist and narrow Category/Area joins; it no longer requests every business column and the full Plan relation for list rendering.
+- [x] Full business details load on demand by ID when Admin opens the edit modal.
+- [x] Latest commit `4ed8f50042928896064f3925f8e8f203e0951de7` passed [CI run 45587036171](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45587036171): TypeScript, automated tests, dependency gate, production build and Edge Function typecheck.
+- [x] Cloudflare Pages deployment `51d981f8-e50a-400d-af08-ae5e14481940` succeeded for the exact commit and canonical domain.
+- [ ] Authenticated desktop before/after performance traces and mobile/browser interaction acceptance remain outstanding. Phase 1 remains in progress.
