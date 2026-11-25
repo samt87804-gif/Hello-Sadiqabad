@@ -6,12 +6,20 @@ import { bilingualText } from '../lib/format';
 import { normalizePkPhone } from '../lib/phone';
 import { updatePageSeo } from '../lib/seo';
 import { useAuth } from '../lib/auth';
+import { getSupabaseClient } from '../lib/supabase';
 import type { AreaRow, CategoryRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
 import { Input, Select, Textarea } from '../components/ui/FormFields';
 import { Card, Container, SectionHeading } from '../components/ui/Surface';
 import { useToast } from '../components/ui/Toast';
+
+const DAY_KEYS = [
+  { key: 'mon', en: 'Monday', ur: 'پیر' }, { key: 'tue', en: 'Tuesday', ur: 'منگل' },
+  { key: 'wed', en: 'Wednesday', ur: 'بدھ' }, { key: 'thu', en: 'Thursday', ur: 'جمعرات' },
+  { key: 'fri', en: 'Friday', ur: 'جمعہ' }, { key: 'sat', en: 'Saturday', ur: 'ہفتہ' },
+  { key: 'sun', en: 'Sunday', ur: 'اتوار' },
+] as const;
 
 const QUICK_FACILITIES = [
   { en: 'Home Delivery', ur: 'ہوم ڈیلیوری' },
@@ -41,6 +49,17 @@ export function AddBusiness() {
   const [whatsapp, setWhatsapp] = useState('');
   const [sameAsPhone, setSameAsPhone] = useState(false);
   const [addressEn, setAddressEn] = useState('');
+  const [addressUr, setAddressUr] = useState('');
+  const [landmarkEn, setLandmarkEn] = useState('');
+  const [landmarkUr, setLandmarkUr] = useState('');
+  const [mapUrl, setMapUrl] = useState('');
+  const [ownerName, setOwnerName] = useState('');
+  const [ownerEmail, setOwnerEmail] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [openingHours, setOpeningHours] = useState<Record<string, { open: string; close: string }>>(
+    Object.fromEntries(DAY_KEYS.map((day) => [day.key, { open: '', close: '' }]))
+  );
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [contactName, setContactName] = useState('');
@@ -59,8 +78,6 @@ export function AddBusiness() {
       if (!active) return;
       setCategories(cats);
       setAreas(ar);
-      if (cats[0]) setCategoryId(cats[0].id);
-      if (ar[0]) setAreaId(ar[0].id);
       if (cats.length === 0 || ar.length === 0) setMetadataError(true);
     }).catch(() => {
       if (active) setMetadataError(true);
@@ -87,13 +104,22 @@ export function AddBusiness() {
     setWhatsapp('');
     setSameAsPhone(false);
     setAddressEn('');
+    setAddressUr('');
+    setLandmarkEn('');
+    setLandmarkUr('');
+    setMapUrl('');
+    setOwnerName('');
+    setOwnerEmail('');
+    setLogoFile(null);
+    setCoverFile(null);
+    setOpeningHours(Object.fromEntries(DAY_KEYS.map((day) => [day.key, { open: '', close: '' }])));
+    setCategoryId('');
+    setAreaId('');
     setSelectedFacilities([]);
     setDescription('');
     setContactName('');
     setContactPhone('');
     setHp('');
-    if (categories[0]) setCategoryId(categories[0].id);
-    if (areas[0]) setAreaId(areas[0].id);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,6 +170,25 @@ export function AddBusiness() {
       return;
     }
 
+    if (ownerName.trim().length < 2 || ownerName.trim().length > 100) {
+      showToast(lang === 'ur' ? 'مالک کا درست نام درج کریں۔' : 'Please enter the business owner name.', 'error');
+      return;
+    }
+    if (!/^[^\\s@]+@gmail\\.com$/i.test(ownerEmail.trim())) {
+      showToast(lang === 'ur' ? 'براہ کرم Gmail ایڈریس درج کریں۔' : 'Please enter a valid Gmail address.', 'error');
+      return;
+    }
+    if (mapUrl.trim()) {
+      try { const parsed = new URL(mapUrl.trim()); if (parsed.protocol !== 'https:') throw new Error(); }
+      catch { showToast(lang === 'ur' ? 'گوگل میپس کا درست HTTPS لنک درج کریں۔' : 'Enter a valid HTTPS Google Maps URL.', 'error'); return; }
+    }
+    for (const day of DAY_KEYS) {
+      const hours = openingHours[day.key];
+      if (Boolean(hours.open) !== Boolean(hours.close)) {
+        showToast(lang === 'ur' ? 'ہر دن کے کھلنے اور بند ہونے کے دونوں اوقات درج کریں یا دونوں خالی چھوڑیں۔' : 'For each day, enter both opening and closing times or leave both blank.', 'error');
+        return;
+      }
+    }
     if (description.trim().length > 500) {
       showToast(
         lang === 'ur'
@@ -171,6 +216,22 @@ export function AddBusiness() {
 
     setSubmitting(true);
     try {
+      const client = getSupabaseClient();
+      const mediaAssets: Array<{ media_field: string; storage_path: string; mime_type: string; file_size_bytes: number }> = [];
+      for (const [mediaField, file] of [['logo', logoFile], ['cover', coverFile]] as const) {
+        if (!file) continue;
+        if (!client) throw new Error('Connect to the live service before uploading business images.');
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+          throw new Error('Business images must be JPG, PNG or WebP and no larger than 5 MB.');
+        }
+        const token = crypto.randomUUID();
+        const extension = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp';
+        const storagePath = `pending/${token}/${mediaField}.${extension}`;
+        const { error: uploadError } = await client.storage.from('hs-pending-business-media').upload(storagePath, file, { contentType: file.type, upsert: false });
+        if (uploadError) throw uploadError;
+        mediaAssets.push({ media_field: mediaField, storage_path: storagePath, mime_type: file.type, file_size_bytes: file.size });
+      }
+      const hoursPayload = Object.fromEntries(DAY_KEYS.filter((day) => openingHours[day.key].open && openingHours[day.key].close).map((day) => [day.key, [{ open: openingHours[day.key].open, close: openingHours[day.key].close }]]));
       const res = await submitPublicSuggestion({
         type: 'new_business',
         payload: {
@@ -181,6 +242,14 @@ export function AddBusiness() {
           phone_primary: phone.trim(),
           whatsapp: rawWhatsapp || undefined,
           address_en: cleanAddress,
+          address_ur: addressUr.trim() || undefined,
+          landmark_en: landmarkEn.trim() || undefined,
+          landmark_ur: landmarkUr.trim() || undefined,
+          map_url: mapUrl.trim() || undefined,
+          opening_hours: Object.keys(hoursPayload).length ? hoursPayload : undefined,
+          owner_name: ownerName.trim(),
+          owner_email: ownerEmail.trim().toLowerCase(),
+          media_assets: mediaAssets,
           services_en: selectedFacilities.length > 0 ? selectedFacilities : undefined,
           description_en: description.trim() || undefined,
         },
@@ -310,6 +379,7 @@ export function AddBusiness() {
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                 >
+                  <option value="">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {bilingualText(lang, c.name_en, c.name_ur)}
@@ -321,6 +391,7 @@ export function AddBusiness() {
                   value={areaId}
                   onChange={(e) => setAreaId(e.target.value)}
                 >
+                  <option value="">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</option>
                   {areas.map((a) => (
                     <option key={a.id} value={a.id}>
                       {bilingualText(lang, a.name_en, a.name_ur)}
@@ -360,8 +431,14 @@ export function AddBusiness() {
                 </div>
               </div>
 
+              {(!categories.length || !areas.length) && (
+                <p className="text-xs text-error" role="alert">
+                  {lang === 'ur' ? 'اگر مطلوبہ شعبہ یا علاقہ فہرست میں موجود نہیں تو ایڈمن کو واٹس ایپ کریں، اندراج شامل ہونے کے بعد فارم دوبارہ کھولیں۔' : 'If your category or area is missing, WhatsApp Admin and return after the taxonomy value has been added.'}
+                  {' '}<a className="font-bold underline" href="https://wa.me/923283212342" target="_blank" rel="noreferrer">WhatsApp Admin</a>
+                </p>
+              )}
               <Input
-                label={lang === 'ur' ? 'دکان کا پتہ اور قریبی مشہور جگہ' : 'Shop Address & Nearest Landmark'}
+                label={lang === 'ur' ? 'دکان کا پتہ (انگریزی)' : 'Business Address (English)'}
                 required
                 maxLength={250}
                 value={addressEn}
@@ -372,6 +449,12 @@ export function AddBusiness() {
                     : 'Shop #, Market / Road, Opposite Bank/Mosque, Sadiqabad'
                 }
               />
+              <Input label={lang === 'ur' ? 'پتہ (اردو — اختیاری)' : 'Address (Urdu — optional)'} dir="rtl" className="font-urdu" maxLength={250} value={addressUr} onChange={(e) => setAddressUr(e.target.value)} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label={lang === 'ur' ? 'قریبی مشہور جگہ (انگریزی)' : 'Nearby Landmark (English)'} maxLength={160} value={landmarkEn} onChange={(e) => setLandmarkEn(e.target.value)} />
+                <Input label={lang === 'ur' ? 'قریبی مشہور جگہ (اردو)' : 'Nearby Landmark (Urdu)'} dir="rtl" className="font-urdu" maxLength={160} value={landmarkUr} onChange={(e) => setLandmarkUr(e.target.value)} />
+              </div>
+              <Input label={lang === 'ur' ? 'گوگل میپس لنک (اختیاری)' : 'Google Maps Location URL (optional)'} dir="ltr" maxLength={500} value={mapUrl} onChange={(e) => setMapUrl(e.target.value)} placeholder="https://maps.google.com/..." />
 
               <div className="space-y-2">
                 <span className="text-xs font-semibold text-on-surface block">
@@ -396,6 +479,19 @@ export function AddBusiness() {
                       </button>
                     );
                   })}
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-xl border border-outline-variant/40 p-3">
+                <p className="text-xs font-bold text-on-surface">{lang === 'ur' ? 'روزانہ اوقاتِ کار (اختیاری)' : 'Daily Opening Hours (optional)'}</p>
+                <div className="space-y-2">
+                  {DAY_KEYS.map((day) => (
+                    <div key={day.key} className="grid grid-cols-[minmax(90px,1fr)_1fr_1fr] gap-2 items-center">
+                      <span className="text-xs text-on-surface-variant">{lang === 'ur' ? day.ur : day.en}</span>
+                      <Input type="time" aria-label={`${day.en} opening time`} value={openingHours[day.key].open} onChange={(e) => setOpeningHours((prev) => ({ ...prev, [day.key]: { ...prev[day.key], open: e.target.value } }))} />
+                      <Input type="time" aria-label={`${day.en} closing time`} value={openingHours[day.key].close} onChange={(e) => setOpeningHours((prev) => ({ ...prev, [day.key]: { ...prev[day.key], close: e.target.value } }))} />
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -432,6 +528,15 @@ export function AddBusiness() {
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="0300-1234567"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label={lang === 'ur' ? 'کاروبار کے مالک کا نام' : 'Business Owner Name'} required maxLength={100} value={ownerName} onChange={(e) => setOwnerName(e.target.value)} />
+                <Input label={lang === 'ur' ? 'مالک کا Gmail' : 'Owner Gmail Address'} type="email" required maxLength={254} dir="ltr" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="name@gmail.com" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری لوگو / پروفائل تصویر (اختیاری)' : 'Business Logo / Profile Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)} className="block w-full text-xs mt-1" /></label>
+                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری کور / بینر تصویر (اختیاری)' : 'Business Cover / Banner Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} className="block w-full text-xs mt-1" /></label>
               </div>
 
               <input
