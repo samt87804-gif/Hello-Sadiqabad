@@ -5,7 +5,7 @@ import { classifySiteAnalyticsPath } from '../../supabase/functions/_shared/site
 describe('Site analytics public route allowlist', () => {
   it('classifies supported static and content routes', () => {
     assert.deepEqual(classifySiteAnalyticsPath('/'), { path: '/', pageType: 'home' });
-    assert.deepEqual(classifySiteAnalyticsPath('/gov'), { path: '/gov', pageType: 'gov' });
+    assert.deepEqual(classifySiteAnalyticsPath('/gov'), { path: '/gov', pageType: 'static' });
     assert.deepEqual(classifySiteAnalyticsPath('/business/example-shop'), { path: '/business/example-shop', pageType: 'business' });
     assert.deepEqual(classifySiteAnalyticsPath('/news/local-update'), { path: '/news/local-update', pageType: 'news' });
     assert.deepEqual(classifySiteAnalyticsPath('/area/model-town'), { path: '/area/model-town', pageType: 'area' });
