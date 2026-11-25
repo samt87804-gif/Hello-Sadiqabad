@@ -859,3 +859,22 @@ The owner has approved the requirements recorded in `docs/FINAL_PRODUCT_EXPANSIO
 Start with Phase 0 audit/design in the master plan. Inspect current main code, exact routes, Supabase live migration ledger, RLS, permission model, Storage policies, tests and deployment state. Do not implement schema changes in the audit phase. Existing Government Jobs/Schemes/Owner workflows must be extended, not recreated. Preserve all production data and follow `docs/PROJECT_WORKING_RULES.md`.
 
 Older historical notes in this handoff are retained as evidence; if they conflict with this latest approved plan or current code, inspect and reconcile rather than following stale instructions.
+
+
+---
+
+## Final Product Expansion — Phase 0 audit handoff (25 November 2026)
+
+Read [`docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`](FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md) and [`docs/FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md`](FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md) before continuing.
+
+- Phase 0 read-only source/schema/security audit and additive design are documented.
+- Current audit HEAD before this documentation checkpoint: `a310577362fde1d5ce15ecc1fed507cf0a72d668`.
+- CI for that HEAD passed both jobs (npm install/audit/typecheck/tests/build and Deno Edge Function typecheck). This was documentation-only; it does not mean expansion code is implemented.
+- Admin performance root causes are recorded: 19-request global reload on every tab, eager large Admin module imports, unbounded business cards and repeated Data Quality scans.
+- Database-only query baseline: current joined business query returned 697 rows and executed in 5.347 ms in the audit environment. Authenticated browser timings and click latency are still unmeasured and must be collected for Phase 1 acceptance.
+- Live Supabase migration ledger has 95 versions; repository has 74 migration files with significant version drift. Never replay the baseline or blindly push migrations.
+- Existing Storage bucket `Hello Sadiqabad` is public. Pending business/government media requires a separate private bucket and an approved-media promotion path.
+- Existing `manage-owner-registration` Edge Function is deployed (version 3, JWT required) and checks Admin permission, but does not associate the invited owner with the reviewed business. Extend only with reviewed idempotency, rollback and business-linking safeguards.
+- No application code, production schema/data, Storage objects, Auth settings or deployment configuration changed during Phase 0.
+
+**Next approved workstream:** Phase 1 — Admin Business and Data Quality performance. Do not mark it complete until before/after desktop and mobile measurements, pagination/filter/action/export/permission tests, typecheck, automated tests, production build, CI and deployment evidence are recorded.
