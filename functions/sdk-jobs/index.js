@@ -9,7 +9,7 @@ function escapeHtml(value) {
 function setMeta(html, attribute, name, value) {
   const pattern = new RegExp('<meta\\b(?=[^>]*\\b' + attribute + '\\s*=\\s*["\\x27]' + name + '["\\x27])[^>]*>', 'i');
   const tag = '<meta ' + attribute + '="' + escapeHtml(name) + '" content="' + escapeHtml(value) + '" />';
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\\/head>/i, tag + '\\n</head>');
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\n</head>');
 }
 export async function onRequest(context) {
   const { request } = context;
@@ -18,8 +18,8 @@ export async function onRequest(context) {
   if (!page.ok || !(page.headers.get('content-type') || '').includes('text/html')) return page;
   try {
     const html = await page.clone().text();
-    let output = /<title>[\\s\\S]*?<\\/title>/i.test(html)
-      ? html.replace(/<title>[\\s\\S]*?<\\/title>/i, '<title>SDK Jobs — Local Vacancies in Sadiqabad | Hello Sadiqabad</title>')
+    let output = /<title>[\s\S]*?<\/title>/i.test(html)
+      ? html.replace(/<title>[\s\S]*?<\/title>/i, '<title>SDK Jobs — Local Vacancies in Sadiqabad | Hello Sadiqabad</title>')
       : html.replace(/<head[^>]*>/i, (head) => head + '<title>SDK Jobs — Local Vacancies in Sadiqabad | Hello Sadiqabad</title>');
     const description = 'Browse reviewed local vacancies in Sadiqabad. Employer identity stays private. Contact Hello Sadiqabad through the approved recruitment WhatsApp channel.';
     const canonical = SITE_ORIGIN + '/sdk-jobs';
@@ -35,8 +35,8 @@ export async function onRequest(context) {
     ];
     for (const [attribute,name,value] of tags) output = setMeta(output,attribute,name,value);
     const canonicalTag = '<link rel="canonical" href="' + escapeHtml(canonical) + '" />';
-    const canonicalPattern = /<link\\b(?=[^>]*\\brel\\s*=\\s*["']canonical["'])[^>]*>/i;
-    output = canonicalPattern.test(output) ? output.replace(canonicalPattern,canonicalTag) : output.replace(/<\\/head>/i,canonicalTag + '\\n</head>');
+    const canonicalPattern = /<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/i;
+    output = canonicalPattern.test(output) ? output.replace(canonicalPattern,canonicalTag) : output.replace(/<\/head>/i,canonicalTag + '\n</head>');
     const headers = new Headers(page.headers);
     headers.delete('content-length'); headers.delete('content-encoding'); headers.delete('etag');
     headers.set('cache-control','public, max-age=0, s-maxage=300, stale-while-revalidate=60');
