@@ -91,3 +91,9 @@ Owner-approved execution mode: commit directly to GitHub `main`; do not create P
 - Before release, resolve static concerns in media cleanup/atomicity, verify all live columns/constraints/helper functions, and test legacy `approve_submission` branches and existing owner-registration requests.
 
 **Next step:** obtain an isolated staging database (free an existing Free project slot or explicitly approve a paid staging option), validate both migrations and workflows, then port only the verified code directly to `main` in narrow commits.
+
+### Additional security review — anonymous media upload
+
+Static review of the closed feature-branch implementation found that `AddBusiness` uploads pending images directly to the private Storage bucket using the public client before calling `submit-suggestion`. The `submit-suggestion` Edge Function rate-limits only after those objects have already been uploaded. Its `storage.objects` INSERT policy allows anonymous uploads into the `pending` folder, so an attacker can bypass the Edge Function rate limit and create many objects (each individually bounded by the bucket's 5 MB/MIME restrictions). This is a storage-abuse / cost-exhaustion risk and is a release blocker.
+
+Required fix before release: replace unrestricted anonymous direct uploads with short-lived, narrowly scoped signed upload authorizations issued by a rate-limited server-side endpoint (or another equivalently enforced quota design). Bind authorization to the allowed `logo`/`cover` path, MIME type, max size and one-time submission token; ensure abandoned uploads expire/are cleaned up. Test that anonymous clients cannot upload without authorization and that repeated requests hit server-side limits. Do not relax the private bucket's read restrictions.
