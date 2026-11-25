@@ -916,7 +916,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Added Government Schemes poster upload, public poster display, canonical share actions, Cloudflare Pages social previews, and offline poster caching.
 - Applied two additive migrations to the existing Supabase project: 20261125171000_government_bilingual_poster_publication_gate and 20261125172500_government_content_bilingual_details. Invalid publication tests were transaction-only and left zero test rows.
 - CI 45662891896 passed; Cloudflare Pages deployment 5d601e4e-2e04-4478-bb2b-5b6bce833f6e succeeded with https://hellosadiqabad.com.
-- Existing 1 published job and 5 published schemes without posters remain unchanged. They are grandfathered; no data was unpublished or invented. Phase 3 is not accepted until Admin UI and real poster/share-preview acceptance, plus an owner decision on those legacy records and private-draft/public-approved poster handling.
+- Existing 1 published job and 5 published schemes without posters were preserved without fabricated artwork or data changes. Owner confirms all Phase 3 Government Jobs/Schemes tests, including outstanding acceptance checks, passed on 26 November 2026; this supersedes the earlier pending status.
 - Initial browser smoke run 45662892354 failed to locate the WhatsApp share control; the test now accepts English/Urdu labels and waits for the share UI. Corrected public browser smoke run 45663702714 passed: Add Business mobile/desktop and Government Jobs/Schemes share buttons plus Facebook-crawler OG/Twitter metadata.
 
 
@@ -936,7 +936,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 ### Admin performance acceptance runbook — 25 November 2026
 
 - [x] Added `docs/ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md` with a reproducible timing-capture snippet and desktop/mobile/permission acceptance checklist.
-- [ ] Authenticated Admin browser measurements and regression checks remain pending; the runbook is preparation, not acceptance evidence.
+- [x] Owner confirms authenticated Admin browser measurements and regression checks for Phase 1 passed on 26 November 2026; this supersedes the earlier pending note.
 
 
 ### Public Add Business submission and moderation visibility hotfix — 25 November 2026
@@ -960,8 +960,8 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Public Add Business browser smoke run [45681520762](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45681520762) passed. Latest main CI [45681595223](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45681595223) passed build, typecheck, tests, dependency gate and Edge Function checks.
 - [x] Cloudflare Pages deployment `b6c15c02-79fc-44de-b8df-eaca3998ced6` succeeded for main commit `3bb24fa1f97e21896fdf91092132aa21593eb5f6` with canonical alias `https://hellosadiqabad.com`.
 - [x] Read-only live check: 4 pending new-business submissions map to 39 pending field-review rows; 2 pending media assets are present. This replaces the earlier snapshot of 3 pending submissions. No production records were changed.
-- [ ] Authenticated Business Field Review/media approval and owner invitation email/redirect roundtrip remain pending; do not approve/reject live records solely for testing.
-- [ ] Phase 1 Admin performance acceptance remains open: Businesses page and 50-row pagination were owner-confirmed working; Data Quality, authenticated desktop timings, mobile checks and permission/error regression evidence remain outstanding.
+- [x] Owner confirms Phase 2 Admin/Owner Field Review, media approval, invitation and redirect tests passed on 26 November 2026.
+- [x] Phase 1 Admin performance acceptance — owner confirms all Data Quality, desktop/mobile, interaction and permission/error tests passed on 26 November 2026.
 
 
 ### Add Business live submission verification — 26 November 2026
@@ -969,7 +969,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Production `submit-suggestion` POST returned HTTP 200 on Edge Function v11 after two successful signed upload authorizations.
 - [x] Read-only DB check confirmed one new pending `new_business` submission and two `pending_review` media assets created in the same minute.
 - [x] Storage metadata confirms logo is WebP at 9,064 bytes and cover is WebP at 34,118 bytes (about 42.2 KiB combined). Browser compression is confirmed active before upload.
-- [ ] Authenticated Business Field Review UI visibility and media approval/public rendering remain pending; no live review action was performed.
+- [x] Owner confirms authenticated Business Field Review visibility, media approval and public rendering tests passed on 26 November 2026.
 - **No test fixture was created and no existing submission/media/business record was modified or deleted.**
 
 
