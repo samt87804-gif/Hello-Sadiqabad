@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CheckCircle2,
@@ -987,19 +987,24 @@ export function DataQualityManager({
     'all' | 'pin' | 'photo' | 'hours' | 'urdu' | 'phone' | 'category' | 'area' | 'broken_image'
   >('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 50;
 
-  const brokenImageBizIds = new Set(
-    submissions
-      .filter(
-        (s) =>
-          s.type === 'broken_image' &&
-          (s.status === 'new' || s.status === 'in_review') &&
-          Boolean(s.business_id)
-      )
-      .map((s) => s.business_id!)
+  const brokenImageBizIds = useMemo(
+    () => new Set(
+      submissions
+        .filter(
+          (s) =>
+            s.type === 'broken_image' &&
+            (s.status === 'new' || s.status === 'in_review') &&
+            Boolean(s.business_id)
+        )
+        .map((s) => s.business_id!)
+    ),
+    [submissions]
   );
 
-  const audited = businesses.map((b) => {
+  const audited = useMemo(() => businesses.map((b) => {
     const missingPin = !b.lat || !b.lng;
     const missingPhoto = !b.logo_url;
     const missingHours = !b.is_open_24h && (!b.opening_hours || Object.keys(b.opening_hours).length === 0);
@@ -1030,15 +1035,29 @@ export function DataQualityManager({
       hasBrokenImageReport,
       issues,
     };
-  });
+  }), [businesses, brokenImageBizIds]);
 
-  const categoryScoped = audited.filter(({ b }) => {
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    let unassigned = 0;
+    for (const business of businesses) {
+      const categoryId = business.category_id ?? business.category?.id;
+      if (categoryId) counts.set(categoryId, (counts.get(categoryId) ?? 0) + 1);
+      else unassigned += 1;
+    }
+    return { counts, unassigned };
+  }, [businesses]);
+
+  const categoryScoped = useMemo(() => audited.filter(({ b }) => {
     if (categoryFilter === 'all') return true;
     if (categoryFilter === 'unassigned') return !b.category_id && !b.category?.id;
     return (b.category_id ?? b.category?.id) === categoryFilter;
-  });
-  const withAnyIssue = categoryScoped.filter((item) => item.issues.length > 0);
-  const shown = withAnyIssue.filter((item) => {
+  }), [audited, categoryFilter]);
+  const withAnyIssue = useMemo(
+    () => categoryScoped.filter((item) => item.issues.length > 0),
+    [categoryScoped]
+  );
+  const shown = useMemo(() => withAnyIssue.filter((item) => {
     if (issueFilter === 'all') return true;
     if (issueFilter === 'pin') return item.missingPin;
     if (issueFilter === 'photo') return item.missingPhoto;
@@ -1048,7 +1067,36 @@ export function DataQualityManager({
     if (issueFilter === 'area') return item.missingArea;
     if (issueFilter === 'broken_image') return item.hasBrokenImageReport;
     return item.invalidPhone;
-  });
+  }), [withAnyIssue, issueFilter]);
+
+  const issueCounts = useMemo(() => {
+    const counts = { pin: 0, photo: 0, hours: 0, urdu: 0, phone: 0, category: 0, area: 0, broken_image: 0 };
+    for (const item of categoryScoped) {
+      if (item.missingPin) counts.pin += 1;
+      if (item.missingPhoto) counts.photo += 1;
+      if (item.missingHours) counts.hours += 1;
+      if (item.missingUrdu) counts.urdu += 1;
+      if (item.invalidPhone) counts.phone += 1;
+      if (item.missingCategory) counts.category += 1;
+      if (item.missingArea) counts.area += 1;
+      if (item.hasBrokenImageReport) counts.broken_image += 1;
+    }
+    return counts;
+  }, [categoryScoped]);
+
+  const pageCount = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+  const pageItems = useMemo(
+    () => shown.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [shown, page]
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [issueFilter, categoryFilter]);
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
 
   const exportQualityCsv = () => {
     const header = ['id', 'name_en', 'phone_primary', 'status', 'issues'].join(',');
@@ -1104,10 +1152,10 @@ export function DataQualityManager({
             <option value="all">All Categories ({businesses.length})</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.name_en} ({businesses.filter((business) => (business.category_id ?? business.category?.id) === category.id).length})
+                {category.name_en} ({categoryCounts.counts.get(category.id) ?? 0})
               </option>
             ))}
-            <option value="unassigned">Unassigned Category ({businesses.filter((business) => !business.category_id && !business.category?.id).length})</option>
+            <option value="unassigned">Unassigned Category ({categoryCounts.unassigned})</option>
           </select>
         </label>
       </div>
@@ -1115,14 +1163,14 @@ export function DataQualityManager({
       <div className="flex flex-wrap gap-2">
         {[
           { id: 'all' as const, label: `All Issues (${withAnyIssue.length})` },
-          { id: 'pin' as const, label: `Missing Pin (${categoryScoped.filter((x) => x.missingPin).length})` },
-          { id: 'photo' as const, label: `Missing Logo (${categoryScoped.filter((x) => x.missingPhoto).length})` },
-          { id: 'hours' as const, label: `Missing Hours (${categoryScoped.filter((x) => x.missingHours).length})` },
-          { id: 'urdu' as const, label: `Missing Urdu (${categoryScoped.filter((x) => x.missingUrdu).length})` },
-          { id: 'phone' as const, label: `Invalid Phone (${categoryScoped.filter((x) => x.invalidPhone).length})` },
-          { id: 'category' as const, label: `Missing Category (${categoryScoped.filter((x) => x.missingCategory).length})` },
-          { id: 'area' as const, label: `Missing Area (${categoryScoped.filter((x) => x.missingArea).length})` },
-          { id: 'broken_image' as const, label: `Broken Image Reports (${categoryScoped.filter((x) => x.hasBrokenImageReport).length})` },
+          { id: 'pin' as const, label: `Missing Pin (${issueCounts.pin})` },
+          { id: 'photo' as const, label: `Missing Logo (${issueCounts.photo})` },
+          { id: 'hours' as const, label: `Missing Hours (${issueCounts.hours})` },
+          { id: 'urdu' as const, label: `Missing Urdu (${issueCounts.urdu})` },
+          { id: 'phone' as const, label: `Invalid Phone (${issueCounts.phone})` },
+          { id: 'category' as const, label: `Missing Category (${issueCounts.category})` },
+          { id: 'area' as const, label: `Missing Area (${issueCounts.area})` },
+          { id: 'broken_image' as const, label: `Broken Image Reports (${issueCounts.broken_image})` },
         ].map((chip) => (
           <button
             key={chip.id}
@@ -1139,6 +1187,17 @@ export function DataQualityManager({
         ))}
       </div>
 
+      {shown.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-on-surface-variant">
+          <span>Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, shown.length)} of {shown.length} matching businesses</span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>Previous</Button>
+            <span className="tabular-nums font-semibold">Page {page} of {pageCount}</span>
+            <Button size="sm" variant="outline" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}>Next</Button>
+          </div>
+        </div>
+      )}
+
       {shown.length === 0 ? (
         <Card className="p-8 text-center space-y-2">
           <CheckCircle2 className="w-8 h-8 text-primary mx-auto" />
@@ -1146,7 +1205,7 @@ export function DataQualityManager({
         </Card>
       ) : (
         <div className="space-y-2.5">
-          {shown.map(({ b, issues }) => (
+          {pageItems.map(({ b, issues }) => (
             <Card key={b.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
