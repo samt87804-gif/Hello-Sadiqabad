@@ -93,14 +93,15 @@ export function AddBusiness() {
   }, [sameAsPhone, phone]);
 
   const toggleFacility = (fac: string) => {
-    setSelectedFacilities((prev) => {
-      if (prev.includes(fac)) return prev.filter((item) => item !== fac);
-      if (prev.length >= 2) {
-        showToast(lang === 'ur' ? 'زیادہ سے زیادہ 2 سہولیات منتخب کر سکتے ہیں۔' : 'You can select up to 2 facilities.', 'error');
-        return prev;
-      }
-      return [...prev, fac];
-    });
+    if (selectedFacilities.includes(fac)) {
+      setSelectedFacilities((prev) => prev.filter((item) => item !== fac));
+      return;
+    }
+    if (selectedFacilities.length >= 2) {
+      showToast(lang === 'ur' ? 'زیادہ سے زیادہ 2 سہولیات منتخب کر سکتے ہیں۔' : 'You can select up to 2 facilities.', 'error');
+      return;
+    }
+    setSelectedFacilities((prev) => prev.includes(fac) ? prev : [...prev, fac]);
   };
 
   const resetForm = () => {
