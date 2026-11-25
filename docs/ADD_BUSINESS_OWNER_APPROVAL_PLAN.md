@@ -183,3 +183,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - These are implementation/CI/deployment checks only. Authenticated browser QA, mobile form interaction, actual submission and invitation email delivery remain unverified.
 
 - Added/applied migration 11, `owner_image_change_rpc_plan_guard`, so the database RPC independently requires a published business and a plan with the cover feature before accepting a cover-change request. Transaction-only tests passed for owner logo request creation, Free-plan cover rejection and Premium-plan cover acceptance. All test writes were rolled back; the private bucket and request tables remain empty.
+
+### Add Business form completeness follow-up — 25 November 2026
+
+- Added English and Urdu description fields (each capped at 500 characters; the server validates `description_ur`), a live public listing preview that omits owner-private name/email, and a required bilingual consent checkbox before submission.
+- Category/Area search and missing-taxonomy guidance are present in the form. File inputs clear their native value after selection so the same file can be selected again after a failed upload.
+- App commit `cc6c7ebcbd31ca2660cc7a470baf50bf13751008`, CI run `45625706344` passed, and Pages deployment `9c109325-f411-44f0-8183-8d40c940ff70` succeeded.
