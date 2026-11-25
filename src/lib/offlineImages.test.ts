@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getOfflineImageCacheUrl, getOfflineImageDisplayUrl } from './offlineImages';
+import { cacheOfflineImages, getOfflineImageCacheUrl, getOfflineImageDisplayUrl } from './offlineImages';
 
 const origin = 'https://hellosadiqabad.com';
 
@@ -59,4 +59,64 @@ test('includes same-origin static images and the approved image proxy in offline
   assert.equal(getOfflineImageCacheUrl('/site-logo.png', origin), origin + '/site-logo.png');
   const proxy = origin + '/image?url=https%3A%2F%2Fexample.com%2Fpublic-image.webp';
   assert.equal(getOfflineImageCacheUrl(proxy, origin), proxy);
+});
+
+
+test('counts unsupported and unavailable images without failing the offline image batch', async () => {
+  const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches');
+  const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const originalFetch = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+  const stored: string[] = [];
+
+  Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: { location: { origin } },
+  });
+  Object.defineProperty(globalThis, 'caches', {
+    configurable: true,
+    value: {
+      open: async () => ({
+        match: async () => undefined,
+        put: async (request: Request) => { stored.push(request.url); },
+      }),
+    },
+  });
+  Object.defineProperty(globalThis, 'fetch', {
+    configurable: true,
+    value: async (request: Request) => {
+      const url = new URL(request.url);
+      const source = url.searchParams.get('url') ?? request.url;
+      if (source.includes('unavailable')) {
+        return new Response('not found', {
+          status: 404,
+          headers: { 'content-type': 'text/plain' },
+        });
+      }
+      return new Response('image', {
+        status: 200,
+        headers: { 'content-type': 'image/webp', 'content-length': '5' },
+      });
+    },
+  });
+
+  try {
+    const result = await cacheOfflineImages([
+      'https://efwohfzqitevkuybnyif.supabase.co/storage/v1/object/public/Hello%20Sadiqabad/site-media/test.webp',
+      'https://example.com/unsupported.webp',
+      'https://lh3.googleusercontent.com/unavailable-photo',
+    ], new AbortController().signal);
+
+    assert.equal(result.total, 3);
+    assert.equal(result.downloaded, 1);
+    assert.equal(result.alreadyCached, 0);
+    assert.equal(result.skipped, 2);
+    assert.equal(result.bytes, 5);
+    assert.equal(stored.length, 1);
+  } finally {
+    if (originalCaches) Object.defineProperty(globalThis, 'caches', originalCaches);
+    else delete (globalThis as { caches?: CacheStorage }).caches;
+    if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
+    else delete (globalThis as { window?: Window }).window;
+    if (originalFetch) Object.defineProperty(globalThis, 'fetch', originalFetch);
+  }
 });
