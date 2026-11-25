@@ -14,6 +14,16 @@ interface FieldReview {
   status: FieldStatus;
   admin_note: string | null;
 }
+interface BusinessMedia {
+  id: string;
+  submission_id: string | null;
+  business_id: string | null;
+  media_field: 'logo' | 'cover';
+  storage_path: string;
+  status: FieldStatus;
+  created_at: string;
+  preview_url?: string;
+}
 interface BusinessSubmission {
   id: string;
   payload: Record<string, unknown>;
@@ -45,6 +55,7 @@ export function BusinessFieldReviewQueue() {
   const { showToast } = useToast();
   const [submissions, setSubmissions] = useState<BusinessSubmission[]>([]);
   const [fields, setFields] = useState<FieldReview[]>([]);
+  const [media, setMedia] = useState<BusinessMedia[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState('');
 
@@ -65,8 +76,19 @@ export function BusinessFieldReviewQueue() {
           .in('submission_id', ids).order('field_key')
         : { data: [], error: null };
       if (reviewError) throw reviewError;
+      const { data: mediaRows, error: mediaError } = await client.from('business_media_assets')
+        .select('id,submission_id,business_id,media_field,storage_path,status,created_at')
+        .in('status', ['pending_review', 'approved_published', 'unpublished'])
+        .order('created_at', { ascending: false }).limit(100);
+      if (mediaError) throw mediaError;
+      const mediaWithPreviews = await Promise.all((mediaRows ?? []).map(async (asset) => {
+        const { data: signed } = await client.storage.from('hs-pending-business-media')
+          .createSignedUrl(asset.storage_path, 900);
+        return { ...asset, preview_url: signed?.signedUrl } as BusinessMedia;
+      }));
       setSubmissions((rows ?? []) as BusinessSubmission[]);
       setFields((reviewRows ?? []) as FieldReview[]);
+      setMedia(mediaWithPreviews);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Could not load business field reviews.', 'error');
     } finally {
@@ -75,6 +97,26 @@ export function BusinessFieldReviewQueue() {
   }, [showToast]);
 
   useEffect(() => { void reload(); }, [reload]);
+
+  const reviewMedia = async (assetId: string, action: FieldStatus) => {
+    const client = getSupabaseClient();
+    if (!client) return;
+    const key = 'media:' + assetId;
+    setBusyKey(key);
+    try {
+      const { data, error } = await client.functions.invoke('review-business-media', {
+        body: { asset_id: assetId, action },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Media review failed.');
+      showToast('Business image review saved.', 'success');
+      await reload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not review business image.', 'error');
+    } finally {
+      setBusyKey('');
+    }
+  };
 
   const review = async (submissionId: string, fieldKey: string, status: FieldStatus) => {
     const client = getSupabaseClient();
@@ -107,6 +149,32 @@ export function BusinessFieldReviewQueue() {
         </div>
         <Button size="sm" variant="outline" onClick={() => void reload()} leftIcon={<RefreshCw className="w-4 h-4" />}>Refresh</Button>
       </div>
+      <section className="space-y-3">
+        <h3 className="text-lg font-bold text-on-surface">Business Images Awaiting Review</h3>
+        {media.length === 0 ? <Card className="p-4 text-xs text-on-surface-variant">No pending business images.</Card> :
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {media.map((asset) => {
+              const busy = busyKey === 'media:' + asset.id;
+              const canPublish = Boolean(asset.business_id || submissions.some((item) => item.id === asset.submission_id && item.business_id));
+              return (
+                <Card key={asset.id} className="p-4 space-y-3">
+                  {asset.preview_url ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Pending business logo' : 'Pending business cover'} className="w-full h-40 object-contain rounded-xl bg-surface-container-low" /> : <div className="h-40 rounded-xl bg-surface-container-low flex items-center justify-center text-xs text-on-surface-variant">Private image preview unavailable</div>}
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-bold capitalize">{asset.media_field} · {asset.status.replaceAll('_', ' ')}</p>
+                    <span className="text-[10px] text-on-surface-variant">{new Date(asset.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" loading={busy} disabled={Boolean(busyKey) || !canPublish} onClick={() => void reviewMedia(asset.id, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve &amp; Publish</Button>
+                    <Button size="sm" variant="danger" disabled={Boolean(busyKey)} onClick={() => void reviewMedia(asset.id, 'rejected')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
+                    {asset.status === 'approved_published' && <Button size="sm" variant="outline" disabled={Boolean(busyKey)} onClick={() => void reviewMedia(asset.id, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>}
+                  </div>
+                  {!canPublish && <p className="text-[11px] text-on-surface-variant">Approve required business fields before publishing this image.</p>}
+                </Card>
+              );
+            })}
+          </div>
+        }
+      </section>
       {loading ? <Card className="p-6 text-sm text-on-surface-variant">Loading business submissions…</Card> :
         submissions.length === 0 ? <Card className="p-6 text-sm text-on-surface-variant">No pending business submissions.</Card> :
         submissions.map((submission) => {
