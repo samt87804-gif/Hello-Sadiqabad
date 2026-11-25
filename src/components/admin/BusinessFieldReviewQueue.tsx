@@ -138,9 +138,9 @@ export function BusinessFieldReviewQueue() {
                       </div>
                       <p className="text-sm text-on-surface break-words whitespace-pre-wrap">{formatValue(field.field_value)}</p>
                       <div className="flex flex-wrap gap-2">
-                        <Button size="xs" loading={busy && field.status !== 'approved_published'} disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve &amp; Publish</Button>
-                        <Button size="xs" variant="danger" disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'rejected')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
-                        <Button size="xs" variant="outline" disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>
+                        <Button size="sm" loading={busy && field.status !== 'approved_published'} disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve &amp; Publish</Button>
+                        <Button size="sm" variant="danger" disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'rejected')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
+                        <Button size="sm" variant="outline" disabled={Boolean(busyKey)} onClick={() => void review(submission.id, field.field_key, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>
                       </div>
                     </div>
                   );
