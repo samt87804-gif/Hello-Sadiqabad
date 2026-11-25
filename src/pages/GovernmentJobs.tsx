@@ -90,7 +90,7 @@ export function GovernmentJobs() {
    if(scope!=='all'&&item.department_scope!==scope) return false;
    if(departmentFilter!=='all'&&item.department_name!==departmentFilter) return false;
    if(jobTypeFilter!=='all'&&item.job_type!==jobTypeFilter) return false;
-   if(term&&![item.title_en,item.title_ur,item.summary_en,item.summary_ur,item.department_name,item.location_text,item.qualification_text].filter(Boolean).join(' ').toLocaleLowerCase().includes(term)) return false;
+   if(term&&![item.title_en,item.title_ur,item.summary_en,item.summary_ur,item.department_name,item.location_text,item.qualification_text,item.qualification_text_ur,item.experience_text,item.experience_text_ur,item.age_text,item.age_text_ur,item.domicile_text,item.domicile_text_ur,item.gender_or_quota_text,item.gender_or_quota_text_ur,item.other_eligibility_text,item.other_eligibility_text_ur].filter(Boolean).join(' ').toLocaleLowerCase().includes(term)) return false;
    return true;
   });
  },[jobs,query,scope,departmentFilter,jobTypeFilter,archive]);
