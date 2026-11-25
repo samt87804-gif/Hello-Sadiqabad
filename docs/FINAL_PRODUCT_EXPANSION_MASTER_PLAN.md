@@ -343,9 +343,9 @@ This is preflight only. Phase 1 authenticated browser acceptance remains outstan
 The owner explicitly authorized starting Phase 2 without waiting for the outstanding Phase 1 authenticated browser/mobile acceptance, and changed the Git workflow to direct `main` commits only. Phase 1 remains **in progress / not accepted**; this authorization changes the work order, not the acceptance evidence.
 
 - No feature branches or Pull Requests are to be created. Prior Phase 2 PR #19 was closed unmerged at the owner's instruction.
-- Phase 2 implementation source exists on the closed reference branch `feat/business-owner-field-approval`; the frontend, Admin UI and Edge Function changes plus migration 2 are not in `main` and are not deployed.
+- This was a pre-rollout snapshot. The Phase 2 frontend, Admin UI, Edge Functions and migrations have since been ported to `main` and deployed to the existing production project; see the rollout checkpoint below.
 - Migration 1 is on `main`. Static review found and corrected a malformed duplicate SQL tail, added explicit `service_role` grants needed by the Edge Functions, and corrected legacy backfill statuses. Latest migration-source fix: `ac3b54d58f106d20eb2ce02e00decd05915cc56f`.
-- Read-only production inspection confirms the new Phase 2 tables and private Storage bucket do not exist in production; no Phase 2 SQL has been applied and no production schema/data has been modified.
+- The Phase 2 tables and private pending-media bucket now exist in production. Migrations were additive; existing businesses/users and public media were preserved. Test transactions were rolled back.
 - CI for commit `1bb9d3e2e530078a6d2f7ae4c63d2b350af4ea9a` passed both build and Edge Function jobs. Latest docs/migration-source CI and Cloudflare deployment are still being verified separately; CI does not execute SQL.
 - Supabase staging creation was blocked because the organization has reached its two-active-Free-project limit. No project was created and no cost was incurred.
 
@@ -356,7 +356,7 @@ The owner explicitly authorized starting Phase 2 without waiting for the outstan
 4. Existing legacy `done` new-business submissions may have `business_id IS NULL`; the live legacy approval function creates the business without backfilling that FK. Migration backfill must preserve `done` as approved and must not guess-link existing businesses by name/phone.
 5. Media approval must be made retry-safe across Storage copy, business URL update, review-status update and audit write; rejected/approved pending objects need a retention/cleanup policy. Owner-invitation reject/approve audit and duplicate-invite rollback paths require tests.
 
-**Release gate:** Do not apply migration 1 alone or deploy the dependent application/Edge Function changes as a partial release. First obtain an isolated database (free an existing Free project slot or explicitly approve a paid staging option), validate both migrations together against the live schema shape, test rollback/RLS/Storage/legacy workflows and resolve the blockers above. Then port only validated code directly to `main` in narrow commits and verify matching Cloudflare production deployment plus QA.
+**Historical release gate:** this pre-rollout note is superseded by the production rollout checkpoint below. The owner explicitly directed use of the existing Supabase project; additive migrations and rollback tests have since been completed there.
 
 ## Phase 2 production rollout checkpoint — 25 November 2026
 
