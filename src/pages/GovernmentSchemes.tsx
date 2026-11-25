@@ -5,6 +5,7 @@ import {fetchPublishedGovernmentSchemes,fetchPublishedGovernmentSchemeBySlug,sub
 import {useI18n} from '../lib/i18n';
 import {bilingualText} from '../lib/format';
 import {updatePageSeo} from '../lib/seo';
+import { ContentShareActions } from '../components/ui/ContentShareActions';
 import type {GovernmentSchemeRow,GovernmentSchemeReportReason} from '../types/database';
 import {AppShell} from '../components/layout/AppShell';
 import {EmptyState,Skeleton} from '../components/ui/Feedback';
