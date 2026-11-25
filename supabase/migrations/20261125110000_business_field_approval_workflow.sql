@@ -202,8 +202,44 @@ begin
         and requested_at < v_month_start + interval '1 month') >= 2 then
     raise exception 'Monthly logo and cover image change limit reached (2 per business)';
   end if;
-  if p_storage_path !~ ('^owners/' || auth.uid()::text || '/[A-Za-z0-9._-]+$') then
+  if p_storage_path !~ ('^owners/' || auth.uid()::text || '/[A-Za-z0-9._-]+  insert into public.business_media_assets(
+    business_id,uploader_id,media_field,storage_path,mime_type,file_size_bytes
+  ) values(p_business_id,auth.uid(),p_media_field,p_storage_path,p_mime_type,p_file_size_bytes)
+  returning id into v_asset_id;
+  insert into public.business_image_change_requests(business_id,owner_id,media_field,media_asset_id)
+  values(p_business_id,auth.uid(),p_media_field,v_asset_id)
+  returning id into v_request_id;
+  return v_request_id;
+end
+$function$;
+revoke all on function public.request_business_image_change(uuid,text,text,text,bigint) from public, anon;
+grant execute on function public.request_business_image_change(uuid,text,text,text,bigint) to authenticated;
+
+
+-- Backfill existing submissions without rewriting any business or submission records.
+insert into public.business_field_reviews(submission_id,field_key,field_value,status)
+select s.id, item.key, item.value,
+  case when s.status='done' and s.business_id is not null then 'approved_published' else 'pending_review' end
+from public.submissions s
+cross join lateral jsonb_each(coalesce(s.payload,'{}'::jsonb)) item
+where s.type='new_business'
+  and item.key = any(array[
+    'name_en','name_ur','category_id','area_id','phone_primary','whatsapp',
+    'address_en','address_ur','landmark_en','landmark_ur','map_url',
+    'opening_hours','description_en','description_ur','services_en','services_ur',
+    'owner_name'
+  ])
+on conflict(submission_id,field_key) do nothing;
+
+commit;
+) then
     raise exception 'Invalid private media path';
+  end if;
+  if not exists (
+    select 1 from storage.objects
+    where bucket_id='hs-pending-business-media' and name=p_storage_path
+  ) then
+    raise exception 'Uploaded private business image was not found';
   end if;
   insert into public.business_media_assets(
     business_id,uploader_id,media_field,storage_path,mime_type,file_size_bytes
