@@ -140,3 +140,27 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [ ] Poster upload/promotion, public board/detail routes and privacy/SEO/offline checks.
 
 **Current code status:** Owner submission UI and Admin moderation workspace are committed to main; CI run 45707358141 passed both build and Edge Function jobs. These UI increments are not yet production-deployed or authenticated-browser-tested. It does not publish jobs without an approved poster. No public SDK Jobs route has been added yet.
+
+
+## SDK Jobs poster, publication privacy and public-board increment — 26 November 2026
+
+- [x] Applied live migration `20261125220215_sdk_jobs_poster_private_upload` and committed the matching migration file. Migration ledger is now 112 versions (111 prior + this additive migration).
+- [x] Reused the existing private `hs-pending-business-media` bucket without changing its 5 MiB JPEG/PNG/WebP restrictions or making it public.
+- [x] Added an Admin-only SELECT policy scoped to the `sdk-jobs/` folder and explicit `sdk_jobs.manage` / Super Admin authorization.
+- [x] Hardened the owner-write trigger and RLS: a pending-review Owner can update only the pending poster path; the path must embed that exact job ID and owner ID. New owner inserts forcibly clear any client-supplied media path. Transaction tests passed for eligible owner submission/path attachment, denial of public-content mutation while pending, and denial of a path belonging to another job; all test rows were rolled back.
+- [x] Deployed `create-sdk-job-poster-upload` (JWT required): verifies active Owner, own pending-review job, MIME/size declaration, rate limits and generates a one-time private signed upload path.
+- [x] Added Owner Portal optional poster upload after submission and a retry control in the request list. Actual uploaded bytes are not trusted based on browser MIME; Admin review verifies JPEG/PNG/WebP magic bytes and the 5 MiB limit.
+- [x] Deployed `review-sdk-job-poster` (JWT required): Admin permission check, private preview/reject, magic-byte validation, promotion to the existing public media bucket only after approval, private pending-object cleanup, and poster action history.
+- [x] Added Admin poster preview, approve/reject actions, full content review fields and a required human privacy-review acknowledgement before publication.
+- [x] Deployed `publish-sdk-job` (JWT required): requires Admin permission, pending-review state and approved poster; blocks expired closing dates and scans public text for linked business name, Owner name/email/phone, phone/email patterns and external links before publishing.
+- [x] Added public `/sdk-jobs` listing and `/sdk-jobs/:slug` detail routes using only `sdk_jobs_public`; search and category/area/type/closing-date filters, canonical metadata, JobPosting structured data with confidential employer identity, approved poster, share actions and the exact Admin WhatsApp CTA.
+- [x] Added the approved recruitment office instruction: physical CV, Monday–Friday 10:00 AM–2:00 PM Pakistan time; closed Saturday/Sunday. No street address is invented or displayed because a verified address has not been supplied.
+- [x] Added desktop header/footer navigation and dynamic sitemap entries from the published-only public view. No employer/private data is queried by the sitemap.
+- [x] Transactional security checks passed: anon cannot select `employer_owner_id`; Owner content mutation and cross-job pending path attachment were denied; test transactions rolled back. Live SDK Jobs/job-history/Admin-note counts remain zero.
+- [x] Supabase Security Advisor has no SDK Jobs-specific finding; existing unrelated project findings remain (private analytics table RLS info and leaked-password protection warning).
+- [ ] Latest combined CI run [45710562574](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710562574) is still running (build + Edge Functions) at the time of this update.
+- [ ] Authenticated Owner upload and Admin preview/approve/publish browser acceptance; verify real signed upload and real image promotion using an authorized browser session.
+- [ ] Production Pages deployment and public endpoint/sitemap smoke tests after CI and browser acceptance.
+- [ ] Confirm final Admin presentation of linked business/Owner display names (the current Admin record shows private IDs; the linked records remain in the private database).
+
+**Release gate:** Code and Edge Functions are committed/deployed, and the additive database policy/trigger migration is live. Do not call the public feature production-released yet: latest CI is running, no real authenticated upload/publish browser acceptance has been performed, and Pages deployment is pending. No candidate intake, CV upload, referral, fee collection or office-hour settings were added (Phase 5 remains separate).
