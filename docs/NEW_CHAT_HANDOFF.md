@@ -900,7 +900,7 @@ Verification:
 
 **Do not mark Phase 1 complete yet:** no authenticated browser was available to capture before/after desktop timings or test click latency, mobile behavior, pagination/filter/bulk actions, modal editing, moderation and export. Do not invent milliseconds or claim browser QA. The code changes are deployed; interactive acceptance remains pending.
 
-**Next approved workstream after Phase 1 acceptance:** Phase 2 — Add Business field-level approval and secure owner invitation. Before schema changes, reconcile each additive migration against the live 95-version Supabase ledger (repository currently has 74 migration files); use a separate private pending-media bucket because the current `Hello Sadiqabad` bucket is public. The existing owner invitation Edge Function (version 3) does not yet link the invited owner to the reviewed business.
+**Current workstream:** Phase 2 Add Business field-level approval and secure owner invitation has been implemented on `main` and deployed to the existing Supabase production project. Phase 1 authenticated performance acceptance remains outstanding but does not block the owner-authorised Phase 2 work.
 
 
 ## Phase 1 latest continuation — 25 November 2026
@@ -920,7 +920,7 @@ Additional optimization after the first Admin performance slice:
 
 ## Phase 2 preflight — read-only findings (25 November 2026)
 
-Reviewed current `/add-business`, relevant migrations, live tables/columns, RLS policies, Storage policies and deployed Edge Functions; no Phase 2 code/schema/data was changed.
+Historical preflight snapshot: reviewed current `/add-business`, migrations, live tables/columns, RLS, Storage and Edge Functions before implementation. The subsequent production rollout is recorded below.
 
 - `/add-business` lacks the approved fields for Urdu address, separate landmark, map URL, daily hours, owner Gmail and logo/cover uploads; it auto-selects first Category/Area.
 - `submissions` is generic JSON payload with no per-field moderation ledger.
@@ -930,20 +930,20 @@ Reviewed current `/add-business`, relevant migrations, live tables/columns, RLS 
 - Current only Storage bucket is public; pending files need a separate private bucket.
 - Live RLS policies were inspected and no public base table with RLS disabled was found.
 
-Phase 2 implementation is not started. Phase 1 remains in progress until authenticated desktop/browser and mobile QA evidence exists. Do not apply schema changes or move phase gates without resolving that blocker.
+At the time of this preflight snapshot, Phase 2 implementation had not started. Owner later explicitly authorised Phase 2 to proceed without waiting for Phase 1 browser/mobile acceptance; see the production rollout checkpoint below.
 
 
 ## Phase 2 continuation handoff — 25 November 2026
 
-Owner has explicitly approved proceeding with Phase 2 and direct commits to GitHub `main`; do not create branches or PRs. The prior feature branch `feat/business-owner-field-approval` and PR #19 were closed/unmerged per owner instruction. Treat that branch as reference source only; do not represent its app code as deployed or present on `main`.
+Historical pre-deployment handoff. Owner-approved workflow remains direct commits to GitHub `main`; no branches or PRs. The old feature branch/PR #19 remain closed, while verified code has since been ported to main and deployed; see the current rollout checkpoint below.
 
-Current `main` contains only the first Phase 2 migration file. It was added in `3794918e3d4929a62576e55e9b8a1cadbdb5768e`; review found a duplicated malformed SQL tail, which was removed in `1bb9d3e2e530078a6d2f7ae4c63d2b350af4ea9a`. Current file has one terminal `COMMIT`. CI run [45608741733](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45608741733) passed both build and Edge Function jobs. No SQL migration has been applied to production.
+This earlier status was superseded: all Phase 2 migrations are now applied to the existing project, all dependent Edge Functions are deployed, and the production frontend is live. Current migration versions, CI and Cloudflare evidence are recorded below.
 
-Staging creation was attempted after owner approved the quoted $0/month project cost. Supabase refused because this organization already has two active Free projects (the Hello Sadiqabad production project and another project). No staging project was created. Do not use production as a test target. No production database/schema/data was modified.
+A separate staging project was not created because the organization had reached its Free-project limit. Owner then directed work in the existing Hello Sadiqabad project; additive migrations were applied there and transaction/rollback tests were run without retaining test records.
 
-The second migration `20261125111000_business_field_review_rpc.sql`, frontend AddBusiness/Admin changes and Edge Function changes remain only on the closed feature branch. Before porting these directly to `main`, review the exact source again, reconcile against the live schema and fix any issues. Critical acceptance gates: both SQL migrations execute on an isolated database; field-level approve/reject/unpublish behavior; anonymous pending-media reads denied; Storage promotion; monthly owner quota; owner invitation idempotency/link/rollback; existing legacy submission flows unchanged; CI; matching Cloudflare production deployment; public and authenticated QA where available.
+The second migration, Add Business/Admin changes and Edge Functions were ported to `main` and deployed. SQL transaction tests cover field approvals, media finalization, owner invitation/link/rollback, legacy approval guard, plan limits and rate limits. Remaining gate is authenticated browser/email/public-render QA.
 
-Next safe action: get a disposable staging database by freeing an existing Free project slot or explicitly approving an appropriate paid staging option. Until then, continue static review only; do not apply migrations to production and do not ship the app code that depends on the new schema.
+Next safe action: complete authenticated Admin browser QA and a controlled disposable end-to-end submission in the existing project. Do not create a new Supabase project.
 
 ### Additional security review — anonymous media upload
 
