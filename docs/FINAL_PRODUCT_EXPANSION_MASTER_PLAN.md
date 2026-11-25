@@ -231,10 +231,13 @@ Phases are ordered for dependency and risk. The owner has approved this plan, bu
 - **Gate:** owner-confirmed official-content, RLS/media privacy and share-preview acceptance.
 
 ### Phase 4 — SDK Jobs data, moderation and public board
-- [x] Current-main and live schema/permission/RLS audit completed; no existing SDK Jobs table or route found.
+- [x] Current-main and live schema/permission/RLS audit completed; no prior SDK Jobs table or route existed.
 - [x] Phase 4 data-boundary/security design documented in `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`.
-- [ ] Additive schema, dedicated permission, owner eligibility checks, owner submission form, Admin moderation and public routes.
-- [ ] Candidate contact CTA and employer anonymity tests.
+- [x] Additive SDK Jobs tables, dedicated `sdk_jobs.manage`, owner eligibility trigger, private Admin notes, status history and public projection applied through migrations `20261125210353`, `20261125210439` and `20261125210610`.
+- [ ] Owner job-submission UI and signed private poster upload.
+- [ ] Permission-gated Admin moderation UI and workflow actions.
+- [ ] Public SDK Jobs listing/detail routes, search/filters and share metadata.
+- [ ] Candidate WhatsApp CTA and employer anonymity tests.
 - **Gate:** unauthorised owner cannot submit; no unapproved job public; no employer identity leakage.
 
 ### Phase 5 — SDK Jobs recruitment operations
