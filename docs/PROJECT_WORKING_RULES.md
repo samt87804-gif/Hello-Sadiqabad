@@ -13,7 +13,7 @@ Last owner-confirmed: 17 November 2026. These rules apply to every future AI-ass
 ## Mandatory working rules
 
 1. **Protect the live website and its users.** Hello Sadiqabad is already being used by real visitors. Prefer narrow, backward-compatible, additive changes. Do not replace core architecture or rewrite working flows for convenience.
-2. **Direct main only.** Commit directly to GitHub `main`. Do not create feature branches or Pull Requests unless the owner explicitly changes this instruction.
+2. **Feature branches and Pull Requests.** Make application and database changes on focused feature branches and submit Pull Requests to `main`. Do not commit feature implementation directly to `main`. Keep PRs draft until the scoped implementation, review, CI, migration validation and deployment safeguards are satisfied. Merge only after required checks pass and the change is safe for production. Documentation-only policy updates explicitly approved by the owner may be committed directly to `main`.
 3. **Inspect before every change.** Read the current implementation, callers, tests, configuration, routes, data flow, migrations, RLS and relevant Cloudflare settings before editing.
 4. **Preserve existing data.** Never delete, truncate, bulk-replace, re-seed over, or mutate existing business, user, review, inquiry, owner, media or operational data. No destructive database action without explicit owner approval. Prefer additive and reversible changes.
 5. **Preserve security boundaries.** Never bypass or weaken RLS, authentication, authorization, moderation, validation, rate limits or privacy protections. Never put service-role/secret credentials in frontend code, GitHub or chat.
