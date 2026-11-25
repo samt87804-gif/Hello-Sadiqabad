@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.publish-sdk-job]
 verify_jwt = true
+
+[functions.get-sdk-job-employer-details]
+verify_jwt = true
