@@ -12,16 +12,16 @@ import { getSupabaseClient } from '../../lib/supabase';
 type FormState = {
  id:string; title_en:string; title_ur:string; summary_en:string; summary_ur:string; slug:string; department_name:string; department_scope:string; job_type:string;
  scale_or_grade:string; vacancy_count:string; location_text:string; districts:string; sadiqabad_relevance:string;
- qualification_text:string; experience_text:string; age_text:string; domicile_text:string; gender_or_quota_text:string;
- other_eligibility_text:string; application_steps:string; application_fee_text:string; apply_url:string;
+ qualification_text:string; qualification_text_ur:string; experience_text:string; experience_text_ur:string; age_text:string; age_text_ur:string; domicile_text:string; domicile_text_ur:string; gender_or_quota_text:string; gender_or_quota_text_ur:string;
+ other_eligibility_text:string; other_eligibility_text_ur:string; application_steps:string; application_steps_ur:string; application_fee_text:string; application_fee_text_ur:string; apply_url:string;
  advertisement_url:string; official_case_number:string; application_open_at:string; deadline_at:string; status:string;
  source_name:string; source_url:string; source_document_url:string; image_url:string; verified_date:string; next_review_date:string;
  source_verified:boolean; published_at:string|null; created_by:string|null;
 };
 function blankForm():FormState {
  return {id:'',title_en:'',title_ur:'',summary_en:'',summary_ur:'',slug:'',department_name:'',department_scope:'punjab',job_type:'regular',scale_or_grade:'',
-  vacancy_count:'',location_text:'',districts:'',sadiqabad_relevance:'unknown',qualification_text:'',experience_text:'',age_text:'',
-  domicile_text:'',gender_or_quota_text:'',other_eligibility_text:'',application_steps:'',application_fee_text:'',apply_url:'',
+  vacancy_count:'',location_text:'',districts:'',sadiqabad_relevance:'unknown',qualification_text:'',qualification_text_ur:'',experience_text:'',experience_text_ur:'',age_text:'',age_text_ur:'',
+  domicile_text:'',domicile_text_ur:'',gender_or_quota_text:'',gender_or_quota_text_ur:'',other_eligibility_text:'',other_eligibility_text_ur:'',application_steps:'',application_steps_ur:'',application_fee_text:'',application_fee_text_ur:'',apply_url:'',
   advertisement_url:'',official_case_number:'',application_open_at:'',deadline_at:'',status:'draft',source_name:'',source_url:'',
   source_document_url:'',image_url:'',verified_date:'',next_review_date:'',source_verified:false,published_at:null,created_by:null};
 }
@@ -30,9 +30,9 @@ function toForm(job:GovernmentJobRow):FormState {
   department_scope:job.department_scope,job_type:job.job_type,scale_or_grade:job.scale_or_grade??'',
   vacancy_count:job.vacancy_count===null?'':String(job.vacancy_count),location_text:job.location_text,districts:(job.districts??[]).join(', '),
   sadiqabad_relevance:job.sadiqabad_relevance===true?'yes':job.sadiqabad_relevance===false?'no':'unknown',
-  qualification_text:job.qualification_text,experience_text:job.experience_text??'',age_text:job.age_text??'',domicile_text:job.domicile_text??'',
-  gender_or_quota_text:job.gender_or_quota_text??'',other_eligibility_text:job.other_eligibility_text??'',application_steps:job.application_steps??'',
-  application_fee_text:job.application_fee_text??'',apply_url:job.apply_url??'',advertisement_url:job.advertisement_url??'',
+  qualification_text:job.qualification_text,qualification_text_ur:job.qualification_text_ur??'',experience_text:job.experience_text??'',experience_text_ur:job.experience_text_ur??'',age_text:job.age_text??'',age_text_ur:job.age_text_ur??'',domicile_text:job.domicile_text??'',domicile_text_ur:job.domicile_text_ur??'',
+  gender_or_quota_text:job.gender_or_quota_text??'',gender_or_quota_text_ur:job.gender_or_quota_text_ur??'',other_eligibility_text:job.other_eligibility_text??'',other_eligibility_text_ur:job.other_eligibility_text_ur??'',application_steps:job.application_steps??'',application_steps_ur:job.application_steps_ur??'',
+  application_fee_text:job.application_fee_text??'',application_fee_text_ur:job.application_fee_text_ur??'',apply_url:job.apply_url??'',advertisement_url:job.advertisement_url??'',
   official_case_number:job.official_case_number??'',application_open_at:job.application_open_at??'',deadline_at:job.deadline_at??'',
   status:job.status,source_name:job.source_name??'',source_url:job.source_url??'',source_document_url:job.source_document_url??'',image_url:job.image_url??'',
   verified_date:job.verified_at?job.verified_at.slice(0,10):'',next_review_date:job.next_review_at?job.next_review_at.slice(0,10):'',
@@ -106,7 +106,7 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
    const verifiedAt=form.source_verified&&form.verified_date?new Date(form.verified_date+'T12:00:00+05:00').toISOString():null;
    const nextReviewAt=form.next_review_date?new Date(form.next_review_date+'T12:00:00+05:00').toISOString():null;
    if(form.status==='published'&&!editingPublished){
-    const publicationErrors=getGovernmentPublicationErrors({titleUr:form.title_ur,summaryEn:form.summary_en,summaryUr:form.summary_ur,imageUrl:form.image_url,sourceName:form.source_name,sourceUrl:form.source_url,verifiedAt:verifiedAt});
+    const publicationErrors=getGovernmentPublicationErrors({titleUr:form.title_ur,summaryEn:form.summary_en,summaryUr:form.summary_ur,imageUrl:form.image_url,sourceName:form.source_name,sourceUrl:form.source_url,verifiedAt:verifiedAt,qualificationEn:form.qualification_text,qualificationUr:form.qualification_text_ur,experienceEn:form.experience_text,experienceUr:form.experience_text_ur,ageEn:form.age_text,ageUr:form.age_text_ur,domicileEn:form.domicile_text,domicileUr:form.domicile_text_ur,quotaEn:form.gender_or_quota_text,quotaUr:form.gender_or_quota_text_ur,otherEligibilityEn:form.other_eligibility_text,otherEligibilityUr:form.other_eligibility_text_ur,applicationStepsEn:form.application_steps,applicationStepsUr:form.application_steps_ur,feesEn:form.application_fee_text,feesUr:form.application_fee_text_ur});
     if(publicationErrors.length)throw new Error(publicationErrors.join(' '));
    }
    await upsertGovernmentJob({
@@ -116,10 +116,10 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
     scale_or_grade:form.scale_or_grade.trim()||null,vacancy_count:form.vacancy_count.trim()?Number(form.vacancy_count):null,
     location_text:form.location_text.trim(),districts:form.districts.split(',').map(value=>value.trim()).filter(Boolean),
     sadiqabad_relevance:form.sadiqabad_relevance==='yes'?true:form.sadiqabad_relevance==='no'?false:null,
-    qualification_text:form.qualification_text.trim(),experience_text:form.experience_text.trim()||null,age_text:form.age_text.trim()||null,
-    domicile_text:form.domicile_text.trim()||null,gender_or_quota_text:form.gender_or_quota_text.trim()||null,
-    other_eligibility_text:form.other_eligibility_text.trim()||null,application_steps:form.application_steps.trim()||null,
-    application_fee_text:form.application_fee_text.trim()||null,apply_url:form.apply_url.trim()||null,
+    qualification_text:form.qualification_text.trim(),qualification_text_ur:form.qualification_text_ur.trim()||null,experience_text:form.experience_text.trim()||null,experience_text_ur:form.experience_text_ur.trim()||null,age_text:form.age_text.trim()||null,age_text_ur:form.age_text_ur.trim()||null,
+    domicile_text:form.domicile_text.trim()||null,domicile_text_ur:form.domicile_text_ur.trim()||null,gender_or_quota_text:form.gender_or_quota_text.trim()||null,gender_or_quota_text_ur:form.gender_or_quota_text_ur.trim()||null,
+    other_eligibility_text:form.other_eligibility_text.trim()||null,other_eligibility_text_ur:form.other_eligibility_text_ur.trim()||null,application_steps:form.application_steps.trim()||null,application_steps_ur:form.application_steps_ur.trim()||null,
+    application_fee_text:form.application_fee_text.trim()||null,application_fee_text_ur:form.application_fee_text_ur.trim()||null,apply_url:form.apply_url.trim()||null,
     advertisement_url:form.advertisement_url.trim()||null,official_case_number:form.official_case_number.trim()||null,
     application_open_at:form.application_open_at||null,deadline_at:form.deadline_at||null,status:form.status as GovernmentJobRow['status'],
     source_name:form.source_name.trim()||null,source_url:form.source_url.trim()||null,
@@ -163,14 +163,22 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
      <Field label="Closing date" value={form.deadline_at} type="date" onChange={value=>update('deadline_at',value)}/>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-     <TextAreaField label="Minimum qualification" value={form.qualification_text} required onChange={value=>update('qualification_text',value)}/>
-     <TextAreaField label="Experience" value={form.experience_text} onChange={value=>update('experience_text',value)}/>
-     <TextAreaField label="Age / relaxation" value={form.age_text} onChange={value=>update('age_text',value)}/>
-     <TextAreaField label="Domicile requirements" value={form.domicile_text} onChange={value=>update('domicile_text',value)}/>
-     <TextAreaField label="Gender / quota" value={form.gender_or_quota_text} onChange={value=>update('gender_or_quota_text',value)}/>
-     <TextAreaField label="Other eligibility conditions" value={form.other_eligibility_text} onChange={value=>update('other_eligibility_text',value)}/>
-     <TextAreaField label="Application steps" value={form.application_steps} onChange={value=>update('application_steps',value)}/>
-     <TextAreaField label="Application fee / payment instructions" value={form.application_fee_text} onChange={value=>update('application_fee_text',value)}/>
+     <TextAreaField label="Minimum qualification (English)" value={form.qualification_text} required onChange={value=>update('qualification_text',value)}/>
+     <TextAreaField label="Minimum qualification (Urdu — required)" value={form.qualification_text_ur} required onChange={value=>update('qualification_text_ur',value)}/>
+     <TextAreaField label="Experience (English)" value={form.experience_text} onChange={value=>update('experience_text',value)}/>
+     <TextAreaField label="Experience (Urdu, when English is provided)" value={form.experience_text_ur} onChange={value=>update('experience_text_ur',value)}/>
+     <TextAreaField label="Age / relaxation (English)" value={form.age_text} onChange={value=>update('age_text',value)}/>
+     <TextAreaField label="Age / relaxation (Urdu, when English is provided)" value={form.age_text_ur} onChange={value=>update('age_text_ur',value)}/>
+     <TextAreaField label="Domicile requirements (English)" value={form.domicile_text} onChange={value=>update('domicile_text',value)}/>
+     <TextAreaField label="Domicile requirements (Urdu, when English is provided)" value={form.domicile_text_ur} onChange={value=>update('domicile_text_ur',value)}/>
+     <TextAreaField label="Gender / quota (English)" value={form.gender_or_quota_text} onChange={value=>update('gender_or_quota_text',value)}/>
+     <TextAreaField label="Gender / quota (Urdu, when English is provided)" value={form.gender_or_quota_text_ur} onChange={value=>update('gender_or_quota_text_ur',value)}/>
+     <TextAreaField label="Other eligibility conditions (English)" value={form.other_eligibility_text} onChange={value=>update('other_eligibility_text',value)}/>
+     <TextAreaField label="Other eligibility conditions (Urdu, when English is provided)" value={form.other_eligibility_text_ur} onChange={value=>update('other_eligibility_text_ur',value)}/>
+     <TextAreaField label="Application steps (English)" value={form.application_steps} onChange={value=>update('application_steps',value)}/>
+     <TextAreaField label="Application steps (Urdu, when English is provided)" value={form.application_steps_ur} onChange={value=>update('application_steps_ur',value)}/>
+     <TextAreaField label="Application fee / payment instructions (English)" value={form.application_fee_text} onChange={value=>update('application_fee_text',value)}/>
+     <TextAreaField label="Application fee / payment instructions (Urdu, when English is provided)" value={form.application_fee_text_ur} onChange={value=>update('application_fee_text_ur',value)}/>
     </div>
     <div className="space-y-3 rounded-xl border border-outline-variant/40 p-3">
      <h4 className="text-sm font-bold">Official job poster / image (required before new publication)</h4>
