@@ -136,12 +136,12 @@ Before each phase inspect current main, components, routes, API calls, migration
 ## 9. Phased execution checklist
 
 ### Phase A — Workflow and code/schema audit
-- [ ] Read this active plan, permanent rules, roadmap and handoff.
-- [ ] Map all six Admin routes to current components, API calls, permissions and database records.
-- [ ] Trace Add Business submission through Edge Function/database and current review UI.
-- [ ] Trace Owner invitation, idempotency, profile creation and business association.
-- [ ] Inspect field review tables/status model, media bucket and Storage RLS; reconcile with live schema.
-- [ ] Record compatibility risks and test baseline before editing.
+- [x] Read this active plan, permanent rules, roadmap and handoff.
+- [x] Map all six Admin routes to current components, API calls, permissions and database records.
+- [x] Trace Add Business submission through Edge Function/database and current review UI.
+- [x] Trace Owner invitation, idempotency, profile creation and business association.
+- [x] Inspect field review tables/status model, media bucket and Storage RLS; reconcile with live schema.
+- [x] Record compatibility risks and test baseline before editing.
 
 ### Phase B — One-card queue and popup UI
 - [ ] Convert Business Field Approval list to one request card per registration.
@@ -187,6 +187,6 @@ Before each phase inspect current main, components, routes, API calls, migration
 
 ## 10. Current status and next action
 
-**Plan status:** Owner-approved; implementation has not yet been audited/started under this redesigned one-card/popup workflow. Existing production behaviour must be inspected before deciding what can be reused. Do not mark phases complete based on the earlier illustrative prototype; it did not save data or change production.
+**Plan status:** Owner-approved. Phase A audit completed against GitHub main and the live Supabase schema on 26 November 2026; see [ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md](ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md). No application code, schema or production records were changed during the audit. The earlier illustrative popup prototype remains non-production and is not counted as implementation.
 
-**Next action:** Phase A audit, then implement Phase B in narrow increments.
+**Next action:** implement Phase B (one-card queue and popup UI) in a complete, backward-compatible release. Before shipping, coordinate the UI with the required atomic field-save/invitation orchestration and preserve the existing moderation, owner, media and legacy submission paths.

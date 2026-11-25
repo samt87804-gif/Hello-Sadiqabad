@@ -8,7 +8,7 @@ This repository now has two separate active workstreams that must not be confuse
 ## Mandatory current status and next actions
 
 - Owner confirmed workstreams 4.1, 4.2 and 4.3 (including all tests through Government Jobs and Government Schemes) passed. Do not ask the owner to repeat those tests unless a regression is reported.
-- Business Registration new active plan: owner approved; plan is committed; Phase A audit is next. No implementation checkbox is complete merely because the popup prototype was discussed.
+- Business Registration new active plan: owner approved; Phase A audit is complete and recorded in `docs/ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md`; Phase B one-card/popup implementation is next. The illustrative popup is not production implementation.
 - SDK Jobs Phase 4: owner-confirmed acceptance for all checklist testing Sections 1–8 is complete. Do not re-ask for those tests. Production Pages deployment is complete; remaining release gates are live Owner/Admin/public/sitemap/social-preview smoke checks.
 - Work directly on GitHub main; no branches or PRs unless owner changes this rule.
 - Preserve all existing data. Inspect routes, callers, tests, live schema, RLS, permissions, Storage policies and migration ledger before changes.
@@ -1258,3 +1258,21 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - No application code, Supabase schema/data, Cloudflare DNS or environment settings were changed during this checkpoint.
 
 **Next:** after the Browser Rendering cooldown, verify the production six-item mobile layout, Urdu RTL, all four Gov card deep links and Emergency access. CI and the prior app-code Pages deployment are confirmed; Phase 6 remains open until rendered acceptance is evidenced.
+
+
+## Business Registration/Admin Approval — Phase A audit complete (26 November 2026)
+
+- Owner approved the canonical workflow: one Add Business request card, one grouped review popup, independent public-field selections, one Save Approval action, optional secure Owner invitation, minimum-safe-listing gate, and separate Owner-change moderation.
+- Phase A read-only audit is complete. Detailed component/API/RLS/Storage/migration/data findings are in `docs/ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md`.
+- Live baseline at audit: 4 active new-business submissions (2 `new`, 2 `in_review`), 36 pending and 100 previously approved field-review rows, 2 pending media assets, 4 pending Owner registration requests (1 linked to a new-business submission and 3 standalone).
+- Thirteen historical `new_business` submissions are `done` with all five core fields backfilled as approved but have no `business_id`. These are legacy records; do not auto-create listings, reopen them or rewrite their statuses without a separately reviewed owner-approved recovery plan.
+- Current Business Field Approval is not yet the approved UX: it has per-field immediate RPC actions and a separate media list, not a single grouped popup/one-save review. The linked Owner request is currently also visible in Owner Registration Requests; that page must become standalone-only.
+- Existing field-review RPC already saves decisions while the five core keys are incomplete and creates/publishes the business only when all five are approved: `name_en`, `category_id`, `area_id`, `phone_primary`, `address_en`. Preserve this minimum-publication gate.
+- Critical follow-up safeguards: grant Business Field Approval permission to read only submission-linked Owner contact rows; keep owner Gmail/private identity out of public surfaces; remove Owner name from public-field approval; enforce explicit-only rejection and only allow unpublish for previously published fields; provide atomic bulk field decisions and durable invitation retry state; make media decision/promotion retryable without rolling back field approvals.
+- Pending media bucket `hs-pending-business-media` is private, max 5 MB, JPEG/PNG/WebP. No anon SELECT/INSERT policy exists; public promotion is controlled by the media-review Edge Function and requires a published business (cover additionally requires plan entitlement).
+- Live migration ledger currently ends at version `20261125222340`. It differs from the repository's consolidated migration filenames/history; never replay the baseline or apply an old migration file. Any future schema change must be additive, uniquely versioned after the live ledger and reviewed against current production RLS/Storage/functions.
+- Baseline app-code commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` passed GitHub Actions run `45717440342` (build and edge-functions jobs, including TypeScript, `npm test`, production build, dependency gate and Edge Function typecheck). No dedicated Business Registration/Admin Approval tests currently exist in the `npm test` script; add targeted coverage before release.
+- Owner confirmed the production mobile `/gov` page and bottom navigation look correct. This records owner visual acceptance only; Gov deep links and Emergency card/route are not claimed as separately tested here.
+- No application code, database schema, production business/user data, Storage objects, Cloudflare settings or Auth accounts were changed during Phase A.
+
+**Next:** Phase B one-card request list and grouped review popup, with the atomic field-save and retryable invitation/media interfaces designed before the production release.

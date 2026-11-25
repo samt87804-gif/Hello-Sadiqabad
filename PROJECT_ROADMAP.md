@@ -1117,3 +1117,25 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Execute/confirm the Node regression tests; source review alone is not test execution.
 - [ ] Rendered production acceptance: six-item mobile layout, Urdu RTL, four Gov card deep links and Emergency card/route. Browser Rendering was rate-limited at checkpoint; wait for its cooldown before retrying.
 - **Gate remains open:** CI is green, but do not mark Phase 6 accepted until rendered/owner acceptance evidence exists.
+
+
+## Business Registration & Admin Approval — Phase A audit — 26 November 2026
+
+- [x] Read the owner-approved active implementation plan, permanent project rules, current handoff and roadmap.
+- [x] Mapped all six Admin routes to their current components, permissions, API calls and live records.
+- [x] Traced `/add-business` → `submitPublicSuggestion()` → `submit-suggestion` Edge Function → `submissions`, linked Owner request and private media records.
+- [x] Traced field review RPC, minimum-publication gate, media promotion and existing Owner invitation/profile/business-link flow.
+- [x] Inspected live migration ledger, table columns/constraints, RLS policies, Storage bucket policies, function privileges and audit triggers.
+- [x] Recorded live baseline and compatibility risks in `docs/ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md`.
+- [x] Confirmed baseline CI for app-code commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c`: run `45717440342` passed build and Edge Functions jobs.
+- [ ] Phase B: one request card per registration, grouped review popup, private Owner panel, independent field/media selections, one Save Approval and unsaved-change protection.
+- [ ] Phase C: atomic bulk field decisions, minimum-safe-listing, durable invitation task/retry and idempotent account/business association.
+- [ ] Phase D: private media decision/promotion lifecycle and retry.
+- [ ] Phase E: six-page navigation/responsibility clarity, linked-vs-standalone Owner request separation and before/after Admin audit.
+- [ ] Phase F: end-to-end regression, security, CI, deployment and authenticated acceptance.
+- No production business/user records, schema, Storage objects, Auth accounts or Cloudflare settings were changed during Phase A.
+
+## Gov/mobile owner acceptance — 26 November 2026
+
+- [x] Owner confirms the production mobile `/gov` page and bottom navigation look correct.
+- [ ] Gov destination deep links and Emergency card/route remain separate acceptance checks; do not infer them from the visual confirmation.
