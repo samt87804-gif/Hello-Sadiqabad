@@ -318,3 +318,12 @@ Initial Admin performance optimizations are implemented on `main` and deployed t
 **Evidence:** commit `6009012c143e90dbbcce1dfc2fddaa79c3fa2872`; [GitHub CI run 45585636119](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45585636119) passed build/typecheck/tests/dependency gate and Edge Function checks; Cloudflare Pages production deployment `759c75f9-d12d-45ec-a94d-196953c9ba19` succeeded with canonical alias `https://hellosadiqabad.com`.
 
 **Phase 1 remains in progress, not accepted:** authenticated desktop before/after timings, browser interaction tests and mobile smoke tests were not available/performed. No performance milliseconds are claimed. No production database/schema/RLS/Storage changes were made.
+
+
+## Phase 1 follow-up — latest code/deployment evidence (25 November 2026)
+
+- Business list API now requests an explicit field allowlist and narrow category/area relations instead of `select('*')`; the full business record is fetched by ID only when the Admin opens Edit.
+- Latest commit: `4ed8f50042928896064f3925f8e8f203e0951de7`.
+- [CI run 45587036171](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45587036171) passed TypeScript, automated tests, dependency gate, production build and Edge Function typecheck.
+- Cloudflare Pages deployment `51d981f8-e50a-400d-af08-ae5e14481940` succeeded for that exact commit at `https://hellosadiqabad.com`.
+- Phase 1 is still not accepted: authenticated desktop before/after timings and mobile/browser functional acceptance remain outstanding. Do not move the roadmap status to complete until those criteria are evidenced.
