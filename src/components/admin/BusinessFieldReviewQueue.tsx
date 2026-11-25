@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Clock3, RefreshCw, XCircle, EyeOff } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase';
 import { Card } from '../ui/Surface';
@@ -58,6 +58,36 @@ export function BusinessFieldReviewQueue() {
   const [media, setMedia] = useState<BusinessMedia[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState('');
+  const [submissionPage, setSubmissionPage] = useState(1);
+  const [mediaPage, setMediaPage] = useState(1);
+  const pageSize = 20;
+
+  const fieldsBySubmission = useMemo(() => {
+    const grouped = new Map<string, FieldReview[]>();
+    for (const field of fields) {
+      const current = grouped.get(field.submission_id) ?? [];
+      current.push(field);
+      grouped.set(field.submission_id, current);
+    }
+    return grouped;
+  }, [fields]);
+  const submissionPageCount = Math.max(1, Math.ceil(submissions.length / pageSize));
+  const mediaPageCount = Math.max(1, Math.ceil(media.length / pageSize));
+  const visibleSubmissions = useMemo(
+    () => submissions.slice((submissionPage - 1) * pageSize, submissionPage * pageSize),
+    [submissions, submissionPage]
+  );
+  const visibleMedia = useMemo(
+    () => media.slice((mediaPage - 1) * pageSize, mediaPage * pageSize),
+    [media, mediaPage]
+  );
+
+  useEffect(() => {
+    if (submissionPage > submissionPageCount) setSubmissionPage(submissionPageCount);
+  }, [submissionPage, submissionPageCount]);
+  useEffect(() => {
+    if (mediaPage > mediaPageCount) setMediaPage(mediaPageCount);
+  }, [mediaPage, mediaPageCount]);
 
   const reload = useCallback(async () => {
     const client = getSupabaseClient();
@@ -164,7 +194,7 @@ export function BusinessFieldReviewQueue() {
         <h3 className="text-lg font-bold text-on-surface">Business Images Awaiting Review</h3>
         {media.length === 0 ? <Card className="p-4 text-xs text-on-surface-variant">No pending business images.</Card> :
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {media.map((asset) => {
+            {visibleMedia.map((asset) => {
               const busy = busyKey === 'media:' + asset.id;
               const canPublish = Boolean(asset.business_id || submissions.some((item) => item.id === asset.submission_id && item.business_id));
               return (
@@ -186,11 +216,22 @@ export function BusinessFieldReviewQueue() {
             })}
           </div>
         }
+        {media.length > pageSize && (
+          <div className="flex items-center justify-between gap-2 text-xs text-on-surface-variant">
+            <span>Showing {(mediaPage - 1) * pageSize + 1}–{Math.min(mediaPage * pageSize, media.length)} of {media.length} images</span>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={mediaPage <= 1} onClick={() => setMediaPage((page) => Math.max(1, page - 1))}>Previous</Button>
+              <span className="tabular-nums">Page {mediaPage}/{mediaPageCount}</span>
+              <Button size="sm" variant="outline" disabled={mediaPage >= mediaPageCount} onClick={() => setMediaPage((page) => Math.min(mediaPageCount, page + 1))}>Next</Button>
+            </div>
+          </div>
+        )}
       </section>
       {loading ? <Card className="p-6 text-sm text-on-surface-variant">Loading business submissions…</Card> :
         submissions.length === 0 ? <Card className="p-6 text-sm text-on-surface-variant">No pending business submissions.</Card> :
-        submissions.map((submission) => {
-          const submissionFields = fields.filter((field) => field.submission_id === submission.id);
+        <>
+          {visibleSubmissions.map((submission) => {
+          const submissionFields = fieldsBySubmission.get(submission.id) ?? [];
           const required = ['name_en', 'category_id', 'area_id', 'phone_primary', 'address_en'];
           const approvedRequired = required.filter((fieldKey) =>
             submissionFields.some((field) => field.field_key === fieldKey && field.status === 'approved_published')).length;
@@ -228,7 +269,18 @@ export function BusinessFieldReviewQueue() {
               </div>
             </Card>
           );
-        })
+          })}
+          {submissions.length > pageSize && (
+            <div className="flex items-center justify-between gap-2 text-xs text-on-surface-variant">
+              <span>Showing {(submissionPage - 1) * pageSize + 1}–{Math.min(submissionPage * pageSize, submissions.length)} of {submissions.length} submissions</span>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" disabled={submissionPage <= 1} onClick={() => setSubmissionPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                <span className="tabular-nums">Page {submissionPage}/{submissionPageCount}</span>
+                <Button size="sm" variant="outline" disabled={submissionPage >= submissionPageCount} onClick={() => setSubmissionPage((page) => Math.min(submissionPageCount, page + 1))}>Next</Button>
+              </div>
+            </div>
+          )}
+        </>
       }
     </div>
   );
