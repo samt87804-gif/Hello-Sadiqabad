@@ -1,10 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 function extractBearerToken(header: string | null): string | null {
   if (!header) return null;
-  const match = /^Bearer\\s+(.+)$/i.exec(header.trim());
-  return match?.[1]?.trim() || null;
+  const value = header.trim();
+  if (!value.toLowerCase().startsWith("bearer ")) return null;
+  return value.slice(7).trim() || null;
 }
-
 function isValidUuid(value: unknown): value is string {
   return typeof value === "string" &&
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
