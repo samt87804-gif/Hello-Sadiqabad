@@ -896,3 +896,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Field-review queue now fetches field rows and media rows in parallel, batches private image preview signing with one `createSignedUrls` request instead of one request per image, groups fields by submission once, and paginates image/submission cards at 20 per page.
 - No review statuses, moderation permissions, Storage privacy or database records changed.
 - Main commit `6c237bf8b40bd93f9367cec0f126edf55d2e10c4`; CI run `45640942909` passed; Cloudflare Pages deployment `0ab58777-c70e-4b76-a808-53af57e2a3f1` succeeded with canonical alias.
+
+## Add Business form dropdown and image optimization — 25 November 2026
+
+- [x] Replace the native Category and Area selects with compact, in-panel searchable listboxes. Each menu is capped at 14rem, scrolls internally, closes after selection, and keeps the page background visible; bilingual search and existing taxonomy IDs are preserved.
+- [x] Compress eligible public Logo and Cover images in the browser before the signed upload. Logo dimensions are capped at 640px and Cover at 1800px; WebP quality starts at 0.84 and retries at 0.72 for larger output. The original is retained when browser encoding is unavailable or would increase size. Existing 5 MB input limit, signed-upload authorization, private pending bucket and cleanup flow remain unchanged; authorization metadata and uploaded content use the compressed file's MIME type and byte size.
+- [x] Update the Playwright public-form smoke test to exercise the custom dropdowns, assert each menu stays below 230px and under 40% of viewport height, and verify taxonomy search/selection, preview privacy, consent, image input retry and mobile/desktop horizontal overflow.
+- [x] TypeScript/tests/build CI run `45658737972` passed.
+- [x] Public Add Business browser smoke run `45658737929` passed on mobile (390×844) and desktop (1365×900).
+- [x] Cloudflare Pages production deployment `db7b67c2-29a0-4f2a-bf86-fcda74fdb2e1` succeeded for main commit `3c2c45895d24e7ffaef8ae929b4703da456873da`; canonical alias `https://hellosadiqabad.com`.
+- [ ] Owner manual acceptance: open both dropdowns on a real mobile and desktop browser, confirm the background remains visible, search in English and Urdu, and select an item. Report any clipping or unexpected menu positioning.
+- [ ] Owner real-submission acceptance: when submitting a genuine business (not a dummy test listing), upload a normal logo and cover image and confirm the request completes. Do not create a separate fake business just to test compression; the code-level compression and public smoke are already deployed.
+
