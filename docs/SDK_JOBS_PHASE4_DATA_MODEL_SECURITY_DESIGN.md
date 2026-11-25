@@ -109,6 +109,7 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [ ] Implement permission-gated Admin moderation UI.
 - [x] Implemented the published-only, security-invoker public projection.
 - [ ] Implement public listing/detail routes, filters and share metadata.
-- [ ] Add UI-level and adversarial privacy/authorization tests, CI and production browser verification.
+- [x] Foundation GitHub CI and production Pages deployment passed for the permission/database foundation.
+- [ ] Add owner/Admin/public UI-level and adversarial privacy/authorization tests plus authenticated production browser verification.
 
 **Current gate:** Phase 4 read-only audit/design and first database foundation are complete. The live migration ledger contains 111 versions (108 prior + 3 SDK Jobs migrations). The migrations add the private job tables, published-only invoker-security projection, dedicated `sdk_jobs.manage`, owner eligibility guard, Admin-only notes/status history, consolidated RLS policies and FK indexes. Transactional tests confirmed eligible owner submissions are forced to the authenticated owner and `pending_review`; pending jobs do not appear in the public projection; cross-owner business submission is denied; test transactions rolled back and live counts remain 0 jobs / 0 history / 0 notes. Security advisor no longer reports a SECURITY DEFINER view; performance advisor no longer reports SDK Jobs unindexed FKs or multiple permissive policies. Existing unrelated advisor findings remain outside this workstream. The permission type and explicit staff permission editor are updated. Owner form, Admin moderation UI, signed poster upload, public routes and browser acceptance remain open.
