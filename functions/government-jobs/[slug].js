@@ -8,7 +8,7 @@ export async function onRequest(context) {
     pathPrefix: '/government-jobs/',
     toContent: (job) => ({
       title: job.title_en || job.title_ur || 'Government Job',
-      description: [job.summary_en || job.summary_ur, job.department_name, job.location_text].filter(Boolean).join(' · '),
+      description: [job.summary_en, job.summary_ur, job.department_name, job.location_text].filter(Boolean).join(' · '),
       imageAlt: job.title_en || job.title_ur || 'Official government job poster',
     }),
   });
