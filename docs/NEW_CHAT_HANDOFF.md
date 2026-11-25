@@ -1076,3 +1076,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Review and media rows are fetched in parallel; private image previews use one batch `createSignedUrls` call instead of one request per image; field rows are grouped by submission once; image and submission cards are paginated at 20 per page.
 - No moderation/RLS/Storage/database semantics or existing records changed.
 - Main commit `6c237bf8b40bd93f9367cec0f126edf55d2e10c4`; CI `45640942909` passed; Pages deployment `0ab58777-c70e-4b76-a808-53af57e2a3f1` succeeded.
+
+## Add Business form update — 25 November 2026
+
+- Public Category and Area controls now use compact searchable listboxes with internal scrolling (14rem maximum height), not native full-screen select pickers.
+- Public logo/cover images are resized and WebP-compressed client-side before the existing secure signed upload. Logo cap 640px; cover cap 1800px; quality 0.84 with 0.72 retry for larger outputs. Original is retained if browser encoding is unavailable or output would be larger. Existing upload authorization, 5 MB input limit, private pending bucket and cleanup flow remain in place.
+- Main commit `3c2c45895d24e7ffaef8ae929b4703da456873da`; CI `45658737972` passed; Playwright mobile/desktop public form smoke `45658737929` passed; Cloudflare production deployment `db7b67c2-29a0-4f2a-bf86-fcda74fdb2e1` succeeded with canonical alias `https://hellosadiqabad.com`.
+- Owner manual checks still requested: dropdown containment and bilingual search on a real phone/desktop browser; confirm image upload when submitting a genuine business. No dummy production business should be created.
