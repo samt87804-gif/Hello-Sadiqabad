@@ -124,11 +124,12 @@ export function AdminPortal() {
   const [leadsLoaded, setLeadsLoaded] = useState(false);
   const [profilesLoaded, setProfilesLoaded] = useState(false);
   const quickSearchLoading = React.useRef({ businesses: false, leads: false, profiles: false });
+  const adminCacheTtlMs = 30_000;
   const loadedAdminData = React.useRef({
-    businesses: false,
-    taxonomy: false,
-    profiles: false,
-    leads: false,
+    businesses: { loaded: false, at: 0 },
+    taxonomy: { loaded: false, at: 0 },
+    profiles: { loaded: false, at: 0 },
+    leads: { loaded: false, at: 0 },
   });
   const reload = useCallback(async (force = true) => {
     setLoading(true);
@@ -150,13 +151,13 @@ export function AdminPortal() {
       const canLoadBusinesses = can('business.create') || can('business.publish');
       const canLoadTaxonomy = can('business.create') || can('settings.manage') || can('business.publish');
       const shouldLoadBusinesses = needsBusinesses && canLoadBusinesses &&
-        (force || !loadedAdminData.current.businesses);
+        (force || !loadedAdminData.current.businesses.loaded || Date.now() - loadedAdminData.current.businesses.at >= adminCacheTtlMs);
       const shouldLoadTaxonomy = needsTaxonomy && canLoadTaxonomy &&
-        (force || !loadedAdminData.current.taxonomy);
+        (force || !loadedAdminData.current.taxonomy.loaded || Date.now() - loadedAdminData.current.taxonomy.at >= adminCacheTtlMs);
       const shouldLoadProfiles = needsProfiles &&
-        (force || !loadedAdminData.current.profiles);
+        (force || !loadedAdminData.current.profiles.loaded || Date.now() - loadedAdminData.current.profiles.at >= adminCacheTtlMs);
       const shouldLoadLeads = (tab === 'leads' || tab === 'export') && can('leads.manage') &&
-        (force || !loadedAdminData.current.leads);
+        (force || !loadedAdminData.current.leads.loaded || Date.now() - loadedAdminData.current.leads.at >= adminCacheTtlMs);
       const needsEmergency = ['emergency', 'export', 'settings'].includes(tab);
       const needsLocalAuthorities = ['local-authorities', 'export'].includes(tab) && isSuperAdmin;
       const needsAuthorityProfiles = ['authority-profiles', 'export'].includes(tab) && isSuperAdmin;
@@ -240,7 +241,7 @@ export function AdminPortal() {
       if (shouldLoadBusinesses) {
         if (businessLoadSucceeded) setBusinesses(biz);
         setBusinessesLoaded(businessLoadSucceeded);
-        loadedAdminData.current.businesses = businessLoadSucceeded;
+        loadedAdminData.current.businesses = { loaded: businessLoadSucceeded, at: businessLoadSucceeded ? Date.now() : 0 };
       }
       if (shouldLoadTaxonomy) {
         const taxonomyLoadSucceeded = taxonomyCategoriesLoadSucceeded && taxonomyAreasLoadSucceeded;
@@ -248,7 +249,7 @@ export function AdminPortal() {
           setCategories(cats);
           setAreas(ar);
         }
-        loadedAdminData.current.taxonomy = taxonomyLoadSucceeded;
+        loadedAdminData.current.taxonomy = { loaded: taxonomyLoadSucceeded, at: taxonomyLoadSucceeded ? Date.now() : 0 };
       }
       if (tab === 'plans') setPlans(pls);
       if (tab === 'moderation') {
@@ -260,12 +261,12 @@ export function AdminPortal() {
       if (shouldLoadLeads) {
         if (leadsLoadSucceeded) setLeads(lds);
         setLeadsLoaded(leadsLoadSucceeded);
-        loadedAdminData.current.leads = leadsLoadSucceeded;
+        loadedAdminData.current.leads = { loaded: leadsLoadSucceeded, at: leadsLoadSucceeded ? Date.now() : 0 };
       }
       if (shouldLoadProfiles) {
         if (profilesLoadSucceeded) setProfiles(profs);
         setProfilesLoaded(profilesLoadSucceeded);
-        loadedAdminData.current.profiles = profilesLoadSucceeded;
+        loadedAdminData.current.profiles = { loaded: profilesLoadSucceeded, at: profilesLoadSucceeded ? Date.now() : 0 };
       }
       if (tab === 'ads') setAds(adList);
       if (tab === 'import') setBatches(imp);
@@ -321,7 +322,7 @@ export function AdminPortal() {
         void fetchAdminBusinesses().then((result) => {
           setBusinesses(result);
           setBusinessesLoaded(true);
-          loadedAdminData.current.businesses = true;
+          loadedAdminData.current.businesses = { loaded: true, at: Date.now() };
         }).catch(() => {
           setBusinessesLoaded(false);
         }).finally(() => {
@@ -333,7 +334,7 @@ export function AdminPortal() {
         void fetchLeads().then((result) => {
           setLeads(result);
           setLeadsLoaded(true);
-          loadedAdminData.current.leads = true;
+          loadedAdminData.current.leads = { loaded: true, at: Date.now() };
         }).catch(() => {
           setLeadsLoaded(false);
         }).finally(() => {
@@ -345,7 +346,7 @@ export function AdminPortal() {
         void fetchProfilesAdmin().then((result) => {
           setProfiles(result);
           setProfilesLoaded(true);
-          loadedAdminData.current.profiles = true;
+          loadedAdminData.current.profiles = { loaded: true, at: Date.now() };
         }).catch(() => {
           setProfilesLoaded(false);
         }).finally(() => {
