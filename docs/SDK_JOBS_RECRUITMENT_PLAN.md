@@ -87,7 +87,7 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Inspected current dedicated Admin permission pattern and live RLS/grants. New permission must be `sdk_jobs.manage` and must be explicit for staff; do not add broad staff-type defaults.
 - [x] Inspected live migration ledger (108 applied versions). Existing data/schema baseline must not be replayed.
 - [x] Added detailed data-boundary/security design: [`SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`](SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md).
-- [ ] Finish exact areas schema, staff permission editor and Storage limits review.
+- [x] Finish exact areas schema, staff permission editor/Admin tab gates and Storage limits review; findings are in the Phase 4 design document.
 - [ ] Additive `sdk_jobs` schema, private employer linkage, published-only public view and append-only moderation history.
 - [ ] Owner submission form and server-side eligibility enforcement.
 - [ ] Permission-gated Admin moderation.
