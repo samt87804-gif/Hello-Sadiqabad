@@ -760,7 +760,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [x] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — owner confirms all testing/acceptance checks passed on 26 November 2026.
 - [x] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — owner confirms all testing/acceptance checks passed on 26 November 2026.
 - [~] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — implementation, owner acceptance and production Pages deployment complete. Post-deploy Owner/Admin/public/sitemap/social-preview smoke checks remain open.
-- [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented; candidate PII must wait for retention/consent/security design.
+- [~] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — read-only privacy/security design added in `docs/SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md`; implementation blocked pending owner approval of retention, consent, staff permissions, fee and referral-letter policy. No candidate PII/schema/UI created.
 - [~] Phase 6 Gov landing page and five-item mobile bottom navigation — bilingual `/gov`, four directory cards, five-item mobile nav, desktop Civic Services link, route indexing, analytics and sitemap deployed; CI passed and `/gov`/mobile nav browser smoke passed. Live sitemap and owner browser/deep-link/Urdu RTL/Emergency acceptance remain open.
 
 **Safety findings:** The current Storage bucket is public, so pending media needs a separate private bucket. The live Supabase migration ledger (95 versions) differs from the 74 repository migration files; do not replay the baseline or run an unreviewed schema push. No production schema or data was changed during Phase 0.
@@ -1087,3 +1087,11 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Live sitemap `/gov` entry check (the browser-rendering request was rate-limited; no success claim).
 - [ ] Gov owner browser acceptance: all four deep links, Urdu RTL, desktop Civic Services menu and preserved Emergency route/Home card.
 - No database/schema changes or authority record edits were made for Gov. SDK Jobs Phase 5 candidate intake/PII/referral work remains unimplemented pending its own retention/consent/security design.
+
+
+## SDK Jobs Phase 5 privacy design checkpoint — 26 November 2026
+
+- [x] Added `docs/SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md` as a read-only design proposal covering candidate intake, consent, interview/suitability, referral sharing, referral letters, fees, office settings, least-privilege permissions, RLS, audit and retention/deletion.
+- [x] No Phase 5 database object, migration, UI, candidate record, CV upload, fee record or retention job was created.
+- [ ] Owner approval needed for exact retention periods, bilingual consent wording/method, staff permission matrix, fee amount/payment policy and referral-letter/public verification fields.
+- Implementation of candidate PII collection remains blocked until these decisions are approved.
