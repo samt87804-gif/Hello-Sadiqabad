@@ -166,6 +166,16 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 ### Add Business taxonomy usability follow-up — 25 November 2026
 
+### Owner image-change workflow — 25 November 2026
+
+- Added owner-side logo/cover replacement requests in the Listing Editor. Owners see the two-per-business Pakistan-calendar-month allowance and recent statuses; the currently published image remains visible until Admin approval.
+- Owner uploads use a signed upload URL issued only after server checks for active owner role, ownership of a published business, plan eligibility for cover, MIME/size and monthly quota. Both upload and cleanup endpoints are rate-limited. Cleanup cannot remove a media asset already attached to a request.
+- The database request RPC independently checks ownership, monthly quota under a business lock, path ownership and actual Storage MIME/size metadata. Cover images remain Basic/Premium only.
+- Applied migration 10, `owner_signed_upload_only`, removing the unused direct authenticated INSERT policy for the private pending-media bucket; Admin read policy remains. The bucket stays private.
+- Active Edge Function versions: create-business-media-upload v3; cleanup-business-media-upload v4; submit-suggestion v11; review-business-media v3; manage-owner-registration v5.
+- Latest CI run `45625359267` passed and Cloudflare Pages deployment `95345747-efea-4a20-8743-26c91719efbe` succeeded for `https://hellosadiqabad.com`.
+- No test requests or objects were created. Owner browser upload/review click-through and invitation delivery are still unverified.
+
 - The Category and Area selectors now have separate, labelled text filters that narrow their native select options without changing taxonomy IDs or auto-selecting a value. The selected option remains available while filtering, and search text clears when the form resets.
 - The form now always displays bilingual instructions to contact Admin through the approved WhatsApp link when the required category or area is missing; it explicitly tells submitters not to choose an incorrect substitute.
 - Commits: `84703741a53464d94681276ff89842848a15e944` (taxonomy guidance), `58f126f392944f3598257c6e63796cdb1fc2326e` (search filters), `ea20723a0791ce79f75e696d228d8eeb9604954c` (reset behavior).
