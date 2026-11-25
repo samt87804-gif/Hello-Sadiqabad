@@ -113,3 +113,18 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [ ] Add owner/Admin/public UI-level and adversarial privacy/authorization tests plus authenticated production browser verification.
 
 **Current gate:** Phase 4 read-only audit/design and first database foundation are complete. The live migration ledger contains 111 versions (108 prior + 3 SDK Jobs migrations). The migrations add the private job tables, published-only invoker-security projection, dedicated `sdk_jobs.manage`, owner eligibility guard, Admin-only notes/status history, consolidated RLS policies and FK indexes. Transactional tests confirmed eligible owner submissions are forced to the authenticated owner and `pending_review`; pending jobs do not appear in the public projection; cross-owner business submission is denied; test transactions rolled back and live counts remain 0 jobs / 0 history / 0 notes. Security advisor no longer reports a SECURITY DEFINER view; performance advisor no longer reports SDK Jobs unindexed FKs or multiple permissive policies. Existing unrelated advisor findings remain outside this workstream. The permission type and explicit staff permission editor are updated. Owner form, Admin moderation UI, signed poster upload, public routes and browser acceptance remain open.
+
+
+## Poster lifecycle and public board implementation checkpoint — 26 November 2026
+
+- [x] Live migration `20261125220215_sdk_jobs_poster_private_upload`: existing private pending-media bucket reused; Admin-only SDK Jobs folder read policy; Owner pending-row updates limited to a path bound to the same job and Owner.
+- [x] Private signed-upload Edge Function and Owner Portal poster upload/retry UI deployed/committed. JWT required; active Owner and own pending-review job checked server-side; 5 MiB and JPEG/PNG/WebP enforced at bucket and request boundaries.
+- [x] Admin private preview and approve/reject flow deployed. Actual file signature and size checked server-side; only approved object is copied to public media. Pending source is removed after approval/rejection where cleanup succeeds.
+- [x] Publication is separately gated by a JWT-protected Admin Edge Function, approved poster, pending-review state, valid closing date, and employer/Owner identity/contact scan across public text fields.
+- [x] Public list/detail routes, filters, canonical metadata, privacy-safe JobPosting JSON-LD, share actions, Admin WhatsApp CTA, office visit instructions and sitemap entries implemented using the published-only public projection.
+- [x] Rolled-back database tests passed: eligible Owner insert + correctly scoped poster-path attachment; pending job content mutation blocked; cross-job poster path blocked; anon employer ID column read blocked.
+- [ ] Latest CI [45710562574](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710562574) (build + Edge Functions) pending at update time.
+- [ ] Real Owner upload and Admin preview/approval/publication browser acceptance.
+- [ ] Pages deployment and public route/sitemap smoke tests.
+
+**No candidate intake, CV/PII, referral letters, fee ledger or recruitment-hour settings have been implemented.** Those remain Phase 5 and require a separate retention/security design.
