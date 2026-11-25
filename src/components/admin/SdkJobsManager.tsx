@@ -36,6 +36,7 @@ export function SdkJobsManager() {
   const [selected, setSelected] = useState<AdminSdkJob | null>(null);
   const [history, setHistory] = useState<JobHistory[]>([]);
   const [notes, setNotes] = useState<JobNote[]>([]);
+  const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,9 +59,13 @@ export function SdkJobsManager() {
   useEffect(() => { void reload(); }, [reload]);
 
   const loadDetail = async (job: AdminSdkJob) => {
-    setSelected(job); setNote('');
+    setSelected(job); setNote(''); setPosterPreviewUrl(null);
     const client = getSupabaseClient();
     if (!client) return;
+    if (job.pending_media_path) {
+      const { data: signed } = await client.storage.from('hs-pending-business-media').createSignedUrl(job.pending_media_path, 300);
+      if (signed?.signedUrl) setPosterPreviewUrl(signed.signedUrl);
+    } else if (job.approved_image_url) setPosterPreviewUrl(job.approved_image_url);
     const [h, n] = await Promise.all([
       client.from('sdk_job_status_history').select('id,action,old_status,new_status,created_at').eq('job_id', job.id).order('created_at', { ascending: false }).limit(30),
       client.from('sdk_job_admin_notes').select('id,note,created_at').eq('job_id', job.id).order('created_at', { ascending: false }).limit(30),
@@ -94,6 +99,24 @@ export function SdkJobsManager() {
     } finally { setSaving(false); }
   };
 
+  const reviewPoster = async (action: 'approve' | 'reject') => {
+    if (!selected || !user) return;
+    setSaving(true);
+    try {
+      const client = getSupabaseClient();
+      if (!client) throw new Error('Supabase is not configured.');
+      const { data, error } = await client.functions.invoke('review-sdk-job-poster', { body: { job_id: selected.id, action } });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Poster review failed.');
+      showToast(action === 'approve' ? 'Poster approved and promoted to public media. Job is still awaiting publication.' : 'Poster rejected. Owner can upload another poster.', 'success');
+      const next = { ...selected, pending_media_path: null, approved_image_url: action === 'approve' ? (data.image_url as string) : null };
+      await reload();
+      await loadDetail(next);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Poster review failed.', 'error');
+    } finally { setSaving(false); }
+  };
+
   const saveNote = async () => {
     if (!selected || !user || !note.trim()) return;
     setSaving(true);
@@ -122,6 +145,7 @@ export function SdkJobsManager() {
             <div className="flex items-center justify-between gap-2"><h3 className="font-bold">Review job</h3><Badge variant={variant(selected.status)}>{labels[selected.status]}</Badge></div>
             <div className="space-y-1"><p className="font-bold">{selected.title_en}</p>{selected.title_ur && <p className="font-urdu text-sm" dir="rtl">{selected.title_ur}</p>}<p className="text-xs text-on-surface-variant">{selected.summary_en}</p>{selected.summary_ur && <p className="font-urdu text-xs" dir="rtl">{selected.summary_ur}</p>}</div>
             <div className="rounded-xl bg-surface-container-low p-3 text-xs space-y-1"><p className="font-bold flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Private employer linkage — Admin only</p><p>Owner user ID: {selected.employer_owner_id}</p><p>Source business ID: {selected.source_business_id}</p><p>Job record ID: {selected.id}</p><p>Pending media path: {selected.pending_media_path || 'No poster uploaded'}</p><p>Approved public poster: {selected.approved_image_url ? 'Attached' : 'Not attached'}</p></div>
+            {posterPreviewUrl && <div className="space-y-2"><p className="text-xs font-bold">{selected.pending_media_path ? 'Private pending poster preview' : 'Approved public poster'}</p><img src={posterPreviewUrl} alt="SDK Job poster preview" className="w-full max-h-64 object-contain rounded-xl border border-outline-variant/40 bg-surface-container-low" />{selected.pending_media_path && <div className="flex flex-wrap gap-2"><Button size="sm" disabled={saving} onClick={() => void reviewPoster('approve')}>Approve poster</Button><Button size="sm" variant="danger" disabled={saving} onClick={() => void reviewPoster('reject')}>Reject poster</Button></div>}</div>}
             <div className="space-y-1"><p className="text-xs font-bold">Full description</p><p className="text-sm whitespace-pre-wrap">{selected.description_en}</p>{selected.description_ur && <p className="font-urdu text-sm whitespace-pre-wrap" dir="rtl">{selected.description_ur}</p>}</div>
             <div className="grid grid-cols-2 gap-2 text-xs"><p>Location: {selected.work_location_en || 'Not specified'}</p><p>Closing: {selected.closing_date || 'Not specified'}</p><p>Salary disclosed: {selected.salary_disclosed ? 'Yes' : 'No'}</p><p>Qualifications: {selected.qualifications_en || 'Not specified'}</p></div>
             <div className="flex flex-wrap gap-2 border-t border-outline-variant/40 pt-3">
@@ -131,7 +155,7 @@ export function SdkJobsManager() {
               {['closed','unpublished','rejected','changes_requested'].includes(selected.status) && <Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('pending_review')}>Return to review</Button>}
               {selected.status !== 'archived' && <Button size="sm" variant="ghost" disabled={saving} onClick={() => void changeStatus('archived')}>Archive</Button>}
             </div>
-            {!selected.approved_image_url && <p className="text-xs text-warning">Publish is intentionally blocked: a reviewed poster is mandatory, and private poster upload/promotion is not implemented yet.</p>}
+            {!selected.approved_image_url && <p className="text-xs text-warning">Publish is blocked until Admin approves and promotes a valid private poster.</p>}
             <div className="border-t border-outline-variant/40 pt-3 space-y-2"><h4 className="text-sm font-bold">Private Admin notes</h4><textarea className="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm" rows={3} maxLength={4000} value={note} onChange={(e)=>setNote(e.target.value)} placeholder="Internal note — never visible to Owner or public" /><div className="flex justify-end"><Button size="sm" disabled={saving || !note.trim()} onClick={() => void saveNote()}>Save private note</Button></div>{notes.map((item)=><div key={item.id} className="rounded-lg bg-surface-container-low p-2 text-xs"><p>{item.note}</p><p className="text-[10px] text-on-surface-variant mt-1">{new Date(item.created_at).toLocaleString()}</p></div>)}</div>
             <div className="border-t border-outline-variant/40 pt-3 space-y-2"><h4 className="text-sm font-bold">Status history</h4>{history.length===0?<p className="text-xs text-on-surface-variant">No history loaded.</p>:history.map((item)=><div key={item.id} className="flex justify-between gap-2 text-xs"><span>{item.action}: {item.old_status || '—'} → {item.new_status || '—'}</span><span className="text-on-surface-variant">{new Date(item.created_at).toLocaleString()}</span></div>)}</div>
           </Card> : <Card className="p-8 text-sm text-on-surface-variant">Select a job to inspect its submission and private review history.</Card>}
