@@ -638,7 +638,8 @@ export function AddBusiness() {
                 {phone.trim() && <p className="text-sm text-on-surface" dir="ltr">{phone.trim()}{(sameAsPhone ? phone : whatsapp).trim() ? ` · WhatsApp: ${(sameAsPhone ? phone : whatsapp).trim()}` : ''}</p>}
                 {(addressEn.trim() || addressUr.trim()) && <p className="text-xs text-on-surface-variant">{bilingualText(lang, addressEn, addressUr)}</p>}
                 {(landmarkEn.trim() || landmarkUr.trim()) && <p className="text-xs text-on-surface-variant">{lang === 'ur' ? 'قریبی جگہ: ' : 'Near: '}{bilingualText(lang, landmarkEn, landmarkUr)}</p>}
-                {selectedFacilities.length > 0 && <p className="text-xs text-on-surface-variant">{selectedFacilities.join(' · ')}</p>}
+                {selectedFacilities.length > 0 && <p className="text-xs text-on-surface-variant">{selectedFacilities.map((value) => QUICK_FACILITIES.find((item) => item.en === value)?.[lang === 'ur' ? 'ur' : 'en'] ?? value).join(' · ')}</p>}
+                {(description.trim() || descriptionUr.trim()) && <p className="text-xs text-on-surface-variant">{bilingualText(lang, description, descriptionUr)}</p>}
                 {logoFile && <p className="text-[11px] text-on-surface-variant">{lang === 'ur' ? 'لوگو منتخب: ' : 'Logo selected: '}{logoFile.name}</p>}
                 {coverFile && <p className="text-[11px] text-on-surface-variant">{lang === 'ur' ? 'کور تصویر منتخب: ' : 'Cover selected: '}{coverFile.name}</p>}
               </div>
