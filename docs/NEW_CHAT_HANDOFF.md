@@ -1028,6 +1028,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 ## Add Business taxonomy UX follow-up — 25 November 2026
 
+## Owner image-change workflow — 25 November 2026
+
+- Owner Listing Editor now provides logo/cover replacement requests, the combined two-change-per-business Pakistan-month allowance, and recent request statuses. Public images do not change until Admin approves the request.
+- Owner uploads now use signed upload URLs. The Edge Function checks the active owner, business ownership and published status, cover plan eligibility, monthly allowance, image MIME/size and rate limits. The request RPC repeats ownership/quota checks under a row lock and validates actual Storage metadata. Cleanup can remove only the owner's own unregistered upload.
+- Applied migration 10, `owner_signed_upload_only`, dropping the old direct owner INSERT policy on the private bucket. Admin SELECT remains; bucket is still private.
+- Edge Function versions: `create-business-media-upload` v3, `cleanup-business-media-upload` v4, `submit-suggestion` v11, `review-business-media` v3, `manage-owner-registration` v5.
+- Application commit `905065da1b4991143d1aafd010d802daddc345bc`; CI run `45625359267` passed; Pages deployment `95345747-efea-4a20-8743-26c91719efbe` succeeded with canonical alias.
+- No test uploads, requests, objects, invitations or business rows were created. Browser/device QA and real invitation email delivery remain pending. Phase 2 now has 10 applied migrations.
+
 - Added accessible, bilingual text filters above Category and Area selectors. Filtering preserves the current selection, keeps the existing taxonomy IDs/relations intact, and clears filter text when the form resets.
 - The form now always explains what to do if the required category/area is missing and links to the approved Admin WhatsApp number; users are told not to select an incorrect substitute.
 - Application commits: `84703741a53464d94681276ff89842848a15e944`, `58f126f392944f3598257c6e63796cdb1fc2326e`, `ea20723a0791ce79f75e696d228d8eeb9604954c`.
