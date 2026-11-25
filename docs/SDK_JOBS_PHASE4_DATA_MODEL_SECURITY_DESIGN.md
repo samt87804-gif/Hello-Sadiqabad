@@ -85,7 +85,7 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - Eligible owner can submit only against their own published business; new record is pending.
 - Owner cannot set published status, alter owner/business linkage, access Admin notes or write review history.
 - Admin without `sdk_jobs.manage` is denied; explicitly permitted staff and Super Admin can manage; ordinary staff types receive no implicit permission.
-- Anon can read only published public-view fields; direct base-table reads fail.
+- Anon can read only the published public-view fields; no table-level SELECT or private-column grants exist on the base table.
 - Employer/business/owner identifiers and contacts are absent from every public response, page, metadata, structured data, sitemap, search result and offline snapshot.
 - Pending/rejected/unpublished/closed/expired records do not appear as active public jobs.
 - Status transitions and every sensitive Admin action are append-only auditable.
@@ -99,7 +99,7 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Confirmed there is no existing SDK Jobs implementation/table to extend.
 - [x] Inspected owner authentication, owner/business linkage and live `businesses`/`profiles` schema.
 - [x] Inspected Admin permission architecture, `my_permissions()`, `staff_has_permission()`, Admin navigation and live RLS/grants.
-- [x] Inspected the live migration ledger (108 versions) and preserved its existing history.
+- [x] Inspected the live migration ledger (108 prior versions) and preserved its existing history; three SDK Jobs migrations are now applied and recorded (111 total).
 - [x] Inspected exact `areas` schema; it supports active-area FK plus bilingual names and city ID.
 - [x] Inspected staff permission editor (`ALL_PERMISSION_KEYS`), Admin tab permission switch, and all frontend permission-key locations.
 - [x] Inspected Storage buckets and object policies: public bucket is unrestricted at bucket metadata level; existing private pending-business bucket is 5 MiB JPEG/PNG/WebP and its Admin read policy is specific to business moderation.
@@ -111,4 +111,4 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [ ] Implement public listing/detail routes, filters and share metadata.
 - [ ] Add UI-level and adversarial privacy/authorization tests, CI and production browser verification.
 
-**Current gate:** Phase 4 read-only audit and design are complete. All referenced owner, area, permission, RLS/grant and Storage checks are now documented. No application code, migration, RLS, Storage policy or production data has been changed by this audit. The next implementation task is the first additive schema/permission migration, tested against the live schema and rolled back before any production application; preserve the 108-version migration ledger.
+**Current gate:** Phase 4 read-only audit/design and first database foundation are complete. The live migration ledger contains 111 versions (108 prior + 3 SDK Jobs migrations). The migrations add the private job tables, published-only invoker-security projection, dedicated `sdk_jobs.manage`, owner eligibility guard, Admin-only notes/status history, consolidated RLS policies and FK indexes. Transactional tests confirmed eligible owner submissions are forced to the authenticated owner and `pending_review`; pending jobs do not appear in the public projection; cross-owner business submission is denied; test transactions rolled back and live counts remain 0 jobs / 0 history / 0 notes. Security advisor no longer reports a SECURITY DEFINER view; performance advisor no longer reports SDK Jobs unindexed FKs or multiple permissive policies. Existing unrelated advisor findings remain outside this workstream. The permission type and explicit staff permission editor are updated. Owner form, Admin moderation UI, signed poster upload, public routes and browser acceptance remain open.
