@@ -135,3 +135,14 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Rolled-back tests passed for Owner feedback read, resubmission reset, Owner feedback write denial and anon feedback denial.
 
 **Final CI evidence:** [45711210914](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711210914) passed both build and Edge Function jobs for commit `2e50c3d6972682c70f2bbf0934a49ae1df3d5c8d`.
+
+
+## Final social preview and Owner feedback additions — 26 November 2026
+
+- [x] Owner-visible `owner_feedback` column migration `20261125221201` is live. Authenticated Owner/Admin can read it; Admin writes; Owner cannot alter it; anon has no grant; public view excludes it.
+- [x] Owner can edit/resubmit draft and changes-requested jobs. Trigger resets to pending review and clears feedback. Published-job editing stays disabled pending a version-preservation design.
+- [x] Added Cloudflare Pages social preview routes for SDK Jobs listing/detail. Detail lookup uses only the published public view and emits privacy-safe Open Graph/Twitter metadata, canonical URL and JobPosting JSON-LD with confidential employer identity.
+- [x] Added Node tests for social metadata privacy, no-record 404/noindex, crawler pass-through and listing metadata. CI now syntax-checks both new Pages Functions.
+- [x] Rolled-back DB tests passed for feedback read/write, resubmission reset and anon denial. Live SDK Jobs/history/notes counts remain zero.
+- [ ] Final CI run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724) queued/pending at this update.
+- [ ] Authenticated browser acceptance and production Pages deployment.
