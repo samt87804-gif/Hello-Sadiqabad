@@ -284,3 +284,20 @@ When the owner says **“GitHub repo mein plan parh lo”**:
 3. Check current GitHub `main`, migrations and CI/deployment status; do not assume this plan is already implemented.
 4. Identify the next incomplete phase and its blockers.
 5. Start only the next safe, approved phase. Give concise Roman Urdu updates and report evidence honestly.
+
+
+---
+
+## Phase 0 audit checkpoint — 25 November 2026
+
+Read-only audit and design are recorded in [`docs/FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md`](FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md).
+
+- Audited current `main` at `a310577362fde1d5ce15ecc1fed507cf0a72d668`, repository rules, roadmap, handoff, all approved child plans, deployment instructions and existing Government Jobs/Schemes/Owner implementation.
+- Inspected live Supabase project state, public table RLS, relevant policies, Storage bucket/policies, migration ledger, Edge Functions and Security/Performance/Health Advisors.
+- Confirmed current Admin performance causes in source: 19-request all-tabs reload, large eager Admin manager imports, unbounded business list rendering and repeated Data Quality category scans. Recorded a database-only business-list query baseline (697 rows; 5.347 ms execution) and clearly marked authenticated browser timing as still outstanding.
+- Confirmed the existing Storage bucket is public; pending media requires a separate private bucket, not a folder in the current bucket.
+- Confirmed current Owner Registration invitation does not associate the invited owner with the approved business; this must be addressed with an audited, idempotent server-side workflow.
+- Confirmed repository/live migration drift (74 repository migration files vs 95 live ledger versions); no migration was applied and the baseline must not be replayed.
+- No code, schema, data, Storage objects, Auth settings or deployment configuration changed during Phase 0.
+
+**Disposition:** Phase 0 source/schema/security audit and additive design are complete. Real authenticated desktop/browser performance timings remain an explicit Phase 1 baseline/acceptance item; no millisecond UI claims are made. Proceed to Phase 1 only with this limitation kept visible, and do not mark Phase 1 accepted until desktop/mobile before-and-after traces and functional tests exist.
