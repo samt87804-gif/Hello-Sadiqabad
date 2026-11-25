@@ -172,3 +172,19 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Rolled-back DB tests passed: Owner can read Admin feedback; Owner resubmission returns to pending review and clears feedback; Owner cannot change the feedback; anon cannot read the column. All test rows rolled back.
 
 **Final UI/Edge CI confirmation:** run [45711210914](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711210914) completed successfully (build + Edge Functions) on commit `2e50c3d6972682c70f2bbf0934a49ae1df3d5c8d`. This includes the Owner correction/resubmission UI and owner-visible feedback.
+
+
+## Social previews, Owner correction loop and final automated checks — 26 November 2026
+
+- [x] Added Cloudflare Pages social-preview handlers for `/sdk-jobs` and `/sdk-jobs/:slug`; detail crawler metadata reads only the published `sdk_jobs_public` projection, includes approved poster/canonical URL/JobPosting JSON-LD, and uses a generic confidential employer label. No owner/business IDs, contacts, feedback or pending-media paths are selected.
+- [x] Added Node tests in `scripts/sdk-job-social-preview.test.mjs` for public-projection field allowlisting, employer-data absence, missing/unpublished job 404/noindex, non-crawler pass-through and listing metadata.
+- [x] Added CI Node syntax checks for both SDK Jobs Cloudflare Pages Functions and included the social-preview tests in `npm test`.
+- [x] Added Owner-visible moderation feedback in migration `20261125221201_sdk_jobs_owner_visible_feedback`; private Admin notes remain separate. Owner can read feedback but cannot alter it; anon cannot read the column and public view excludes it.
+- [x] Added Owner edit/resubmit for draft and changes-requested jobs. The DB trigger returns resubmissions to pending review and clears old feedback. Published-job editing remains disabled until a public-version preservation design is approved.
+- [x] Rolled-back DB tests passed for Owner feedback visibility, Owner feedback write denial, feedback clearing on resubmission and anon feedback denial.
+- [x] Latest live counts after rollback: 0 SDK Jobs, 0 status-history rows, 0 Admin notes; 4 eligible active Owner-to-published-business links exist for future authorized browser acceptance.
+- [ ] Final CI for the latest social-preview/test commit is queued as run [45711961724](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711961724); recheck its conclusion before release.
+- [ ] Authenticated Owner/Admin browser upload, preview, correction/resubmission, approve and publish acceptance.
+- [ ] Production Pages deployment and live public route/sitemap/social-crawler smoke tests.
+
+**Release gate remains closed:** Do not deploy Pages or claim the feature production-released until latest CI passes and authenticated Owner/Admin browser acceptance is completed.
