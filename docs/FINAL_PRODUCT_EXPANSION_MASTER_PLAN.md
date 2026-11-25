@@ -206,9 +206,10 @@ No online CV upload is required in the initial release. Candidate personal data 
 
 Each card has bilingual title/short description, suitable existing/verified icon or image, and navigates to its existing directory route. Do not duplicate authority data or build replacement directories. Inspect exact existing routes and data sources before linking.
 
-**Mobile bottom navigation final order/intent:**
+**Mobile bottom navigation final order/intent (owner correction, 26 November 2026):**
 - Home
 - Search
+- News (preserve existing `/news` shortcut)
 - Gov
 - SDK Jobs
 - Saved/Favorites
@@ -552,9 +553,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Owner explicitly confirmed that they personally reviewed and tested every SDK Jobs Phase 4 acceptance checklist item in Sections 1–8 and all passed. The checklist is checked on that owner-confirmation basis; no repeat testing is requested.
 - The latest recorded SDK Jobs code CI before the Gov UI work passed run [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357). The new Gov landing/navigation changes passed CI run [45714887257](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45714887257); Cloudflare Pages deployment `cf208161-c3da-4116-a0bc-f3eb2a983cfb` succeeded for commit `c766470a26a0325d1bc6c21d2bce65255184d06f`.
 - SDK Jobs production Pages deployment is complete; post-deployment Owner/Admin/public/sitemap/social-preview smoke checks remain open.
-- Approved 4.5 implementation started: bilingual `/gov` landing with four existing-directory cards; mobile bottom navigation is reduced to Home, Search, Gov, SDK Jobs and Saved; Emergency page and Home Emergency card are preserved. Desktop Civic Services menu now links to the Gov landing while retaining the existing directory links.
+- Approved 4.5 implementation started: bilingual `/gov` landing with four existing-directory cards; mobile bottom navigation is Home, Search, News, Gov, SDK Jobs and Saved; the existing News shortcut is explicitly preserved at the owner's correction. Emergency page and Home Emergency card are preserved. Desktop Civic Services menu now links to the Gov landing while retaining the existing directory links.
 - Gov landing is included in the public route index, analytics allowlist (using the existing `static` analytics page type, avoiding a database migration) and sitemap. No authority records or database schema/data were changed.
-- Gov CI and production deployment passed. `/gov` returned HTTP 200 with expected title/canonical metadata in a 390×844 rendered browser session; the five-item mobile bottom nav was confirmed in the rendered DOM. Full Gov card/deep-link, Urdu RTL and Emergency regression acceptance remains pending. SDK Jobs Phase 5 candidate intake/PII/referral operations remain a separate, not-yet-implemented scope.
+- Gov CI and production deployment passed. `/gov` returned HTTP 200 with expected title/canonical metadata in a 390×844 rendered browser session; the earlier five-item mobile bottom nav was confirmed in the rendered DOM; owner subsequently requested that News be retained as a sixth item, and that correction is now committed for a new CI/deployment cycle. Full Gov card/deep-link, Urdu RTL and Emergency regression acceptance remains pending. SDK Jobs Phase 5 candidate intake/PII/referral operations remain a separate, not-yet-implemented scope.
 
 
 ### Phase 5 design checkpoint — 26 November 2026
