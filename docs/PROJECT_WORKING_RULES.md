@@ -1,6 +1,6 @@
 # Hello Sadiqabad — Permanent Project Working Rules
 
-Last owner-confirmed: 17 November 2026. These rules apply to every future AI-assisted change unless the owner explicitly changes them.
+Last owner-confirmed: 25 November 2026. These rules apply to every future AI-assisted change unless the owner explicitly changes them.
 
 ## Source of truth
 
