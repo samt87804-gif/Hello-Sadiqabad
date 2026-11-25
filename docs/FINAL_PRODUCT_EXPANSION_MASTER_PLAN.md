@@ -47,6 +47,15 @@ This document records requirements and implementation gates. It does not authori
 
 ## 4. Approved workstream decisions
 
+**Owner-confirmed acceptance update — 26 November 2026:** The owner has explicitly confirmed that all testing for workstreams 4.1, 4.2 and 4.3 is complete and working correctly. Treat these three workstreams and implementation Phases 1–3 as owner-tested/accepted; do not ask the owner to repeat those tests. If a later regression is reported, investigate that specific issue. This confirmation is owner-provided acceptance, distinct from CI/deployment evidence recorded below.
+
+- [x] 4.1 Admin Business and Data Quality performance — owner confirms tests passed.
+- [x] 4.2 Public Add Business and owner onboarding — owner confirms tests passed.
+- [x] 4.3 Government Jobs and Government Schemes — owner confirms tests passed.
+- [ ] 4.4 SDK Jobs — next workstream; now in Phase 4.
+- [ ] 4.5 Gov landing page and mobile navigation — follows Phase 4/5.
+
+
 ### 4.1 Admin Business and Data Quality performance
 
 **Problem:** Admin Business and Data Quality pages hang or become very slow, especially on desktop. Clicks and interactions respond late.
@@ -201,26 +210,31 @@ Phases are ordered for dependency and risk. The owner has approved this plan, bu
 - **Gate:** all current code/data dependencies and migration strategy documented; no unresolved security boundary.
 
 ### Phase 1 — Admin performance
+- [x] Owner confirms all Phase 1 testing and acceptance checks passed (26 November 2026).
 - Optimize Business and Data Quality loading and interactions.
 - Verify before/after metrics and functional parity.
-- **Gate:** desktop and mobile acceptance plus tests.
+- **Gate:** owner-confirmed desktop/mobile and functional acceptance.
 
 ### Phase 2 — Add Business field approval and secure owner invitation
+- [x] Owner confirms all Phase 2 testing and acceptance checks passed (26 November 2026).
 - Form redesign, taxonomy search/help, bilingual details, hours, map URL, facilities and media submission.
 - Field-level moderation and safe public projection.
 - Private pending media, approved publication and two-change monthly owner quota.
 - Secure Admin-triggered Supabase invitation; owner sets password.
-- **Gate:** end-to-end security/RLS/Storage tests, invitation/rollback tests, public privacy tests and mobile form QA.
+- **Gate:** owner-confirmed end-to-end, security/RLS/Storage, invitation/rollback, public privacy and mobile form acceptance.
 
 ### Phase 3 — Government bilingual content and media
+- [x] Owner confirms all Phase 3 testing and acceptance checks passed (26 November 2026).
 - Extend Jobs/Schemes records and Admin forms with bilingual content completeness.
 - Admin poster upload and publication gate requiring image.
 - Canonical share URLs and social previews.
-- **Gate:** official facts intact, RLS and media privacy verified, link previews checked.
+- **Gate:** owner-confirmed official-content, RLS/media privacy and share-preview acceptance.
 
 ### Phase 4 — SDK Jobs data, moderation and public board
-- Additive schema, dedicated permission, owner eligibility checks, owner submission form, Admin moderation and public routes.
-- Candidate contact CTA and employer anonymity tests.
+- [x] Current-main and live schema/permission/RLS audit completed; no existing SDK Jobs table or route found.
+- [x] Phase 4 data-boundary/security design documented in `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`.
+- [ ] Additive schema, dedicated permission, owner eligibility checks, owner submission form, Admin moderation and public routes.
+- [ ] Candidate contact CTA and employer anonymity tests.
 - **Gate:** unauthorised owner cannot submit; no unapproved job public; no employer identity leakage.
 
 ### Phase 5 — SDK Jobs recruitment operations
@@ -475,3 +489,14 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Storage object metadata confirms both files are WebP: logo 9,064 bytes and cover 34,118 bytes (42.2 KiB combined). This confirms browser-side compression was applied before Storage upload.
 - Live total remains 4 pending new-business submissions, 39 pending field-review rows across 4 submissions and 2 pending media assets. No record was approved, rejected, deleted or modified.
 - Public form submission and image compression are now production-verified. Remaining Phase 2 gate is authenticated Admin visual review/approval, public listing/image rendering after approval, and owner invitation email/redirect. Phase 1 Admin Business/Data Quality performance acceptance remains first incomplete expansion phase.
+
+
+## Owner acceptance and SDK Jobs Phase 4 kickoff — 26 November 2026
+
+- Owner explicitly confirms that all tests for workstreams 4.1–4.3 (Government Jobs and Government Schemes included) have passed. Master workstreams 4.1–4.3 and implementation Phases 1–3 are checked as owner-accepted; this is owner-provided acceptance, distinct from CI/deployment evidence.
+- Next approved workstream is 4.4 SDK Jobs. The Phase 4 read-only audit confirmed no SDK Jobs table, route, owner submission UI, Admin manager or Edge Function currently exists.
+- Live Supabase migration ledger has 108 applied versions. Current owner relationship is `businesses.owner_id`; eligibility must check active `profiles.role='owner'`, `profiles.is_active`, and a published business owned by `auth.uid()`.
+- New privileged Admin capability must use dedicated `sdk_jobs.manage`, explicitly wired through TypeScript permission keys, staff permission editor, Admin navigation/tab, `public.my_permissions()` and database/RLS checks. No broad staff-type default grant.
+- Public access must use a strict published-only safe projection; base job rows and employer linkage remain private. Candidate intake/PII is Phase 5 only, after a retention/deletion policy is defined.
+- Phase 4 audit/design document added at `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md` (commit `0cfc29f801385f117bbef0aa55e01b86ce481e6f`). No application code, production schema, RLS, Storage policy or existing data was changed in this audit.
+- Current status: Phase 4 started; next implementation step is to finish exact areas/staff-permission/Storage checks, then prepare and test the first additive schema + permission migration.
