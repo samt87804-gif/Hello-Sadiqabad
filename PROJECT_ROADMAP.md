@@ -925,6 +925,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Owner approved Option 2: unsupported or unavailable public images must not block saving an otherwise valid offline public-data package.
 - [x] Updated `/offline-data` so the public IndexedDB snapshot can be saved when some images fail or use unsupported hosts; completion reports cached and skipped image counts and warns that skipped images may not appear offline.
 - [x] Added a regression test covering one successfully cached image, one unsupported host and one unavailable image response.
-- [ ] GitHub CI, production deployment and production browser verification for this change.
-- [ ] Download a fresh package and verify public routes/content plus missing-image warnings in airplane mode on browser/device.
-- **Status:** partial-image policy implemented in source; overall offline Phase 1–4 acceptance remains open. Existing verified package preservation on core-data failure/cancellation remains required.
+- [x] GitHub CI run 45668460310 passed TypeScript, tests, production build and Edge Function checks.
+- [x] Cloudflare Pages production deployment b162f9ca-f575-445f-aeb6-14711b7ff30c succeeded for commit f5289c6c91ea06680252f22dae2decde615605ce with the canonical alias.
+- [x] Production browser download saved 748 businesses, 29 categories, 315 areas and 12 emergency contacts; 953 images cached and 235 unavailable/unsupported images warned without blocking.
+- [x] Offline-emulation smoke at 390×844 verified homepage, categories, emergency contacts and a business detail from the saved snapshot with navigator.onLine=false; no page errors.
+- [ ] Physical-device airplane-mode testing and Service Worker update/rollback acceptance remain open.
+- **Status:** Option 2 is implemented, CI-passed, deployed and browser-emulation tested. Overall offline Phase 1–4 acceptance remains open. Existing verified package preservation on core-data failure/cancellation remains required.
