@@ -1082,7 +1082,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Public Category and Area controls now use compact searchable listboxes with internal scrolling (14rem maximum height), not native full-screen select pickers.
 - Public logo/cover images are resized and WebP-compressed client-side before the existing secure signed upload. Logo cap 640px; cover cap 1800px; quality 0.84 with 0.72 retry for larger outputs. Original is retained if browser encoding is unavailable or output would be larger. Existing upload authorization, 5 MB input limit, private pending bucket and cleanup flow remain in place.
 - Main commit `3c2c45895d24e7ffaef8ae929b4703da456873da`; CI `45658737972` passed; Playwright mobile/desktop public form smoke `45658737929` passed; Cloudflare production deployment `db7b67c2-29a0-4f2a-bf86-fcda74fdb2e1` succeeded with canonical alias `https://hellosadiqabad.com`.
-- Owner manual checks still requested: dropdown containment and bilingual search on a real phone/desktop browser; confirm image upload when submitting a genuine business. No dummy production business should be created.
+- Owner confirmed all requested Add Business manual tests passed (dropdowns and image-upload checks). No dummy production business was created.
 
 
 ## Government Jobs / Schemes Phase 3 checkpoint — 25 November 2026
