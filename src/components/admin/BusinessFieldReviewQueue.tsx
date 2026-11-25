@@ -23,7 +23,6 @@ interface BusinessMedia {
   status: FieldStatus;
   created_at: string;
   preview_url?: string;
-  plan_code: string | null;
 }
 interface BusinessSubmission {
   id: string;
@@ -82,21 +81,10 @@ export function BusinessFieldReviewQueue() {
         .in('status', ['pending_review', 'approved_published', 'unpublished'])
         .order('created_at', { ascending: false }).limit(100);
       if (mediaError) throw mediaError;
-      const mediaBusinessIds = [...new Set((mediaRows ?? [])
-        .map((asset) => asset.business_id).filter((id): id is string => Boolean(id)))];
-      const { data: mediaBusinesses, error: mediaBusinessError } = mediaBusinessIds.length
-        ? await client.from('businesses').select('id,plan_code').in('id', mediaBusinessIds)
-        : { data: [], error: null };
-      if (mediaBusinessError) throw mediaBusinessError;
-      const planByBusiness = new Map((mediaBusinesses ?? []).map((business) => [business.id, business.plan_code]));
       const mediaWithPreviews = await Promise.all((mediaRows ?? []).map(async (asset) => {
         const { data: signed } = await client.storage.from('hs-pending-business-media')
           .createSignedUrl(asset.storage_path, 900);
-        return {
-          ...asset,
-          plan_code: asset.business_id ? planByBusiness.get(asset.business_id) ?? null : null,
-          preview_url: signed?.signedUrl,
-        } as BusinessMedia;
+        return { ...asset, preview_url: signed?.signedUrl } as BusinessMedia;
       }));
       setSubmissions((rows ?? []) as BusinessSubmission[]);
       setFields((reviewRows ?? []) as FieldReview[]);
@@ -168,7 +156,6 @@ export function BusinessFieldReviewQueue() {
             {media.map((asset) => {
               const busy = busyKey === 'media:' + asset.id;
               const canPublish = Boolean(asset.business_id || submissions.some((item) => item.id === asset.submission_id && item.business_id));
-              const coverPlanAllowed = asset.media_field !== 'cover' || asset.plan_code === 'basic' || asset.plan_code === 'premium';
               return (
                 <Card key={asset.id} className="p-4 space-y-3">
                   {asset.preview_url ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Pending business logo' : 'Pending business cover'} className="w-full h-40 object-contain rounded-xl bg-surface-container-low" /> : <div className="h-40 rounded-xl bg-surface-container-low flex items-center justify-center text-xs text-on-surface-variant">Private image preview unavailable</div>}
@@ -177,12 +164,11 @@ export function BusinessFieldReviewQueue() {
                     <span className="text-[10px] text-on-surface-variant">{new Date(asset.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button size="sm" loading={busy} disabled={Boolean(busyKey) || !canPublish || !coverPlanAllowed} onClick={() => void reviewMedia(asset.id, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve &amp; Publish</Button>
+                    <Button size="sm" loading={busy} disabled={Boolean(busyKey) || !canPublish} onClick={() => void reviewMedia(asset.id, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve &amp; Publish</Button>
                     <Button size="sm" variant="danger" disabled={Boolean(busyKey)} onClick={() => void reviewMedia(asset.id, 'rejected')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
                     {asset.status === 'approved_published' && <Button size="sm" variant="outline" disabled={Boolean(busyKey)} onClick={() => void reviewMedia(asset.id, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>}
                   </div>
                   {!canPublish && <p className="text-[11px] text-on-surface-variant">Approve required business fields before publishing this image.</p>}
-                  {canPublish && !coverPlanAllowed && <p className="text-[11px] text-on-surface-variant">Upgrade this business to Basic or Premium before publishing a cover image.</p>}
                 </Card>
               );
             })}
