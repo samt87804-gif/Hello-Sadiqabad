@@ -116,6 +116,10 @@ export function AppHeader() {
             </button>
             {civicMenuOpen && (
               <div className="absolute end-0 top-full mt-2 w-64 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-2 shadow-xl z-50">
+                <NavLink to="/gov" onClick={() => setCivicMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-on-surface hover:bg-surface-container-low">
+                  <Landmark className="w-5 h-5 text-primary" />
+                  <span><span className="block">{lang === 'ur' ? 'سرکاری خدمات' : 'Gov services'}</span><span className="block text-[11px] font-normal text-on-surface-variant">Jobs, schemes & civic directories</span></span>
+                </NavLink>
                 <NavLink to="/local-authorities" onClick={() => setCivicMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-on-surface hover:bg-surface-container-low">
                   <Landmark className="w-5 h-5 text-primary" />
                   <span><span className="block">Local Authorities</span><span className="block text-[11px] font-normal text-on-surface-variant">Government offices & public contacts</span></span>
