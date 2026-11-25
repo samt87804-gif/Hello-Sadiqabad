@@ -979,7 +979,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Confirmed current `main` has no SDK Jobs table, route, owner submission UI, Admin manager or Edge Function; Government Jobs remains a separate feature.
 - [x] Inspected live owner eligibility fields (`profiles.role`, `profiles.is_active`, `businesses.owner_id`, `businesses.status`), current Admin permission architecture, relevant RLS/grants and 108-version migration ledger.
 - [x] Added `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md` with public/private data boundary, server-side owner eligibility, dedicated `sdk_jobs.manage`, audit history and media privacy requirements.
-- [x] Complete exact `areas` schema, staff permission editor/Admin tab gates and Storage constraints inspection; findings are recorded in the SDK Jobs Phase 4 design.
-- [ ] Implement and test owner job submission, Admin moderation and published-only employer-anonymous public board.
-- [ ] Complete privacy/authorization regression tests, CI and production deployment checks.
+- [x] Completed exact `areas` schema, staff permission editor/Admin tab gates and Storage constraints inspection.
+- [x] Applied additive migrations `20261125210353`, `20261125210439` and `20261125210610`: SDK Jobs tables, owner eligibility enforcement, Admin-only notes/status history, published-only invoker-security projection, dedicated permission, consolidated RLS policies and FK indexes.
+- [x] Transactional owner insert test passed: identity forced from `auth.uid()`, requested `published` status forced to `pending_review`, no public visibility; test rolled back. Live job/history/note row counts remain zero.
+- [x] Security advisor no longer reports a SECURITY DEFINER view; performance advisor no longer reports SDK Jobs unindexed FKs or multiple permissive policies.
+- [ ] Implement and test owner job submission UI, signed private poster upload, Admin moderation and public employer-anonymous board.
+- [ ] Complete UI/adversarial privacy regression tests, CI and production browser verification.
 - No production schema, RLS, Storage, business/owner records or other existing data was changed during this audit.
