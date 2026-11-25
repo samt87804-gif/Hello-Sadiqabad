@@ -226,3 +226,9 @@ The source-level findings above were an earlier audit snapshot and are not all a
 - Main commit `ce1b6788c3beafab864cf577c3b046beca64a49a`; [CI run 45639985225](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45639985225) passed; Cloudflare Pages deployment `81b032d7-64e1-45c1-a63c-1a46c60a8580` succeeded with canonical alias.
 
 **Phase 1 remains in progress / not accepted.** No authenticated Admin browser or physical-device performance trace was captured here, so there are no before/after milliseconds to report. The next safe acceptance step is a real signed-in Admin desktop/mobile trace of Business and Data Quality cold-load, warm tab-switch, first interaction, search/filter, page navigation and edit/review response, with permission/error regression checks. Do not invent timings or mark Phase 1 complete.
+
+### Admin field-review queue follow-up — 25 November 2026
+
+- Business Field Review loads the review ledger and media rows concurrently, signs private image previews in one batch Storage request, groups fields by submission in one pass, and renders at most 20 image cards and 20 submission cards per page.
+- Main commit `6c237bf8b40bd93f9367cec0f126edf55d2e10c4`; CI `45640942909` passed; Pages deployment `0ab58777-c70e-4b76-a808-53af57e2a3f1` succeeded.
+- These source/build/deployment checks do not replace authenticated Admin timing or click-through acceptance.
