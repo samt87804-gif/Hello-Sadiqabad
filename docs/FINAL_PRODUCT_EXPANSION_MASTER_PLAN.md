@@ -70,8 +70,8 @@ The former [ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](ADD_BUSINESS_OWNER_APPROVAL_PLA
 - [x] 4.1 Admin Business and Data Quality performance — owner confirms tests passed.
 - [x] 4.2 Public Add Business and owner onboarding — owner confirms tests passed.
 - [x] 4.3 Government Jobs and Government Schemes — owner confirms tests passed.
-- [ ] 4.4 SDK Jobs — next workstream; now in Phase 4.
-- [ ] 4.5 Gov landing page and mobile navigation — follows Phase 4/5.
+- [~] 4.4 SDK Jobs — implementation and all owner acceptance testing confirmed; production Pages deployment/smoke gate pending.
+- [~] 4.5 Gov landing page and mobile navigation — implementation underway on `main`; CI and production/browser acceptance pending.
 
 
 ### 4.1 Admin Business and Data Quality performance
@@ -256,11 +256,13 @@ Phases are ordered for dependency and risk. The owner has approved this plan, bu
 - [x] Current-main and live schema/permission/RLS audit completed; no prior SDK Jobs table or route existed.
 - [x] Phase 4 data-boundary/security design documented in `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`.
 - [x] Additive SDK Jobs tables, dedicated `sdk_jobs.manage`, owner eligibility trigger, private Admin notes, status history and public projection applied through migrations `20261125210353`, `20261125210439` and `20261125210610`.
-- [ ] Owner job-submission UI and signed private poster upload.
-- [ ] Permission-gated Admin moderation UI and workflow actions.
-- [ ] Public SDK Jobs listing/detail routes, search/filters and share metadata.
-- [ ] Candidate WhatsApp CTA and employer anonymity tests.
-- **Gate:** unauthorised owner cannot submit; no unapproved job public; no employer identity leakage.
+- [x] Owner job-submission UI and signed private poster upload.
+- [x] Permission-gated Admin moderation UI and workflow actions.
+- [x] Public SDK Jobs listing/detail routes, search/filters and share metadata.
+- [x] Candidate WhatsApp CTA and employer anonymity checks, including the privacy-safe public projection and social preview.
+- [x] Owner explicitly confirmed all Sections 1–8 of `docs/SDK_JOBS_PHASE4_ACCEPTANCE_CHECKLIST.md` passed on 26 November 2026.
+- [ ] Production Pages deployment and post-deployment route/sitemap/social-preview smoke checks.
+- **Gate:** owner acceptance is complete; production release evidence remains pending.
 
 ### Phase 5 — SDK Jobs recruitment operations
 - Candidate intake, private records, interview/suitability tracking, referrals, referral letter, fee ledger and Admin settings.
@@ -541,3 +543,13 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 **SDK Jobs additional checkpoint — 26 November 2026:** Added Owner-visible correction feedback and controlled draft/changes-requested resubmission (published-job editing remains disabled pending version preservation). Added Cloudflare Pages list/detail social previews using only the published public view, with privacy-safe Open Graph/Twitter metadata and JobPosting JSON-LD. Added Node privacy tests and CI syntax checks for both Pages Functions. Live SDK Jobs/history/Admin-note counts remain zero; four active eligible Owner-to-published-business links exist. Latest CI [45712577454](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712577454) passed TypeScript, tests, production build, Node syntax checks and Supabase Edge Function checks. Authenticated browser acceptance and Pages deployment remain mandatory release gates.
 
+
+
+### Owner acceptance and Gov workstream continuation — 26 November 2026
+
+- Owner explicitly confirmed that they personally reviewed and tested every SDK Jobs Phase 4 acceptance checklist item in Sections 1–8 and all passed. The checklist is checked on that owner-confirmation basis; no repeat testing is requested.
+- The latest recorded SDK Jobs code CI before the Gov UI work passed run [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357). The new Gov landing/navigation changes have their own CI run pending.
+- SDK Jobs production Pages deployment and post-deployment Owner/Admin/public/sitemap smoke checks remain release gates; do not describe SDK Jobs as production-released until those checks pass.
+- Approved 4.5 implementation started: bilingual `/gov` landing with four existing-directory cards; mobile bottom navigation is reduced to Home, Search, Gov, SDK Jobs and Saved; Emergency page and Home Emergency card are preserved. Desktop Civic Services menu now links to the Gov landing while retaining the existing directory links.
+- Gov landing is included in the public route index, analytics allowlist (using the existing `static` analytics page type, avoiding a database migration) and sitemap. No authority records or database schema/data were changed.
+- Gov CI, production deployment and browser/deep-link/mobile acceptance remain pending. SDK Jobs Phase 5 candidate intake/PII/referral operations remain a separate, not-yet-implemented scope.
