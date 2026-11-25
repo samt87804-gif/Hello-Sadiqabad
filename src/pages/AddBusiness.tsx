@@ -93,9 +93,14 @@ export function AddBusiness() {
   }, [sameAsPhone, phone]);
 
   const toggleFacility = (fac: string) => {
-    setSelectedFacilities((prev) =>
-      prev.includes(fac) ? prev.filter((item) => item !== fac) : [...prev, fac]
-    );
+    setSelectedFacilities((prev) => {
+      if (prev.includes(fac)) return prev.filter((item) => item !== fac);
+      if (prev.length >= 2) {
+        showToast(lang === 'ur' ? 'زیادہ سے زیادہ 2 سہولیات منتخب کر سکتے ہیں۔' : 'You can select up to 2 facilities.', 'error');
+        return prev;
+      }
+      return [...prev, fac];
+    });
   };
 
   const resetForm = () => {
@@ -485,7 +490,7 @@ export function AddBusiness() {
 
               <div className="space-y-2">
                 <span className="text-xs font-semibold text-on-surface block">
-                  {lang === 'ur' ? 'دستیاب سہولیات (اختیاری)' : 'Available Facilities (optional)'}
+                  {lang === 'ur' ? 'دستیاب سہولیات (زیادہ سے زیادہ 2، اختیاری)' : 'Available Facilities (optional, up to 2)'}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {QUICK_FACILITIES.map((fac) => {
