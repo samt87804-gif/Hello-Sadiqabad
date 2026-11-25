@@ -950,3 +950,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Business Field Review navigation now shows the pending-submission count.
 - [ ] Latest CI and public-form browser smoke are running for commit `c147cf4a7033a1601b6a52551a178bee435ec39c`; do not mark this hotfix production-accepted until both pass, deployment succeeds, and one owner-observed submission with media completes.
 - [ ] Verify the existing 3 pending submissions remain visible in Business Field Review and new submissions appear there after the fix. No existing submission, owner request, business or media data was deleted or modified by this code change.
+
+
+### Production reconciliation — 26 November 2026
+
+- [x] Add Business upload-session fix is on `main`; `submitPublicSuggestion()` now preserves the one-time upload session used to authorize signed media paths.
+- [x] Edge Function non-2xx responses now surface the server's JSON error/message where available; the upload session rotates after successful form reset.
+- [x] Moderation Queue displays the pending new-business count and directs reviewers to Business Field Review; Business Field Review navigation displays the pending count.
+- [x] Public Add Business browser smoke run [45681520762](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45681520762) passed. Latest main CI [45681595223](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45681595223) passed build, typecheck, tests, dependency gate and Edge Function checks.
+- [x] Cloudflare Pages deployment `b6c15c02-79fc-44de-b8df-eaca3998ced6` succeeded for main commit `3bb24fa1f97e21896fdf91092132aa21593eb5f6` with canonical alias `https://hellosadiqabad.com`.
+- [x] Read-only live check: 4 pending new-business submissions map to 39 pending field-review rows; 2 pending media assets are present. This replaces the earlier snapshot of 3 pending submissions. No production records were changed.
+- [ ] Authenticated Business Field Review/media approval and owner invitation email/redirect roundtrip remain pending; do not approve/reject live records solely for testing.
+- [ ] Phase 1 Admin performance acceptance remains open: Businesses page and 50-row pagination were owner-confirmed working; Data Quality, authenticated desktop timings, mobile checks and permission/error regression evidence remain outstanding.
