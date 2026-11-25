@@ -92,3 +92,10 @@ A fresh `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` comparison was run against the
 - Estimated row-width reduction: approximately **47%**.
 - Both queries returned 697 rows. The observed execution times in this pair were not treated as a valid before/after speed comparison because cache state differed; no UI or database speed percentage is claimed.
 - This is SQL planner evidence only. Network payload and authenticated browser timings remain outstanding.
+
+
+## Current-main continuation audit — 25 November 2026
+
+- [x] Re-read the current `main` Admin implementation and compared it with the existing Phase 1 optimization checkpoint. The current source retains lazy Admin manager imports, active-tab/permission-gated loading, explicit business-list projection, 50-item Business/Data Quality pagination, one-pass Data Quality counts and 30-second in-memory data reuse.
+- [x] Reconfirmed that the current child-action reload path can force fresh reads and failed refreshes remain retryable; no database, RLS, permission or Admin data changes were made in this audit.
+- [ ] Authenticated Admin desktop cold/warm timings, click-to-response traces, mobile smoke and permission/error/action regression acceptance remain open. No authenticated Admin session was available in this browser test, so Phase 1 is still **in progress / not accepted**.
