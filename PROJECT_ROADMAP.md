@@ -743,7 +743,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [~] Phase 1 Admin Business and Data Quality performance optimization — initial code changes implemented and deployed; final acceptance pending authenticated desktop/browser metrics and mobile interaction QA.
   - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
-- [x] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — additive schema migrations and app/Edge Function workflow are deployed to the existing production project; authenticated browser acceptance remains pending.
+- [~] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — additive schema migrations and app/Edge Function workflow are deployed to the existing production project; authenticated browser acceptance remains pending.
 - [ ] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — existing MVPs remain in place; expansion not implemented.
 - [ ] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — not implemented.
 - [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented.
