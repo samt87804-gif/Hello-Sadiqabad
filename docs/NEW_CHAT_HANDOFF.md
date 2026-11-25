@@ -1050,3 +1050,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - The form now has separate English/Urdu descriptions, server-side `description_ur` length validation, a public-field-only live preview, and a required bilingual consent checkbox. Owner name/Gmail are excluded from the preview.
 - Searchable Category/Area controls and always-visible missing-taxonomy instructions are in place. File inputs reset after selection to support retrying the same file.
 - Latest application commit `cc6c7ebcbd31ca2660cc7a470baf50bf13751008`; CI run `45625706344` passed; Cloudflare Pages deployment `9c109325-f411-44f0-8183-8d40c940ff70` succeeded.
+
+## Public Add Business browser QA — 25 November 2026
+
+- Playwright smoke test against production passed on mobile 390×844 and desktop 1365×900. It verified loaded Category/Area options, no first-option preselection, taxonomy search retaining selected values, preview content and owner-email privacy, required unchecked consent, logo file preview and same-file reselection, and no horizontal overflow.
+- Workflow run `45627086704` passed; main CI run `45627086518` passed; Pages deployment `15c9b434-bc45-495b-814f-a00fe391cbf0` succeeded with the canonical alias.
+- Remaining acceptance: authenticated Admin/Owner Portal browser QA, real owner image upload and Admin approval roundtrip, and real invitation email/redirect verification.
