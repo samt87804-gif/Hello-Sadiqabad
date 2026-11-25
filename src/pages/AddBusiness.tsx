@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, PlusCircle, Sparkles } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ImagePlus, MapPin, PlusCircle, Search, Sparkles, Tag, UploadCloud } from 'lucide-react';
 import { fetchAllAreas, fetchAllCategories, submitPublicSuggestion } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { bilingualText, isSafeGoogleMapsUrl } from '../lib/format';
@@ -28,6 +28,63 @@ const QUICK_FACILITIES = [
   { en: 'Car Parking', ur: 'کار پارکنگ' },
   { en: 'Card Accepted', ur: 'کارڈ قبول ہے' },
 ];
+
+function ImageUploadCard({
+  id,
+  title,
+  subtitle,
+  file,
+  onChange,
+  lang,
+}: {
+  id: string;
+  title: string;
+  subtitle: string;
+  file: File | null;
+  onChange: (file: File | null) => void;
+  lang: 'en' | 'ur';
+}) {
+  return (
+    <div className="group relative min-w-0 overflow-hidden rounded-2xl border border-dashed border-outline-variant bg-gradient-to-br from-surface-container-low via-surface-container-lowest to-surface-container-low p-4 shadow-sm transition-all duration-200 hover:border-primary/60 hover:shadow-md focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10">
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10">
+          <ImagePlus className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="text-sm font-bold leading-5 text-on-surface">{title}</p>
+          <p className="text-[11px] leading-relaxed text-on-surface-variant">{subtitle}</p>
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-on-primary shadow-sm transition-colors group-hover:bg-primary/90">
+              <UploadCloud className="h-4 w-4" aria-hidden="true" />
+              {lang === 'ur' ? 'تصویر منتخب کریں' : 'Choose image'}
+            </span>
+            <span className="text-[10px] font-medium text-on-surface-variant">JPG · PNG · WebP</span>
+          </div>
+          {file ? (
+            <p className="flex min-w-0 items-center gap-1.5 pt-2 text-[11px] font-semibold text-primary" aria-live="polite">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{file.name}</span>
+              <span className="shrink-0 text-on-surface-variant">({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+            </p>
+          ) : (
+            <p className="pt-2 text-[10px] text-on-surface-variant">{lang === 'ur' ? 'اختیاری · زیادہ سے زیادہ 5 MB' : 'Optional · up to 5 MB'}</p>
+          )}
+        </div>
+      </div>
+      <input
+        id={id}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        aria-label={title}
+        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        onChange={(event) => {
+          onChange(event.target.files?.[0] ?? null);
+          event.currentTarget.value = '';
+        }}
+      />
+    </div>
+  );
+}
 
 export function AddBusiness() {
   const uploadSessionId = useRef(crypto.randomUUID());
@@ -417,61 +474,100 @@ export function AddBusiness() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                <section className="min-w-0 space-y-3 rounded-2xl border border-outline-variant/50 bg-gradient-to-br from-primary/5 via-surface-container-lowest to-surface-container-low p-3.5 shadow-sm sm:p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Tag className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-on-surface">{lang === 'ur' ? 'کاروبار کی کیٹیگری' : 'Business category'}</p>
+                        <p className="text-[10px] text-on-surface-variant">{lang === 'ur' ? 'درست شعبہ منتخب کریں' : 'Choose the best match'}</p>
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold tabular-nums text-primary">{categories.length}</span>
+                  </div>
                   <Input
                     id="business-category-search"
-                    label={lang === 'ur' ? 'شعبہ تلاش کریں' : 'Find a category'}
+                    aria-label={lang === 'ur' ? 'شعبہ تلاش کریں' : 'Find a category'}
                     value={categorySearch}
                     onChange={(e) => setCategorySearch(e.target.value)}
-                    placeholder={lang === 'ur' ? 'شعبے کا نام لکھیں' : 'Type a category name'}
+                    placeholder={lang === 'ur' ? 'اردو یا انگریزی میں تلاش کریں' : 'Search English or Urdu'}
                     autoComplete="off"
+                    leftAdornment={<Search className="h-4 w-4" />}
+                    className="min-h-[42px] rounded-xl border-outline-variant/60 bg-surface shadow-none focus:ring-4 focus:ring-primary/10"
                   />
-                  <Select
-                    label={lang === 'ur' ? 'شعبہ / کیٹیگری' : 'Category'}
-                    required
-                    value={categoryId}
-                    onChange={(e) => { setCategoryId(e.target.value); setCategorySearch(''); }}
-                  >
-                    <option value="">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</option>
-                    {categories.filter((item) => {
-                      const query = categorySearch.trim().toLocaleLowerCase();
-                      return item.id === categoryId || !query ||
-                        [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
-                    }).map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {bilingualText(lang, item.name_en, item.name_ur)}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                <div className="space-y-2">
+                  <div className="relative">
+                    <Select
+                      label={lang === 'ur' ? 'شعبہ / کیٹیگری' : 'Category'}
+                      required
+                      value={categoryId}
+                      onChange={(e) => { setCategoryId(e.target.value); setCategorySearch(''); }}
+                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pr-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                    >
+                      <option value="">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</option>
+                      {categories.filter((item) => {
+                        const query = categorySearch.trim().toLocaleLowerCase();
+                        return item.id === categoryId || !query ||
+                          [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
+                      }).map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {bilingualText(lang, item.name_en, item.name_ur)}
+                        </option>
+                      ))}
+                    </Select>
+                    <ChevronDown className="pointer-events-none absolute bottom-[13px] right-3.5 h-4 w-4 text-primary" aria-hidden="true" />
+                  </div>
+                  <p className="text-[10px] leading-relaxed text-on-surface-variant">{lang === 'ur' ? 'فہرست میں سے اپنے کاروبار سے مطابقت رکھنے والا شعبہ منتخب کریں۔' : 'Select the category that best describes your business.'}</p>
+                </section>
+
+                <section className="min-w-0 space-y-3 rounded-2xl border border-outline-variant/50 bg-gradient-to-br from-secondary/5 via-surface-container-lowest to-surface-container-low p-3.5 shadow-sm sm:p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                        <MapPin className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-on-surface">{lang === 'ur' ? 'کاروبار کا علاقہ' : 'Business area'}</p>
+                        <p className="text-[10px] text-on-surface-variant">{lang === 'ur' ? 'بازار یا محلہ منتخب کریں' : 'Choose market or neighborhood'}</p>
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-secondary/10 px-2 py-1 text-[10px] font-bold tabular-nums text-secondary">{areas.length}</span>
+                  </div>
                   <Input
                     id="business-area-search"
-                    label={lang === 'ur' ? 'علاقہ تلاش کریں' : 'Find an area'}
+                    aria-label={lang === 'ur' ? 'علاقہ تلاش کریں' : 'Find an area'}
                     value={areaSearch}
                     onChange={(e) => setAreaSearch(e.target.value)}
-                    placeholder={lang === 'ur' ? 'علاقے کا نام لکھیں' : 'Type an area name'}
+                    placeholder={lang === 'ur' ? 'اردو یا انگریزی میں تلاش کریں' : 'Search English or Urdu'}
                     autoComplete="off"
+                    leftAdornment={<Search className="h-4 w-4" />}
+                    className="min-h-[42px] rounded-xl border-outline-variant/60 bg-surface shadow-none focus:ring-4 focus:ring-primary/10"
                   />
-                  <Select
-                    label={lang === 'ur' ? 'علاقہ / بازار' : 'Area / Neighborhood'}
-                    required
-                    value={areaId}
-                    onChange={(e) => { setAreaId(e.target.value); setAreaSearch(''); }}
-                  >
-                    <option value="">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</option>
-                    {areas.filter((item) => {
-                      const query = areaSearch.trim().toLocaleLowerCase();
-                      return item.id === areaId || !query ||
-                        [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
-                    }).map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {bilingualText(lang, item.name_en, item.name_ur)}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
+                  <div className="relative">
+                    <Select
+                      label={lang === 'ur' ? 'علاقہ / بازار' : 'Area / Neighborhood'}
+                      required
+                      value={areaId}
+                      onChange={(e) => { setAreaId(e.target.value); setAreaSearch(''); }}
+                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pr-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                    >
+                      <option value="">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</option>
+                      {areas.filter((item) => {
+                        const query = areaSearch.trim().toLocaleLowerCase();
+                        return item.id === areaId || !query ||
+                          [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
+                      }).map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {bilingualText(lang, item.name_en, item.name_ur)}
+                        </option>
+                      ))}
+                    </Select>
+                    <ChevronDown className="pointer-events-none absolute bottom-[13px] right-3.5 h-4 w-4 text-secondary" aria-hidden="true" />
+                  </div>
+                  <p className="text-[10px] leading-relaxed text-on-surface-variant">{lang === 'ur' ? 'اپنی دکان کا درست بازار یا محلہ منتخب کریں۔' : 'Choose the correct market or neighborhood for this business.'}</p>
+                </section>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
@@ -615,10 +711,37 @@ export function AddBusiness() {
                 <Input label={lang === 'ur' ? 'کاروبار کے مالک کا نام' : 'Business Owner Name'} required maxLength={100} value={ownerName} onChange={(e) => setOwnerName(e.target.value)} />
                 <Input label={lang === 'ur' ? 'مالک کا Gmail' : 'Owner Gmail Address'} type="email" required maxLength={254} dir="ltr" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="name@gmail.com" />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری لوگو / پروفائل تصویر (اختیاری)' : 'Business Logo / Profile Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { setLogoFile(e.target.files?.[0] ?? null); e.currentTarget.value = ''; }} className="block w-full text-xs mt-1" /></label>
-                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری کور / بینر تصویر (اختیاری)' : 'Business Cover / Banner Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { setCoverFile(e.target.files?.[0] ?? null); e.currentTarget.value = ''; }} className="block w-full text-xs mt-1" /></label>
-              </div>
+              <section className="space-y-3 rounded-2xl border border-outline-variant/50 bg-surface-container-low/50 p-3.5 sm:p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-on-surface">{lang === 'ur' ? 'کاروبار کی تصاویر' : 'Business images'}</h3>
+                    <p className="mt-0.5 text-[11px] text-on-surface-variant">{lang === 'ur' ? 'لوگو اور کور تصویر شامل کریں تاکہ آپ کی لسٹنگ نمایاں نظر آئے۔' : 'Add a logo and cover image to make your listing stand out.'}</p>
+                  </div>
+                  <span className="rounded-full border border-outline-variant/60 bg-surface px-2.5 py-1 text-[10px] font-semibold text-on-surface-variant">{lang === 'ur' ? 'اختیاری' : 'Optional'}</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <ImageUploadCard
+                    id="business-logo-upload"
+                    title={lang === 'ur' ? 'لوگو / پروفائل تصویر' : 'Logo / Profile image'}
+                    subtitle={lang === 'ur' ? 'مربع یا گول لوگو بہترین رہے گا۔' : 'A square logo works best for your profile.'}
+                    file={logoFile}
+                    onChange={setLogoFile}
+                    lang={lang}
+                  />
+                  <ImageUploadCard
+                    id="business-cover-upload"
+                    title={lang === 'ur' ? 'کور / بینر تصویر' : 'Cover / Banner image'}
+                    subtitle={lang === 'ur' ? 'اپنے کاروبار کی چوڑی تصویر منتخب کریں۔' : 'Choose a wide photo of your business.'}
+                    file={coverFile}
+                    onChange={setCoverFile}
+                    lang={lang}
+                  />
+                </div>
+                <p className="flex items-center gap-1.5 text-[10px] text-on-surface-variant">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+                  {lang === 'ur' ? 'صرف JPG، PNG یا WebP · ہر تصویر زیادہ سے زیادہ 5 MB' : 'JPG, PNG or WebP only · maximum 5 MB per image'}
+                </p>
+              </section>
 
               <input
                 type="text"
