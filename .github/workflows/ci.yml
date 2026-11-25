@@ -19,6 +19,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Syntax-check SDK Jobs Cloudflare Pages Functions
+        run: |
+          node --check 'functions/sdk-jobs/[slug].js'
+          node --check functions/sdk-jobs/index.js
       - uses: actions/setup-node@v4
         with:
           node-version: 22
