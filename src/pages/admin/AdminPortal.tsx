@@ -1,13 +1,31 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { OwnerRegistrationRequests } from '../../components/admin/OwnerRegistrationRequests';
-import { NewsManager } from '../../components/admin/NewsManager';
-import { GovernmentJobsManager } from '../../components/admin/GovernmentJobsManager';
-import { GovernmentSchemesManager } from '../../components/admin/GovernmentSchemesManager';
-import { AdminChatbotKnowledge } from '../../components/admin/AdminChatbotKnowledge';
-import { LocalAuthoritiesManager } from '../../components/admin/LocalAuthoritiesManager';
-import { AuthorityProfilesManager } from '../../components/admin/AuthorityProfilesManager';
+const OwnerRegistrationRequests = React.lazy(() => import('../../components/admin/OwnerRegistrationRequests').then((m) => ({ default: m.OwnerRegistrationRequests })));
+const NewsManager = React.lazy(() => import('../../components/admin/NewsManager').then((m) => ({ default: m.NewsManager })));
+const GovernmentJobsManager = React.lazy(() => import('../../components/admin/GovernmentJobsManager').then((m) => ({ default: m.GovernmentJobsManager })));
+const GovernmentSchemesManager = React.lazy(() => import('../../components/admin/GovernmentSchemesManager').then((m) => ({ default: m.GovernmentSchemesManager })));
+const AdminChatbotKnowledge = React.lazy(() => import('../../components/admin/AdminChatbotKnowledge').then((m) => ({ default: m.AdminChatbotKnowledge })));
+const LocalAuthoritiesManager = React.lazy(() => import('../../components/admin/LocalAuthoritiesManager').then((m) => ({ default: m.LocalAuthoritiesManager })));
+const AuthorityProfilesManager = React.lazy(() => import('../../components/admin/AuthorityProfilesManager').then((m) => ({ default: m.AuthorityProfilesManager })));
+const AdminDashboard = React.lazy(() => import('../../components/admin/BusinessAndModeration').then((m) => ({ default: m.AdminDashboard })));
+const BusinessManager = React.lazy(() => import('../../components/admin/BusinessAndModeration').then((m) => ({ default: m.BusinessManager })));
+const InquiriesManager = React.lazy(() => import('../../components/admin/BusinessAndModeration').then((m) => ({ default: m.InquiriesManager })));
+const ModerationManager = React.lazy(() => import('../../components/admin/BusinessAndModeration').then((m) => ({ default: m.ModerationManager })));
+const AdsManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.AdsManager })));
+const ImportManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.ImportManager })));
+const LeadsManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.LeadsManager })));
+const OwnersManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.OwnersManager })));
+const PlansManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.PlansManager })));
+const AnalyticsView = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.AnalyticsView })));
+const AnnouncementsManager = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.AnnouncementsManager })));
+const AuditLogsViewer = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.AuditLogsViewer })));
+const BackupExportManager = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.BackupExportManager })));
+const DataQualityManager = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.DataQualityManager })));
+const SettingsManager = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.SettingsManager })));
+const StaffManager = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.StaffManager })));
+const TaxonomyManager = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.TaxonomyManager })));
+const AdvancedAnalyticsPanel = React.lazy(() => import('../../components/admin/AdvancedAnalyticsPanel').then((m) => ({ default: m.AdvancedAnalyticsPanel })));
 import { useAuth } from '../../lib/auth';
 import { usePermissions } from '../../lib/permissions';
 import {
@@ -61,33 +79,9 @@ import type {
 import { AppHeader } from '../../components/layout/AppHeader';
 import { AppFooter } from '../../components/layout/AppFooter';
 import { AdminNav } from '../../components/admin/AdminNav';
-import {
-  AdminDashboard,
-  BusinessManager,
-  InquiriesManager,
-  ModerationManager,
-} from '../../components/admin/BusinessAndModeration';
-import {
-  AdsManager,
-  ImportManager,
-  LeadsManager,
-  OwnersManager,
-  PlansManager,
-} from '../../components/admin/GrowthAndOps';
-import {
-  AnalyticsView,
-  AnnouncementsManager,
-  AuditLogsViewer,
-  BackupExportManager,
-  DataQualityManager,
-  SettingsManager,
-  StaffManager,
-  TaxonomyManager,
-} from '../../components/admin/SystemAndTaxonomy';
 import { Card } from '../../components/ui/Surface';
 import { Skeleton } from '../../components/ui/Feedback';
 import { DemoModeNotice } from '../../components/ui/DemoModeNotice';
-import { AdvancedAnalyticsPanel } from '../../components/admin/AdvancedAnalyticsPanel';
 import { useToast } from '../../components/ui/Toast';
 
 export function AdminPortal() {
@@ -125,6 +119,10 @@ export function AdminPortal() {
   const [pages, setPages] = useState<PageRow[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [businessesLoaded, setBusinessesLoaded] = useState(false);
+  const [leadsLoaded, setLeadsLoaded] = useState(false);
+  const [profilesLoaded, setProfilesLoaded] = useState(false);
+  const quickSearchLoading = React.useRef({ businesses: false, leads: false, profiles: false });
   const reload = useCallback(async () => {
     setLoading(true);
     try {
@@ -139,6 +137,12 @@ export function AdminPortal() {
         expiring_plans: 0,
         published_businesses: 0,
       };
+      const needsBusinesses = ['businesses', 'quality', 'moderation', 'inquiries', 'import', 'export', 'owners', 'ads', 'plans', 'authority-profiles', 'analytics'].includes(tab);
+      const needsTaxonomy = ['businesses', 'quality', 'import', 'export', 'categories', 'areas', 'settings'].includes(tab);
+      const needsProfiles = ['businesses', 'owners', 'staff'].includes(tab) && can('owners.create');
+      const needsEmergency = ['emergency', 'export', 'settings'].includes(tab);
+      const needsLocalAuthorities = ['local-authorities', 'export'].includes(tab) && isSuperAdmin;
+      const needsAuthorityProfiles = ['authority-profiles', 'export'].includes(tab) && isSuperAdmin;
       const failedRequests: string[] = [];
       const safeLoad = async <T,>(request: Promise<T>, fallback: T): Promise<T> => {
         let timeoutId: number | undefined;
@@ -156,6 +160,9 @@ export function AdminPortal() {
           if (timeoutId !== undefined) window.clearTimeout(timeoutId);
         }
       };
+      if (needsBusinesses) quickSearchLoading.current.businesses = true;
+      if (needsProfiles) quickSearchLoading.current.profiles = true;
+      if (tab === 'leads') quickSearchLoading.current.leads = true;
       const [
         c,
         biz,
@@ -178,44 +185,63 @@ export function AdminPortal() {
         aud,
       ] = await Promise.all([
         canViewDashboard ? safeLoad(fetchAdminDashboardCounts(), emptyCounts) : Promise.resolve(emptyCounts),
-        can('business.create') || can('business.publish') ? safeLoad(fetchAdminBusinesses(), []) : Promise.resolve([]),
-        can('business.create') || can('settings.manage') ? safeLoad(fetchAllCategories(true), []) : can('business.publish') ? safeLoad(fetchAllCategories(false), []) : Promise.resolve([]),
-        can('business.create') || can('settings.manage') ? safeLoad(fetchAllAreas(true), []) : can('business.publish') ? safeLoad(fetchAllAreas(false), []) : Promise.resolve([]),
-        can('tiers.manage') ? safeLoad(fetchPlans(true), []) : Promise.resolve([]),
-        can('moderation.review') ? safeLoad(fetchAllReviewsAdmin(), []) : Promise.resolve([]),
-        can('moderation.review') ? safeLoad(fetchAllSubmissionsAdmin(), []) : Promise.resolve([]),
-        can('support.read') ? safeLoad(fetchAllInquiriesAdmin(), []) : Promise.resolve([]),
-        can('leads.manage') ? safeLoad(fetchLeads(), []) : Promise.resolve([]),
-        can('owners.create') ? safeLoad(fetchProfilesAdmin(), []) : Promise.resolve([]),
-        can('ads.review') ? safeLoad(fetchAllAdsAdmin(), []) : Promise.resolve([]),
-        can('import.run') ? safeLoad(fetchImportBatches(), []) : Promise.resolve([]),
-        safeLoad(fetchEmergencyContactsAdmin(), []),
-        isSuperAdmin ? safeLoad(fetchLocalAuthoritiesAdmin(), []) : Promise.resolve([]),
-        isSuperAdmin ? safeLoad(fetchAuthorityProfilesAdmin(), []) : Promise.resolve([]),
-        safeLoad(fetchAnnouncements(can('announcements.manage') ? false : true), []),
-        can('settings.manage') ? safeLoad(fetchAllSiteSettingsAdmin(), []) : Promise.resolve([]),
-        can('settings.manage') ? safeLoad(fetchAllPagesAdmin(), []) : Promise.resolve([]),
-        isSuperAdmin ? safeLoad(fetchAuditLogs(100), []) : Promise.resolve([]),
+        needsBusinesses && (can('business.create') || can('business.publish')) ? safeLoad(fetchAdminBusinesses(), []) : Promise.resolve([]),
+        needsTaxonomy ? (can('business.create') || can('settings.manage') ? safeLoad(fetchAllCategories(true), []) : can('business.publish') ? safeLoad(fetchAllCategories(false), []) : Promise.resolve([])) : Promise.resolve([]),
+        needsTaxonomy ? (can('business.create') || can('settings.manage') ? safeLoad(fetchAllAreas(true), []) : can('business.publish') ? safeLoad(fetchAllAreas(false), []) : Promise.resolve([])) : Promise.resolve([]),
+        tab === 'plans' && can('tiers.manage') ? safeLoad(fetchPlans(true), []) : Promise.resolve([]),
+        tab === 'moderation' && can('moderation.review') ? safeLoad(fetchAllReviewsAdmin(), []) : Promise.resolve([]),
+        (tab === 'moderation' || tab === 'quality') && can('moderation.review') ? safeLoad(fetchAllSubmissionsAdmin(), []) : Promise.resolve([]),
+        tab === 'inquiries' && can('support.read') ? safeLoad(fetchAllInquiriesAdmin(), []) : Promise.resolve([]),
+        (tab === 'leads' || tab === 'export') && can('leads.manage') ? safeLoad(fetchLeads(), []) : Promise.resolve([]),
+        needsProfiles ? safeLoad(fetchProfilesAdmin(), []) : Promise.resolve([]),
+        tab === 'ads' && can('ads.review') ? safeLoad(fetchAllAdsAdmin(), []) : Promise.resolve([]),
+        tab === 'import' && can('import.run') ? safeLoad(fetchImportBatches(), []) : Promise.resolve([]),
+        needsEmergency ? safeLoad(fetchEmergencyContactsAdmin(), []) : Promise.resolve([]),
+        needsLocalAuthorities ? safeLoad(fetchLocalAuthoritiesAdmin(), []) : Promise.resolve([]),
+        needsAuthorityProfiles ? safeLoad(fetchAuthorityProfilesAdmin(), []) : Promise.resolve([]),
+        tab === 'announcements' ? safeLoad(fetchAnnouncements(can('announcements.manage') ? false : true), []) : Promise.resolve([]),
+        tab === 'settings' && can('settings.manage') ? safeLoad(fetchAllSiteSettingsAdmin(), []) : Promise.resolve([]),
+        tab === 'settings' && can('settings.manage') ? safeLoad(fetchAllPagesAdmin(), []) : Promise.resolve([]),
+        tab === 'audit' && isSuperAdmin ? safeLoad(fetchAuditLogs(100), []) : Promise.resolve([]),
       ]);
       setCounts(c);
-      setBusinesses(biz);
-      setCategories(cats);
-      setAreas(ar);
-      setPlans(pls);
-      setReviews(revs);
-      setSubmissions(subs);
-      setInquiries(inqs);
-      setLeads(lds);
-      setProfiles(profs);
-      setAds(adList);
-      setBatches(imp);
-      setEmergencyContacts(em);
-      setLocalAuthorities(auths);
-      setAuthorityProfiles(authorityProfilesList);
-      setAnnouncements(anns);
-      setSettings(sett);
-      setPages(pgs);
-      setAuditLogs(aud);
+      if (needsBusinesses && (can('business.create') || can('business.publish'))) {
+        setBusinesses(biz);
+        setBusinessesLoaded(true);
+      }
+      if (needsTaxonomy) {
+        setCategories(cats);
+        setAreas(ar);
+      }
+      if (tab === 'plans') setPlans(pls);
+      if (tab === 'moderation') {
+        setReviews(revs);
+        setSubmissions(subs);
+      }
+      if (tab === 'quality') setSubmissions(subs);
+      if (tab === 'inquiries') setInquiries(inqs);
+      if (tab === 'leads' || tab === 'export') {
+        setLeads(lds);
+        setLeadsLoaded(true);
+      }
+      if (needsProfiles) {
+        setProfiles(profs);
+        setProfilesLoaded(true);
+      }
+      if (tab === 'ads') setAds(adList);
+      if (tab === 'import') setBatches(imp);
+      if (needsEmergency) setEmergencyContacts(em);
+      if (needsLocalAuthorities) setLocalAuthorities(auths);
+      if (needsAuthorityProfiles) setAuthorityProfiles(authorityProfilesList);
+      if (tab === 'announcements') setAnnouncements(anns);
+      if (tab === 'settings') {
+        setSettings(sett);
+        setPages(pgs);
+      }
+      if (tab === 'audit') setAuditLogs(aud);
+      quickSearchLoading.current.businesses = false;
+      quickSearchLoading.current.profiles = false;
+      quickSearchLoading.current.leads = false;
       if (failedRequests.length) {
         showToast(`${failedRequests.length} admin data request(s) failed or timed out. Available sections remain usable; retry the affected section.`, 'error');
       }
@@ -227,14 +253,14 @@ export function AdminPortal() {
     } finally {
       setLoading(false);
     }
-  }, [showToast, isSuperAdmin, hasPermission]);
+  }, [showToast, isSuperAdmin, hasPermission, tab]);
 
   useEffect(() => {
     reload();
   }, [reload]);
 
   useEffect(() => {
-    if (!canViewAnalytics) {
+    if (!canViewAnalytics || tab !== 'analytics') {
       setAnalytics(null);
       return;
     }
@@ -245,7 +271,39 @@ export function AdminPortal() {
         if (!cancelled) showToast(error instanceof Error ? error.message : 'Analytics could not be loaded.', 'error');
       });
     return () => { cancelled = true; };
-  }, [analyticsDays, canViewAnalytics, showToast]);
+  }, [analyticsDays, canViewAnalytics, showToast, tab]);
+
+  useEffect(() => {
+    if (quickQuery.trim().length < 2) return;
+    const timeoutId = window.setTimeout(() => {
+      const can = (permission: PermissionKey) => isSuperAdmin || hasPermission(permission);
+      if (!businessesLoaded && !quickSearchLoading.current.businesses && (can('business.create') || can('business.publish'))) {
+        quickSearchLoading.current.businesses = true;
+        void fetchAdminBusinesses().then(setBusinesses).then(() => setBusinessesLoaded(true)).catch(() => {
+          setBusinessesLoaded(true);
+        }).finally(() => {
+          quickSearchLoading.current.businesses = false;
+        });
+      }
+      if (!leadsLoaded && !quickSearchLoading.current.leads && can('leads.manage')) {
+        quickSearchLoading.current.leads = true;
+        void fetchLeads().then(setLeads).then(() => setLeadsLoaded(true)).catch(() => {
+          setLeadsLoaded(true);
+        }).finally(() => {
+          quickSearchLoading.current.leads = false;
+        });
+      }
+      if (!profilesLoaded && !quickSearchLoading.current.profiles && can('owners.create')) {
+        quickSearchLoading.current.profiles = true;
+        void fetchProfilesAdmin().then(setProfiles).then(() => setProfilesLoaded(true)).catch(() => {
+          setProfilesLoaded(true);
+        }).finally(() => {
+          quickSearchLoading.current.profiles = false;
+        });
+      }
+    }, 250);
+    return () => window.clearTimeout(timeoutId);
+  }, [quickQuery, businessesLoaded, leadsLoaded, profilesLoaded, isSuperAdmin, hasPermission]);
 
   const actorId = user?.id ?? 'user-admin-1';
 
@@ -631,7 +689,9 @@ export function AdminPortal() {
             })()}
           </div>
 
-          {renderTab(tab)}
+          <React.Suspense fallback={<Skeleton className="h-72 rounded-2xl" />}>
+            {renderTab(tab)}
+          </React.Suspense>
         </main>
       </div>
       <AppFooter variant="portal" withBottomNavOffset={false} />
