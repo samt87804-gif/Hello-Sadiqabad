@@ -238,14 +238,17 @@ export function AdminPortal() {
       ]);
       setCounts(c);
       if (shouldLoadBusinesses) {
-        setBusinesses(biz);
+        if (businessLoadSucceeded) setBusinesses(biz);
         setBusinessesLoaded(businessLoadSucceeded);
         loadedAdminData.current.businesses = businessLoadSucceeded;
       }
       if (shouldLoadTaxonomy) {
-        setCategories(cats);
-        setAreas(ar);
-        loadedAdminData.current.taxonomy = taxonomyCategoriesLoadSucceeded && taxonomyAreasLoadSucceeded;
+        const taxonomyLoadSucceeded = taxonomyCategoriesLoadSucceeded && taxonomyAreasLoadSucceeded;
+        if (taxonomyLoadSucceeded) {
+          setCategories(cats);
+          setAreas(ar);
+        }
+        loadedAdminData.current.taxonomy = taxonomyLoadSucceeded;
       }
       if (tab === 'plans') setPlans(pls);
       if (tab === 'moderation') {
@@ -255,12 +258,12 @@ export function AdminPortal() {
       if (tab === 'quality') setSubmissions(subs);
       if (tab === 'inquiries') setInquiries(inqs);
       if (shouldLoadLeads) {
-        setLeads(lds);
+        if (leadsLoadSucceeded) setLeads(lds);
         setLeadsLoaded(leadsLoadSucceeded);
         loadedAdminData.current.leads = leadsLoadSucceeded;
       }
       if (shouldLoadProfiles) {
-        setProfiles(profs);
+        if (profilesLoadSucceeded) setProfiles(profs);
         setProfilesLoaded(profilesLoadSucceeded);
         loadedAdminData.current.profiles = profilesLoadSucceeded;
       }
