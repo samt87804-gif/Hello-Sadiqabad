@@ -1,0 +1,48 @@
+name: Public Add Business Browser Smoke
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/pages/AddBusiness.tsx'
+      - 'src/components/owner/ListingEditor.tsx'
+      - 'src/components/admin/BusinessFieldReviewQueue.tsx'
+      - 'scripts/public-form-smoke.mjs'
+      - '.github/workflows/public-form-smoke.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: public-add-business-smoke
+  cancel-in-progress: true
+
+jobs:
+  public-form:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Allow production deployment to finish
+        run: sleep 45
+
+      - name: Smoke-test the public Add Business form on mobile and desktop
+        env:
+          BASE_URL: https://hellosadiqabad.com
+        run: node scripts/public-form-smoke.mjs
