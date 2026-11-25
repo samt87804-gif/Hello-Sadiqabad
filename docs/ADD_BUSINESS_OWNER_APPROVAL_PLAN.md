@@ -107,3 +107,37 @@ Supabase's 30 October 2026 change requires explicit grants for newly created `pu
 Read-only production inspection found 13 existing `new_business` submissions with status `done` but `business_id IS NULL`, plus 3 still `new`. The live legacy `private.approve_submission` implementation creates the business but does not write the new business ID back to `submissions.business_id`. The Phase 2 backfill was corrected in commit `ac3b54d58f106d20eb2ce02e00decd05915cc56f` to mark all legacy `done` submissions as `approved_published`, preserve `rejected` as `rejected`, and leave other states pending; it must not infer/link existing business IDs from names or phones.
 
 A separate UI integration issue was found: existing `ModerationManager` still includes `new_business` rows in its `All` and `New Listings` filters and calls legacy `reviewSubmission()` / `approve_submission()` for those actions. Once the migration's guard is active, this legacy approval path intentionally fails. The release must hide/route `new_business` out of the legacy moderation manager and make the new field-review queue the sole path, while preserving all other legacy submission types. Do this in the same coordinated release as the new queue and migrations.
+
+## Phase 2 production rollout checkpoint — 25 November 2026
+
+Owner confirmed that no new Supabase project is to be created. All Phase 2 database work is being performed in the existing Hello Sadiqabad production project only. Changes were additive; test transactions were explicitly rolled back.
+
+### Applied database migrations
+- `business_field_approval_workflow` — field review ledger, private media metadata, owner request linkage, private pending-media bucket and RLS.
+- `business_field_review_rpc` — permission-checked field approval/publish RPC and compatibility with existing business insert guards.
+- `business_media_review_finalize` — atomic/idempotent media review status, quota request and audit finalization.
+- `owner_registration_finalize` — atomic owner-request decision, business owner linkage and audit finalization.
+- `owner_claim_plan_guard` — treats owner assignment/claim timestamp as metadata so legacy Free-plan feature values do not block owner linking.
+- `guard_legacy_new_business_approval` — blocks the legacy all-at-once approval path for new-business submissions; only the field-review RPC can complete them.
+- `skip_logo_plan_revalidation` — isolated logo updates no longer fail because of unrelated legacy plan fields; cover/WhatsApp plan gates remain enforced.
+
+### Deployed application and Edge Functions
+- Add Business now requests rate-limited, session-bound signed upload URLs; anonymous direct INSERT into the private pending-media bucket is not allowed.
+- Submission verifies the uploaded object's actual MIME and size, and the session-bound path before accepting metadata. Failed submissions can clean up only paths belonging to that upload session.
+- Admin has a dedicated Business Field Review queue. Legacy ModerationManager no longer routes new-business submissions to the old approval RPC.
+- Media moderation is retry-safe and checks that the business is published; cover publication requires a plan with the cover feature.
+- Owner invitation uses an atomic finalizer for request status, business-owner link and audit; legacy standalone owner requests remain supported.
+- Active deployed Edge Function versions: `create-business-media-upload` v1, `cleanup-business-media-upload` v1, `submit-suggestion` v8, `review-business-media` v1, `manage-owner-registration` v4.
+
+### Verification evidence
+- [GitHub CI run 45614173801](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45614173801) passed.
+- Cloudflare Pages production deployment for commit `bf927cf66b38f4aa34563b6d035f84ff513f6720` succeeded with canonical alias `https://hellosadiqabad.com`.
+- SQL transaction/rollback tests passed for core field approvals, Free-plan WhatsApp rejection, media finalizer idempotency, owner request approve/reject idempotency, owner-business linking, legacy approval guard, isolated logo updates, Free-plan cover rejection and rate-limit counters. All test transactions were rolled back; no test business, submission, media asset, owner request or audit record was retained.
+- Current production state: 122 derived field-review rows (97 approved rows for 13 historical `done` submissions and 25 pending rows for 3 current `new` submissions); 0 media assets; 0 image-change requests; 3 existing standalone owner requests; 13 historical `done` submissions still have `business_id IS NULL`. No business is guessed or linked by name/phone.
+- The new private bucket is present and has no anonymous INSERT policy. Existing business rows, users and public Storage objects were not rewritten or deleted.
+
+### Remaining acceptance work
+- Run authenticated Admin browser QA for the Business Field Review queue, media approval/rejection/unpublish and owner invitation screens.
+- Run one owner-approved end-to-end test with a clearly marked disposable submission and remove only that test data afterward; do not use a real business record for testing.
+- Verify email delivery/redirect in the actual owner invitation flow and confirm public listing/image rendering.
+- Phase 1 remains in progress/not accepted until its separate authenticated desktop/mobile performance acceptance is evidenced.
