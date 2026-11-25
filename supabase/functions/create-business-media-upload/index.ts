@@ -120,7 +120,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
-    const storagePath = `pending/${crypto.randomUUID()}/${field}.${extension}`;
+    const storagePath = `pending/${sessionKey}/${crypto.randomUUID()}/${field}.${extension}`;
     const { data, error } = await db.storage.from(bucket).createSignedUploadUrl(storagePath, { upsert: false });
     if (error || !data?.token || !data?.signedUrl) {
       return response(req, { ok: false, error: "A secure image upload could not be prepared" }, 503);
