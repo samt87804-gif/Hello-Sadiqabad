@@ -1015,3 +1015,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Cloudflare Pages deployment containing the application code from `a1b210633c23747b91758fa515e83b8941425080` succeeded for commit `8b778ba2dc7eb04192c5159696353f88ea44334a` with canonical alias `https://hellosadiqabad.com`.
 - Latest active Edge Function versions: `create-business-media-upload` v2, `cleanup-business-media-upload` v3, `submit-suggestion` v10, `review-business-media` v3, `manage-owner-registration` v5.
 - Total Phase 2 migrations applied to the existing project: **9**. No separate Supabase project was created. Test-only database writes were all rolled back; verification found no test media URLs, test submissions, test owner links or pending Storage objects.
+
+
+## Admin media-review usability follow-up — 25 November 2026
+
+- Added a clear note in the Business Field Review image queue: cover images can be published only when the business has an active Basic or Premium plan. The server-side plan check remains authoritative; no plan, media or business data was changed.
+- Direct-main application commit: `498923c932cedba006ef9bf9303e93659aaf473a`.
+- GitHub CI run `45623551108` passed.
+- Cloudflare Pages production deployment `a749cbf3-223c-465f-9e08-3d484c208667` succeeded for the same application commit and carries canonical alias `https://hellosadiqabad.com`.
+- Remaining Phase 2 acceptance is unchanged: authenticated Admin browser QA, one controlled disposable end-to-end submission, actual invitation email/redirect verification, and public listing/media rendering. No fake accounts, test submissions or emails were created/sent in this follow-up.
