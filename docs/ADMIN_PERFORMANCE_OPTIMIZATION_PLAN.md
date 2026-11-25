@@ -1,6 +1,6 @@
 # Admin Business & Data Quality Performance Optimization Plan
 
-**Owner decision:** 25 November 2026. Desktop is affected more than mobile. This is a diagnosis-and-optimization plan; no performance change is claimed implemented.
+**Owner decision:** 25 November 2026. Desktop is affected more than mobile. Initial Phase 1 optimizations are implemented and deployed; full acceptance remains open pending authenticated browser measurements and interaction QA.
 
 ## Scope
 - Admin Business page and its tabs, lists, moderation panels and detail views.
@@ -45,3 +45,25 @@
 ## Phase 0 audit findings
 
 The repository/live-system findings and exact database baseline are recorded in [Final Product Expansion Phase 0 Audit](FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md). Confirmed code-level causes include all-tab data fetching on every reload, eager imports of large Admin manager modules, an unbounded business-card list and repeated full-array scans for Data Quality category counts. The joined business query returned 697 rows and executed in 5.347 ms in the audit database context; this is not a browser or authenticated UI timing. Capture real desktop and mobile before/after interaction traces before acceptance.
+
+
+## Phase 1 implementation checkpoint — 25 November 2026
+
+**Implemented on `main`:**
+- Admin tab managers are now lazy-loaded; inactive large manager modules are not imported into the initial Admin route bundle.
+- Admin data loading is scoped to the active tab instead of issuing the former 19-request all-tabs batch on every tab load/reload. Dashboard counts remain available for navigation badges.
+- Global Admin quick search lazily loads the business, lead and owner datasets after a short input delay when those datasets have not already been loaded.
+- Business list filtering is memoized and both desktop table and mobile cards render 50 records per page. Existing filtered selection/bulk actions continue to operate over the full filtered set.
+- Data Quality issue derivation/filtering is memoized, category counts are computed in one pass, issue-chip counts are computed in one pass, and matching records render 50 per page. CSV export still exports the complete filtered result, not just the visible page.
+
+**Verification evidence:**
+- Commit: `6009012c143e90dbbcce1dfc2fddaa79c3fa2872`.
+- GitHub CI: [run 45585636119](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45585636119) — both build and Edge Functions jobs passed. Build job passed `npm ci`, high/critical npm audit gate, TypeScript typecheck, automated tests and production build.
+- Cloudflare Pages production deployment: `759c75f9-d12d-45ec-a94d-196953c9ba19`, status success, commit hash matches, canonical production alias `https://hellosadiqabad.com`.
+- No database migration, RLS policy, Storage policy, production record or Auth setting was changed.
+
+**Still required before Phase 1 acceptance:**
+- Authenticated desktop cold/warm route-load and click-to-response measurements before/after.
+- Real browser/mobile checks for search, filters, page navigation, select-all/bulk actions, edit/detail modal, moderation actions and complete CSV export.
+- Permission/empty/error/retry regression checks in an authenticated session.
+- Do not claim a numerical UI speed improvement from the database-only 5.347 ms query baseline. The browser performance trace was not available in this session.
