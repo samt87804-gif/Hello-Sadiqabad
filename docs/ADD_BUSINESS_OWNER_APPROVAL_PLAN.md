@@ -189,3 +189,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Added English and Urdu description fields (each capped at 500 characters; the server validates `description_ur`), a live public listing preview that omits owner-private name/email, and a required bilingual consent checkbox before submission.
 - Category/Area search and missing-taxonomy guidance are present in the form. File inputs clear their native value after selection so the same file can be selected again after a failed upload.
 - App commit `cc6c7ebcbd31ca2660cc7a470baf50bf13751008`, CI run `45625706344` passed, and Pages deployment `9c109325-f411-44f0-8183-8d40c940ff70` succeeded.
+
+### Public Add Business browser QA — 25 November 2026
+
+- Production Playwright smoke tests passed on mobile (390×844) and desktop (1365×900). They verified taxonomy data, no auto-selection, search selection persistence, live preview and owner-email privacy, required unchecked consent, logo file preview/reselection, and responsive width without horizontal overflow.
+- Workflow run `45627086704` and main CI run `45627086518` passed. Production deployment `15c9b434-bc45-495b-814f-a00fe391cbf0` is successful.
+- Authenticated Admin/Owner Portal click-through, owner image request end-to-end approval, and actual invitation email/redirect remain pending.
