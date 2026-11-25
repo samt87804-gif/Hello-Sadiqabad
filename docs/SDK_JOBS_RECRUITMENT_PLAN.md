@@ -112,3 +112,18 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] No SDK Jobs-specific security-definer-view, unindexed-FK or multiple-permissive-policy advisor finding remains.
 - [x] CI [45702011116](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45702011116) passed; production Pages deployment `3d3bf1ec-2f80-4695-886e-75aaf2b528cb` succeeded with canonical alias.
 - [ ] Owner form/private poster upload, Admin moderation UI, public routes and end-to-end browser tests remain in progress.
+
+
+## Owner Portal UI increment — 26 November 2026
+
+- [x] Added an authenticated Owner Portal route at /owner/sdk-jobs, protected by the existing RequireAuth + owner-role gate.
+- [x] Added SDK Jobs navigation in the Owner Portal.
+- [x] Added a first-pass vacancy submission form using the existing sdk_jobs table and owner RLS/trigger enforcement; the selected source business is restricted in the UI to the authenticated owner's published businesses and is independently revalidated by the database.
+- [x] Form captures English/Urdu title, summary and description, category, vacancy count, job type, area/location, optional salary, duties, qualifications, experience, hours, benefits and closing date.
+- [x] Added owner-only request status list using the owner RLS policy; employer linkage is not displayed publicly.
+- [ ] CI/typecheck/build verification for this UI increment.
+- [ ] Add signed private poster upload and Admin approval/promotion. Current UI explicitly tells the Owner that no listing can publish without an approved image; no public media path or upload shortcut was added.
+- [ ] Add controlled owner edit/resubmission after designing preservation of the previously approved public version. Do not enable edits to published records until this is solved: current status trigger would take the published row out of the public view immediately.
+- [ ] Admin queue/actions, public listing/detail/search/share pages and adversarial privacy/browser acceptance remain open.
+
+**Current status:** Owner submission UI has been added to main but is not yet CI-verified or production-released. No poster upload, Admin moderation UI or public SDK Jobs pages are claimed complete. The form writes only to the private sdk_jobs table; the published-only public view remains the only planned public read surface.
