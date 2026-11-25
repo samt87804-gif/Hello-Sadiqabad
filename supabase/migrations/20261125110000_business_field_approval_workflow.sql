@@ -159,7 +159,7 @@ create trigger submissions_seed_business_field_reviews
 -- This keeps the existing Admin moderation screen functional during the additive schema rollout.
 
 -- Pakistan-local month quota. Admin review actions never consume owner quota.
-create or replace function public.request_business_image_change(
+create or replace function private.request_business_image_change(
   p_business_id uuid, p_media_field text, p_storage_path text, p_mime_type text, p_file_size_bytes bigint
 ) returns uuid language plpgsql security definer set search_path=''
 as $function$
@@ -204,6 +204,15 @@ begin
   returning id into v_request_id;
   return v_request_id;
 end
+$function$;
+revoke all on function private.request_business_image_change(uuid,text,text,text,bigint) from public, anon;
+grant execute on function private.request_business_image_change(uuid,text,text,text,bigint) to authenticated;
+
+create or replace function public.request_business_image_change(
+  p_business_id uuid, p_media_field text, p_storage_path text, p_mime_type text, p_file_size_bytes bigint
+) returns uuid language sql security invoker set search_path=''
+as $function$
+  select private.request_business_image_change(p_business_id,p_media_field,p_storage_path,p_mime_type,p_file_size_bytes)
 $function$;
 revoke all on function public.request_business_image_change(uuid,text,text,text,bigint) from public, anon;
 grant execute on function public.request_business_image_change(uuid,text,text,text,bigint) to authenticated;
