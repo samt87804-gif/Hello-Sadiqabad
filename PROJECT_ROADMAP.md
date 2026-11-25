@@ -875,3 +875,11 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Verified live Category/Area data, no automatic first-option selection, search filtering while preserving the chosen option, live preview updates, owner-email privacy in the preview, unchecked required consent, logo file preview/reselection, and no horizontal overflow at either viewport.
 - Browser workflow run `45627086704` passed; main CI run `45627086518` passed; Cloudflare Pages deployment `15c9b434-bc45-495b-814f-a00fe391cbf0` succeeded with the canonical alias.
 - Still pending: authenticated Admin/Owner Portal browser click-through, a real owner image-upload-to-Admin-approval roundtrip, and real invitation email/redirect verification.
+
+### Public Add Business visual UX polish — 25 November 2026
+
+- Reworked Category and Area into responsive, bilingual search/select panels with category/location icons, live taxonomy counts, clearer field guidance, styled select surfaces, visible chevrons and RTL-aware alignment. Existing category/area IDs, filtering behavior and no-auto-selection rule remain unchanged.
+- Replaced plain browser file inputs with accessible full-card image pickers for Logo and Cover. The cards show accepted formats, 5 MB limit, selected filename/size, keyboard focus treatment and retry-safe file input reset.
+- No database, Storage, Auth or existing listing data was changed.
+- Main commit `3e73a2d9943355d1c48370642ad8034f416571ec`; CI run `45638490612` passed; production browser smoke run `45638490221` passed on mobile 390×844 and desktop 1365×900, including assertions for the new controls; Cloudflare Pages deployment `8969830b-3848-4951-a1dd-7b01f3fda6de` succeeded with canonical alias `https://hellosadiqabad.com`.
+- Phase 2 authenticated Admin/Owner acceptance, real image approval roundtrip and invitation email/redirect remain outstanding. Phase 1 Admin performance acceptance remains open.
