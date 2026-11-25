@@ -1044,3 +1044,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - No database, migration, Storage, Auth, existing listing or owner data was changed. Browser/device QA and real end-to-end submission/invitation delivery remain pending.
 
 - Applied migration 11, `owner_image_change_rpc_plan_guard`: the database RPC independently checks published status and cover-plan eligibility. Transaction-only tests passed for logo request creation, Free-plan cover rejection and Premium-plan cover acceptance; every test rolled back and left 0 pending objects, 0 media assets and 0 image requests. Phase 2 now has 11 applied migrations.
+
+## Add Business form completeness — 25 November 2026
+
+- The form now has separate English/Urdu descriptions, server-side `description_ur` length validation, a public-field-only live preview, and a required bilingual consent checkbox. Owner name/Gmail are excluded from the preview.
+- Searchable Category/Area controls and always-visible missing-taxonomy instructions are in place. File inputs reset after selection to support retrying the same file.
+- Latest application commit `cc6c7ebcbd31ca2660cc7a470baf50bf13751008`; CI run `45625706344` passed; Cloudflare Pages deployment `9c109325-f411-44f0-8183-8d40c940ff70` succeeded.
