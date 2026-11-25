@@ -100,10 +100,12 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Inspected owner authentication, owner/business linkage and live `businesses`/`profiles` schema.
 - [x] Inspected Admin permission architecture, `my_permissions()`, `staff_has_permission()`, Admin navigation and live RLS/grants.
 - [x] Inspected the live migration ledger (108 versions) and preserved its existing history.
-- [ ] Finalize additive schema and permission migration after review of exact `areas` schema, staff permission editor and current Storage bucket constraints.
+- [x] Inspected exact `areas` schema; it supports active-area FK plus bilingual names and city ID.
+- [x] Inspected staff permission editor (`ALL_PERMISSION_KEYS`), Admin tab permission switch, and all frontend permission-key locations.
+- [x] Inspected Storage buckets and object policies: public bucket is unrestricted at bucket metadata level; existing private pending-business bucket is 5 MiB JPEG/PNG/WebP and its Admin read policy is specific to business moderation.
 - [ ] Implement owner submission UI and server-side eligibility enforcement.
 - [ ] Implement permission-gated Admin moderation and append-only review history.
 - [ ] Implement public safe view, listing/detail routes, filters and share metadata.
 - [ ] Add adversarial privacy/authorization tests, CI and production verification.
 
-**Current gate:** Phase 4 audit is underway and the data-boundary design is documented. No application code, migration, RLS, Storage policy or production data has been changed by this audit. Proceed with the first additive schema/permission implementation only after the remaining referenced schema/UI/bucket checks and migration tests are complete.
+**Current gate:** Phase 4 read-only audit and design are complete. All referenced owner, area, permission, RLS/grant and Storage checks are now documented. No application code, migration, RLS, Storage policy or production data has been changed by this audit. The next implementation task is the first additive schema/permission migration, tested against the live schema and rolled back before any production application; preserve the 108-version migration ledger.
