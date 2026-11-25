@@ -38,3 +38,6 @@ verify_jwt = true
 
 [functions.review-sdk-job-poster]
 verify_jwt = true
+
+[functions.publish-sdk-job]
+verify_jwt = true
