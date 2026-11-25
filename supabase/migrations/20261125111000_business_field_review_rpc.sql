@@ -1,3 +1,51 @@
+-- Allow only the permission-checked field-review RPC to create a published listing.
+-- The separate GUC is transaction-local and is never set from client input.
+create or replace function public.guard_business_insert()
+returns trigger
+language plpgsql
+set search_path=''
+as $function$
+begin
+  if current_setting('app.business_field_review',true) = 'true' then
+    return new;
+  end if;
+
+  if auth.uid() is null or private.is_super_admin()
+     or private.staff_has_permission('business.publish') then
+    return new;
+  end if;
+
+  if not (
+    private.staff_has_permission('business.create')
+    or private.staff_has_permission('import.run')
+  ) then
+    raise exception 'You are not allowed to create business listings'
+      using errcode = '42501';
+  end if;
+
+  if new.created_by is distinct from (select auth.uid())
+     or new.owner_id is not null
+     or new.assigned_to is not null
+     or new.status not in ('draft','pending_approval')
+     or new.plan_code <> 'free'
+     or new.plan_expires_at is not null
+     or new.is_verified
+     or new.is_featured
+     or new.view_count <> 0
+     or new.call_count <> 0
+     or new.whatsapp_count <> 0
+     or new.rating_avg is not null
+     or new.rating_count <> 0
+     or new.published_at is not null
+     or new.claimed_at is not null then
+    raise exception 'Staff-created listings must remain unassigned, unverified free drafts'
+      using errcode = '42501';
+  end if;
+
+  return new;
+end
+$function$;
+
 -- Field-level moderation RPC. Public directory columns are only populated from approved fields.
 begin;
 
@@ -28,6 +76,11 @@ begin
   if not private.staff_has_permission('moderation.review') then
     raise exception 'Permission denied' using errcode='42501';
   end if;
+
+  -- This transaction-local flag is set only after the moderation permission check.
+  -- Existing business insert/update guards recognize this trusted field-review path.
+  perform set_config('app.business_field_review','true',true);
+  perform set_config('app.approving_submission','true',true);
   if p_status not in ('approved_published','rejected','unpublished') then
     raise exception 'Invalid field review status';
   end if;
@@ -38,6 +91,19 @@ begin
   select * into s from public.submissions
     where id=p_submission_id and type='new_business' for update;
   if not found then raise exception 'New business submission not found'; end if;
+
+  if p_field_key='whatsapp' and p_status='approved_published' then
+    if s.business_id is null then
+      raise exception 'Approve and publish the required business fields before reviewing WhatsApp';
+    end if;
+    if not exists (
+      select 1 from public.businesses b
+      join public.plans p on p.code=b.plan_code
+      where b.id=s.business_id and coalesce((p.features->>'whatsapp')::boolean,false)
+    ) then
+      raise exception 'WhatsApp requires a Basic or Premium business plan';
+    end if;
+  end if;
 
   select * into f from public.business_field_reviews
     where submission_id=p_submission_id and field_key=p_field_key for update;
