@@ -10,7 +10,7 @@ import { getSupabaseClient } from '../lib/supabase';
 import type { AreaRow, CategoryRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
-import { Input, Select, Textarea } from '../components/ui/FormFields';
+import { Input, Textarea } from '../components/ui/FormFields';
 import { Card, Container, SectionHeading } from '../components/ui/Surface';
 import { useToast } from '../components/ui/Toast';
 
@@ -86,6 +86,34 @@ function ImageUploadCard({
   );
 }
 
+async function compressBusinessImage(file: File, mediaField: 'logo' | 'cover'): Promise<File> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+    throw new Error('Business images must be JPG, PNG or WebP and no larger than 5 MB.');
+  }
+  if (typeof createImageBitmap !== 'function') return file;
+  const bitmap = await createImageBitmap(file);
+  try {
+    const maxDimension = mediaField === 'logo' ? 640 : 1800;
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) return file;
+    context.drawImage(bitmap, 0, 0, width, height);
+    const encode = (quality: number) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', quality));
+    let blob = await encode(0.84);
+    if (blob && blob.size > 4 * 1024 * 1024) blob = await encode(0.72);
+    if (!blob || blob.type !== 'image/webp' || blob.size >= file.size) return file;
+    const baseName = file.name.replace(/\.[^.]+$/, '') || mediaField;
+    return new File([blob], `${baseName}-compressed.webp`, { type: 'image/webp', lastModified: Date.now() });
+  } finally {
+    bitmap.close();
+  }
+}
+
 export function AddBusiness() {
   const uploadSessionId = useRef(crypto.randomUUID());
   const { showToast } = useToast();
@@ -96,6 +124,8 @@ export function AddBusiness() {
   const [areas, setAreas] = useState<AreaRow[]>([]);
   const [categorySearch, setCategorySearch] = useState('');
   const [areaSearch, setAreaSearch] = useState('');
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [areaOpen, setAreaOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [consentConfirmed, setConsentConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -298,14 +328,12 @@ export function AddBusiness() {
       for (const [mediaField, file] of [['logo', logoFile], ['cover', coverFile]] as const) {
         if (!file) continue;
         if (!client) throw new Error('Connect to the live service before uploading business images.');
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
-          throw new Error('Business images must be JPG, PNG or WebP and no larger than 5 MB.');
-        }
+        const uploadFile = await compressBusinessImage(file, mediaField);
         const { data: authorization, error: authorizationError } = await client.functions.invoke('create-business-media-upload', {
           body: {
             media_field: mediaField,
-            mime_type: file.type,
-            file_size_bytes: file.size,
+            mime_type: uploadFile.type,
+            file_size_bytes: uploadFile.size,
             session_id: uploadSessionId.current,
           },
         });
@@ -316,9 +344,9 @@ export function AddBusiness() {
         const storagePath = authorization.data.path;
         uploadedMediaPaths.push(storagePath);
         const { error: uploadError } = await client.storage.from('hs-pending-business-media')
-          .uploadToSignedUrl(storagePath, authorization.data.token, file, { contentType: file.type, upsert: false });
+          .uploadToSignedUrl(storagePath, authorization.data.token, uploadFile, { contentType: uploadFile.type, upsert: false });
         if (uploadError) throw uploadError;
-        mediaAssets.push({ media_field: mediaField, storage_path: storagePath, mime_type: file.type, file_size_bytes: file.size });
+        mediaAssets.push({ media_field: mediaField, storage_path: storagePath, mime_type: uploadFile.type, file_size_bytes: uploadFile.size });
       }
       const hoursPayload = Object.fromEntries(DAY_KEYS.filter((day) => openingHours[day.key].open && openingHours[day.key].close).map((day) => [day.key, [{ open: openingHours[day.key].open, close: openingHours[day.key].close }]]));
       const res = await submitPublicSuggestion({
@@ -499,25 +527,29 @@ export function AddBusiness() {
                     className="min-h-[42px] rounded-xl border-outline-variant/60 bg-surface shadow-none focus:ring-4 focus:ring-primary/10"
                   />
                   <div className="relative">
-                    <Select
-                      label={lang === 'ur' ? 'شعبہ / کیٹیگری' : 'Category'}
-                      required
-                      value={categoryId}
-                      onChange={(e) => { setCategoryId(e.target.value); setCategorySearch(''); }}
-                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pe-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                    <label className="mb-1.5 block text-xs font-semibold text-on-surface" htmlFor="business-category-trigger">
+                      {lang === 'ur' ? 'شعبہ / کیٹیگری' : 'Category'} <span className="text-error">*</span>
+                    </label>
+                    <button
+                      id="business-category-trigger"
+                      type="button"
+                      aria-haspopup="listbox"
+                      aria-expanded={categoryOpen}
+                      onClick={() => { setCategoryOpen((open) => !open); setAreaOpen(false); }}
+                      className="flex min-h-[50px] w-full items-center justify-between gap-3 rounded-xl border border-outline-variant/70 bg-surface px-3.5 py-2.5 text-start text-sm font-semibold text-on-surface shadow-sm transition-colors hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
                     >
-                      <option value="">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</option>
-                      {categories.filter((item) => {
-                        const query = categorySearch.trim().toLocaleLowerCase();
-                        return item.id === categoryId || !query ||
-                          [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
-                      }).map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {bilingualText(lang, item.name_en, item.name_ur)}
-                        </option>
-                      ))}
-                    </Select>
-                    <ChevronDown className="pointer-events-none absolute bottom-[13px] end-3.5 h-4 w-4 text-primary" aria-hidden="true" />
+                      <span className={categoryId ? '' : 'text-on-surface-variant'}>{categoryId ? bilingualText(lang, categories.find((item) => item.id === categoryId)?.name_en ?? '', categories.find((item) => item.id === categoryId)?.name_ur ?? '') : (lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category')}</span>
+                      <ChevronDown className={`h-4 w-4 shrink-0 text-primary transition-transform ${categoryOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                    </button>
+                    {categoryOpen && (
+                      <div className="absolute inset-x-0 top-full z-30 mt-1 max-h-56 overflow-y-auto overscroll-contain rounded-xl border border-outline-variant bg-surface p-1.5 shadow-xl" role="listbox" aria-label={lang === 'ur' ? 'کیٹیگریز' : 'Categories'}>
+                        <button type="button" role="option" aria-selected={!categoryId} onClick={() => { setCategoryId(''); setCategorySearch(''); setCategoryOpen(false); }} className="w-full rounded-lg px-3 py-2.5 text-start text-sm text-on-surface-variant hover:bg-surface-container-high">{lang === 'ur' ? 'شعبہ منتخب کریں' : 'Select a category'}</button>
+                        {categories.filter((item) => { const query = categorySearch.trim().toLocaleLowerCase(); return !query || [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query); }).map((item) => (
+                          <button key={item.id} type="button" role="option" aria-selected={categoryId === item.id} onClick={() => { setCategoryId(item.id); setCategorySearch(''); setCategoryOpen(false); }} className={`w-full rounded-lg px-3 py-2.5 text-start text-sm transition-colors hover:bg-primary/10 ${categoryId === item.id ? 'bg-primary/10 font-bold text-primary' : 'text-on-surface'}`}>{bilingualText(lang, item.name_en, item.name_ur)}</button>
+                        ))}
+                        {categories.filter((item) => { const query = categorySearch.trim().toLocaleLowerCase(); return !query || [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query); }).length === 0 && <p className="px-3 py-4 text-center text-xs text-on-surface-variant">{lang === 'ur' ? 'کوئی نتیجہ نہیں ملا' : 'No matching categories'}</p>}
+                      </div>
+                    )}
                   </div>
                   <p className="text-[10px] leading-relaxed text-on-surface-variant">{lang === 'ur' ? 'فہرست میں سے اپنے کاروبار سے مطابقت رکھنے والا شعبہ منتخب کریں۔' : 'Select the category that best describes your business.'}</p>
                 </section>
@@ -546,25 +578,29 @@ export function AddBusiness() {
                     className="min-h-[42px] rounded-xl border-outline-variant/60 bg-surface shadow-none focus:ring-4 focus:ring-primary/10"
                   />
                   <div className="relative">
-                    <Select
-                      label={lang === 'ur' ? 'علاقہ / بازار' : 'Area / Neighborhood'}
-                      required
-                      value={areaId}
-                      onChange={(e) => { setAreaId(e.target.value); setAreaSearch(''); }}
-                      className="min-h-[50px] appearance-none rounded-xl border-outline-variant/70 bg-surface pe-11 text-sm font-semibold shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                    <label className="mb-1.5 block text-xs font-semibold text-on-surface" htmlFor="business-area-trigger">
+                      {lang === 'ur' ? 'علاقہ / بازار' : 'Area / Neighborhood'} <span className="text-error">*</span>
+                    </label>
+                    <button
+                      id="business-area-trigger"
+                      type="button"
+                      aria-haspopup="listbox"
+                      aria-expanded={areaOpen}
+                      onClick={() => { setAreaOpen((open) => !open); setCategoryOpen(false); }}
+                      className="flex min-h-[50px] w-full items-center justify-between gap-3 rounded-xl border border-outline-variant/70 bg-surface px-3.5 py-2.5 text-start text-sm font-semibold text-on-surface shadow-sm transition-colors hover:border-secondary/50 focus:border-secondary focus:outline-none focus:ring-4 focus:ring-secondary/10"
                     >
-                      <option value="">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</option>
-                      {areas.filter((item) => {
-                        const query = areaSearch.trim().toLocaleLowerCase();
-                        return item.id === areaId || !query ||
-                          [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
-                      }).map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {bilingualText(lang, item.name_en, item.name_ur)}
-                        </option>
-                      ))}
-                    </Select>
-                    <ChevronDown className="pointer-events-none absolute bottom-[13px] end-3.5 h-4 w-4 text-secondary" aria-hidden="true" />
+                      <span className={areaId ? '' : 'text-on-surface-variant'}>{areaId ? bilingualText(lang, areas.find((item) => item.id === areaId)?.name_en ?? '', areas.find((item) => item.id === areaId)?.name_ur ?? '') : (lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area')}</span>
+                      <ChevronDown className={`h-4 w-4 shrink-0 text-secondary transition-transform ${areaOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                    </button>
+                    {areaOpen && (
+                      <div className="absolute inset-x-0 top-full z-30 mt-1 max-h-56 overflow-y-auto overscroll-contain rounded-xl border border-outline-variant bg-surface p-1.5 shadow-xl" role="listbox" aria-label={lang === 'ur' ? 'علاقے' : 'Areas'}>
+                        <button type="button" role="option" aria-selected={!areaId} onClick={() => { setAreaId(''); setAreaSearch(''); setAreaOpen(false); }} className="w-full rounded-lg px-3 py-2.5 text-start text-sm text-on-surface-variant hover:bg-surface-container-high">{lang === 'ur' ? 'علاقہ منتخب کریں' : 'Select an area'}</button>
+                        {areas.filter((item) => { const query = areaSearch.trim().toLocaleLowerCase(); return !query || [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query); }).map((item) => (
+                          <button key={item.id} type="button" role="option" aria-selected={areaId === item.id} onClick={() => { setAreaId(item.id); setAreaSearch(''); setAreaOpen(false); }} className={`w-full rounded-lg px-3 py-2.5 text-start text-sm transition-colors hover:bg-secondary/10 ${areaId === item.id ? 'bg-secondary/10 font-bold text-secondary' : 'text-on-surface'}`}>{bilingualText(lang, item.name_en, item.name_ur)}</button>
+                        ))}
+                        {areas.filter((item) => { const query = areaSearch.trim().toLocaleLowerCase(); return !query || [item.name_en, item.name_ur, item.slug].filter(Boolean).join(' ').toLocaleLowerCase().includes(query); }).length === 0 && <p className="px-3 py-4 text-center text-xs text-on-surface-variant">{lang === 'ur' ? 'کوئی نتیجہ نہیں ملا' : 'No matching areas'}</p>}
+                      </div>
+                    )}
                   </div>
                   <p className="text-[10px] leading-relaxed text-on-surface-variant">{lang === 'ur' ? 'اپنی دکان کا درست بازار یا محلہ منتخب کریں۔' : 'Choose the correct market or neighborhood for this business.'}</p>
                 </section>
