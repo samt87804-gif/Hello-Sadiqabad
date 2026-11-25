@@ -535,6 +535,7 @@ export function OfflineData() {
         ...authorityProfiles.map((profile) => profile.photo_url),
         ...ownerPublicProfiles.map((profile) => typeof profile.photo_url === 'string' ? profile.photo_url : null),
         ...governmentJobs.map((job) => job.image_url),
+        ...governmentSchemes.map((scheme) => scheme.image_url),
         ...publicPages.flatMap((page) => {
           const markdown = [page.body_md_en, page.body_md_ur].join('\n');
           return [...markdown.matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1]);
