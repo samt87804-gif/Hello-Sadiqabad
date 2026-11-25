@@ -67,6 +67,8 @@ create index if not exists business_media_assets_business_idx
 alter table public.business_media_assets enable row level security;
 revoke all on public.business_media_assets from anon, authenticated;
 grant select on public.business_media_assets to authenticated;
+-- Edge Functions use the service role for controlled submission and moderation writes.
+grant select, insert, update on public.business_media_assets to service_role;
 create policy business_media_assets_admin_read on public.business_media_assets
   for select to authenticated
   using (private.is_super_admin() or private.staff_has_permission('moderation.review'));
@@ -90,6 +92,8 @@ create index if not exists business_image_change_monthly_idx
 alter table public.business_image_change_requests enable row level security;
 revoke all on public.business_image_change_requests from anon, authenticated;
 grant select on public.business_image_change_requests to authenticated;
+-- The media-review Edge Function updates the linked quota request after moderation.
+grant select, update on public.business_image_change_requests to service_role;
 create policy business_image_change_requests_owner_read on public.business_image_change_requests
   for select to authenticated using (owner_id = (select auth.uid()));
 create policy business_image_change_requests_admin_read on public.business_image_change_requests
