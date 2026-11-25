@@ -234,6 +234,7 @@ Deno.serve(async (req: Request) => {
             ? /^pending[/]([a-f0-9]{64})[/]([0-9a-f-]{36})[/](logo|cover)[.](jpg|png|webp)$/i.exec(storagePath)
             : null;
           if (!(["logo", "cover"].includes(String(field)) &&
+                typeof storagePath === "string" &&
                 pathMatch && pathMatch[1] === mediaSessionHash && pathMatch[3] === field &&
                 ["image/jpeg", "image/png", "image/webp"].includes(String(mime)) &&
                 Number.isInteger(size) && size > 0 && size <= 5 * 1024 * 1024)) {
