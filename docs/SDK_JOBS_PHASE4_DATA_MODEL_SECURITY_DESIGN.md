@@ -123,7 +123,7 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Publication is separately gated by a JWT-protected Admin Edge Function, approved poster, pending-review state, valid closing date, and employer/Owner identity/contact scan across public text fields.
 - [x] Public list/detail routes, filters, canonical metadata, privacy-safe JobPosting JSON-LD, share actions, Admin WhatsApp CTA, office visit instructions and sitemap entries implemented using the published-only public projection.
 - [x] Rolled-back database tests passed: eligible Owner insert + correctly scoped poster-path attachment; pending job content mutation blocked; cross-job poster path blocked; anon employer ID column read blocked.
-- [x] Final CI [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) passed build and Edge Functions.
+- [x] Final CI [45712577454](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712577454) passed build, TypeScript, automated tests, Cloudflare Pages Function syntax checks and Supabase Edge Functions.
 - [x] Added `get-sdk-job-employer-details` Edge Function; Admin can see linked business and Owner names/contact details via a narrowly scoped, JWT-protected endpoint requiring explicit `sdk_jobs.manage`. No broad RLS grant was added.\n- [ ] Real Owner upload and Admin preview/approval/publication browser acceptance.
 - [ ] Pages deployment and public route/sitemap smoke tests.
 
