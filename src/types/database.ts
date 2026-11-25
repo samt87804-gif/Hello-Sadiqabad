@@ -608,6 +608,50 @@ export interface EdgeFunctionResult<T = unknown> {
   data?: T;
 }
 
+export type SDKJobStatus = 'draft' | 'pending_review' | 'changes_requested' | 'rejected' | 'published' | 'unpublished' | 'closed' | 'expired' | 'archived';
+
+export interface SDKJobRow {
+  id: string;
+  slug: string;
+  employer_owner_id: string;
+  source_business_id: string;
+  title_en: string;
+  title_ur: string | null;
+  summary_en: string;
+  summary_ur: string | null;
+  description_en: string;
+  description_ur: string | null;
+  job_category: string;
+  vacancy_count: number;
+  job_type: string;
+  area_id: string | null;
+  work_location_en: string | null;
+  work_location_ur: string | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_disclosed: boolean;
+  duties_en: string | null;
+  duties_ur: string | null;
+  qualifications_en: string | null;
+  qualifications_ur: string | null;
+  experience_en: string | null;
+  experience_ur: string | null;
+  working_hours_en: string | null;
+  working_hours_ur: string | null;
+  benefits_en: string | null;
+  benefits_ur: string | null;
+  closing_date: string | null;
+  pending_media_path: string | null;
+  approved_image_url: string | null;
+  status: SDKJobStatus;
+  submitted_at: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type GovernmentJobScope = 'punjab' | 'federal' | 'other';
 export type GovernmentJobType = 'regular' | 'contract' | 'project' | 'internship' | 'temporary' | 'other';
 export type GovernmentJobStatus = 'draft' | 'published' | 'closed' | 'expired' | 'cancelled';
