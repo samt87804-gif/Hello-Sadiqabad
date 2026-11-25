@@ -1117,3 +1117,9 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Phase 2 remaining gates: authenticated Admin/Owner click-through, real owner media approval roundtrip and invitation email/redirect verification.
 - Phase 3 remaining gates: authenticated Admin review, official poster upload/share-preview roundtrip, legacy no-poster records owner decision and scheme poster private-draft/public-approved media handling.
 - Continue Phases 4–7 in the exact approved sequence after their prerequisites/gates; do not mark a phase complete without evidence.
+
+
+### Admin performance acceptance preparation — 25 November 2026
+
+- Added `docs/ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md` for repeatable authenticated desktop/mobile timing and regression evidence capture.
+- Phase 1 remains first incomplete phase and is not accepted. The owner’s authenticated browser session is not automatically accessible from this chat; do not claim access to local Chrome or request credentials. Continue once the owner shares a screenshot/screen-share view or an accessible ChatGPT Work/Computer Use session is available.
