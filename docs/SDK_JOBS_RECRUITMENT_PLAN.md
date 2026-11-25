@@ -192,3 +192,15 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 
 - [x] Added slug/path safety migration `20261125222053_sdk_jobs_slug_path_safety`: strict lowercase hyphenated slug constraint; Owner cannot set an unsafe slug or change an existing slug. This prevents a crafted slug from affecting the public poster storage path.
 - [x] Rolled-back DB tests passed: unsafe slug insert denied and Owner slug mutation denied. Live SDK Jobs/history/notes counts remain zero; Security Advisor still reports only the two pre-existing unrelated items.
+
+
+## Database-enforced Admin approval/publication gate — 26 November 2026
+
+- [x] Added migration `20261125222340_sdk_jobs_admin_action_authorization` (ledger 115). A private RLS-protected one-time authorization table is used for poster approval and publication.
+- [x] The public authorization RPC is executable only by `service_role`; anon/authenticated cannot call it. It validates the actor has active Super Admin or explicit `sdk_jobs.manage`, the job is pending review, and poster requirements are met.
+- [x] DB trigger now blocks direct Admin table updates that set `approved_image_url` or transition a job to `published` without a matching 90-second one-time authorization. The trigger consumes the token on success.
+- [x] `review-sdk-job-poster` and `publish-sdk-job` now create the one-time DB authorization only after their server-side validation, then perform the user-scoped update. Edge Functions redeployed with JWT verification enabled.
+- [x] Rolled-back DB tests passed: direct poster approval blocked, direct publish blocked, authorized poster approval and publish succeeded, authorization tokens consumed, no test rows persisted.
+- [x] Privilege check passed: anon=false, authenticated=false, service_role=true for authorization RPC execute.
+- [x] Security Advisor after this migration still shows only the same two unrelated project findings; no SDK Jobs-specific security warning.
+- [x] CI [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357) passed build and Supabase Edge Function checks for the authorization-gated functions.
