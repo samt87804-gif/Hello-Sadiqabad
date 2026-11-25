@@ -13,8 +13,10 @@ interface AdminSdkJob {
   description_en: string; description_ur: string | null; job_category: string;
   vacancy_count: number; job_type: string; work_location_en: string | null;
   work_location_ur: string | null; salary_min: number | null; salary_max: number | null;
-  salary_disclosed: boolean; qualifications_en: string | null; experience_en: string | null;
-  working_hours_en: string | null; closing_date: string | null; pending_media_path: string | null;
+  salary_disclosed: boolean; qualifications_en: string | null; qualifications_ur: string | null;
+  experience_en: string | null; experience_ur: string | null; duties_en: string | null; duties_ur: string | null;
+  working_hours_en: string | null; working_hours_ur: string | null; benefits_en: string | null; benefits_ur: string | null;
+  closing_date: string | null; pending_media_path: string | null;
   approved_image_url: string | null; status: JobStatus; submitted_at: string;
 }
 interface JobHistory { id: string; action: string; old_status: string | null; new_status: string | null; created_at: string; }
@@ -37,6 +39,7 @@ export function SdkJobsManager() {
   const [history, setHistory] = useState<JobHistory[]>([]);
   const [notes, setNotes] = useState<JobNote[]>([]);
   const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
+  const [privacyReviewed, setPrivacyReviewed] = useState(false);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -59,7 +62,7 @@ export function SdkJobsManager() {
   useEffect(() => { void reload(); }, [reload]);
 
   const loadDetail = async (job: AdminSdkJob) => {
-    setSelected(job); setNote(''); setPosterPreviewUrl(null);
+    setSelected(job); setNote(''); setPosterPreviewUrl(null); setPrivacyReviewed(false);
     const client = getSupabaseClient();
     if (!client) return;
     if (job.pending_media_path) {
@@ -96,6 +99,26 @@ export function SdkJobsManager() {
       if (data) await loadDetail(data as AdminSdkJob);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Status could not be updated.', 'error');
+    } finally { setSaving(false); }
+  };
+
+  const publishJob = async () => {
+    if (!selected || !user || !privacyReviewed) return;
+    setSaving(true);
+    try {
+      const client = getSupabaseClient();
+      if (!client) throw new Error('Supabase is not configured.');
+      const { data, error } = await client.functions.invoke('publish-sdk-job', { body: { job_id: selected.id } });
+      if (error) throw error;
+      if (!data?.ok) {
+        const blockers = Array.isArray(data?.blockers) ? data.blockers.join('; ') : '';
+        throw new Error([data?.error || 'Job publication failed.', blockers].filter(Boolean).join(' — '));
+      }
+      showToast('Job published after employer-privacy checks.', 'success');
+      await reload();
+      await loadDetail({ ...selected, status: 'published', pending_media_path: null });
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Job could not be published.', 'error');
     } finally { setSaving(false); }
   };
 
@@ -147,9 +170,11 @@ export function SdkJobsManager() {
             <div className="rounded-xl bg-surface-container-low p-3 text-xs space-y-1"><p className="font-bold flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Private employer linkage — Admin only</p><p>Owner user ID: {selected.employer_owner_id}</p><p>Source business ID: {selected.source_business_id}</p><p>Job record ID: {selected.id}</p><p>Pending media path: {selected.pending_media_path || 'No poster uploaded'}</p><p>Approved public poster: {selected.approved_image_url ? 'Attached' : 'Not attached'}</p></div>
             {posterPreviewUrl && <div className="space-y-2"><p className="text-xs font-bold">{selected.pending_media_path ? 'Private pending poster preview' : 'Approved public poster'}</p><img src={posterPreviewUrl} alt="SDK Job poster preview" className="w-full max-h-64 object-contain rounded-xl border border-outline-variant/40 bg-surface-container-low" />{selected.pending_media_path && <div className="flex flex-wrap gap-2"><Button size="sm" disabled={saving} onClick={() => void reviewPoster('approve')}>Approve poster</Button><Button size="sm" variant="danger" disabled={saving} onClick={() => void reviewPoster('reject')}>Reject poster</Button></div>}</div>}
             <div className="space-y-1"><p className="text-xs font-bold">Full description</p><p className="text-sm whitespace-pre-wrap">{selected.description_en}</p>{selected.description_ur && <p className="font-urdu text-sm whitespace-pre-wrap" dir="rtl">{selected.description_ur}</p>}</div>
-            <div className="grid grid-cols-2 gap-2 text-xs"><p>Location: {selected.work_location_en || 'Not specified'}</p><p>Closing: {selected.closing_date || 'Not specified'}</p><p>Salary disclosed: {selected.salary_disclosed ? 'Yes' : 'No'}</p><p>Qualifications: {selected.qualifications_en || 'Not specified'}</p></div>
+            <div className="grid grid-cols-2 gap-2 text-xs"><p>Location: {selected.work_location_en || 'Not specified'}</p><p>Closing: {selected.closing_date || 'Not specified'}</p><p>Salary disclosed: {selected.salary_disclosed ? 'Yes' : 'No'}</p><p>Salary range: {selected.salary_disclosed ? [selected.salary_min, selected.salary_max].filter((v) => v !== null).join(' – ') || 'Not specified' : 'Hidden'}</p></div>
+            {[['Duties',selected.duties_en,selected.duties_ur],['Qualifications',selected.qualifications_en,selected.qualifications_ur],['Experience',selected.experience_en,selected.experience_ur],['Working hours',selected.working_hours_en,selected.working_hours_ur],['Benefits',selected.benefits_en,selected.benefits_ur]].map(([label,en,ur]) => (en || ur) ? <section key={String(label)} className="space-y-1"><p className="text-xs font-bold">{label}</p><p className="text-sm whitespace-pre-wrap">{en || ''}</p>{ur && <p className="font-urdu text-sm whitespace-pre-wrap" dir="rtl">{ur}</p>}</section> : null)}
+            {selected.status === 'pending_review' && selected.approved_image_url && <label className="flex items-start gap-2 rounded-xl border border-outline-variant/40 p-3 text-xs"><input type="checkbox" checked={privacyReviewed} onChange={(event) => setPrivacyReviewed(event.target.checked)} className="mt-0.5" /><span>I have reviewed every public text field and confirmed it contains no employer/business identity, owner name, phone, email or external contact link. Server-side privacy checks will also run.</span></label>}
             <div className="flex flex-wrap gap-2 border-t border-outline-variant/40 pt-3">
-              {selected.status === 'pending_review' && <><Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('changes_requested')}>Request correction</Button><Button size="sm" variant="danger" disabled={saving} onClick={() => void changeStatus('rejected')}>Reject</Button><Button size="sm" disabled={saving || !selected.approved_image_url} onClick={() => void changeStatus('published')}>Publish</Button></>}
+              {selected.status === 'pending_review' && <><Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('changes_requested')}>Request correction</Button><Button size="sm" variant="danger" disabled={saving} onClick={() => void changeStatus('rejected')}>Reject</Button><Button size="sm" disabled={saving || !selected.approved_image_url || !privacyReviewed} onClick={() => void publishJob()}>Publish after privacy check</Button></>}
               {selected.status === 'published' && <Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('unpublished')}>Unpublish</Button>}
               {['published','pending_review','changes_requested'].includes(selected.status) && <Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('closed')}>Close job</Button>}
               {['closed','unpublished','rejected','changes_requested'].includes(selected.status) && <Button size="sm" variant="outline" disabled={saving} onClick={() => void changeStatus('pending_review')}>Return to review</Button>}
