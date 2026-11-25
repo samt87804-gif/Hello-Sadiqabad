@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { BriefcaseBusiness, Clock3, Copy, ExternalLink, Pencil, Plus, RefreshCw, Save, X } from 'lucide-react';
 import { fetchAllGovernmentJobsAdmin, upsertGovernmentJob } from '../../lib/api';
 import { getGovernmentJobDisplayStatus, getPakistanToday, slugifyGovernmentJobTitle } from '../../lib/governmentJobs';
+import { getGovernmentPublicationErrors } from '../../lib/governmentPublication';
 import type { GovernmentJobRow } from '../../types/database';
 import { Badge, Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
@@ -55,6 +56,7 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
  const [loading,setLoading]=useState(true);
  const [saving,setSaving]=useState(false);
  const [imageUploading,setImageUploading]=useState(false);
+ const [editingPublished,setEditingPublished]=useState(false);
  const [showForm,setShowForm]=useState(false);
  const [query,setQuery]=useState('');
  const [reviewOnly,setReviewOnly]=useState(false);
@@ -73,11 +75,11 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
   });
  },[jobs,query,reviewOnly]);
  const update=(key:keyof FormState,value:string|boolean)=>setForm(previous=>({...previous,[key]:value}));
- const startNew=()=>{setForm(blankForm());setShowForm(true);};
- const edit=(job:GovernmentJobRow)=>{setForm(toForm(job));setShowForm(true);};
+ const startNew=()=>{setForm(blankForm());setEditingPublished(false);setShowForm(true);};
+ const edit=(job:GovernmentJobRow)=>{setForm(toForm(job));setEditingPublished(job.status==='published');setShowForm(true);};
  const duplicate=(job:GovernmentJobRow)=>{
   const copy=toForm(job);copy.id='';copy.slug=job.slug+'-copy';copy.status='draft';copy.source_verified=false;
-  copy.verified_date='';copy.published_at=null;copy.created_by=null;setForm(copy);setShowForm(true);
+  copy.verified_date='';copy.published_at=null;copy.created_by=null;setEditingPublished(false);setForm(copy);setShowForm(true);
  };
  const uploadJobImage=async(file:File|null)=>{
   if(!file)return;
@@ -103,6 +105,10 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
   try{
    const verifiedAt=form.source_verified&&form.verified_date?new Date(form.verified_date+'T12:00:00+05:00').toISOString():null;
    const nextReviewAt=form.next_review_date?new Date(form.next_review_date+'T12:00:00+05:00').toISOString():null;
+   if(form.status==='published'&&!editingPublished){
+    const publicationErrors=getGovernmentPublicationErrors({titleUr:form.title_ur,summaryEn:form.summary_en,summaryUr:form.summary_ur,imageUrl:form.image_url,sourceName:form.source_name,sourceUrl:form.source_url,verifiedAt:verifiedAt});
+    if(publicationErrors.length)throw new Error(publicationErrors.join(' '));
+   }
    await upsertGovernmentJob({
     ...(form.id?{id:form.id}:{}),slug:form.slug.trim()||slugifyGovernmentJobTitle(form.title_en),title_en:form.title_en.trim(),
     title_ur:form.title_ur.trim()||null,summary_en:form.summary_en.trim()||null,summary_ur:form.summary_ur.trim()||null,department_name:form.department_name.trim(),
@@ -141,9 +147,9 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
    <form onSubmit={save} className="space-y-4">
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
      <Field label="Job title (English)" value={form.title_en} required onChange={value=>setForm(previous=>({...previous,title_en:value,slug:previous.slug||slugifyGovernmentJobTitle(value)}))}/>
-     <Field label="Job title (Urdu, optional)" value={form.title_ur} onChange={value=>update('title_ur',value)}/>
+     <Field label="Job title (Urdu — required before publish)" value={form.title_ur} onChange={value=>update('title_ur',value)}/>
      <TextAreaField label="English summary (required before publish)" value={form.summary_en} onChange={value=>update('summary_en',value)}/>
-     <TextAreaField label="Urdu summary (optional)" value={form.summary_ur} onChange={value=>update('summary_ur',value)}/>
+     <TextAreaField label="Urdu summary (required before publish; minimum 20 characters)" value={form.summary_ur} onChange={value=>update('summary_ur',value)}/>
      <Field label="URL slug" value={form.slug} required onChange={value=>update('slug',value.toLowerCase())}/>
      <Field label="Department / authority" value={form.department_name} required onChange={value=>update('department_name',value)}/>
      <label className="block space-y-1"><span className="text-xs font-semibold">Government level *</span><select value={form.department_scope} onChange={event=>update('department_scope',event.target.value)} className="h-10 w-full rounded-xl border border-outline-variant bg-surface px-3 text-sm"><option value="punjab">Punjab Government</option><option value="federal">Federal Government</option><option value="other">Other (verified local relevance only)</option></select></label>
@@ -167,8 +173,8 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
      <TextAreaField label="Application fee / payment instructions" value={form.application_fee_text} onChange={value=>update('application_fee_text',value)}/>
     </div>
     <div className="space-y-3 rounded-xl border border-outline-variant/40 p-3">
-     <h4 className="text-sm font-bold">Job poster / image (optional)</h4>
-     <p className="text-xs text-on-surface-variant">Upload a JPG, PNG, WebP or AVIF image (maximum 5 MB). You can save without an image and add one later.</p>
+     <h4 className="text-sm font-bold">Official job poster / image (required before new publication)</h4>
+     <p className="text-xs text-on-surface-variant">Upload the official advertisement poster as JPG, PNG, WebP or AVIF (maximum 5 MB). New publications require a poster. Existing published legacy records remain editable.</p>
      <label className="block space-y-1"><span className="text-xs font-semibold">Choose job poster</span><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={imageUploading} onChange={event=>{void uploadJobImage(event.target.files?.[0]??null);event.currentTarget.value="";}} className="block w-full text-sm text-on-surface-variant file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-on-primary"/></label>
      {imageUploading&&<p className="text-xs text-on-surface-variant">Uploading image…</p>}
      {form.image_url&&<div className="flex flex-wrap items-center gap-3"><img src={form.image_url} alt="Job poster preview" className="h-28 w-40 rounded-xl border border-outline-variant object-contain bg-surface"/><div className="space-y-2"><p className="text-xs text-on-surface-variant break-all">Image uploaded. Save this job to link it.</p><Button type="button" size="sm" variant="outline" onClick={()=>update("image_url","")}>Remove image</Button></div></div>}
