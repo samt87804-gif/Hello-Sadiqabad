@@ -91,6 +91,23 @@ async function limited(key: string, limit: number, seconds: number) {
   return !error && data === true;
 }
 
+function isValidOpeningHours(value: unknown): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const input = value as Record<string, unknown>;
+  const allowedDays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  if (Object.keys(input).some((key) => !allowedDays.includes(key))) return false;
+  const timePattern = /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
+  return Object.entries(input).every(([day, ranges]) => {
+    if (!allowedDays.includes(day) || !Array.isArray(ranges) || ranges.length > 2) return false;
+    return ranges.every((range) => {
+      if (!range || typeof range !== "object" || Array.isArray(range)) return false;
+      const item = range as Record<string, unknown>;
+      return typeof item.open === "string" && typeof item.close === "string" &&
+        timePattern.test(item.open) && timePattern.test(item.close) && item.open < item.close;
+    });
+  });
+}
+
 function isSafeGoogleMapsUrl(value: unknown): value is string {
   if (typeof value !== "string" || !value.trim()) return false;
   try {
@@ -216,6 +233,21 @@ Deno.serve(async (req: Request) => {
           (!Array.isArray(payload.services_en) || payload.services_en.length > 2 ||
            payload.services_en.some((value) => typeof value !== "string" || value.length > 80))) {
         return reply(req, { ok: false, error: "Select no more than 2 business facilities" }, 400);
+      }
+      const optionalTextFields: Array<[string, number]> = [
+        ["name_ur", 120], ["address_ur", 250], ["landmark_en", 120],
+        ["landmark_ur", 120], ["description_en", 500],
+      ];
+      for (const [field, maxLength] of optionalTextFields) {
+        const value = payload[field];
+        if (value !== undefined && value !== null && value !== "" &&
+            !validString(value, 1, maxLength)) {
+          return reply(req, { ok: false, error: `Invalid ${field} value` }, 400);
+        }
+      }
+      if (payload.opening_hours !== undefined && payload.opening_hours !== null &&
+          !isValidOpeningHours(payload.opening_hours)) {
+        return reply(req, { ok: false, error: "Invalid opening hours" }, 400);
       }
       if (!Array.isArray(mediaInput) || mediaInput.length > 2) {
         return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
