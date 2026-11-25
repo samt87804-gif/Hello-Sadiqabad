@@ -1,24 +1,26 @@
 import React,{useEffect,useMemo,useState} from 'react';
-import {Clock3,ExternalLink,History,Plus,RefreshCw,Save,ShieldAlert} from 'lucide-react';
+import {Clock3,ExternalLink,History,Plus,RefreshCw,Save,ShieldAlert,Upload} from 'lucide-react';
 import {fetchAllGovernmentSchemesAdmin,fetchGovernmentSchemeReports,fetchGovernmentSchemeRevisions,markGovernmentSchemeReportReviewed,upsertGovernmentScheme} from '../../lib/governmentSchemes';
 import type {GovernmentSchemeRow,GovernmentSchemeReportRow,GovernmentSchemeRevisionRow} from '../../types/database';
 import {Badge,Card} from '../ui/Surface';
 import {Button} from '../ui/Button';
 import {useToast} from '../ui/Toast';
+import {getSupabaseClient} from '../../lib/supabase';
+import {getGovernmentPublicationErrors} from '../../lib/governmentPublication';
 
 type FormState={
  id:string;slug:string;title_en:string;title_ur:string;summary_en:string;summary_ur:string;government_scope:string;category:string;benefit_type:string;
  benefit_details:string;eligibility_text:string;required_documents:string;application_steps:string;fees_and_repayment:string;
- official_apply_url:string;source_name:string;source_url:string;source_document_url:string;intake_status:string;
+ official_apply_url:string;source_name:string;source_url:string;source_document_url:string;image_url:string;intake_status:string;
  application_open_at:string;deadline_at:string;status:string;verified_date:string;next_review_date:string;published_at:string|null;created_by:string|null;
 };
 function blank():FormState{return {id:'',slug:'',title_en:'',title_ur:'',summary_en:'',summary_ur:'',government_scope:'punjab',category:'other',benefit_type:'other',
  benefit_details:'',eligibility_text:'',required_documents:'',application_steps:'',fees_and_repayment:'',official_apply_url:'',source_name:'',source_url:'',
- source_document_url:'',intake_status:'unconfirmed',application_open_at:'',deadline_at:'',status:'draft',verified_date:'',next_review_date:'',published_at:null,created_by:null};}
+ source_document_url:'',image_url:'',intake_status:'unconfirmed',application_open_at:'',deadline_at:'',status:'draft',verified_date:'',next_review_date:'',published_at:null,created_by:null};}
 function toForm(row:GovernmentSchemeRow):FormState{return {...blank(),id:row.id,slug:row.slug,title_en:row.title_en,title_ur:row.title_ur??'',summary_en:row.summary_en??'',summary_ur:row.summary_ur??'',
  government_scope:row.government_scope,category:row.category,benefit_type:row.benefit_type,benefit_details:row.benefit_details,eligibility_text:row.eligibility_text,
  required_documents:(row.required_documents??[]).join('\n'),application_steps:row.application_steps??'',fees_and_repayment:row.fees_and_repayment??'',
- official_apply_url:row.official_apply_url??'',source_name:row.source_name??'',source_url:row.source_url??'',source_document_url:row.source_document_url??'',
+ official_apply_url:row.official_apply_url??'',source_name:row.source_name??'',source_url:row.source_url??'',source_document_url:row.source_document_url??'',image_url:row.image_url??'',
  intake_status:row.intake_status,application_open_at:row.application_open_at??'',deadline_at:row.deadline_at??'',status:row.status,
  verified_date:row.verified_at?row.verified_at.slice(0,10):'',next_review_date:row.next_review_at?row.next_review_at.slice(0,10):'',published_at:row.published_at,created_by:row.created_by};}
 function Field({label,value,onChange,type='text',required=false}:{label:string;value:string;onChange:(v:string)=>void;type?:string;required?:boolean}){return <label className="block min-w-0 space-y-1"><span className="text-xs font-semibold">{label}{required?' *':''}</span><input type={type} required={required} value={value} onChange={e=>onChange(e.target.value)} className="h-10 w-full rounded-xl border border-outline-variant bg-surface px-3 text-sm"/></label>;}
@@ -38,6 +40,8 @@ export function GovernmentSchemesManager({actorId}:{actorId:string}){
  const [form,setForm]=useState<FormState>(blank());
  const [loading,setLoading]=useState(true);
  const [saving,setSaving]=useState(false);
+ const [imageUploading,setImageUploading]=useState(false);
+ const [editingPublished,setEditingPublished]=useState(false);
  const [showForm,setShowForm]=useState(false);
  const [query,setQuery]=useState('');
  const [reviewOnly,setReviewOnly]=useState(false);
@@ -49,31 +53,52 @@ export function GovernmentSchemesManager({actorId}:{actorId:string}){
  const filtered=useMemo(()=>{const term=query.trim().toLocaleLowerCase();return schemes.filter(s=>{if(reviewOnly&&(!s.next_review_at||Date.parse(s.next_review_at)>Date.now()))return false;return !term||[s.title_en,s.slug,s.source_name,s.government_scope,s.category].filter(Boolean).join(' ').toLocaleLowerCase().includes(term);});},[schemes,query,reviewOnly]);
  const update=(key:keyof FormState,value:string)=>setForm(prev=>({...prev,[key]:value}));
  const toggleHistory=async(row:GovernmentSchemeRow)=>{if(historySchemeId===row.id){setHistorySchemeId(null);setHistoryRows([]);return;}try{setHistoryRows(await fetchGovernmentSchemeRevisions(row.id));setHistorySchemeId(row.id);}catch(error){showToast(error instanceof Error?error.message:'Revision history could not be loaded.','error');}};
- const edit=(row:GovernmentSchemeRow)=>{setForm(toForm(row));setShowForm(true);};
+ const edit=(row:GovernmentSchemeRow)=>{setForm(toForm(row));setEditingPublished(row.status==='published');setShowForm(true);};
+ const uploadSchemeImage=async(file:File|null)=>{
+  if(!file)return;
+  if(!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type)){showToast('Upload a JPG, PNG, WebP or AVIF poster.','error');return;}
+  if(file.size<=0||file.size>5*1024*1024){showToast('Scheme poster must be 5 MB or smaller.','error');return;}
+  const client=getSupabaseClient();if(!client){showToast('Poster upload requires the connected database.','error');return;}
+  setImageUploading(true);
+  try{
+   let uploadFile=file;const extensions:Record<string,string>={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'};
+   if(typeof createImageBitmap==='function'){
+    const bitmap=await createImageBitmap(file);
+    try{const scale=Math.min(1,1800/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const context=canvas.getContext('2d');if(context){context.drawImage(bitmap,0,0,canvas.width,canvas.height);const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/webp',0.88));if(blob&&blob.type==='image/webp'&&blob.size<file.size)uploadFile=new File([blob],(file.name.replace(/\\.[^.]+$/,'')||'scheme-poster')+'.webp',{type:'image/webp',lastModified:Date.now()});}}
+    finally{bitmap.close();}
+   }
+   const extension=extensions[uploadFile.type]||'webp';const path='government-schemes/'+actorId+'/'+crypto.randomUUID()+'.'+extension;
+   const {data,error}=await client.storage.from('Hello Sadiqabad').upload(path,uploadFile,{cacheControl:'3600',contentType:uploadFile.type,upsert:false});if(error)throw error;
+   const {data:publicData}=client.storage.from('Hello Sadiqabad').getPublicUrl(data.path);update('image_url',publicData.publicUrl);showToast('Official scheme poster uploaded. Save the scheme to link it.','success');
+  }catch(error){showToast(error instanceof Error?error.message:'Scheme poster could not be uploaded.','error');}
+  finally{setImageUploading(false);}
+ };
  const save=async(event:React.FormEvent)=>{event.preventDefault();setSaving(true);try{
   const verifiedAt=form.verified_date?new Date(form.verified_date+'T12:00:00+05:00').toISOString():null;
   const nextReview=form.next_review_date?new Date(form.next_review_date+'T12:00:00+05:00').toISOString():null;
+  if(form.status==='published'&&!editingPublished){const errors=getGovernmentPublicationErrors({titleUr:form.title_ur,summaryEn:form.summary_en,summaryUr:form.summary_ur,imageUrl:form.image_url,sourceName:form.source_name,sourceUrl:form.source_url,verifiedAt});if(errors.length)throw new Error(errors.join(' '));}
   await upsertGovernmentScheme({id:form.id||undefined,slug:form.slug,title_en:form.title_en,title_ur:form.title_ur||null,summary_en:form.summary_en||null,summary_ur:form.summary_ur||null,
    government_scope:form.government_scope as GovernmentSchemeRow['government_scope'],category:form.category as GovernmentSchemeRow['category'],benefit_type:form.benefit_type as GovernmentSchemeRow['benefit_type'],
    benefit_details:form.benefit_details,eligibility_text:form.eligibility_text,required_documents:form.required_documents.split('\n').map(x=>x.trim()).filter(Boolean),
    application_steps:form.application_steps||null,fees_and_repayment:form.fees_and_repayment||null,official_apply_url:form.official_apply_url||null,
-   source_name:form.source_name||null,source_url:form.source_url||null,source_document_url:form.source_document_url||null,
+   source_name:form.source_name||null,source_url:form.source_url||null,source_document_url:form.source_document_url||null,image_url:form.image_url||null,
    intake_status:form.intake_status as GovernmentSchemeRow['intake_status'],application_open_at:form.application_open_at||null,deadline_at:form.deadline_at||null,
    status:form.status as GovernmentSchemeRow['status'],verified_at:verifiedAt,next_review_at:nextReview,published_at:form.published_at,created_by:form.created_by},actorId);
   showToast('Government scheme saved.','success');setShowForm(false);setForm(blank());await reload();
  }catch(error){showToast(error instanceof Error?error.message:'Scheme could not be saved.','error');}finally{setSaving(false);}};
  const review=async(report:GovernmentSchemeReportRow)=>{try{await markGovernmentSchemeReportReviewed(report.id,actorId,reviewNote[report.id]||'');showToast('Report marked as reviewed.','success');await reload();}catch(error){showToast(error instanceof Error?error.message:'Report could not be updated.','error');}};
  return <div className="space-y-5">
-  <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-extrabold">Government Schemes</h2><p className="text-sm text-on-surface-variant">Manage Punjab and Federal programme information, verify official sources and review public corrections.</p></div><div className="flex gap-2"><Button size="sm" variant="outline" onClick={()=>void reload()} leftIcon={<RefreshCw className="w-4 h-4"/>}>Refresh</Button><Button size="sm" onClick={()=>{setForm(blank());setShowForm(true);}} leftIcon={<Plus className="w-4 h-4"/>}>Add scheme</Button></div></div>
+  <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-extrabold">Government Schemes</h2><p className="text-sm text-on-surface-variant">Manage Punjab and Federal programme information, verify official sources and review public corrections.</p></div><div className="flex gap-2"><Button size="sm" variant="outline" onClick={()=>void reload()} leftIcon={<RefreshCw className="w-4 h-4"/>}>Refresh</Button><Button size="sm" onClick={()=>{setForm(blank());setEditingPublished(false);setShowForm(true);}} leftIcon={<Plus className="w-4 h-4"/>}>Add scheme</Button></div></div>
   <Card className="p-4 space-y-2"><div className="flex items-center gap-2 font-bold"><ShieldAlert className="w-5 h-5 text-amber-600"/>Publishing safety</div><p className="text-xs text-on-surface-variant">Only publish when the official source and verification date are recorded. Keep intake “Not confirmed” unless the current application window is independently verified. Never collect CNIC, OTP, bank details or application documents on Hello Sadiqabad.</p></Card>
   {showForm&&<Card className="p-4 space-y-4"><div className="flex justify-between items-center"><h3 className="font-bold">{form.id?'Edit scheme':'New scheme'}</h3><Button size="sm" variant="ghost" onClick={()=>setShowForm(false)}>Close</Button></div>
    <form onSubmit={save} className="space-y-4">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><Field label="English title" value={form.title_en} onChange={v=>update('title_en',v)} required/><Field label="Urdu title" value={form.title_ur} onChange={v=>update('title_ur',v)}/><Field label="URL slug" value={form.slug} onChange={v=>update('slug',v)} required/><Choice label="Government level" value={form.government_scope} onChange={v=>update('government_scope',v)} options={scopeOptions}/><Choice label="Category" value={form.category} onChange={v=>update('category',v)} options={categoryOptions}/><Choice label="Benefit type" value={form.benefit_type} onChange={v=>update('benefit_type',v)} options={benefitOptions}/></div>
-    <Area label="English summary (20–800 chars)" value={form.summary_en} onChange={v=>update('summary_en',v)}/><Area label="Urdu summary" value={form.summary_ur} onChange={v=>update('summary_ur',v)}/>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><Field label="English title" value={form.title_en} onChange={v=>update('title_en',v)} required/><Field label="Urdu title (required before publish)" value={form.title_ur} onChange={v=>update('title_ur',v)}/><Field label="URL slug" value={form.slug} onChange={v=>update('slug',v)} required/><Choice label="Government level" value={form.government_scope} onChange={v=>update('government_scope',v)} options={scopeOptions}/><Choice label="Category" value={form.category} onChange={v=>update('category',v)} options={categoryOptions}/><Choice label="Benefit type" value={form.benefit_type} onChange={v=>update('benefit_type',v)} options={benefitOptions}/></div>
+    <Area label="English summary (20–800 chars)" value={form.summary_en} onChange={v=>update('summary_en',v)}/><Area label="Urdu summary (required before publish; minimum 20 characters)" value={form.summary_ur} onChange={v=>update('summary_ur',v)}/>
     <Area label="Benefits / financial terms" value={form.benefit_details} onChange={v=>update('benefit_details',v)} required/><Area label="Eligibility criteria" value={form.eligibility_text} onChange={v=>update('eligibility_text',v)} required/>
     <Area label="Documents / information to prepare (one per line)" value={form.required_documents} onChange={v=>update('required_documents',v)}/><Area label="Application steps / official process" value={form.application_steps} onChange={v=>update('application_steps',v)}/><Area label="Fees, markup and repayment details" value={form.fees_and_repayment} onChange={v=>update('fees_and_repayment',v)}/>
+    <div className="space-y-3 rounded-xl border border-outline-variant/50 p-3"><div><h4 className="text-sm font-bold">Official scheme poster (required before new publication)</h4><p className="mt-1 text-xs text-on-surface-variant">Upload an official government poster or verified programme image. JPG, PNG, WebP or AVIF; maximum 5 MB. Large images are resized and WebP-compressed when this reduces file size. Existing published legacy records remain editable.</p></div><label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-on-primary"><Upload className="h-4 w-4"/>Choose poster<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={imageUploading} className="sr-only" onChange={event=>{void uploadSchemeImage(event.target.files?.[0]??null);event.currentTarget.value='';}}/></label>{imageUploading&&<p className="text-xs text-on-surface-variant">Uploading poster…</p>}{form.image_url&&<div className="flex flex-wrap items-center gap-3"><img src={form.image_url} alt="Scheme poster preview" className="h-32 w-44 rounded-xl border border-outline-variant object-contain bg-surface"/><div className="min-w-0 space-y-2"><p className="break-all text-xs text-on-surface-variant">Poster uploaded. Save the scheme to link it.</p><Button type="button" size="sm" variant="outline" onClick={()=>update('image_url','')}>Remove poster</Button></div></div>}</div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><Field label="Official source name" value={form.source_name} onChange={v=>update('source_name',v)}/><Field label="Official source URL (HTTPS)" value={form.source_url} onChange={v=>update('source_url',v)}/><Field label="Official source document URL" value={form.source_document_url} onChange={v=>update('source_document_url',v)}/><Field label="Official application portal URL" value={form.official_apply_url} onChange={v=>update('official_apply_url',v)} required={form.intake_status==='open'}/><Choice label="Current intake status" value={form.intake_status} onChange={v=>update('intake_status',v)} options={intakeOptions}/><Choice label="Publication" value={form.status} onChange={v=>update('status',v)} options={ [['draft','Draft — private'],['published','Published — public'],['archived','Archived — private']]}/><Field label="Application opens" type="date" value={form.application_open_at} onChange={v=>update('application_open_at',v)}/><Field label="Application deadline" type="date" value={form.deadline_at} onChange={v=>update('deadline_at',v)}/><Field label="Last verified date" type="date" value={form.verified_date} onChange={v=>update('verified_date',v)}/><Field label="Next review date" type="date" value={form.next_review_date} onChange={v=>update('next_review_date',v)} required={form.intake_status==='open'}/></div>
-    <div className="flex justify-end"><Button type="submit" disabled={saving} leftIcon={<Save className="w-4 h-4"/>}>{saving?'Saving…':'Save scheme'}</Button></div>
+    <div className="flex justify-end"><Button type="submit" disabled={saving||imageUploading} leftIcon={<Save className="w-4 h-4"/>}>{saving?'Saving…':'Save scheme'}</Button></div>
    </form>
   </Card>}
   <Card className="p-4 space-y-3"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">Scheme records ({schemes.length})</h3><div className="flex flex-wrap gap-2"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search schemes" className="h-9 max-w-xs rounded-xl border border-outline-variant bg-surface px-3 text-sm"/><Button size="sm" variant={reviewOnly?"primary":"outline"} onClick={()=>setReviewOnly(v=>!v)} leftIcon={<Clock3 className="w-4 h-4"/>}>Needs re-verification</Button></div></div>
