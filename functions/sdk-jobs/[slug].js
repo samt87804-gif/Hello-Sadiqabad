@@ -27,13 +27,13 @@ function safeImage(value) {
 function setMeta(html, attribute, name, value) {
   const pattern = new RegExp('<meta\\b(?=[^>]*\\b' + attribute + '\\s*=\\s*["\\x27]' + name + '["\\x27])[^>]*>', 'i');
   const tag = '<meta ' + attribute + '="' + escapeHtml(name) + '" content="' + escapeHtml(value) + '" />';
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\\n</head>');
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\n</head>');
 }
 
 function setCanonical(html, url) {
   const tag = '<link rel="canonical" href="' + escapeHtml(url) + '" />';
   const pattern = /<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/i;
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\\n</head>');
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\n</head>');
 }
 
 function employmentType(value) {
@@ -73,7 +73,7 @@ function buildMetadata(html, job, canonicalUrl) {
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
     title: job.title_en || job.title_ur || 'Local vacancy',
-    description: [job.summary_en, job.description_en, job.qualifications_en, job.experience_en].filter(Boolean).join('\\n\\n'),
+    description: [job.summary_en, job.description_en, job.qualifications_en, job.experience_en].filter(Boolean).join('\n\n'),
     datePosted: job.published_at,
     ...(job.closing_date ? { validThrough: job.closing_date + 'T23:59:59+05:00' } : {}),
     employmentType: employmentType(job.job_type),
@@ -87,7 +87,7 @@ function buildMetadata(html, job, canonicalUrl) {
   const jsonText = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
   const script = '<script id="hs-sdk-job-json-ld" type="application/ld+json">' + jsonText + '</script>';
   const existing = /<script\b(?=[^>]*\bid=["']hs-sdk-job-json-ld["'])[^>]*>[\s\S]*?<\/script>/i;
-  output = existing.test(output) ? output.replace(existing, script) : output.replace(/<\/head>/i, script + '\\n</head>');
+  output = existing.test(output) ? output.replace(existing, script) : output.replace(/<\/head>/i, script + '\n</head>');
   return output;
 }
 
