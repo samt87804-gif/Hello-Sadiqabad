@@ -39,6 +39,10 @@ async function testViewport(browser, name, viewport, isMobile) {
 
   const selects = page.locator('select');
   assert.equal(await selects.count(), 2, 'Add Business should expose Category and Area selectors');
+  assert.equal(await page.getByText(/Business category|کاروبار کی کیٹیگری/).count(), 1, 'Styled category panel heading should be visible');
+  assert.equal(await page.getByText(/Business area|کاروبار کا علاقہ/).count(), 1, 'Styled area panel heading should be visible');
+  assert.equal(await page.getByText(/Choose image|تصویر منتخب کریں/).count(), 2, 'Both image upload cards should show their styled choose-image action');
+  assert.equal(await page.getByText(/Business images|کاروبار کی تصاویر/).count(), 1, 'Image upload section heading should be visible');
   const category = selects.nth(0);
   const area = selects.nth(1);
   await page.waitForFunction(() => {
