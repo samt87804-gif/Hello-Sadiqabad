@@ -1030,15 +1030,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 ## SDK Jobs Phase 4 — poster lifecycle and public board update (26 November 2026)
 
-- [x] Live migration `20261125220215_sdk_jobs_poster_private_upload`; migration ledger now 112 versions.
+- [x] Live migrations `20261125220215_sdk_jobs_poster_private_upload` and `20261125221201_sdk_jobs_owner_visible_feedback`; migration ledger now 113 versions.
 - [x] Private pending-media policy scoped to SDK Jobs and explicit `sdk_jobs.manage`; existing 5 MiB JPEG/PNG/WebP private bucket reused.
 - [x] Owner signed poster upload + retry UI; server checks active Owner, own pending-review job and rate limits.
 - [x] Admin private poster preview, magic-byte validation, approve/reject and public media promotion.
 - [x] Admin privacy acknowledgement and server-side publication gate (business/Owner identity, phone/email and external link scan).
 - [x] Public SDK Jobs list/detail routes, filters, privacy-safe structured data/canonical sharing, Admin WhatsApp CTA, office visit instructions, header/footer navigation and dynamic sitemap.
-- [x] Rolled-back database tests passed for owner job submission/poster path, content immutability while pending, cross-job path rejection and anonymous employer-ID denial.
-- [x] Final CI run [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) passed build and Edge Functions.
-- [ ] Authenticated Owner/Admin browser upload/preview/approve/publish acceptance.
+- [x] Rolled-back database tests passed for owner job submission/poster path, content immutability while pending, cross-job path rejection, anonymous employer-ID denial, Owner feedback read/write rules and correction resubmission.
+- [x] Final CI run [45711210914](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711210914) passed build and Edge Functions.
+- [x] Owner correction feedback/resubmission workflow added; published-job editing remains disabled pending version-preservation design.\n- [ ] Authenticated Owner/Admin browser upload/preview/approve/publish acceptance.
 - [ ] Production Pages deployment and public endpoint/sitemap smoke tests.
 - [x] Admin detail now resolves linked business and Owner name/contact through JWT-protected `get-sdk-job-employer-details`, gated by explicit `sdk_jobs.manage`; no broad RLS grants added.
 
