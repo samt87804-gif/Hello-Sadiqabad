@@ -1107,3 +1107,13 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 - [x] News bottom-nav preservation: final order Home, Search, News, Gov, SDK Jobs, Saved. Code commit `981bda1ae6a212cef613021ad1e16188e4f6ee93` passed CI [45716487169](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716487169) and Cloudflare Pages production deployment `8c1fd329-f5fd-484c-b7c7-c8428bd49713` succeeded. Canonical production alias is on successful descendant deployment `4f484193-c01c-4f2f-9147-c0becbdc6cbc`, which includes the News change.
 - [ ] Rendered production mobile acceptance for all six items, Urdu labels and News route active-state/deep link.
+
+
+## Phase 6 navigation regression checkpoint — 26 November 2026
+
+- [x] Current-main source review confirms both new regression scripts are wired into `npm test`; assertions align with the six-item mobile navigation, Gov card routes/bilingual fields, canonical metadata, sitemap entry and preserved Emergency route/card.
+- [x] Cloudflare Pages production deployment succeeded for main commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` (`test: protect nav routes and Emergency access`); deployment `b8bc6c05-4e89-4dcf-ba73-c9b31d6dd1b7`, canonical alias `https://hellosadiqabad.com`.
+- [ ] GitHub Actions run `45717263569` conclusion still needs confirmation; connected status/jobs reads returned no records, so CI is not marked passed.
+- [ ] Execute/confirm the Node regression tests; source review alone is not test execution.
+- [ ] Rendered production acceptance: six-item mobile layout, Urdu RTL, four Gov card deep links and Emergency card/route. Browser Rendering was rate-limited at checkpoint; wait for its cooldown before retrying.
+- **Gate remains open:** do not mark Phase 6 accepted until CI/test and rendered/owner acceptance evidence exists.

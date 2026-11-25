@@ -586,3 +586,16 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Both scripts are included in `npm test`.
 - [ ] Latest CI run [45717263569](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45717263569) was queued at checkpoint; recheck before calling the tests passed.
 - [ ] Owner rendered acceptance of six-item layout, Urdu RTL, Gov card deep links and Emergency access remains open.
+
+
+## Phase 6 navigation regression checkpoint — 26 November 2026
+
+- Reviewed the latest navigation test additions and the source they protect. The six-item mobile order is Home, Search, News, Gov, SDK Jobs, Saved; the Emergency route and Home card link remain present.
+- The Gov landing has four bilingual destination cards (Government Jobs, Government Schemes, Local Authorities, Authority Profiles); each target route is registered. `/gov` has canonical SEO metadata and is included in the public sitemap.
+- Both regression tests are wired into `npm test`.
+- Latest main commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` was deployed successfully to Cloudflare Pages production (deployment `b8bc6c05-4e89-4dcf-ba73-c9b31d6dd1b7`; canonical alias `https://hellosadiqabad.com`).
+- GitHub Actions run `45717263569` could not be confirmed through the connected status/jobs reads; do not report CI as passed until its conclusion is checked.
+- No local test execution is claimed. Six-item rendered mobile layout, Urdu RTL, Gov deep links and Emergency access remain unverified after the News restoration. Browser Rendering was rate-limited at checkpoint; respect the returned cooldown.
+- No application/database/customer data or Cloudflare configuration was changed during this checkpoint.
+
+**Next action:** verify the GitHub Actions run, then complete rendered production/mobile acceptance after Browser Rendering is available. Keep Phase 6 open until evidence is recorded.

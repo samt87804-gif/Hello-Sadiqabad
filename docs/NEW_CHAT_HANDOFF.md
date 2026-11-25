@@ -1243,3 +1243,18 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Both scripts are wired into `npm test`.
 - Latest CI run [45717263569](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45717263569) was queued at checkpoint. Recheck status and fix any failure before claiming test pass or deploying the test-only commits.
 - Remaining owner acceptance: rendered mobile layout, Urdu RTL, Gov card deep links and preserved Emergency card/route. Phase 5 PII implementation remains blocked by owner policy approvals in `docs/SDK_JOBS_PHASE5_PRIVACY_SECURITY_DESIGN.md`.
+
+
+## Phase 6 navigation regression checkpoint — 26 November 2026
+
+- Current main checkpoint: `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c` — `test: protect nav routes and Emergency access`.
+- Reviewed `scripts/gov-navigation.test.mjs`, `scripts/mobile-bottom-nav.test.mjs`, `package.json`, and their current source targets.
+- Both regression scripts are included in `npm test`. Static source review confirms the expected six-item order (Home, Search, News, Gov, SDK Jobs, Saved), the four Gov card destinations, bilingual card fields, `/gov` canonical metadata and sitemap entry, and preserved Emergency route/Home card link.
+- Cloudflare Pages production deployment succeeded for the latest main commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c`: deployment `b8bc6c05-4e89-4dcf-ba73-c9b31d6dd1b7`, production alias `https://hellosadiqabad.com`. The Pages build and deploy stages both report success.
+- GitHub Actions run `45717263569` is still **not independently confirmed**: the connected GitHub status/jobs reads returned no status/job records. Do not mark CI green until its actual conclusion is checked in GitHub Actions.
+- No local execution of the two Node regression tests has been recorded in this checkpoint.
+- Rendered acceptance for the updated six-item mobile layout, Urdu RTL, Gov card deep links and Emergency card/route remains open. The attempted Cloudflare Browser Rendering snapshot was rate-limited with a 3,305-second cooldown; do not retry before that cooldown.
+- Earlier `/gov` 390×844 rendering evidence predates the News restoration and therefore does not prove the current six-item layout.
+- No application code, Supabase schema/data, Cloudflare DNS or environment settings were changed during this checkpoint.
+
+**Next:** confirm CI run `45717263569`; after the Browser Rendering cooldown, verify the production six-item mobile layout, Urdu RTL, all four Gov card deep links and Emergency access. Phase 6 remains open until these checks are evidenced.
