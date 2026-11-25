@@ -1142,3 +1142,16 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Storage metadata confirms both uploaded files are WebP: logo 9,064 bytes and cover 34,118 bytes (42.2 KiB total). Compression was applied before upload.
 - Current totals: 4 pending new-business submissions, 39 pending field-review rows across 4 submissions, 2 pending media assets and 0 pending owner image-change requests. No record was reviewed, changed or deleted.
 - Public form submission/compression gate is production-verified. Admin Field Review visual click-through, media approval and public rendering, plus owner invitation email/redirect remain pending. Phase 1 performance acceptance is still first incomplete.
+
+
+## New canonical continuation — SDK Jobs Phase 4 — 26 November 2026
+
+- Owner explicitly confirmed all testing through master workstream 4.3 (Government Jobs and Government Schemes) is complete and working. Record master workstreams 4.1–4.3 and implementation Phases 1–3 as owner-accepted. Do not ask the owner to repeat those tests; investigate only if a regression is reported.
+- Next approved workstream: **4.4 SDK Jobs — local private-sector jobs and Admin referral service**, starting with Phase 4 (data, moderation and public board). Phase 5 candidate/recruitment operations follows later; Phase 6 Gov landing/mobile navigation comes after Phases 4–5.
+- New audit/design: `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`. The current repo/live schema has no SDK Jobs table, route, owner job form, Admin manager or Edge Function. Government Jobs is a separate existing feature and must not be reused as the SDK Jobs backend.
+- Owner eligibility must be enforced server-side: authenticated active profile with `role='owner'` and a selected published business where `businesses.owner_id=auth.uid()`.
+- New Admin permission is `sdk_jobs.manage`; wire it explicitly through TypeScript permission keys, staff permission editor, Admin nav/tab, `public.my_permissions()` and RLS/server checks. No automatic grants via broad staff types.
+- Keep employer/business linkage private. Public clients must use a strict published-only projection that excludes owner/business IDs and contacts, Admin notes, private media paths and all future candidate data. Base `sdk_jobs` table must not be publicly selectable.
+- Live migration ledger inspected: 108 applied versions; do not replay baseline. Candidate personal data must not be collected until Phase 5 defines consent, retention/deletion, and access controls.
+- Phase 4 audit/design is documented; no app code, production schema, RLS, Storage or existing data changed during this audit. Next action: finish exact areas/staff-permission/Storage checks, then implement and test the first additive schema/permission migration.
+- User-facing communication remains concise Roman Urdu; work directly on `main`; no branches/PRs; preserve all existing data and security boundaries.
