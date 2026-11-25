@@ -315,24 +315,36 @@ export function AdminPortal() {
       const can = (permission: PermissionKey) => isSuperAdmin || hasPermission(permission);
       if (!businessesLoaded && !quickSearchLoading.current.businesses && (can('business.create') || can('business.publish'))) {
         quickSearchLoading.current.businesses = true;
-        void fetchAdminBusinesses().then(setBusinesses).then(() => setBusinessesLoaded(true)).catch(() => {
+        void fetchAdminBusinesses().then((result) => {
+          setBusinesses(result);
           setBusinessesLoaded(true);
+          loadedAdminData.current.businesses = true;
+        }).catch(() => {
+          setBusinessesLoaded(false);
         }).finally(() => {
           quickSearchLoading.current.businesses = false;
         });
       }
       if (!leadsLoaded && !quickSearchLoading.current.leads && can('leads.manage')) {
         quickSearchLoading.current.leads = true;
-        void fetchLeads().then(setLeads).then(() => setLeadsLoaded(true)).catch(() => {
+        void fetchLeads().then((result) => {
+          setLeads(result);
           setLeadsLoaded(true);
+          loadedAdminData.current.leads = true;
+        }).catch(() => {
+          setLeadsLoaded(false);
         }).finally(() => {
           quickSearchLoading.current.leads = false;
         });
       }
       if (!profilesLoaded && !quickSearchLoading.current.profiles && can('owners.create')) {
         quickSearchLoading.current.profiles = true;
-        void fetchProfilesAdmin().then(setProfiles).then(() => setProfilesLoaded(true)).catch(() => {
+        void fetchProfilesAdmin().then((result) => {
+          setProfiles(result);
           setProfilesLoaded(true);
+          loadedAdminData.current.profiles = true;
+        }).catch(() => {
+          setProfilesLoaded(false);
         }).finally(() => {
           quickSearchLoading.current.profiles = false;
         });
