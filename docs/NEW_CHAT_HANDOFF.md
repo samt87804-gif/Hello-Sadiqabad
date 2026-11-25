@@ -1133,3 +1133,12 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Field-review RLS read policies remain limited to Super Admin or `moderation.review`; no database, RLS, Storage, Auth or production data changes were made in this continuation.
 - Image compression code is active: logo max dimension 640px; cover max dimension 1800px; WebP quality 0.84, retry 0.72 for outputs over 4 MB; original retained only if conversion is unavailable or not smaller. Failed-attempt Storage logs showed 9,064-byte logo and 34,118-byte cover temporary outputs.
 - **First incomplete expansion phase remains Phase 1 — Admin Business/Data Quality performance acceptance.** The owner confirmed Businesses page and 50-row pagination work (677 total rows, 14 pages). Authenticated Data Quality smoke, cold/warm desktop measurements, mobile checks and permission/error regression evidence remain outstanding. Local Chrome is not accessible automatically from this chat; never request credentials, OTPs, cookies or access tokens. Continue all repo/CI/DB read-only work independently and ask only for the specific authenticated browser action that cannot be performed through connected tools.
+
+
+### Live Add Business roundtrip — 26 November 2026
+
+- After the upload-session hotfix, production logs show two signed upload authorization requests returned HTTP 200 and `submit-suggestion` v11 returned HTTP 200 at 2026-11-25 19:09:12 UTC.
+- Read-only database check confirms one `new_business` submission with status `new` and two media assets with status `pending_review` created in the same minute. This is production evidence of the public upload+submit path, not a disposable test fixture.
+- Storage metadata confirms both uploaded files are WebP: logo 9,064 bytes and cover 34,118 bytes (42.2 KiB total). Compression was applied before upload.
+- Current totals: 4 pending new-business submissions, 39 pending field-review rows across 4 submissions, 2 pending media assets and 0 pending owner image-change requests. No record was reviewed, changed or deleted.
+- Public form submission/compression gate is production-verified. Admin Field Review visual click-through, media approval and public rendering, plus owner invitation email/redirect remain pending. Phase 1 performance acceptance is still first incomplete.
