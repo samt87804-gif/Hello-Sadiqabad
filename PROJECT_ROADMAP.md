@@ -908,3 +908,13 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Owner manual acceptance: open both dropdowns on a real mobile and desktop browser, confirm the background remains visible, search in English and Urdu, and select an item. Report any clipping or unexpected menu positioning.
 - [ ] Owner real-submission acceptance: when submitting a genuine business (not a dummy test listing), upload a normal logo and cover image and confirm the request completes. Do not create a separate fake business just to test compression; the code-level compression and public smoke are already deployed.
 
+
+
+## Government bilingual content and media — Phase 3 checkpoint (25 November 2026)
+
+- Jobs and Schemes now have Urdu fields for detailed eligibility/benefits, documents, application instructions and fees; new publications require bilingual content and a verified official poster.
+- Added Government Schemes poster upload, public poster display, canonical share actions, Cloudflare Pages social previews, and offline poster caching.
+- Applied two additive migrations to the existing Supabase project: 20261125171000_government_bilingual_poster_publication_gate and 20261125172500_government_content_bilingual_details. Invalid publication tests were transaction-only and left zero test rows.
+- CI 45662891896 passed; Cloudflare Pages deployment 5d601e4e-2e04-4478-bb2b-5b6bce833f6e succeeded with https://hellosadiqabad.com.
+- Existing 1 published job and 5 published schemes without posters remain unchanged. They are grandfathered; no data was unpublished or invented. Phase 3 is not accepted until Admin UI and real poster/share-preview acceptance, plus an owner decision on those legacy records and private-draft/public-approved poster handling.
+- Browser smoke run 45662892354 was still running when this note was written.
