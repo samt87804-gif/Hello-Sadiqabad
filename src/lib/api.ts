@@ -587,7 +587,7 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
   // database-backed static record when it is no longer publicly published.
   const { data: databaseRows, error: databaseError } = await client
     .from('businesses')
-    .select('id,city_id,owner_id,name_en,name_ur,slug,category_id,area_id,address_en,address_ur,landmark_en,landmark_ur,lat,lng,phone_primary,phone_secondary,phone_normalized,whatsapp,email,website_url,facebook_url,instagram_url,youtube_url,tiktok_url,description_en,description_ur,services_en,services_ur,logo_url,cover_url,owner_name,owner_photo_url,gallery_urls,video_urls,opening_hours,is_open_24h,home_delivery,established_year,status,plan_code,plan_expires_at,is_verified,is_featured,tags,meta_title_en,meta_description_en,rating_avg,rating_count,view_count,call_count,whatsapp_count,source,published_at,created_at,updated_at')
+    .select('id,city_id,owner_id,name_en,name_ur,slug,category_id,area_id,address_en,address_ur,map_url,landmark_en,landmark_ur,lat,lng,phone_primary,phone_secondary,phone_normalized,whatsapp,email,website_url,facebook_url,instagram_url,youtube_url,tiktok_url,description_en,description_ur,services_en,services_ur,logo_url,cover_url,owner_name,owner_photo_url,gallery_urls,video_urls,opening_hours,is_open_24h,home_delivery,established_year,status,plan_code,plan_expires_at,is_verified,is_featured,tags,meta_title_en,meta_description_en,rating_avg,rating_count,view_count,call_count,whatsapp_count,source,published_at,created_at,updated_at')
     .eq('status', 'published');
 
   if (databaseError || !databaseRows) {
