@@ -81,15 +81,14 @@ export function SdkJobsManager() {
       const client = getSupabaseClient();
       if (!client) throw new Error('Supabase is not configured.');
       const now = new Date().toISOString();
-      const { error } = await client.from('sdk_jobs').update({
+      const { data, error } = await client.from('sdk_jobs').update({
         status, reviewed_by: user.id, reviewed_at: now,
         published_at: status === 'published' ? now : null,
-      }).eq('id', selected.id);
+      }).eq('id', selected.id).select('*').single();
       if (error) throw error;
       showToast('SDK Job status updated.', 'success');
       await reload();
-      const refreshed = jobs.find((job) => job.id === selected.id);
-      if (refreshed) await loadDetail({ ...refreshed, status });
+      if (data) await loadDetail(data as AdminSdkJob);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Status could not be updated.', 'error');
     } finally { setSaving(false); }
