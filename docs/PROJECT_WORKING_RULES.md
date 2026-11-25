@@ -28,6 +28,7 @@ Last owner-confirmed: 17 November 2026. These rules apply to every future AI-ass
 ## Database and deployment safeguards
 
 - The connected Supabase project has an existing migration history that differs from the consolidated repository baseline. Never replay the baseline, run an unreviewed schema push, or assume the live migration ledger matches the repo.
+- **Existing Supabase project only (owner-confirmed 25 November 2026).** Do not create another Supabase project or staging project. Work only in the existing Hello Sadiqabad project. Before applying production migrations, inspect the live schema and migration ledger, use additive changes, test reversible behavior inside explicit rollback transactions where possible, and verify RLS/Storage/privileges. Never use production business/user data as disposable test data.
 - Do not modify Cloudflare DNS, Pages environment variables, Workers, R2, Auth dashboard settings or other infrastructure unless the feature specifically requires it and the change has been reviewed.
 - Preserve the canonical production domain `https://hellosadiqabad.com`; do not introduce a second indexable hostname.
 - Production deployments are triggered by commits to `main`. Check the latest commit's CI and the matching Pages deployment before describing a release as live.
