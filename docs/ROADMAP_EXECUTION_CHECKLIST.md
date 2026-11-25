@@ -330,7 +330,7 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [x] Add scheme poster URLs to offline image caching.
 - [x] Apply migrations 20261125171000_government_bilingual_poster_publication_gate and 20261125172500_government_content_bilingual_details to existing Supabase project efwohfzqitevkuybnyif.
 - [x] CI 45662891896 passed; Cloudflare deployment 5d601e4e-2e04-4478-bb2b-5b6bce833f6e succeeded with canonical alias.
-- [ ] Corrected browser smoke run 45663702714: verify public share buttons and social-crawler metadata; mark only after the run completes successfully. Initial run 45662892354 exposed an English/Urdu/async selector issue in the test, and the assertion has been hardened.
+- [x] Corrected browser smoke run 45663702714 passed: Add Business on mobile 390×844 and desktop 1365×900; Government Jobs and Government Schemes share actions; Facebook-crawler OG title, canonical URL, HTTPS image and Twitter summary_large_image. Initial run 45662892354 exposed an English/Urdu/async selector issue in the test; the corrected assertions now pass.
 - [ ] Owner Admin review of new bilingual fields and scheme poster upload UI.
 - [ ] Owner-approved official poster upload and end-to-end public card/detail/share-preview check.
 - [ ] Resolve legacy exception: 1 published job and 5 published schemes currently have no poster. Existing rows were preserved and not unpublished. Add verified official posters or ask owner whether these legacy rows should be moved to draft; do not invent artwork or alter status without approval.
