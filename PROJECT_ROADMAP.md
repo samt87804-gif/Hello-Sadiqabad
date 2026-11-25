@@ -917,4 +917,4 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Applied two additive migrations to the existing Supabase project: 20261125171000_government_bilingual_poster_publication_gate and 20261125172500_government_content_bilingual_details. Invalid publication tests were transaction-only and left zero test rows.
 - CI 45662891896 passed; Cloudflare Pages deployment 5d601e4e-2e04-4478-bb2b-5b6bce833f6e succeeded with https://hellosadiqabad.com.
 - Existing 1 published job and 5 published schemes without posters remain unchanged. They are grandfathered; no data was unpublished or invented. Phase 3 is not accepted until Admin UI and real poster/share-preview acceptance, plus an owner decision on those legacy records and private-draft/public-approved poster handling.
-- Browser smoke run 45662892354 was still running when this note was written.
+- Initial browser smoke run 45662892354 failed to locate the WhatsApp share control; the test now accepts English/Urdu labels and waits for the share UI. Corrected run 45663702714 is in progress.
