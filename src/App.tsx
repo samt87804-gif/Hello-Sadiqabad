@@ -37,6 +37,7 @@ const Announcements = lazy(() =>
   import('./pages/Announcements').then((m) => ({ default: m.Announcements }))
 );
 const News = lazy(() => import('./pages/News').then((m) => ({ default: m.News })));
+const SdkJobs = lazy(() => import('./pages/SdkJobs').then((m) => ({ default: m.SdkJobs })));
 const GovernmentJobs = lazy(() => import('./pages/GovernmentJobs').then((m) => ({ default: m.GovernmentJobs })));
 const GovernmentSchemes = lazy(() => import('./pages/GovernmentSchemes').then((m) => ({ default: m.GovernmentSchemes })));
 const StaticPage = lazy(() => import('./pages/StaticPage').then((m) => ({ default: m.StaticPage })));
@@ -270,6 +271,7 @@ function RouteIndexing() {
       '/announcements',
       '/news',
       '/government-jobs',
+      '/sdk-jobs',
       '/government-schemes',
       '/about',
       '/advertise',
@@ -401,6 +403,8 @@ export default function App() {
                     <Route path="/announcements" element={<Announcements />} />
                     <Route path="/news" element={<News />} />
                     <Route path="/news/:slug" element={<News />} />
+                    <Route path="/sdk-jobs" element={<SdkJobs />} />
+                    <Route path="/sdk-jobs/:slug" element={<SdkJobs />} />
                     <Route path="/government-jobs" element={<GovernmentJobs />} />
                     <Route path="/government-jobs/:slug" element={<GovernmentJobs />} />
                     <Route path="/government-schemes" element={<GovernmentSchemes />} />
