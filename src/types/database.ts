@@ -23,7 +23,8 @@ export type PermissionKey =
   | 'announcements.manage'
   | 'settings.manage'
   | 'government_jobs.manage'
-  | 'government_schemes.manage';
+  | 'government_schemes.manage'
+  | 'sdk_jobs.manage';
 
 export type PlanCode = 'free' | 'basic' | 'premium';
 
