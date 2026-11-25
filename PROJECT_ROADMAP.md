@@ -740,12 +740,12 @@ Owner-approved decisions:
 Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md).
 
 - [x] Phase 0 source/schema/security audit and additive design documented in [Phase 0 Audit](docs/FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md).
-- [~] Phase 1 Admin Business and Data Quality performance optimization — initial code changes implemented and deployed; final acceptance pending authenticated desktop/browser metrics and mobile interaction QA.
+- [x] Phase 1 Admin Business and Data Quality performance optimization — owner confirms all testing/acceptance checks passed on 26 November 2026.
   - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
-- [~] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — additive schema migrations and app/Edge Function workflow are deployed to the existing production project; authenticated browser acceptance remains pending.
-- [ ] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — existing MVPs remain in place; expansion not implemented.
-- [ ] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — not implemented.
+- [x] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — owner confirms all testing/acceptance checks passed on 26 November 2026.
+- [x] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — owner confirms all testing/acceptance checks passed on 26 November 2026.
+- [~] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — started. Read-only audit and security/data-boundary design are documented; implementation not yet deployed.
 - [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented.
 - [ ] Phase 6 Gov landing page and five-item mobile bottom navigation — not implemented.
 
@@ -971,3 +971,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Storage metadata confirms logo is WebP at 9,064 bytes and cover is WebP at 34,118 bytes (about 42.2 KiB combined). Browser compression is confirmed active before upload.
 - [ ] Authenticated Business Field Review UI visibility and media approval/public rendering remain pending; no live review action was performed.
 - **No test fixture was created and no existing submission/media/business record was modified or deleted.**
+
+
+## SDK Jobs Phase 4 kickoff — 26 November 2026
+
+- [x] Owner confirmed all tests through workstream 4.3 (Government Jobs/Schemes) passed; Phases 1–3 are recorded as owner-accepted. Do not re-run or re-request those tests unless a regression is reported.
+- [x] Confirmed current `main` has no SDK Jobs table, route, owner submission UI, Admin manager or Edge Function; Government Jobs remains a separate feature.
+- [x] Inspected live owner eligibility fields (`profiles.role`, `profiles.is_active`, `businesses.owner_id`, `businesses.status`), current Admin permission architecture, relevant RLS/grants and 108-version migration ledger.
+- [x] Added `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md` with public/private data boundary, server-side owner eligibility, dedicated `sdk_jobs.manage`, audit history and media privacy requirements.
+- [ ] Complete exact `areas` schema, staff permission editor and Storage constraints inspection before drafting the additive schema/permission migration.
+- [ ] Implement and test owner job submission, Admin moderation and published-only employer-anonymous public board.
+- [ ] Complete privacy/authorization regression tests, CI and production deployment checks.
+- No production schema, RLS, Storage, business/owner records or other existing data was changed during this audit.
