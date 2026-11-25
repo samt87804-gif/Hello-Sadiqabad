@@ -1483,6 +1483,7 @@ export function ModerationManager({
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
 
   const pendingReviews = reviews.filter((r) => r.status === 'pending');
+  const newBusinessSubs = submissions.filter((s) => (s.status === 'new' || s.status === 'in_review') && s.type === 'new_business');
   const openSubs = submissions.filter((s) => (s.status === 'new' || s.status === 'in_review') && s.type !== 'new_business');
 
   const filteredSubs = openSubs.filter((s) => {
@@ -1513,6 +1514,27 @@ export function ModerationManager({
         <ClipboardCheck className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-bold text-on-surface">Moderation Queue</h2>
       </div>
+
+      {newBusinessSubs.length > 0 && (
+        <Card className="p-4 border border-primary/25 bg-primary/5 space-y-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-bold text-on-surface">
+                {newBusinessSubs.length} new business listing(s) awaiting field review
+              </p>
+              <p className="text-xs text-on-surface-variant mt-1">
+                New listings are reviewed field-by-field in the dedicated queue. They are intentionally excluded from legacy one-click approval.
+              </p>
+            </div>
+            <Link
+              to="/admin/business-review"
+              className="inline-flex items-center rounded-xl bg-primary px-3 py-2 text-xs font-bold text-on-primary hover:opacity-90"
+            >
+              Open Business Field Review
+            </Link>
+          </div>
+        </Card>
+      )}
 
       <Tabs
         active={subTab}
