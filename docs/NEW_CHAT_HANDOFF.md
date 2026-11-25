@@ -901,3 +901,18 @@ Verification:
 **Do not mark Phase 1 complete yet:** no authenticated browser was available to capture before/after desktop timings or test click latency, mobile behavior, pagination/filter/bulk actions, modal editing, moderation and export. Do not invent milliseconds or claim browser QA. The code changes are deployed; interactive acceptance remains pending.
 
 **Next approved workstream after Phase 1 acceptance:** Phase 2 — Add Business field-level approval and secure owner invitation. Before schema changes, reconcile each additive migration against the live 95-version Supabase ledger (repository currently has 74 migration files); use a separate private pending-media bucket because the current `Hello Sadiqabad` bucket is public. The existing owner invitation Edge Function (version 3) does not yet link the invited owner to the reviewed business.
+
+
+## Phase 1 latest continuation — 25 November 2026
+
+Latest implementation commit: `4ed8f50042928896064f3925f8e8f203e0951de7`.
+
+Additional optimization after the first Admin performance slice:
+- Admin business list query now uses an explicit field allowlist and limited Category/Area relations, not `select('*')` or the full Plan relation.
+- Full business row is fetched by ID only when Admin opens the edit modal.
+- CI [45587036171](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45587036171) passed both jobs: dependency gate, TypeScript, automated tests, production build and Deno Edge Function checks.
+- Cloudflare Pages deployment `51d981f8-e50a-400d-af08-ae5e14481940` succeeded for the exact commit, canonical alias `https://hellosadiqabad.com`.
+
+**Phase 1 is still in progress.** No authenticated browser session was available to collect desktop cold/warm timings, click-to-response traces, permission/action checks or mobile smoke tests. Do not claim a speed percentage or mark Phase 1 complete. The repository currently has no Playwright/browser E2E script in `package.json`; CI runs typecheck, unit tests and production build only.
+
+**Live database safeguards reconfirmed:** SQL reports 95 rows in `supabase_migrations.schema_migrations`; 74 migration SQL files exist in the repository. The single existing Storage bucket `Hello Sadiqabad` is public. All inspected public base tables have RLS enabled. Do not run schema push/replay or place pending media in a folder of the public bucket. No database/schema/RLS/Storage/Auth/data changes were made in this follow-up.
