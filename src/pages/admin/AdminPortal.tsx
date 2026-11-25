@@ -147,10 +147,10 @@ export function AdminPortal() {
         published_businesses: 0,
       };
       const needsBusinesses = ['businesses', 'quality', 'moderation', 'inquiries', 'import', 'export', 'owners', 'ads', 'plans', 'authority-profiles', 'analytics'].includes(tab);
-      const needsTaxonomy = ['businesses', 'quality', 'import', 'export', 'categories', 'areas', 'settings'].includes(tab);
+      const needsTaxonomy = ['businesses', 'quality', 'import', 'export', 'categories', 'areas', 'settings', 'business-review'].includes(tab);
       const needsProfiles = ['businesses', 'owners', 'staff'].includes(tab) && can('owners.create');
       const canLoadBusinesses = can('business.create') || can('business.publish');
-      const canLoadTaxonomy = can('business.create') || can('settings.manage') || can('business.publish');
+      const canLoadTaxonomy = can('business.create') || can('settings.manage') || can('business.publish') || can('moderation.review');
       const shouldLoadBusinesses = needsBusinesses && canLoadBusinesses &&
         (force || !loadedAdminData.current.businesses.loaded || Date.now() - loadedAdminData.current.businesses.at >= adminCacheTtlMs);
       const shouldLoadTaxonomy = needsTaxonomy && canLoadTaxonomy &&
@@ -483,7 +483,7 @@ export function AdminPortal() {
           <PermissionDenied />
         );
       case 'business-review':
-        return hasPermission('moderation.review') ? <BusinessFieldReviewQueue /> : <PermissionDenied />;
+        return hasPermission('moderation.review') ? <BusinessFieldReviewQueue categories={categories} areas={areas} /> : <PermissionDenied />;
       case 'owner-requests':
         return hasPermission('owners.create') ? <OwnerRegistrationRequests /> : <PermissionDenied />;
       case 'owners':

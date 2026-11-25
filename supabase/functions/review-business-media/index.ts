@@ -118,8 +118,16 @@ Deno.serve(async (req: Request) => {
       }
       if (asset.media_field === "cover") {
         const { data: plan, error: planError } = await db.from("plans").select("features").eq("code", business.plan_code).maybeSingle();
-        if (planError || !plan?.features?.cover) {
-          return response(req, { ok: false, error: "A Basic or Premium plan is required before publishing a cover image" }, 409);
+        if (planError) throw planError;
+        if (!plan?.features?.cover) {
+          const { data: deferred, error: deferError } = await db.rpc("finalize_business_media_review", {
+            p_asset_id: assetId,
+            p_action: "approved_pending_promotion",
+            p_actor_id: auth.user.id,
+            p_admin_note: note,
+          });
+          if (deferError) throw deferError;
+          return response(req, { ok: true, status: "approved_pending_promotion", waiting_for_plan: true, changed: deferred === true });
         }
       }
 

@@ -165,7 +165,8 @@ export function BusinessFieldReviewQueue({
 
   const activeApprovedCore = countApprovedCoreFields(
     activeFields,
-    approvedFieldKeys
+    approvedFieldKeys,
+    unpublishFieldKeys
   );
   const activeCoreReady = activeApprovedCore === 5;
 
@@ -428,6 +429,9 @@ export function BusinessFieldReviewQueue({
 
       if (partialErrors.length) {
         showToast(`Field decisions saved. Some follow-up actions need attention: ${partialErrors.join(' · ')}`, 'error');
+      } else if (inviteChecked && result.invitation_status === 'waiting_for_business') {
+        showToast('Field decisions saved. Owner invitation is queued until the minimum public business information is complete.', 'success');
+        setActiveSubmissionId(null);
       } else {
         showToast('Business review saved. Selected fields and follow-up actions have been processed.', 'success');
         setActiveSubmissionId(null);
@@ -604,6 +608,7 @@ export function BusinessFieldReviewQueue({
                         const keys = group.items.map((field) => field.field_key);
                         setApprovedFieldKeys((current) => current.filter((key) => !keys.includes(key)));
                         setRejectedFieldReasons((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !keys.includes(key))));
+                        setUnpublishFieldKeys((current) => current.filter((key) => !keys.includes(key)));
                       }}>Clear section</button>
                     </div>
                   </div>
@@ -763,7 +768,7 @@ export function BusinessFieldReviewQueue({
               <p className="text-[11px] text-on-surface-variant">Only fields already approved or selected in this popup are included in this preview.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {activeFields.filter((field) =>
-                  field.status === 'approved_published' || approvedFieldKeys.includes(field.field_key)
+                  (field.status === 'approved_published' && !unpublishFieldKeys.includes(field.field_key)) || approvedFieldKeys.includes(field.field_key)
                 ).map((field) => (
                   <div key={field.id} className="rounded-lg bg-surface-container-low p-2">
                     <p className="text-[10px] font-bold text-on-surface-variant">{FIELD_LABELS[field.field_key] ?? field.field_key}</p>

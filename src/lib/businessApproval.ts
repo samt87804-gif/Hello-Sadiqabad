@@ -82,12 +82,14 @@ export function buildBusinessFieldDecisions(
 export function countApprovedCoreFields(
   fields: BusinessApprovalField[],
   newlyApprovedKeys: Iterable<string>,
+  unpublishedKeys: Iterable<string> = [],
 ): number {
   const approved = new Set(newlyApprovedKeys);
+  const unpublished = new Set(unpublishedKeys);
   const byKey = new Map(fields.map((field) => [field.field_key, field]));
   return BUSINESS_APPROVAL_CORE_FIELDS.filter((key) => {
     const status = byKey.get(key)?.status;
-    return status === 'approved_published' || approved.has(key);
+    return !unpublished.has(key) && (status === 'approved_published' || approved.has(key));
   }).length;
 }
 
