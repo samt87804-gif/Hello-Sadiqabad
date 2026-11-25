@@ -1226,13 +1226,14 @@ export async function submitPublicReview(input: {
   rating: number;
   comment: string;
   website_hp?: string;
+  session_id?: string;
 }): Promise<EdgeFunctionResult> {
   if (input.website_hp) return { ok: true }; // honeypot silent ignore
   if (isBrowserOffline()) return { ok: false, error: 'Connect to the internet before submitting. Your information has not been sent or saved.' };
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.functions.invoke('submit-review', {
-      body: { ...input, session_id: getOrCreateSessionId() },
+      body: { ...input, session_id: input.session_id ?? getOrCreateSessionId() },
     });
     if (error) return { ok: false, error: error.message };
     return (data as EdgeFunctionResult) ?? { ok: true };
