@@ -118,6 +118,10 @@ security definer
 set search_path = ''
 as $function$
 begin
+  if new.area_id is not null and not exists (select 1 from public.areas a where a.id = new.area_id and a.is_active) then
+    raise exception 'Select an active service area' using errcode = '23514';
+  end if;
+
   if private.is_super_admin() or private.staff_has_permission('sdk_jobs.manage') then
     return new;
   end if;
@@ -258,6 +262,10 @@ create policy sdk_job_admin_notes_admin_update on public.sdk_job_admin_notes
 for update to authenticated
 using (private.is_super_admin() or private.staff_has_permission('sdk_jobs.manage'))
 with check (private.is_super_admin() or private.staff_has_permission('sdk_jobs.manage'));
+
+create trigger trg_sdk_job_admin_notes_audit
+ after insert or update on public.sdk_job_admin_notes
+ for each row execute function public.audit_log_record();
 
 create view public.sdk_jobs_public
 with (security_barrier = true)
