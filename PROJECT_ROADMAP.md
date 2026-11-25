@@ -905,8 +905,8 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] TypeScript/tests/build CI run `45658737972` passed.
 - [x] Public Add Business browser smoke run `45658737929` passed on mobile (390×844) and desktop (1365×900).
 - [x] Cloudflare Pages production deployment `db7b67c2-29a0-4f2a-bf86-fcda74fdb2e1` succeeded for main commit `3c2c45895d24e7ffaef8ae929b4703da456873da`; canonical alias `https://hellosadiqabad.com`.
-- [ ] Owner manual acceptance: open both dropdowns on a real mobile and desktop browser, confirm the background remains visible, search in English and Urdu, and select an item. Report any clipping or unexpected menu positioning.
-- [ ] Owner real-submission acceptance: when submitting a genuine business (not a dummy test listing), upload a normal logo and cover image and confirm the request completes. Do not create a separate fake business just to test compression; the code-level compression and public smoke are already deployed.
+- [x] Owner confirmed all Add Business manual tests passed, including Category/Area dropdown behaviour and image-upload checks.
+- [ ] No dummy business was created; a separate genuine listing submission is only needed if the owner is adding a real business.
 
 
 
