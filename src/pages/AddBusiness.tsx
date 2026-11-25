@@ -124,6 +124,8 @@ export function AddBusiness() {
     setOpeningHours(Object.fromEntries(DAY_KEYS.map((day) => [day.key, { open: '', close: '' }])));
     setCategoryId('');
     setAreaId('');
+    setCategorySearch('');
+    setAreaSearch('');
     setSelectedFacilities([]);
     setDescription('');
     setContactName('');
