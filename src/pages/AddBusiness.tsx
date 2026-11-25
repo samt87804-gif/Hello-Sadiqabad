@@ -196,6 +196,7 @@ export function AddBusiness() {
   };
 
   const resetForm = () => {
+    uploadSessionId.current = crypto.randomUUID();
     setConsentConfirmed(false);
     setNameEn('');
     setNameUr('');
