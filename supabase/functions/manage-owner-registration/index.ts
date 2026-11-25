@@ -20,7 +20,7 @@ function response(req: Request, data: unknown, status = 200) {
 
 async function getActor(req: Request) {
   const authHeader = req.headers.get("authorization") ?? "";
-  const token = /^Bearer\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim() ?? null;
+  const token = /^Bearer\\s+(.+)$/i.exec(authHeader.trim())?.[1]?.trim() ?? null;
   if (!token) return null;
   const { data, error } = await db.auth.getUser(token);
   return error ? null : data.user;
@@ -41,11 +41,14 @@ async function canManageOwners(userId: string) {
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return response(req, { ok: true });
   if (req.method !== "POST") return response(req, { ok: false, error: "Method not allowed" }, 405);
+
   let lockedId: string | null = null;
+  let invitedUserId: string | null = null;
   try {
     const actor = await getActor(req);
     if (!actor) return response(req, { ok: false, error: "Unauthorized" }, 401);
     if (!(await canManageOwners(actor.id))) return response(req, { ok: false, error: "Permission denied" }, 403);
+
     const body = await req.json().catch(() => null) as Record<string, unknown> | null;
     const requestId = typeof body?.request_id === "string" ? body.request_id : "";
     const action = body?.action;
@@ -53,19 +56,37 @@ Deno.serve(async (req: Request) => {
     if (!/^[0-9a-f-]{36}$/i.test(requestId) || !["approve", "reject"].includes(String(action))) {
       return response(req, { ok: false, error: "Invalid request details" }, 400);
     }
+
     const { data: request, error: readError } = await db.from("owner_registration_requests")
-      .select("*").eq("id", requestId).maybeSingle();
+      .select("id,full_name,email,phone,business_name,business_id,submission_id,status")
+      .eq("id", requestId).maybeSingle();
     if (readError || !request) return response(req, { ok: false, error: "Registration request not found" }, 404);
-    if (request.status !== "pending") return response(req, { ok: false, error: "This request has already been reviewed or is being processed" }, 409);
+    if (request.status !== "pending") {
+      return response(req, { ok: false, error: "This request has already been reviewed or is being processed" }, 409);
+    }
 
     if (action === "reject") {
-      const { data: rejected, error } = await db.from("owner_registration_requests").update({
-        status: "rejected", reviewed_by: actor.id, reviewed_at: new Date().toISOString(),
-        admin_note: note, updated_at: new Date().toISOString(),
-      }).eq("id", requestId).eq("status", "pending").select("id").maybeSingle();
+      const { data: changed, error } = await db.rpc("finalize_owner_registration", {
+        p_request_id: requestId,
+        p_action: "reject",
+        p_actor_id: actor.id,
+        p_owner_user_id: null,
+        p_admin_note: note,
+      });
       if (error) throw error;
-      if (!rejected) return response(req, { ok: false, error: "This request is already being processed" }, 409);
+      if (changed !== true) return response(req, { ok: false, error: "This request has already been reviewed" }, 409);
       return response(req, { ok: true, status: "rejected" });
+    }
+
+    if (request.submission_id && !request.business_id) {
+      return response(req, { ok: false, error: "The business must pass field approval and be published before an owner invitation can be sent" }, 409);
+    }
+    if (request.business_id) {
+      const { data: eligibleBusiness, error: businessError } = await db.from("businesses")
+        .select("id,owner_id,status").eq("id", request.business_id).maybeSingle();
+      if (businessError || !eligibleBusiness || eligibleBusiness.status !== "published" || eligibleBusiness.owner_id) {
+        return response(req, { ok: false, error: "The reviewed business is not available for owner assignment" }, 409);
+      }
     }
 
     const { data: locked, error: lockError } = await db.from("owner_registration_requests")
@@ -74,41 +95,70 @@ Deno.serve(async (req: Request) => {
     if (lockError || !locked) return response(req, { ok: false, error: "This request is already being processed" }, 409);
     lockedId = requestId;
 
-    const siteUrl = (Deno.env.get("SITE_URL") ?? "https://hello-sadiqabad-2bs.pages.dev").replace(/\/$/, "");
+    const siteUrl = (Deno.env.get("SITE_URL") ?? "https://hellosadiqabad.com").replace(/\\/$/, "");
     const { data: invited, error: inviteError } = await db.auth.admin.inviteUserByEmail(request.email, {
       data: { full_name: request.full_name },
       redirectTo: siteUrl + "/reset-password",
     });
     if (inviteError || !invited.user) throw inviteError ?? new Error("Invitation could not be created");
+    invitedUserId = invited.user.id;
 
     const { error: profileError } = await db.from("profiles").upsert({
-      id: invited.user.id, role: "owner", full_name: request.full_name, phone: request.phone,
+      id: invitedUserId, role: "owner", full_name: request.full_name, phone: request.phone,
       must_change_password: false, is_active: true, updated_at: new Date().toISOString(),
     }, { onConflict: "id" });
-    if (profileError) {
-      await db.auth.admin.deleteUser(invited.user.id);
-      throw new Error("Owner profile could not be provisioned; the invitation was rolled back");
-    }
+    if (profileError) throw new Error("Owner profile could not be provisioned");
 
-    const { error: updateError } = await db.from("owner_registration_requests").update({
-      status: "approved", reviewed_by: actor.id, reviewed_at: new Date().toISOString(),
-      admin_note: note, updated_at: new Date().toISOString(),
-    }).eq("id", requestId).eq("status", "processing");
-    if (updateError) {
-      await db.auth.admin.deleteUser(invited.user.id);
-      throw updateError;
-    }
-    await db.from("audit_logs").insert({
-      actor_id: actor.id, action: "owner_registration.approve", entity: "owner_registration_requests",
-      entity_id: requestId, details: { owner_user_id: invited.user.id, email: request.email },
+    const { data: finalized, error: finalizeError } = await db.rpc("finalize_owner_registration", {
+      p_request_id: requestId,
+      p_action: "approve",
+      p_actor_id: actor.id,
+      p_owner_user_id: invitedUserId,
+      p_admin_note: note,
     });
+
+    if (finalizeError) {
+      // A network error can occur after the database transaction committed; verify before rollback.
+      const { data: latestRequest } = await db.from("owner_registration_requests")
+        .select("status").eq("id", requestId).maybeSingle();
+      let linked = !request.business_id;
+      if (request.business_id) {
+        const { data: latestBusiness } = await db.from("businesses")
+          .select("owner_id").eq("id", request.business_id).maybeSingle();
+        linked = latestBusiness?.owner_id === invitedUserId;
+      }
+      if (latestRequest?.status === "approved" && linked) {
+        lockedId = null;
+        invitedUserId = null;
+        return response(req, { ok: true, status: "approved" });
+      }
+      throw finalizeError;
+    }
+    if (finalized !== true) throw new Error("Owner registration was not finalized");
+    lockedId = null;
+    invitedUserId = null;
     return response(req, { ok: true, status: "approved" });
   } catch (error) {
-    if (lockedId) {
+    let rollbackFailed = false;
+    if (invitedUserId) {
+      const { error: deleteError } = await db.auth.admin.deleteUser(invitedUserId);
+      rollbackFailed = Boolean(deleteError);
+    }
+    if (lockedId && !rollbackFailed) {
       await db.from("owner_registration_requests").update({
-        status: "pending", updated_at: new Date().toISOString(),
+        status: "pending", admin_note: note ?? null, updated_at: new Date().toISOString(),
+      }).eq("id", lockedId).eq("status", "processing");
+    } else if (lockedId && rollbackFailed) {
+      await db.from("owner_registration_requests").update({
+        admin_note: "Automatic invitation rollback failed; manual recovery is required.",
+        updated_at: new Date().toISOString(),
       }).eq("id", lockedId).eq("status", "processing");
     }
-    return response(req, { ok: false, error: error instanceof Error ? error.message : "Request processing failed" }, 400);
+    return response(req, {
+      ok: false,
+      error: rollbackFailed
+        ? "Invitation rollback needs manual recovery. The request has been left locked to prevent duplicate invitations."
+        : error instanceof Error ? error.message : "Request processing failed",
+    }, rollbackFailed ? 500 : 400);
   }
 });
