@@ -144,7 +144,8 @@ async function testGovernmentSharePreviews(browser) {
       assert.ok(socialResponse.ok(), route + ' social crawler request should succeed');
       const html = await socialResponse.text();
       assert.match(html, /property="og:title" content="[^"]+"/, route + ' should expose a record-specific Open Graph title');
-      assert.match(html, new RegExp('property="og:url" content="https://hellosadiqabad\\\\.com' + route.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\const browser = await chromium.launch({ headless: true });') + '"'), route + ' should expose its canonical share URL');
+      const expectedCanonical = 'property="og:url" content="https://hellosadiqabad.com' + route + '"';
+      assert.ok(html.includes(expectedCanonical), route + ' should expose its canonical share URL');
       assert.match(html, /property="og:image" content="https:\\/\\/[^"]+"/, route + ' should expose an HTTPS social preview image');
       assert.match(html, /name="twitter:card" content="summary_large_image"/, route + ' should expose a large Twitter preview');
       console.log('PASS social preview ' + route + ': canonical URL, record title and HTTPS image');
