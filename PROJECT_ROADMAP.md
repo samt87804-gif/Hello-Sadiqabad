@@ -1037,9 +1037,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Admin privacy acknowledgement and server-side publication gate (business/Owner identity, phone/email and external link scan).
 - [x] Public SDK Jobs list/detail routes, filters, privacy-safe structured data/canonical sharing, Admin WhatsApp CTA, office visit instructions, header/footer navigation and dynamic sitemap.
 - [x] Rolled-back database tests passed for owner job submission/poster path, content immutability while pending, cross-job path rejection and anonymous employer-ID denial.
-- [ ] Latest CI rerun for final code and docs (check GitHub run 45710637102).
+- [x] Final CI run [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) passed build and Edge Functions.
 - [ ] Authenticated Owner/Admin browser upload/preview/approve/publish acceptance.
 - [ ] Production Pages deployment and public endpoint/sitemap smoke tests.
-- [ ] Admin detail friendly business/Owner display labels (current view shows private IDs).
+- [x] Admin detail now resolves linked business and Owner name/contact through JWT-protected `get-sdk-job-employer-details`, gated by explicit `sdk_jobs.manage`; no broad RLS grants added.
 
 **Release status:** Database migration and three JWT-protected Edge Functions are live. Code is committed to main, but production Pages deployment is intentionally held until latest CI and authenticated browser acceptance. No candidate intake, CVs, referrals, referral letters or fee collection in Phase 4.
