@@ -505,6 +505,7 @@ const ALL_PERMISSION_KEYS: Array<{ key: PermissionKey; label: string }> = [
   { key: 'settings.manage', label: 'Manage Settings & Pages' },
   { key: 'government_jobs.manage', label: 'Manage Government Jobs' },
   { key: 'government_schemes.manage', label: 'Manage Government Schemes' },
+  { key: 'sdk_jobs.manage', label: 'Manage SDK Jobs' },
 ];
 
 export function StaffManager({
