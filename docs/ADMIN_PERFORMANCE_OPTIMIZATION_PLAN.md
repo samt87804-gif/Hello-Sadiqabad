@@ -105,3 +105,10 @@ A fresh `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` comparison was run against the
 
 - Added [`ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md`](ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md) with a reproducible browser timing capture, desktop/mobile smoke checklist, permission/privacy checks and evidence table.
 - This prepares the remaining acceptance but does not complete it. Authenticated measurements and functional regression evidence must still be captured from an authorized browser session. No timing values or checkboxes were fabricated.
+
+
+## Owner-confirmed Businesses smoke — 26 November 2026
+
+- The owner reviewed the production Businesses Directory and confirmed the list and pagination are working. The screenshot showed 677 businesses, 50 items per page and 14 pages; the owner confirmed the next-page navigation behaved correctly.
+- This is a manual functional smoke confirmation only. It does not provide cold/warm route timing, click-to-usable latency, Data Quality acceptance, mobile viewport evidence or permission/error/retry regression evidence.
+- Latest main CI run [45681595223](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45681595223) passed and Cloudflare production deployment `b6c15c02-79fc-44de-b8df-eaca3998ced6` succeeded. Phase 1 remains **in progress / not accepted** until the remaining authenticated evidence is captured.
