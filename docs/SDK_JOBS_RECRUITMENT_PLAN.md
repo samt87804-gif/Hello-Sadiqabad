@@ -88,11 +88,14 @@ The owner confirmed all testing through Government Jobs and Government Schemes (
 - [x] Inspected live migration ledger (108 applied versions). Existing data/schema baseline must not be replayed.
 - [x] Added detailed data-boundary/security design: [`SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md`](SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md).
 - [x] Finish exact areas schema, staff permission editor/Admin tab gates and Storage limits review; findings are in the Phase 4 design document.
-- [ ] Additive `sdk_jobs` schema, private employer linkage, published-only public view and append-only moderation history.
-- [ ] Owner submission form and server-side eligibility enforcement.
-- [ ] Permission-gated Admin moderation.
+- [x] Additive `sdk_jobs`, `sdk_job_status_history` and `sdk_job_admin_notes` tables; private employer linkage and published-only invoker-security public view applied via migrations `20261125210353` and `20261125210439`.
+- [x] Database-side owner eligibility and pending-status enforcement; owner submission simulation passed inside a rolled-back transaction.
+- [x] Dedicated `sdk_jobs.manage` added to DB permission RPC, TypeScript key and explicit staff permission editor; no broad staff-type grant.
+- [x] Consolidated RLS policies and all new FK indexes via migration `20261125210610`; no SDK Jobs-specific security/performance advisor warnings remain.
+- [ ] Owner submission form and signed private poster upload.
+- [ ] Permission-gated Admin moderation UI and workflow actions.
 - [ ] Public listing/detail/search/filter/share pages and employer-anonymity checks.
-- [ ] Run authorization, public leakage, status-transition, media privacy, CI and deployment acceptance.
+- [ ] Run UI/adversarial authorization, public leakage, status-transition, media privacy, CI and browser/deployment acceptance.
 
 **Phase boundary:** candidate intake, consent records, CV details, interview notes, suitability, referrals, referral letters, fees and office-hour configuration remain Phase 5. Do not collect candidate personal data in Phase 4.
 
