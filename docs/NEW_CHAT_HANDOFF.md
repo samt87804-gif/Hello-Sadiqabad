@@ -1056,3 +1056,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Playwright smoke test against production passed on mobile 390×844 and desktop 1365×900. It verified loaded Category/Area options, no first-option preselection, taxonomy search retaining selected values, preview content and owner-email privacy, required unchecked consent, logo file preview and same-file reselection, and no horizontal overflow.
 - Workflow run `45627086704` passed; main CI run `45627086518` passed; Pages deployment `15c9b434-bc45-495b-814f-a00fe391cbf0` succeeded with the canonical alias.
 - Remaining acceptance: authenticated Admin/Owner Portal browser QA, real owner image upload and Admin approval roundtrip, and real invitation email/redirect verification.
+
+## Public Add Business visual UX polish — 25 November 2026
+
+- Category and Area now use responsive bilingual search/select panels with icons, live counts, clear hints, styled native select controls and RTL-aware chevrons. Taxonomy IDs, search semantics and no-auto-select behavior are unchanged.
+- Logo/Cover file inputs are now accessible card-style pickers with accepted format/5 MB guidance, selected filename and size, visible focus treatment and retry-safe reset.
+- No DB, Storage, Auth or business data changed. Main commit `3e73a2d9943355d1c48370642ad8034f416571ec`; CI `45638490612` passed; production mobile/desktop Playwright smoke `45638490221` passed; Pages deployment `8969830b-3848-4951-a1dd-7b01f3fda6de` succeeded with canonical alias.
+- Still pending: authenticated Admin/Owner browser acceptance, real owner image-upload-to-Admin-approval roundtrip and actual invitation email/redirect. Phase 1 Admin performance acceptance remains open.
