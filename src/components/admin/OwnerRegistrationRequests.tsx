@@ -89,7 +89,7 @@ export function OwnerRegistrationRequests() {
                   <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-2"><Mail className="w-3.5 h-3.5" />{request.email}</p>
                   <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-2"><Phone className="w-3.5 h-3.5" />{request.phone}</p>
                   {request.business_name && <p className="text-xs text-primary mt-1">Business: {request.business_name}</p>}
-                  <p className="text-[11px] text-on-surface-variant mt-1">{request.business_id ? 'Business approved — ready for owner invitation' : 'Waiting for required business fields to be approved and published'}</p>
+                  <p className="text-[11px] text-on-surface-variant mt-1">{request.business_id ? 'Business approved — ready for owner invitation' : request.submission_id ? 'Waiting for required business fields to be approved and published' : 'Legacy standalone owner registration'}</p>
                   <p className="text-[11px] text-outline mt-2">Submitted {new Date(request.created_at).toLocaleString()}</p>
                 </div>
                 <span className="text-[11px] font-bold rounded-full px-2.5 py-1 bg-secondary-container text-on-secondary-container inline-flex items-center gap-1">
@@ -98,7 +98,7 @@ export function OwnerRegistrationRequests() {
               </div>
               <Textarea rows={2} value={notes[request.id] ?? request.admin_note ?? ''} onChange={(e) => setNotes((current) => ({ ...current, [request.id]: e.target.value }))} placeholder="Optional Admin note" />
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" loading={busyId === request.id} disabled={Boolean(busyId) || request.status !== 'pending' || !request.business_id} onClick={() => void review(request.id, 'approve')} leftIcon={<CheckCircle2 className="w-4 h-4" />}>{request.business_id ? 'Approve & Send Invitation' : 'Awaiting Business Approval'}</Button>
+                <Button size="sm" loading={busyId === request.id} disabled={Boolean(busyId) || request.status !== 'pending' || Boolean(request.submission_id && !request.business_id)} onClick={() => void review(request.id, 'approve')} leftIcon={<CheckCircle2 className="w-4 h-4" />}>{request.submission_id && !request.business_id ? 'Awaiting Business Approval' : 'Approve & Send Invitation'}</Button>
                 <Button size="sm" variant="danger" loading={busyId === request.id} disabled={Boolean(busyId) || request.status !== 'pending'} onClick={() => void review(request.id, 'reject')} leftIcon={<XCircle className="w-4 h-4" />}>Reject</Button>
               </div>
             </Card>
