@@ -51,6 +51,7 @@ export function getGovernmentPublicationErrors(fields: GovernmentPublicationFiel
   for (const [english, urdu, label] of optionalPairs) if (english?.trim() && !urdu?.trim()) errors.push('Urdu ' + label + ' details are required.');
   if (fields.benefitDetailsEn !== undefined && !fields.benefitDetailsUr?.trim()) errors.push('Urdu benefit details are required.');
   if (fields.eligibilityEn !== undefined && !fields.eligibilityUr?.trim()) errors.push('Urdu eligibility details are required.');
-  if (fields.requiredDocumentsEn?.length && (fields.requiredDocumentsUr?.length !== fields.requiredDocumentsEn.length || fields.requiredDocumentsUr.some((value) => !value.trim()))) errors.push('Every required document needs a matching Urdu translation.');
+  const documentsUr = fields.requiredDocumentsUr ?? [];
+  if (fields.requiredDocumentsEn?.length && (documentsUr.length !== fields.requiredDocumentsEn.length || documentsUr.some((value) => !value.trim()))) errors.push('Every required document needs a matching Urdu translation.');
   return errors;
 }
