@@ -48,3 +48,5 @@ Do not alter desktop navigation unless inspection shows a necessary compatible c
 - [x] Owner correction: restored the existing News shortcut in the mobile bottom navigation at `/news`, using the existing bilingual `nav.news` label and Newspaper icon; responsive grid updated to six columns.
 - [ ] CI and production deployment for the six-item navigation correction.
 
+
+- [x] Added regression tests in `scripts/mobile-bottom-nav.test.mjs` for the six destination routes/order, News translation/icon and six-column layout; included in `npm test`. CI run [45716860002](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716860002) was queued/running at checkpoint; await its result.
