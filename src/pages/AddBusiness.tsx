@@ -215,6 +215,7 @@ export function AddBusiness() {
     }
 
     setSubmitting(true);
+    const uploadedMediaPaths: string[] = [];
     try {
       const client = getSupabaseClient();
       const mediaAssets: Array<{ media_field: string; storage_path: string; mime_type: string; file_size_bytes: number }> = [];
@@ -229,6 +230,7 @@ export function AddBusiness() {
         const storagePath = `pending/${token}/${mediaField}.${extension}`;
         const { error: uploadError } = await client.storage.from('hs-pending-business-media').upload(storagePath, file, { contentType: file.type, upsert: false });
         if (uploadError) throw uploadError;
+        uploadedMediaPaths.push(storagePath);
         mediaAssets.push({ media_field: mediaField, storage_path: storagePath, mime_type: file.type, file_size_bytes: file.size });
       }
       const hoursPayload = Object.fromEntries(DAY_KEYS.filter((day) => openingHours[day.key].open && openingHours[day.key].close).map((day) => [day.key, [{ open: openingHours[day.key].open, close: openingHours[day.key].close }]]));
@@ -258,6 +260,9 @@ export function AddBusiness() {
         website_hp: hp,
       });
       if (!res.ok) {
+        if (uploadedMediaPaths.length && client) {
+          await client.storage.from('hs-pending-business-media').remove(uploadedMediaPaths);
+        }
         showToast(
           res.error ?? (lang === 'ur' ? 'درخواست جمع نہیں ہو سکی۔' : 'Failed to submit business.'),
           'error'
@@ -273,6 +278,10 @@ export function AddBusiness() {
         'success'
       );
     } catch {
+      const cleanupClient = getSupabaseClient();
+      if (uploadedMediaPaths.length && cleanupClient) {
+        await cleanupClient.storage.from('hs-pending-business-media').remove(uploadedMediaPaths).catch(() => undefined);
+      }
       showToast(
         lang === 'ur' ? 'درخواست جمع نہیں ہو سکی۔ انٹرنیٹ چیک کر کے دوبارہ کوشش کریں۔' : 'The request could not be sent. Check your connection and try again.',
         'error'
