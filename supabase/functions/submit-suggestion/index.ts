@@ -236,7 +236,7 @@ Deno.serve(async (req: Request) => {
       }
       const optionalTextFields: Array<[string, number]> = [
         ["name_ur", 120], ["address_ur", 250], ["landmark_en", 120],
-        ["landmark_ur", 120], ["description_en", 500],
+        ["landmark_ur", 120], ["description_en", 500], ["description_ur", 500],
       ];
       for (const [field, maxLength] of optionalTextFields) {
         const value = payload[field];
