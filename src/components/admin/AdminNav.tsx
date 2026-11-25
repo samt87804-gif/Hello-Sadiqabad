@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import {
   ArrowLeft,
   BarChart3,
+  BriefcaseBusiness,
   BrainCircuit,
   Briefcase,
   Building2,
@@ -46,6 +47,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
   { tab: 'analytics', label: 'Analytics', icon: BarChart3, requiredPerm: 'analytics.view' },
   { tab: 'moderation', label: 'Moderation Queue', icon: ClipboardCheck, requiredPerm: 'moderation.review', badgeKey: 'moderation_total' },
+  { tab: 'sdk-jobs', label: 'SDK Jobs', icon: BriefcaseBusiness, requiredPerm: 'sdk_jobs.manage' },
   { tab: 'business-review', label: 'Business Field Review', icon: ClipboardCheck, requiredPerm: 'moderation.review', badgeKey: 'new_submissions' },
   { tab: 'inquiries', label: 'Inquiries', icon: MessageSquare, requiredPerm: 'support.read' },
   { tab: 'leads', label: 'Sales Leads', icon: Briefcase, requiredPerm: 'leads.manage', badgeKey: 'open_leads' },
