@@ -931,3 +931,19 @@ Reviewed current `/add-business`, relevant migrations, live tables/columns, RLS 
 - Live RLS policies were inspected and no public base table with RLS disabled was found.
 
 Phase 2 implementation is not started. Phase 1 remains in progress until authenticated desktop/browser and mobile QA evidence exists. Do not apply schema changes or move phase gates without resolving that blocker.
+
+
+---
+
+## Phase 2 implementation handoff — 25 November 2026
+
+- Permanent GitHub rule was owner-updated in `docs/PROJECT_WORKING_RULES.md`: focused feature branches + Pull Requests are now required for application/database changes; feature implementation must not be committed directly to `main`. Policy update commit: `b1e70665c395a2956dc1799fff3803ed4ed64a0c`.
+- Phase 2 code is on `feat/business-owner-field-approval`, Draft PR [#19](https://github.com/samt87804-gif/Hello-Sadiqabad/pull/19).
+- Latest branch head at handoff: `54455cff53cc0f14ed2c7033a057680e0d20db6a`.
+- Previous branch head `95cf9cbdb6dfa1ed708989541a30c236c9747d0b` passed CI and Cloudflare preview deployment. Two later safety follow-ups were committed (failed-submission private-media cleanup and owner-upload object existence check); a new CI run for latest head has not yet been observed.
+- Preview URL for the earlier successful head: https://05636ae0.hello-sadiqabad-2bs.pages.dev. It is not production.
+- Migration `20261125110000_business_field_approval_workflow.sql` contains additive tables/policies/private bucket, legacy new-business approval guard and non-destructive field-ledger backfill.
+- Migration `20261125111000_business_field_review_rpc.sql` adds field-level approval RPC.
+- Supabase temporary development branch creation is unavailable on the current plan. Production database/Storage/Auth/data remain unchanged. Do not run `db push`, replay the consolidated baseline, or apply these migrations to production without isolated validation and reviewed release approval.
+- PR #19 must remain Draft until latest CI is green, isolated SQL execution/rollback is tested, human review is complete, and GitHub branch protection / required checks are verified.
+- Phase 1 authenticated desktop/browser and mobile acceptance remains outstanding. Phase 2 is underway with owner approval; do not mark Phase 1 accepted.
