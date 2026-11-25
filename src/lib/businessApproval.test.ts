@@ -56,3 +56,8 @@ test('invitation processing waits until the minimum listing gate is satisfied', 
   assert.equal(shouldProcessOwnerInvitation('pending', 'business-1', true), true);
   assert.equal(shouldProcessOwnerInvitation('sent', 'business-1', true), false);
 });
+
+test('unpublishing a required core field removes it from the publication gate', () => {
+  assert.equal(countApprovedCoreFields(fields, [], ['name_en']), 1);
+  assert.equal(countApprovedCoreFields(fields, ['area_id', 'phone_primary', 'address_en'], ['name_en']), 4);
+});

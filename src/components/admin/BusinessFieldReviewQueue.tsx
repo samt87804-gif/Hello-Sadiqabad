@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Clock3, EyeOff, Mail, MapPin, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase';
-import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, countApprovedCoreFields } from '../../lib/businessApproval';
+import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, countApprovedCoreFields, shouldProcessOwnerInvitation } from '../../lib/businessApproval';
 import type { AreaRow, CategoryRow } from '../../types/database';
 import { Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
@@ -255,8 +255,8 @@ export function BusinessFieldReviewQueue({
     setUnpublishMediaIds([]);
     setInviteChecked(Boolean(ownerRequest?.invitation_requested || ownerRequest?.invitation_status === 'sent'));
     setInitialInviteChecked(Boolean(ownerRequest?.invitation_requested || ownerRequest?.invitation_status === 'sent'));
-    setAdminNote(submission.admin_note ?? '');
-    setInitialAdminNote(submission.admin_note ?? '');
+    setAdminNote('');
+    setInitialAdminNote('');
     setConfirmClose(false);
   };
 
@@ -293,6 +293,17 @@ export function BusinessFieldReviewQueue({
     setApprovedFieldKeys([]);
     setRejectedFieldReasons({});
     setUnpublishFieldKeys([]);
+    setApprovedMediaIds([]);
+    setRejectedMediaIds([]);
+    setUnpublishMediaIds([]);
+  };
+
+  const selectAllRequest = () => {
+    selectAllFields(activeFields.map((field) => field.field_key));
+    setApprovedMediaIds((current) => [...new Set([
+      ...current,
+      ...activeMedia.filter((asset) => asset.status === 'pending_review').map((asset) => asset.id),
+    ])]);
   };
 
   const toggleFieldReject = (fieldKey: string) => {
@@ -409,9 +420,7 @@ export function BusinessFieldReviewQueue({
           });
           if (inviteError) throw inviteError;
           if (!inviteResult?.ok) throw new Error(inviteResult?.error || 'Owner invitation failed');
-          if (inviteResult.status === 'waiting_for_business') {
-            partialErrors.push('Owner invitation is waiting for the minimum business fields to be approved.');
-          }
+          if (inviteResult.status === 'waiting_for_business') invitationWaiting = true;
         } catch (error) {
           partialErrors.push(error instanceof Error ? error.message : 'Owner invitation could not be sent.');
         }
@@ -429,7 +438,7 @@ export function BusinessFieldReviewQueue({
 
       if (partialErrors.length) {
         showToast(`Field decisions saved. Some follow-up actions need attention: ${partialErrors.join(' · ')}`, 'error');
-      } else if (inviteChecked && result.invitation_status === 'waiting_for_business') {
+      } else if (invitationWaiting || (inviteChecked && result.invitation_status === 'waiting_for_business')) {
         showToast('Field decisions saved. Owner invitation is queued until the minimum public business information is complete.', 'success');
         setActiveSubmissionId(null);
       } else {
@@ -588,7 +597,7 @@ export function BusinessFieldReviewQueue({
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={() => selectAllFields(activeFields.map((field) => field.field_key))}>Select All</Button>
+                <Button size="sm" variant="outline" onClick={selectAllRequest}>Select All</Button>
                 <Button size="sm" variant="outline" onClick={clearAllFields}>Clear All</Button>
               </div>
             </div>
@@ -669,16 +678,21 @@ export function BusinessFieldReviewQueue({
             </section>
 
             <section className="rounded-xl border border-outline-variant/40 p-3 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="font-bold text-sm">Logo & Cover Images</h3>
-                <span className="text-xs text-on-surface-variant">{activeMedia.length} submitted image(s)</span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <h3 className="font-bold text-sm">Logo & Cover Images</h3>
+                  <span className="text-xs text-on-surface-variant">{activeMedia.length} submitted image(s)</span>
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" className="text-[11px] font-semibold text-primary" onClick={() => setApprovedMediaIds((current) => [...new Set([...current, ...activeMedia.filter((asset) => asset.status === 'pending_review').map((asset) => asset.id)])])}>Select images</button>
+                  <button type="button" className="text-[11px] font-semibold text-on-surface-variant" onClick={() => setApprovedMediaIds((current) => current.filter((id) => !activeMedia.some((asset) => asset.id === id && asset.status === 'pending_review')))}>Clear image selections</button>
+                </div>
               </div>
               {activeMedia.length === 0 ? (
                 <p className="text-xs text-on-surface-variant">No logo or cover images were submitted with this request.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {activeMedia.map((asset) => {
-                    const selected = approvedMediaIds.includes(asset.id) || asset.status === 'approved_pending_promotion' || asset.status === 'approved_published';
                     const rejected = rejectedMediaIds.includes(asset.id);
                     return (
                       <div key={asset.id} className="rounded-xl bg-surface-container-low/70 p-3 space-y-2">
@@ -781,8 +795,9 @@ export function BusinessFieldReviewQueue({
             </section>
 
             <section className="space-y-2">
-              <label className="text-xs font-bold text-on-surface" htmlFor="business-review-admin-note">Private Admin Note</label>
-              <Textarea id="business-review-admin-note" rows={3} value={adminNote} onChange={(event) => setAdminNote(event.target.value)} placeholder="Internal review note — never shown publicly" />
+              <label className="text-xs font-bold text-on-surface" htmlFor="business-review-admin-note">Add Private Admin Note</label>
+              {activeSubmission.admin_note && <p className="text-xs text-on-surface-variant whitespace-pre-wrap rounded-lg bg-surface-container-low p-2">Previous note: {activeSubmission.admin_note}</p>}
+              <Textarea id="business-review-admin-note" rows={3} value={adminNote} onChange={(event) => setAdminNote(event.target.value)} placeholder="Add an internal note — never shown publicly" />
             </section>
 
             <div className="sticky bottom-0 -mx-4 sm:-mx-5 px-4 sm:px-5 py-3 bg-surface-container-lowest border-t border-outline-variant/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
