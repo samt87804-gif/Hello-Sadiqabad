@@ -273,9 +273,13 @@ Phases are ordered for dependency and risk. The owner has approved this plan, bu
 - **Gate:** owner approval of retention/deletion, consent wording, permission matrix, fee configuration, referral-letter fields and office schedule before any candidate PII collection.
 
 ### Phase 6 — Gov landing and mobile navigation
-- Four Gov cards, bilingual content and route linking.
-- Replace bottom nav items with Gov and SDK Jobs; remove Urgent shortcut only.
-- **Gate:** route/deep-link/mobile responsive/accessibility regression tests.
+- [x] Four bilingual Gov cards link to the existing Government Jobs, Government Schemes, Local Authorities and Authority Profiles routes.
+- [x] Mobile navigation final order is Home, Search, News, Gov, SDK Jobs and Saved; News is retained per the owner's explicit correction. Emergency page/card are preserved.
+- [x] Added `scripts/mobile-bottom-nav.test.mjs` for six routes/order, News route/translation/icon and six-column layout.
+- [x] Added `scripts/gov-navigation.test.mjs` for all four existing destination routes, bilingual card titles/descriptions, public `/gov` route, canonical SEO and sitemap inclusion.
+- [ ] Latest CI for the new navigation tests and production release of the latest regression-test-only commits.
+- [ ] Rendered production mobile six-item layout, Urdu RTL, Gov card deep links and Emergency access owner acceptance.
+- **Gate:** code and regression tests are in place; do not mark Phase 6 accepted until CI/deployment and remaining rendered/owner acceptance evidence are complete.
 
 ### Phase 7 — Full regression, deployment and handoff
 - TypeScript, unit/integration tests, production build, GitHub CI, migration/RLS/Storage checks, deployment and production endpoint checks.
@@ -573,3 +577,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Code commit `981bda1ae6a212cef613021ad1e16188e4f6ee93` passed CI run [45716487169](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45716487169) (typecheck, automated tests, production build, Edge Function checks).
 - [x] Cloudflare Pages production build/deploy for that code commit succeeded (`8c1fd329-f5fd-484c-b7c7-c8428bd49713`). Canonical production alias is on successful descendant deployment `4f484193-c01c-4f2f-9147-c0becbdc6cbc` for commit `c2d370dcc7b557b623d042902a747b52d5dc10b`, which includes the News change.
 - [ ] Rendered production mobile acceptance for all six items, Urdu labels and News active-state/deep link remains to be confirmed; do not claim visual acceptance until tested.
+
+
+### Phase 6 regression-test continuation — 26 November 2026
+
+- [x] `scripts/mobile-bottom-nav.test.mjs` locks the final six mobile destinations and News-specific route/translation/icon.
+- [x] `scripts/gov-navigation.test.mjs` locks the four existing Gov destination routes, bilingual titles/descriptions, public route, canonical SEO and sitemap entry.
+- [x] Both scripts are included in `npm test`.
+- [ ] Latest CI run [45717263569](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45717263569) was queued at checkpoint; recheck before calling the tests passed.
+- [ ] Owner rendered acceptance of six-item layout, Urdu RTL, Gov card deep links and Emergency access remains open.
