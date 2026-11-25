@@ -18,7 +18,7 @@ export function classifySiteAnalyticsPath(raw: unknown): { path: string; pageTyp
     "/": "home",
     "/search": "search",
     "/categories": "categories",
-    "/gov": "gov",
+    "/gov": "static",
     "/offers": "offers",
     "/map": "map",
     "/emergency": "emergency",
