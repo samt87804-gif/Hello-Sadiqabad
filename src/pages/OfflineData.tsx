@@ -20,7 +20,7 @@ import {
   type OfflineSnapshotMetadata,
 } from '../lib/offlineDirectory';
 
-type DownloadStatus = 'idle' | 'downloading' | 'saving' | 'success' | 'error' | 'cancelled';
+type DownloadStatus = 'idle' | 'downloading' | 'saving' | 'success' | 'success-with-warnings' | 'error' | 'cancelled';
 
 type OfflineReadinessReport = {
   serviceWorkerSupported: boolean;
@@ -545,10 +545,6 @@ export function OfflineData() {
       const imageResult = await cacheOfflineImages(publicImageUrls, signal, (completed, total) => {
         if (total > 0) setProgress(78 + Math.round((completed / total) * 10));
       });
-      if (imageResult.skipped > 0) {
-        throw new Error(`${imageResult.skipped} public images could not be cached. The previous offline package was kept so the download is not marked complete with missing images.`);
-      }
-
       const bytes = new Blob([JSON.stringify(snapshot)]).size + imageResult.bytes;
       setEstimatedBytes(bytes);
       setProgress(90);
@@ -561,10 +557,16 @@ export function OfflineData() {
       clearOfflineUpdateAvailable();
       await refreshStorageEstimate();
       setProgress(100);
-      setStatus('success');
+      const cachedImageCount = imageResult.downloaded + imageResult.alreadyCached;
+      const hasImageWarnings = imageResult.skipped > 0;
+      setStatus(hasImageWarnings ? 'success-with-warnings' : 'success');
       setMessage(isUrdu
-        ? `آف لائن ڈائریکٹری محفوظ ہو گئی۔ ${imageResult.downloaded + imageResult.alreadyCached} تصاویر دستیاب ہیں؛ ${imageResult.skipped} تصاویر ڈاؤن لوڈ نہیں ہو سکیں۔`
-        : `Offline directory saved. ${imageResult.downloaded + imageResult.alreadyCached} public images are cached; ${imageResult.skipped} could not be downloaded.`);
+        ? hasImageWarnings
+          ? `آف لائن ڈائریکٹری محفوظ ہو گئی۔ ${cachedImageCount} تصاویر محفوظ ہوئیں؛ ${imageResult.skipped} تصاویر دستیاب یا قابلِ کیش نہیں تھیں۔ ڈائریکٹری، تلاش، کیٹیگریز اور عوامی مواد آف لائن دستیاب رہیں گے؛ غیر محفوظ تصاویر انٹرنیٹ کے بغیر نظر نہیں آئیں گی۔`
+          : `آف لائن ڈائریکٹری محفوظ ہو گئی۔ تمام ${cachedImageCount} عوامی تصاویر دستیاب ہیں۔`
+        : hasImageWarnings
+          ? `Offline directory saved with an image warning. ${cachedImageCount} images are cached; ${imageResult.skipped} were unavailable or unsupported. Your public directory, search, categories and public content are saved; missing images may not appear offline.`
+          : `Offline directory saved. All ${cachedImageCount} public images are cached.`);
     } catch (error) {
       if (signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
         setStatus('cancelled');
@@ -638,7 +640,7 @@ export function OfflineData() {
           </div>
 
           {message && (
-            <p aria-live="polite" className={status === 'error' ? 'rounded-xl p-3 text-sm leading-6 bg-error/10 text-error' : status === 'success' ? 'rounded-xl p-3 text-sm leading-6 bg-primary/10 text-primary' : 'rounded-xl p-3 text-sm leading-6 bg-surface-container text-on-surface-variant'}>
+            <p aria-live="polite" className={status === 'error' ? 'rounded-xl p-3 text-sm leading-6 bg-error/10 text-error' : status === 'success' ? 'rounded-xl p-3 text-sm leading-6 bg-primary/10 text-primary' : status === 'success-with-warnings' ? 'rounded-xl p-3 text-sm leading-6 bg-secondary/10 text-secondary' : 'rounded-xl p-3 text-sm leading-6 bg-surface-container text-on-surface-variant'}>
               {message}
             </p>
           )}
