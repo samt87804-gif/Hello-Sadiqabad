@@ -29,3 +29,16 @@ Do not alter desktop navigation unless inspection shows a necessary compatible c
 - Mobile bottom nav has exactly one Gov and one SDK Jobs item, no Urgent shortcut.
 - Emergency card, route and contacts still work.
 - Existing deep links and browser history continue to work.
+
+
+## Implementation checkpoint — 26 November 2026
+
+- [x] Added the bilingual public `/gov` landing page with four cards linking to the existing Government Jobs, Government Schemes, Local Authorities and Authority Profiles directories.
+- [x] Added the Gov landing to the desktop Civic Services dropdown without removing its existing Local Authorities and Authority Profiles links.
+- [x] Replaced the nine-item mobile bottom navigation with exactly five items in the approved order: Home, Search, Gov, SDK Jobs, Saved.
+- [x] Removed the separate Government Jobs, Government Schemes and Urgent shortcuts from the bottom navigation only. The `/emergency` route and Home Emergency card remain unchanged.
+- [x] Added `/gov` to public route indexing, the sitemap (with cache key version bump) and existing analytics allowlists. Analytics uses the existing `static` page type; no database migration was needed.
+- [x] Added automated tests for the four approved destination routes and bilingual card labels/descriptions.
+- [ ] GitHub CI for the current Gov implementation.
+- [ ] Production Pages deployment and `/gov`/sitemap smoke tests.
+- [ ] Owner browser acceptance for desktop, mobile, Urdu RTL, card deep links and preserved Emergency access.
