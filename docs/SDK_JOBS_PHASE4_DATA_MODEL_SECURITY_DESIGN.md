@@ -150,3 +150,8 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 
 - [x] Added `sdk_jobs_slug_path_safety` migration: DB check constraint enforces safe slug format and Owner cannot change slug. Prevents path injection into public poster storage promotion.
 - [x] Rolled-back tests passed for unsafe slug rejection and Owner slug immutability; no live job rows remain.
+
+
+- [x] Database now requires a one-time private authorization before changing `approved_image_url` or transitioning to `published`. The RPC is service-role-only; the trigger consumes a 90-second token. Direct Admin table updates are blocked.
+- [x] Rolled-back DB test proved direct poster approval/publish are denied and the authorized flow succeeds; no data remains. Authorization RPC privilege test confirms anon/authenticated cannot execute it.
+- [x] CI [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357) passed build and Supabase Edge Function checks after Edge Function redeployment.
