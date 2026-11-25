@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
+const BusinessFieldReviewQueue = React.lazy(() => import('../../components/admin/BusinessFieldReviewQueue').then((m) => ({ default: m.BusinessFieldReviewQueue })));
 const OwnerRegistrationRequests = React.lazy(() => import('../../components/admin/OwnerRegistrationRequests').then((m) => ({ default: m.OwnerRegistrationRequests })));
 const NewsManager = React.lazy(() => import('../../components/admin/NewsManager').then((m) => ({ default: m.NewsManager })));
 const GovernmentJobsManager = React.lazy(() => import('../../components/admin/GovernmentJobsManager').then((m) => ({ default: m.GovernmentJobsManager })));
@@ -427,6 +428,8 @@ export function AdminPortal() {
         ) : (
           <PermissionDenied />
         );
+      case 'business-review':
+        return hasPermission('moderation.review') ? <BusinessFieldReviewQueue /> : <PermissionDenied />;
       case 'owner-requests':
         return hasPermission('owners.create') ? <OwnerRegistrationRequests /> : <PermissionDenied />;
       case 'owners':
