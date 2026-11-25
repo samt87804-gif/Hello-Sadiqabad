@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const sessionHash = await hashRateKey(body.session_id);
-    const pattern = new RegExp(`^pending/${sessionHash}/[0-9a-f-]{36}/(logo|cover)[.](jpg|png|webp)$`, "i");;
+    const pattern = new RegExp(`^pending/${sessionHash}/[0-9a-f-]{36}/(logo|cover)[.](jpg|png|webp)$`, "i");
     const paths = body.storage_paths;
     if (!paths.every((path) => typeof path === "string" && pattern.test(path))) {
       return response(req, { ok: false, error: "The requested files do not belong to this upload session" }, 403);
