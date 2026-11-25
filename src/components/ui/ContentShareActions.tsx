@@ -15,7 +15,7 @@ export function ContentShareActions({
   description?: string | null;
   url: string;
   lang?: ShareLanguage;
-  contentType?: 'business' | 'news' | 'authority_profile' | 'government_job' | 'government_scheme';
+  contentType?: 'business' | 'news' | 'authority_profile' | 'government_job' | 'government_scheme' | 'sdk_job';
 }) {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const shareText = [title, description, url].filter(Boolean).join('\n\n');
