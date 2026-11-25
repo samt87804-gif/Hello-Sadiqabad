@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.create-business-media-upload]
 verify_jwt = false
+
+[functions.cleanup-business-media-upload]
+verify_jwt = false
