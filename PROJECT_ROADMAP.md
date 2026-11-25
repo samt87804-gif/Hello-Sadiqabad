@@ -743,7 +743,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - [~] Phase 1 Admin Business and Data Quality performance optimization — initial code changes implemented and deployed; final acceptance pending authenticated desktop/browser metrics and mobile interaction QA.
   - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
-- [ ] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — not implemented.
+- [~] Phase 2 Add Business field-level moderation, private pending media and secure owner invitation — implementation source exists on the closed feature branch; only migration 1 is on main, not applied; isolated database QA is blocked by Supabase free-project limit.
 - [ ] Phase 3 Government Jobs/Schemes bilingual detail content, approved posters and share previews — existing MVPs remain in place; expansion not implemented.
 - [ ] Phase 4 SDK Jobs owner submissions, Admin moderation and public employer-anonymous board — not implemented.
 - [ ] Phase 5 SDK Jobs candidate intake, interview/referral, letters, fee and office settings — not implemented.
@@ -780,3 +780,13 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - Live SQL comparison on 697 business rows: planner-estimated row width reduced from 2,676 bytes for the former broad joined projection to 1,419 bytes for the new allowlisted projection (about 47% narrower). Query timings from the compared runs had different cache state and are not used as a speed claim.
 - Phase 2 read-only preflight is documented in `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`: current Add Business form misses several approved fields and preselects taxonomy; the legacy new-business approval branch publishes all fields at once; owner invitation has no business association; pending media needs a separate private bucket.
 - Phase 2 code/schema work has not started because Phase 1 authenticated desktop/mobile acceptance remains a gate.
+
+
+### Phase 2 continuation — 25 November 2026
+
+- Owner approved proceeding with Phase 2 and direct `main` commits; no PRs are to be created.
+- Phase 2 implementation source was developed on `feat/business-owner-field-approval`; PR #19 was closed unmerged on owner instruction. The application/Edge Function/admin UI changes and second migration are therefore not in `main`.
+- Migration `20261125110000_business_field_approval_workflow.sql` was added to `main` in commit `3794918e`, then a malformed trailing duplicate SQL fragment was removed in commit `1bb9d3e2`. Current file ends at its single `COMMIT` statement.
+- CI for `1bb9d3e2` passed both `build` and `edge-functions` jobs (run 45608741733). This validates repository build checks, not SQL execution.
+- Supabase staging project creation was blocked because the organization has reached its two-active-Free-project limit. No project was created; no production schema/data was modified. Do not apply either Phase 2 migration to production until isolated SQL validation and rollback testing are complete.
+- Next: obtain an isolated PostgreSQL/Supabase test target by freeing an existing Free project slot or approving an appropriate paid staging option; then validate both migrations against the live schema shape, RLS/Storage behavior, owner invite rollback and media workflow before porting the remaining code directly to `main`.
