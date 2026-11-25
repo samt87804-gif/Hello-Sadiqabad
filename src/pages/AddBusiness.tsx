@@ -616,8 +616,8 @@ export function AddBusiness() {
                 <Input label={lang === 'ur' ? 'مالک کا Gmail' : 'Owner Gmail Address'} type="email" required maxLength={254} dir="ltr" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="name@gmail.com" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری لوگو / پروفائل تصویر (اختیاری)' : 'Business Logo / Profile Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)} className="block w-full text-xs mt-1" /></label>
-                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری کور / بینر تصویر (اختیاری)' : 'Business Cover / Banner Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} className="block w-full text-xs mt-1" /></label>
+                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری لوگو / پروفائل تصویر (اختیاری)' : 'Business Logo / Profile Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { setLogoFile(e.target.files?.[0] ?? null); e.currentTarget.value = ''; }} className="block w-full text-xs mt-1" /></label>
+                <label className="space-y-1 text-xs font-semibold text-on-surface">{lang === 'ur' ? 'کاروباری کور / بینر تصویر (اختیاری)' : 'Business Cover / Banner Image (optional)'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { setCoverFile(e.target.files?.[0] ?? null); e.currentTarget.value = ''; }} className="block w-full text-xs mt-1" /></label>
               </div>
 
               <input
