@@ -1103,7 +1103,7 @@ export function ListingEditor({
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   disabled={imageChangeBusy !== '' || imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2}
-                  onChange={(event) => setLogoChangeFile(event.target.files?.[0] ?? null)}
+                  onChange={(event) => { setLogoChangeFile(event.target.files?.[0] ?? null); event.currentTarget.value = ''; }}
                 />
                 {logoChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{logoChangeFile.name}</p>}
                 <Button size="sm" fullWidth disabled={!logoChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'logo'} onClick={() => void requestImageChange('logo', logoChangeFile)}>Send logo for Admin review</Button>
@@ -1117,7 +1117,7 @@ export function ListingEditor({
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                       disabled={imageChangeBusy !== '' || imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2}
-                      onChange={(event) => setCoverChangeFile(event.target.files?.[0] ?? null)}
+                      onChange={(event) => { setCoverChangeFile(event.target.files?.[0] ?? null); event.currentTarget.value = ''; }}
                     />
                     {coverChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{coverChangeFile.name}</p>}
                     <Button size="sm" fullWidth disabled={!coverChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'cover'} onClick={() => void requestImageChange('cover', coverChangeFile)}>Send cover for Admin review</Button>
