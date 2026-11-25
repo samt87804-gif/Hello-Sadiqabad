@@ -926,7 +926,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Updated `/offline-data` so the public IndexedDB snapshot can be saved when some images fail or use unsupported hosts; completion reports cached and skipped image counts and warns that skipped images may not appear offline.
 - [x] Added a regression test covering one successfully cached image, one unsupported host and one unavailable image response.
 - [x] GitHub CI run 45668460310 passed TypeScript, tests, production build and Edge Function checks.
-- [x] Cloudflare Pages production deployment b162f9ca-f575-445f-aeb6-14711b7ff30c succeeded for commit f5289c6c91ea06680252f22dae2decde615605ce with the canonical alias.
+- [x] Cloudflare Pages deployment b162f9ca-f575-445f-aeb6-14711b7ff30c succeeded for feature commit f5289c6c91ea06680252f22dae2decde615605ce; canonical alias was subsequently confirmed on descendant deployment 3e856645-fe2b-47b6-84d8-885a6593b6a1 (commit c181ea930802afa9186674e1be7e19aec4eff988), which includes the feature.
 - [x] Production browser download saved 748 businesses, 29 categories, 315 areas and 12 emergency contacts; 953 images cached and 235 unavailable/unsupported images warned without blocking.
 - [x] Offline-emulation smoke at 390×844 verified homepage, categories, emergency contacts and a business detail from the saved snapshot with navigator.onLine=false; no page errors.
 - [ ] Physical-device airplane-mode testing and Service Worker update/rollback acceptance remain open.
