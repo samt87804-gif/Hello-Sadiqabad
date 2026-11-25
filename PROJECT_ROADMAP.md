@@ -862,3 +862,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Latest application commit `905065da1b4991143d1aafd010d802daddc345bc`; CI run `45625359267` passed; Cloudflare Pages deployment `95345747-efea-4a20-8743-26c91719efbe` succeeded with canonical alias `https://hellosadiqabad.com`.
 - Phase 2 migration count is now **10**. No test owner uploads, media requests, Storage objects, invitations or business records were created. Authenticated browser/device QA and real email delivery remain pending.
 - Added/applied migration 11, `owner_image_change_rpc_plan_guard`: the owner image-change RPC now independently requires a published business and a plan with the cover feature before accepting cover requests. Transaction-only tests passed for Free-plan cover rejection and Premium-plan cover acceptance; the owner logo request path also passed. All transactions rolled back; post-test counts remain 0 pending Storage objects, 0 media assets and 0 image-change requests. Phase 2 now has **11** applied migrations.
+
+### Add Business form completeness follow-up — 25 November 2026
+
+- Added separate English and Urdu business descriptions (500 characters each, with server-side validation for the Urdu field), a live public-field preview that excludes owner-private details, and a required bilingual consent confirmation before submission.
+- Category and Area now have labelled search filters; missing taxonomy guidance is always visible and directs users to Admin rather than selecting an incorrect substitute. Image file controls reset after selection so the same file can be reselected after a failed attempt.
+- Latest app commit `cc6c7ebcbd31ca2660cc7a470baf50bf13751008`; CI run `45625706344` passed; Cloudflare Pages deployment `9c109325-f411-44f0-8183-8d40c940ff70` succeeded with canonical alias.
