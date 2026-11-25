@@ -71,7 +71,7 @@ function addSlugEntries(entries, rows, prefix) {
 }
 
 export async function onRequestGet({ request, env }) {
-  const cacheKey = new Request(SITE_ORIGIN + '/sitemap.xml?v=5');
+  const cacheKey = new Request(SITE_ORIGIN + '/sitemap.xml?v=6');
   try {
     const cached = await caches.default.match(cacheKey);
     if (cached) return cached;
@@ -113,7 +113,7 @@ export async function onRequestGet({ request, env }) {
 
     const activeAnnouncements = announcements.filter((row) => isCurrentAnnouncement(row, now.getTime()));
     const indexableTaxonomy = filterIndexableTaxonomy(categories, areas, businesses, 3);
-    const entries = [{ path: '/' }];
+    const entries = [{ path: '/' }, { path: '/gov' }];
 
     if (indexableTaxonomy.categories.length > 0) entries.push({ path: '/categories' });
     if (indexableTaxonomy.areas.length > 0 || businesses.length > 0) entries.push({ path: '/map' });
