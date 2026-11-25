@@ -93,14 +93,15 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const payload = { ...(body.payload as Record<string, unknown>) };
+    const submittedPayload = body.payload as Record<string, unknown>;
+    const payload = { ...submittedPayload };
     const rawMediaInput = payload.media_assets;
     if (rawMediaInput !== undefined && !Array.isArray(rawMediaInput)) {
       return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
     }
     const mediaInput = Array.isArray(rawMediaInput) ? rawMediaInput : [];
     delete payload.media_assets;
-    const ownerEmail = typeof body.payload.owner_email === "string" ? body.payload.owner_email.trim().toLowerCase() : "";
+    const ownerEmail = typeof submittedPayload.owner_email === "string" ? submittedPayload.owner_email.trim().toLowerCase() : "";
     delete payload.owner_email;
     const businessId = typeof body.business_id === "string" ? body.business_id : null;
     let submittedBy: string | null = null;
@@ -157,10 +158,10 @@ Deno.serve(async (req: Request) => {
       try {
         if (!submittedBy) {
           const { error: ownerRequestError } = await db.from("owner_registration_requests").insert({
-            full_name: String(body.payload.owner_name).trim().slice(0, 120),
+            full_name: String(submittedPayload.owner_name).trim().slice(0, 120),
             email: ownerEmail,
-            phone: String(body.contact_phone ?? body.payload.phone_primary).trim().slice(0, 30),
-            business_name: String(body.payload.name_en).trim().slice(0, 160),
+            phone: String(body.contact_phone ?? submittedPayload.phone_primary).trim().slice(0, 30),
+            business_name: String(submittedPayload.name_en).trim().slice(0, 160),
             submission_id: inserted.id,
             status: "pending",
           });
