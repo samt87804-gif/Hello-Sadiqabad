@@ -614,9 +614,9 @@ export interface GovernmentJobRow {
  id:string; slug:string; title_en:string; title_ur:string|null; summary_en:string|null; summary_ur:string|null; department_name:string;
  department_scope:GovernmentJobScope; job_type:GovernmentJobType; scale_or_grade:string|null;
  vacancy_count:number|null; location_text:string; districts:string[]; sadiqabad_relevance:boolean|null;
- qualification_text:string; experience_text:string|null; age_text:string|null; domicile_text:string|null;
- gender_or_quota_text:string|null; other_eligibility_text:string|null; application_steps:string|null;
- application_fee_text:string|null; apply_url:string|null; advertisement_url:string|null; official_case_number:string|null;
+ qualification_text:string; qualification_text_ur:string|null; experience_text:string|null; experience_text_ur:string|null; age_text:string|null; age_text_ur:string|null; domicile_text:string|null; domicile_text_ur:string|null;
+ gender_or_quota_text:string|null; gender_or_quota_text_ur:string|null; other_eligibility_text:string|null; other_eligibility_text_ur:string|null; application_steps:string|null; application_steps_ur:string|null;
+ application_fee_text:string|null; application_fee_text_ur:string|null; apply_url:string|null; advertisement_url:string|null; official_case_number:string|null;
  application_open_at:string|null; deadline_at:string|null; status:GovernmentJobStatus; published_at:string|null;
  source_name:string|null; source_url:string|null; source_document_url:string|null; image_url:string|null; verified_at:string|null;
  next_review_at:string|null; created_by:string|null; updated_by:string|null; published_by:string|null;
@@ -634,7 +634,7 @@ export type GovernmentSchemeReportReason = 'incorrect_information' | 'broken_off
 export interface GovernmentSchemeRow {
  id:string; slug:string; title_en:string; title_ur:string|null; summary_en:string|null; summary_ur:string|null;
  government_scope:GovernmentSchemeScope; category:GovernmentSchemeCategory; benefit_type:GovernmentSchemeBenefitType;
- benefit_details:string; eligibility_text:string; required_documents:string[]; application_steps:string|null; fees_and_repayment:string|null;
+ benefit_details:string; benefit_details_ur:string|null; eligibility_text:string; eligibility_text_ur:string|null; required_documents:string[]; required_documents_ur:string[]; application_steps:string|null; application_steps_ur:string|null; fees_and_repayment:string|null; fees_and_repayment_ur:string|null;
  official_apply_url:string|null; source_name:string|null; source_url:string|null; source_document_url:string|null; image_url:string|null;
  intake_status:GovernmentSchemeIntakeStatus; application_open_at:string|null; deadline_at:string|null;
  status:GovernmentSchemeStatus; published_at:string|null; verified_at:string|null; next_review_at:string|null;
