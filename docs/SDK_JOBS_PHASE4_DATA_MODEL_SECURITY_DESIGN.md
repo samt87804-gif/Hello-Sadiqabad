@@ -155,3 +155,12 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Database now requires a one-time private authorization before changing `approved_image_url` or transitioning to `published`. The RPC is service-role-only; the trigger consumes a 90-second token. Direct Admin table updates are blocked.
 - [x] Rolled-back DB test proved direct poster approval/publish are denied and the authorized flow succeeds; no data remains. Authorization RPC privilege test confirms anon/authenticated cannot execute it.
 - [x] CI [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357) passed build and Supabase Edge Function checks after Edge Function redeployment.
+
+
+## Final Phase 4 owner acceptance and release checkpoint — 26 November 2026
+
+- Owner explicitly confirmed that every authenticated Owner/Admin and public-flow test in `docs/SDK_JOBS_PHASE4_ACCEPTANCE_CHECKLIST.md` Sections 1–8 was personally tested and passed. This owner confirmation supersedes earlier open browser-acceptance notes above; do not ask for repeat testing.
+- Latest CI [45714887257](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45714887257) passed TypeScript, automated tests, production build and Supabase Edge Function checks.
+- Cloudflare Pages production deployment `cf208161-c3da-4116-a0bc-f3eb2a983cfb` succeeded for commit `c766470a26a0325d1bc6c21d2bce65255184d06f`, with canonical alias `https://hellosadiqabad.com`.
+- Remaining gate: post-deployment Owner/Admin route, public listing/detail, social-preview and sitemap smoke checks. No production SDK Jobs rows or test fixtures were created by the database security tests.
+- Candidate intake, consent/retention, CV/PII, interview/referral, letters, fees and office settings remain Phase 5 and have not been implemented.
