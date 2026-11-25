@@ -48,6 +48,7 @@ interface OwnerSdkJob {
   created_at: string;
   pending_media_path: string | null;
   approved_image_url: string | null;
+  owner_feedback: string | null;
 }
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Temporary', 'Internship', 'Apprenticeship'];
@@ -120,7 +121,7 @@ export function OwnerSdkJobs() {
         fetchOwnerListings(user.id),
         fetchAllAreas(),
         client.from('sdk_jobs')
-          .select('id,slug,source_business_id,area_id,title_en,title_ur,summary_en,summary_ur,description_en,description_ur,job_category,vacancy_count,job_type,work_location_en,work_location_ur,salary_min,salary_max,salary_disclosed,duties_en,duties_ur,qualifications_en,qualifications_ur,experience_en,experience_ur,working_hours_en,working_hours_ur,benefits_en,benefits_ur,closing_date,status,submitted_at,created_at,pending_media_path,approved_image_url')
+          .select('id,slug,source_business_id,area_id,title_en,title_ur,summary_en,summary_ur,description_en,description_ur,job_category,vacancy_count,job_type,work_location_en,work_location_ur,salary_min,salary_max,salary_disclosed,duties_en,duties_ur,qualifications_en,qualifications_ur,experience_en,experience_ur,working_hours_en,working_hours_ur,benefits_en,benefits_ur,closing_date,status,submitted_at,created_at,pending_media_path,approved_image_url,owner_feedback')
           .eq('employer_owner_id', user.id)
           .order('created_at', { ascending: false })
           .limit(100),
