@@ -1063,3 +1063,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Logo/Cover file inputs are now accessible card-style pickers with accepted format/5 MB guidance, selected filename and size, visible focus treatment and retry-safe reset.
 - No DB, Storage, Auth or business data changed. Main commit `3e73a2d9943355d1c48370642ad8034f416571ec`; CI `45638490612` passed; production mobile/desktop Playwright smoke `45638490221` passed; Pages deployment `8969830b-3848-4951-a1dd-7b01f3fda6de` succeeded with canonical alias.
 - Still pending: authenticated Admin/Owner browser acceptance, real owner image-upload-to-Admin-approval roundtrip and actual invitation email/redirect. Phase 1 Admin performance acceptance remains open.
+
+## Phase 1 Admin performance checkpoint — 25 November 2026
+
+- Current-main source review: Admin managers are React.lazy loaded; reload requests are gated by tab and permission; admin business list has an explicit column projection; BusinessManager/DataQualityManager render 50 items per page; DataQuality category counts are one-pass.
+- Added 30-second in-memory caching for businesses, taxonomy, profiles and leads across tab switches. Global quick search shares the cache; explicit action reloads force fresh reads; failed refreshes retain last-good state and remain retryable. No local persistence or DB changes.
+- Main commit `ce1b6788c3beafab864cf577c3b046beca64a49a`; CI `45639985225` passed; Cloudflare Pages deployment `81b032d7-64e1-45c1-a63c-1a46c60a8580` succeeded with canonical alias.
+- Phase 1 remains open pending authenticated Admin desktop/mobile before/after timings and interaction/permission regression traces. Do not report invented performance numbers.
