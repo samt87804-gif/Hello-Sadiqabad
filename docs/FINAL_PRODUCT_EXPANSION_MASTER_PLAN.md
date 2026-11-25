@@ -412,3 +412,11 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Cloudflare Pages deployment containing the application code from `a1b210633c23747b91758fa515e83b8941425080` succeeded for commit `8b778ba2dc7eb04192c5159696353f88ea44334a` with canonical alias `https://hellosadiqabad.com`.
 - Latest active Edge Function versions: `create-business-media-upload` v2, `cleanup-business-media-upload` v3, `submit-suggestion` v10, `review-business-media` v3, `manage-owner-registration` v5.
 - Total Phase 2 migrations applied to the existing project: **9**. No separate Supabase project was created. Test-only database writes were all rolled back; verification found no test media URLs, test submissions, test owner links or pending Storage objects.
+
+
+### Phase 2 public-form UX polish checkpoint — 25 November 2026
+
+- Category/Area controls have responsive bilingual search/select panels, taxonomy counts, icons, clearer hints, styled select surfaces and RTL-aware affordances. Existing taxonomy relations and selection rules are preserved.
+- Logo/Cover controls use accessible card-style image pickers with format/size guidance and selected-file feedback.
+- Main CI `45638490612` and production browser smoke `45638490221` passed; Cloudflare deployment `8969830b-3848-4951-a1dd-7b01f3fda6de` succeeded. No database or existing user/business data was changed.
+- This is a visual UX checkpoint only; Phase 2 acceptance remains open pending authenticated Admin/Owner click-through, owner media approval roundtrip and real invitation email/redirect verification. Phase 1 performance acceptance also remains open.
