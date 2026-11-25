@@ -305,3 +305,13 @@ This is the detailed execution companion to `PROJECT_ROADMAP.md`. The roadmap re
 - [ ] Physical mobile/device interaction verification of the chatbot UI.
 
 **Not part of Part 2:** Admin sync button, persistent vector index, separate training corpus and model fine-tuning. No DB migration was made.
+## Add Business form — dropdown containment and image compression (25 November 2026)
+
+- [x] Replace native selects with accessible custom listboxes for Category and Area; cap menu height at 14rem with internal scrolling and a compact in-card overlay.
+- [x] Preserve bilingual search, selected taxonomy IDs, validation and submission payload shape.
+- [x] Compress public logo/cover images client-side before secure upload: 640px logo cap, 1800px cover cap, WebP quality 0.84 then 0.72 for large output; retain source when encoding is unavailable or would increase file size.
+- [x] Keep existing 5 MB source-file limit, signed upload authorization, private pending bucket, rate limits and cleanup semantics. Send compressed MIME type and byte size to upload authorization and review metadata.
+- [x] CI run `45658737972` passed; browser smoke run `45658737929` passed at 390×844 and 1365×900; Cloudflare production deployment `db7b67c2-29a0-4f2a-bf86-fcda74fdb2e1` succeeded with `https://hellosadiqabad.com` alias (main commit `3c2c45895d24e7ffaef8ae929b4703da456873da`).
+- [ ] Owner manual acceptance of dropdown placement on actual mobile and desktop browsers, including English/Urdu search.
+- [ ] Real business submission acceptance for logo/cover upload; do not create a dummy production listing solely for testing.
+
