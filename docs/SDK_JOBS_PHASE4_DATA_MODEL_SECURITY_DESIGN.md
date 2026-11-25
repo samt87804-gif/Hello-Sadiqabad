@@ -104,9 +104,9 @@ Phase 5 is separate and must not be pulled forward into Phase 4: candidate intak
 - [x] Inspected staff permission editor (`ALL_PERMISSION_KEYS`), Admin tab permission switch, and all frontend permission-key locations.
 - [x] Inspected Storage buckets and object policies: public bucket is unrestricted at bucket metadata level; existing private pending-business bucket is 5 MiB JPEG/PNG/WebP and its Admin read policy is specific to business moderation.
 - [x] Implemented database-side owner eligibility enforcement and forced pending status.
-- [ ] Implement owner submission UI.
+- [x] Implemented first-pass Owner vacancy submission UI and owner-only request status list at /owner/sdk-jobs; authenticated owner route and navigation added. Poster upload remains a separate open item.
 - [x] Implemented dedicated Admin permission, RLS gates and append-only status history at database level.
-- [ ] Implement permission-gated Admin moderation UI.
+- [ ] Permission-gated Admin moderation workspace added in code (CI verification pending); authenticated browser and live permission acceptance still open.
 - [x] Implemented the published-only, security-invoker public projection.
 - [ ] Implement public listing/detail routes, filters and share metadata.
 - [x] Foundation GitHub CI and production Pages deployment passed for the permission/database foundation.
