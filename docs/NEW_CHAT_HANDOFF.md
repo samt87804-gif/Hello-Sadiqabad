@@ -916,3 +916,18 @@ Additional optimization after the first Admin performance slice:
 **Phase 1 is still in progress.** No authenticated browser session was available to collect desktop cold/warm timings, click-to-response traces, permission/action checks or mobile smoke tests. Do not claim a speed percentage or mark Phase 1 complete. The repository currently has no Playwright/browser E2E script in `package.json`; CI runs typecheck, unit tests and production build only.
 
 **Live database safeguards reconfirmed:** SQL reports 95 rows in `supabase_migrations.schema_migrations`; 74 migration SQL files exist in the repository. The single existing Storage bucket `Hello Sadiqabad` is public. All inspected public base tables have RLS enabled. Do not run schema push/replay or place pending media in a folder of the public bucket. No database/schema/RLS/Storage/Auth/data changes were made in this follow-up.
+
+
+## Phase 2 preflight — read-only findings (25 November 2026)
+
+Reviewed current `/add-business`, relevant migrations, live tables/columns, RLS policies, Storage policies and deployed Edge Functions; no Phase 2 code/schema/data was changed.
+
+- `/add-business` lacks the approved fields for Urdu address, separate landmark, map URL, daily hours, owner Gmail and logo/cover uploads; it auto-selects first Category/Area.
+- `submissions` is generic JSON payload with no per-field moderation ledger.
+- Existing `private.approve_submission` currently publishes all fields of a new-business submission in one branch. Preserve all other branches and replace only this new-business path once a safe new workflow is ready.
+- `owner_registration_requests` is separate and has no business/submission FK.
+- `manage-owner-registration` is deployed ACTIVE v3/JWT required, but it does not link invited owners to a reviewed business.
+- Current only Storage bucket is public; pending files need a separate private bucket.
+- Live RLS policies were inspected and no public base table with RLS disabled was found.
+
+Phase 2 implementation is not started. Phase 1 remains in progress until authenticated desktop/browser and mobile QA evidence exists. Do not apply schema changes or move phase gates without resolving that blocker.
