@@ -427,3 +427,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Added a 30-second in-memory cache for Admin business, taxonomy, profile and lead datasets across tab changes. Global quick search shares it; explicit child-action reloads bypass it; failed refreshes preserve the last good data and remain retryable. No local storage or database changes.
 - CI `45639985225` passed; Pages deployment `81b032d7-64e1-45c1-a63c-1a46c60a8580` succeeded with the canonical alias.
 - **Phase 1 is not accepted yet:** authenticated desktop/mobile before/after timings and interaction traces are still required. The database-only business-list query baseline is not a substitute for browser performance evidence.
+
+### Phase 2 Admin review queue performance follow-up — 25 November 2026
+
+- Business Field Review now loads review/media queries in parallel, signs all private image previews in one batch request, groups field rows by submission in one pass, and limits rendered review cards to 20 per page for both submissions and images.
+- Moderation rules, private bucket, field status behavior and existing data remain unchanged.
+- CI `45640942909` passed; Pages deployment `0ab58777-c70e-4b76-a808-53af57e2a3f1` succeeded. Authenticated Admin click-through and real media approval remain acceptance gates.
