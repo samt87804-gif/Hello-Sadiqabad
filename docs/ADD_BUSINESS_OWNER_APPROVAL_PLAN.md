@@ -211,3 +211,12 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Read-only live reconciliation now shows 4 pending `new_business` submissions, 39 pending field-review rows across those 4 submissions, 2 pending media assets and 0 pending owner image-change requests. The earlier count of 3 is historical. Existing records were not changed.
 - Source and production Storage log review confirm browser-side WebP compression was already running: logo max dimension 640px, cover max dimension 1800px, quality 0.84 with 0.72 retry for outputs over 4 MB. In the failed attempt, temporary compressed files were 9,064 bytes (logo) and 34,118 bytes (cover). Original files are retained only if browser encoding is unavailable or WebP would not reduce size.
 - Still pending: one owner-observed real submission with media, authenticated Admin field/media review, owner invitation email/redirect and public listing/media rendering. No test submission or invitation was created/sent during this continuation.
+
+
+### Production upload and submission roundtrip — 26 November 2026
+
+- Production logs after the session-ID fix show two signed upload authorization requests with HTTP 200, followed by `submit-suggestion` function v11 returning HTTP 200 at 2026-11-25 19:09:12 UTC.
+- Read-only production DB check confirms one new `new_business` submission with status `new` and two linked `business_media_assets` with status `pending_review` were created in the same minute.
+- Storage metadata verifies the uploaded logo is WebP at 9,064 bytes and cover is WebP at 34,118 bytes (about 42.2 KiB total). The compression path is therefore verified in production, not only by source inspection.
+- Current queue state: 4 pending new-business submissions, 39 pending field-review rows across those submissions, 2 pending media assets. No record was approved/rejected and no existing data was deleted or overwritten.
+- Remaining acceptance: authenticated Admin Field Review visual click-through, media approval/rejection/public rendering, and owner invitation email/redirect.
