@@ -27,13 +27,13 @@ function safeImage(value) {
 function setMeta(html, attribute, name, value) {
   const pattern = new RegExp('<meta\\b(?=[^>]*\\b' + attribute + '\\s*=\\s*["\\x27]' + name + '["\\x27])[^>]*>', 'i');
   const tag = '<meta ' + attribute + '="' + escapeHtml(name) + '" content="' + escapeHtml(value) + '" />';
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\\/head>/i, tag + '\\n</head>');
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\\n</head>');
 }
 
 function setCanonical(html, url) {
   const tag = '<link rel="canonical" href="' + escapeHtml(url) + '" />';
-  const pattern = /<link\\b(?=[^>]*\\brel\\s*=\\s*["']canonical["'])[^>]*>/i;
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\\/head>/i, tag + '\\n</head>');
+  const pattern = /<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/i;
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace(/<\/head>/i, tag + '\\n</head>');
 }
 
 function employmentType(value) {
@@ -48,8 +48,8 @@ function buildMetadata(html, job, canonicalUrl) {
   const description = cleanDescription(job.summary_en || job.summary_ur) || 'A reviewed local vacancy on Hello Sadiqabad SDK Jobs.';
   const image = safeImage(job.image_url) || FALLBACK_IMAGE;
   const location = job.work_location_en || job.area_name_en || 'Sadiqabad';
-  let output = /<title>[\\s\\S]*?<\\/title>/i.test(html)
-    ? html.replace(/<title>[\\s\\S]*?<\\/title>/i, '<title>' + escapeHtml(title) + '</title>')
+  let output = /<title>[\s\S]*?<\/title>/i.test(html)
+    ? html.replace(/<title>[\s\S]*?<\/title>/i, '<title>' + escapeHtml(title) + '</title>')
     : html.replace(/<head[^>]*>/i, (head) => head + '<title>' + escapeHtml(title) + '</title>');
   const tags = [
     ['name', 'description', description],
@@ -86,8 +86,8 @@ function buildMetadata(html, job, canonicalUrl) {
   };
   const jsonText = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
   const script = '<script id="hs-sdk-job-json-ld" type="application/ld+json">' + jsonText + '</script>';
-  const existing = /<script\\b(?=[^>]*\\bid=["']hs-sdk-job-json-ld["'])[^>]*>[\\s\\S]*?<\\/script>/i;
-  output = existing.test(output) ? output.replace(existing, script) : output.replace(/<\\/head>/i, script + '\\n</head>');
+  const existing = /<script\b(?=[^>]*\bid=["']hs-sdk-job-json-ld["'])[^>]*>[\s\S]*?<\/script>/i;
+  output = existing.test(output) ? output.replace(existing, script) : output.replace(/<\/head>/i, script + '\\n</head>');
   return output;
 }
 
