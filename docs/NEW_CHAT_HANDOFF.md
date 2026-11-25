@@ -1094,3 +1094,24 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Existing 1 job + 5 schemes remain published and unchanged despite having no poster. Do not fabricate or unpublish; owner must approve official posters or decide whether to move legacy records to draft.
 - Initial browser smoke run 45662892354 failed to locate the WhatsApp share control; corrected selectors accept Urdu/English labels and wait for loaded share controls. Corrected public browser smoke run 45663702714 passed: Add Business mobile/desktop; Government Jobs/Schemes share controls; social crawler canonical OG title/URL/HTTPS image and Twitter large-card metadata.
 - Remaining Phase 3 gates: successful browser smoke; authenticated Admin UI review; official poster upload and share-preview roundtrip; resolve private-draft/public-approved image handling (scheme poster uploads currently go to the existing public bucket under Admin-only write policies; object URLs remain publicly readable).
+
+
+---
+
+## Current canonical continuation — 25 November 2026
+
+For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `docs/PROJECT_WORKING_RULES.md`, `PROJECT_ROADMAP.md`, this handoff and the relevant child plans. Current `main` code and tracked migrations are authoritative for implemented behavior. Work directly on `main`; preserve existing data and security boundaries.
+
+### Owner-approved offline Option 2
+
+- Owner approved partial image caching: unsupported/unavailable images are counted and warned about but do not block a valid public-data offline snapshot.
+- Source commits: `b4abe5a98bf303477a72f6a29f6b7b237902db14` (downloader behavior), `c51ddd6a4ae59cbf5176bed5ebd5127a25504ee1` (regression test).
+- The public IndexedDB snapshot still uses its atomic generation activation. Core-data validation/fetch/save failures and cancellation must preserve the prior verified package.
+- CI, deployment and fresh-package airplane-mode verification remain pending until evidenced.
+
+### Final Product Expansion master-plan sequence
+
+- First incomplete phase: **Phase 1 — Admin Business and Data Quality performance acceptance**. Source optimizations are on main, but authenticated desktop/mobile before/after timings, interaction traces and permission/error regression evidence remain open.
+- Phase 2 remaining gates: authenticated Admin/Owner click-through, real owner media approval roundtrip and invitation email/redirect verification.
+- Phase 3 remaining gates: authenticated Admin review, official poster upload/share-preview roundtrip, legacy no-poster records owner decision and scheme poster private-draft/public-approved media handling.
+- Continue Phases 4–7 in the exact approved sequence after their prerequisites/gates; do not mark a phase complete without evidence.
