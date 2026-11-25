@@ -979,7 +979,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Confirmed current `main` has no SDK Jobs table, route, owner submission UI, Admin manager or Edge Function; Government Jobs remains a separate feature.
 - [x] Inspected live owner eligibility fields (`profiles.role`, `profiles.is_active`, `businesses.owner_id`, `businesses.status`), current Admin permission architecture, relevant RLS/grants and 108-version migration ledger.
 - [x] Added `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md` with public/private data boundary, server-side owner eligibility, dedicated `sdk_jobs.manage`, audit history and media privacy requirements.
-- [ ] Complete exact `areas` schema, staff permission editor and Storage constraints inspection before drafting the additive schema/permission migration.
+- [x] Complete exact `areas` schema, staff permission editor/Admin tab gates and Storage constraints inspection; findings are recorded in the SDK Jobs Phase 4 design.
 - [ ] Implement and test owner job submission, Admin moderation and published-only employer-anonymous public board.
 - [ ] Complete privacy/authorization regression tests, CI and production deployment checks.
 - No production schema, RLS, Storage, business/owner records or other existing data was changed during this audit.
