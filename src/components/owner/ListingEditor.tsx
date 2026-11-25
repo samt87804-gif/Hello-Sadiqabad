@@ -1105,7 +1105,7 @@ export function ListingEditor({
                   onChange={(event) => setLogoChangeFile(event.target.files?.[0] ?? null)}
                 />
                 {logoChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{logoChangeFile.name}</p>}
-                <Button size="sm" block disabled={!logoChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'logo'} onClick={() => void requestImageChange('logo', logoChangeFile)}>Send logo for Admin review</Button>
+                <Button size="sm" fullWidth disabled={!logoChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'logo'} onClick={() => void requestImageChange('logo', logoChangeFile)}>Send logo for Admin review</Button>
               </Card>
               <Card className="p-3 space-y-2">
                 <p className="text-xs font-bold text-on-surface">Request cover replacement</p>
@@ -1119,7 +1119,7 @@ export function ListingEditor({
                       onChange={(event) => setCoverChangeFile(event.target.files?.[0] ?? null)}
                     />
                     {coverChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{coverChangeFile.name}</p>}
-                    <Button size="sm" block disabled={!coverChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'cover'} onClick={() => void requestImageChange('cover', coverChangeFile)}>Send cover for Admin review</Button>
+                    <Button size="sm" fullWidth disabled={!coverChangeFile || imageChangeBusy !== ''} loading={imageChangeBusy === 'cover'} onClick={() => void requestImageChange('cover', coverChangeFile)}>Send cover for Admin review</Button>
                   </>
                 ) : (
                   <p className="text-xs text-on-surface-variant">Cover images require an active Basic or Premium plan. <Link to="/owner/plan" className="font-bold text-primary underline">View plans</Link></p>
