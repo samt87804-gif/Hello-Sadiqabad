@@ -181,3 +181,5 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Commits: `84703741a53464d94681276ff89842848a15e944` (taxonomy guidance), `58f126f392944f3598257c6e63796cdb1fc2326e` (search filters), `ea20723a0791ce79f75e696d228d8eeb9604954c` (reset behavior).
 - GitHub CI run `45623996190` passed; Cloudflare Pages deployment `b0e31b63-826a-4987-8c18-20ed667b823b` succeeded with canonical alias `https://hellosadiqabad.com`.
 - These are implementation/CI/deployment checks only. Authenticated browser QA, mobile form interaction, actual submission and invitation email delivery remain unverified.
+
+- Added/applied migration 11, `owner_image_change_rpc_plan_guard`, so the database RPC independently requires a published business and a plan with the cover feature before accepting a cover-change request. Transaction-only tests passed for owner logo request creation, Free-plan cover rejection and Premium-plan cover acceptance. All test writes were rolled back; the private bucket and request tables remain empty.
