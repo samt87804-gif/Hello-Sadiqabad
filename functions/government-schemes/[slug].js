@@ -8,7 +8,7 @@ export async function onRequest(context) {
     pathPrefix: '/government-schemes/',
     toContent: (scheme) => ({
       title: scheme.title_en || scheme.title_ur || 'Government Scheme',
-      description: [scheme.summary_en || scheme.summary_ur || scheme.benefit_details, scheme.source_name].filter(Boolean).join(' · '),
+      description: [scheme.summary_en, scheme.summary_ur || scheme.benefit_details_ur, scheme.source_name].filter(Boolean).join(' · '),
       imageAlt: scheme.title_en || scheme.title_ur || 'Official government scheme poster',
     }),
   });
