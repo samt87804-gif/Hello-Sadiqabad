@@ -212,3 +212,17 @@ Recommended new public routes for the approved navigation are `/gov`, `/sdk-jobs
 **Remaining evidence:** authenticated desktop baseline timings and browser interaction traces are not available in this session. The database-only business-list baseline is recorded above. Keep this item open in the Phase 1 acceptance checklist.
 
 **Production changes:** none. No database migration, Storage bucket, Auth setting, public data or deployed Edge Function was changed during this audit.
+
+
+## Current-main reconciliation and Phase 1 optimization checkpoint — 25 November 2026
+
+The source-level findings above were an earlier audit snapshot and are not all accurate for current `main`. Re-inspection of current source confirms:
+
+- `AdminPortal.tsx` uses `React.lazy` for the large Admin managers; the Admin shell does not statically import those manager modules.
+- The 19-slot `Promise.all` in `reload` is not 19 unconditional network calls. Most slots resolve immediately; business, taxonomy, profiles, leads, moderation, etc. are gated by the active tab and permission.
+- `fetchAdminBusinesses()` now uses an explicit field allowlist with category/area relations, not `select('*')`. It remains an unbounded list fetch (no server-side range); the latest read-only DB baseline remains about 5.3 ms for 697 rows, not a browser timing.
+- BusinessManager and DataQualityManager already paginate visible cards to 50 per page. DataQuality category counts already use one linear pass through businesses rather than a repeated full scan per category.
+- Phase 1 follow-up added a 30-second in-memory cache for businesses, taxonomy, profiles and leads across Admin tab changes. Global quick search shares the same cache. Explicit child-action reloads force a fresh read; failed refreshes preserve the last successfully loaded data and leave the cache eligible for retry. Cache is not persisted to local storage.
+- Main commit `ce1b6788c3beafab864cf577c3b046beca64a49a`; [CI run 45639985225](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45639985225) passed; Cloudflare Pages deployment `81b032d7-64e1-45c1-a63c-1a46c60a8580` succeeded with canonical alias.
+
+**Phase 1 remains in progress / not accepted.** No authenticated Admin browser or physical-device performance trace was captured here, so there are no before/after milliseconds to report. The next safe acceptance step is a real signed-in Admin desktop/mobile trace of Business and Data Quality cold-load, warm tab-switch, first interaction, search/filter, page navigation and edit/review response, with permission/error regression checks. Do not invent timings or mark Phase 1 complete.
