@@ -1,3 +1,22 @@
+# IMPORTANT PROJECT CONTINUATION — READ FIRST (26 November 2026)
+
+This repository now has two separate active workstreams that must not be confused:
+
+1. **Business Registration/Admin approval redesign:** follow [docs/ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md](ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md). The old [docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](ADD_BUSINESS_OWNER_APPROVAL_PLAN.md) is marked **ARCHIVED / DO NOT IMPLEMENT**. Keep it only for history/compatibility audit; do not continue its old workflow, do not create a parallel queue, and do not roll back compatible production code.
+2. **SDK Jobs:** continue Phase 4 from [docs/SDK_JOBS_RECRUITMENT_PLAN.md](SDK_JOBS_RECRUITMENT_PLAN.md) and [docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md](SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md). The DB foundation is complete; Owner submission UI, Admin moderation UI, private poster flow, public listing/detail pages and end-to-end tests remain open.
+
+## Mandatory current status and next actions
+
+- Owner confirmed workstreams 4.1, 4.2 and 4.3 (including all tests through Government Jobs and Government Schemes) passed. Do not ask the owner to repeat those tests unless a regression is reported.
+- Business Registration new active plan: owner approved; plan is committed; Phase A audit is next. No implementation checkbox is complete merely because the popup prototype was discussed.
+- SDK Jobs Phase 4: database foundation and security permission wiring are implemented and verified as recorded in the SDK Jobs plan. Continue with Owner submission UI, then Admin moderation UI, then public board and media/privacy tests.
+- Work directly on GitHub main; no branches or PRs unless owner changes this rule.
+- Preserve all existing data. Inspect routes, callers, tests, live schema, RLS, permissions, Storage policies and migration ledger before changes.
+- Never claim CI, deployment, browser or physical-device acceptance without evidence. Update the master plan, roadmap, child plan and this handoff after verified milestones.
+- No candidate intake, CV, candidate PII, interviews, referrals, referral letters or fee collection during SDK Jobs Phase 4; these are Phase 5 and require their own approved security/retention design.
+
+---
+
 # New Chat Handoff — Hello Sadiqabad Domain & SEO
 
 Paste the message below into a new ChatGPT chat inside the **Hello Sadiqabad** Project. The full plan is in `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` in the GitHub repository. Read that file first and treat it as the source of truth.
