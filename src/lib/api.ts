@@ -1349,9 +1349,20 @@ export async function submitPublicSuggestion(input: {
   const client = getSupabaseClient();
   if (client) {
     const { data, error } = await client.functions.invoke('submit-suggestion', {
-      body: { ...input, session_id: getOrCreateSessionId() },
+      // Preserve the upload-session ID used to create signed media paths.
+      body: { ...input, session_id: input.session_id || getOrCreateSessionId() },
     });
-    if (error) return { ok: false, error: error.message };
+    if (error) {
+      const context = (error as { context?: unknown }).context;
+      if (context instanceof Response) {
+        const responseBody = await context.clone().json().catch(() => null) as { error?: unknown; message?: unknown } | null;
+        const serverMessage = typeof responseBody?.error === 'string'
+          ? responseBody.error
+          : typeof responseBody?.message === 'string' ? responseBody.message : null;
+        if (serverMessage) return { ok: false, error: serverMessage };
+      }
+      return { ok: false, error: error.message };
+    }
     return (data as EdgeFunctionResult) ?? { ok: true };
   }
 
