@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, PlusCircle, Sparkles } from 'lucide-react';
 import { fetchAllAreas, fetchAllCategories, submitPublicSuggestion } from '../lib/api';
 import { useI18n } from '../lib/i18n';
-import { bilingualText } from '../lib/format';
+import { bilingualText, isSafeGoogleMapsUrl } from '../lib/format';
 import { normalizePkPhone } from '../lib/phone';
 import { updatePageSeo } from '../lib/seo';
 import { useAuth } from '../lib/auth';
@@ -179,9 +179,9 @@ export function AddBusiness() {
       showToast(lang === 'ur' ? 'براہ کرم Gmail ایڈریس درج کریں۔' : 'Please enter a valid Gmail address.', 'error');
       return;
     }
-    if (mapUrl.trim()) {
-      try { const parsed = new URL(mapUrl.trim()); if (parsed.protocol !== 'https:') throw new Error(); }
-      catch { showToast(lang === 'ur' ? 'گوگل میپس کا درست HTTPS لنک درج کریں۔' : 'Enter a valid HTTPS Google Maps URL.', 'error'); return; }
+    if (mapUrl.trim() && !isSafeGoogleMapsUrl(mapUrl.trim())) {
+      showToast(lang === 'ur' ? 'گوگل میپس کا درست HTTPS لنک درج کریں۔' : 'Enter a valid Google Maps URL from Google.', 'error');
+      return;
     }
     for (const day of DAY_KEYS) {
       const hours = openingHours[day.key];
