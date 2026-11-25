@@ -91,6 +91,20 @@ async function limited(key: string, limit: number, seconds: number) {
   return !error && data === true;
 }
 
+function isSafeGoogleMapsUrl(value: unknown): value is string {
+  if (typeof value !== "string" || !value.trim()) return false;
+  try {
+    const parsed = new URL(value.trim());
+    const host = parsed.hostname.toLowerCase();
+    const allowedHost = host === "google.com" || host.endsWith(".google.com") ||
+      host === "maps.app.goo.gl" || host === "goo.gl";
+    return parsed.protocol === "https:" && allowedHost &&
+      !parsed.username && !parsed.password && (!parsed.port || parsed.port === "443");
+  } catch {
+    return false;
+  }
+}
+
 function validString(value: unknown, min: number, max: number): value is string {
   return typeof value === "string" && value.trim().length >= min && value.trim().length <= max;
 }
@@ -194,6 +208,10 @@ Deno.serve(async (req: Request) => {
           !isValidUuid(payload.area_id) || !validString(payload.phone_primary, 10, 30) ||
           !validString(payload.address_en, 4, 250)) {
         return reply(req, { ok: false, error: "Complete the required business name, category, area, phone and address fields" }, 400);
+      }
+      if (payload.map_url !== undefined && payload.map_url !== null && payload.map_url !== "" &&
+          !isSafeGoogleMapsUrl(payload.map_url)) {
+        return reply(req, { ok: false, error: "Enter a valid Google Maps URL" }, 400);
       }
       if (!Array.isArray(mediaInput) || mediaInput.length > 2) {
         return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
