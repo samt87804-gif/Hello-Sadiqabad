@@ -99,3 +99,9 @@ A fresh `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` comparison was run against the
 - [x] Re-read the current `main` Admin implementation and compared it with the existing Phase 1 optimization checkpoint. The current source retains lazy Admin manager imports, active-tab/permission-gated loading, explicit business-list projection, 50-item Business/Data Quality pagination, one-pass Data Quality counts and 30-second in-memory data reuse.
 - [x] Reconfirmed that the current child-action reload path can force fresh reads and failed refreshes remain retryable; no database, RLS, permission or Admin data changes were made in this audit.
 - [ ] Authenticated Admin desktop cold/warm timings, click-to-response traces, mobile smoke and permission/error/action regression acceptance remain open. No authenticated Admin session was available in this browser test, so Phase 1 is still **in progress / not accepted**.
+
+
+## Authenticated browser acceptance runbook — 25 November 2026
+
+- Added [`ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md`](ADMIN_PERFORMANCE_ACCEPTANCE_RUNBOOK.md) with a reproducible browser timing capture, desktop/mobile smoke checklist, permission/privacy checks and evidence table.
+- This prepares the remaining acceptance but does not complete it. Authenticated measurements and functional regression evidence must still be captured from an authorized browser session. No timing values or checkboxes were fabricated.
