@@ -24,7 +24,7 @@ This document records requirements and implementation gates. It does not authori
 3. `PROJECT_ROADMAP.md` — live application checklist and latest status.
 4. `docs/NEW_CHAT_HANDOFF.md` — latest continuation notes; reconcile with current main.
 5. `docs/ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md` — mandatory active Add Business/Admin workflow. Do not implement the archived `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`.
-6. `docs/SDK_JOBS_RECRUITMENT_PLAN.md` and `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md` — active SDK Jobs Phase 4 continuation.
+6. `docs/SDK_JOBS_RECRUITMENT_PLAN.md`, `docs/SDK_JOBS_PHASE4_DATA_MODEL_SECURITY_DESIGN.md` and `docs/SDK_JOBS_PHASE4_ACCEPTANCE_CHECKLIST.md` — active SDK Jobs Phase 4 implementation and acceptance.
 7. `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PLAN.md` — existing Jobs/Schemes/Owner baseline.
 8. The other workstream plans linked below.
 9. `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md`, `DEPLOYMENT.md`, relevant tests, migrations and code before touching affected areas.
