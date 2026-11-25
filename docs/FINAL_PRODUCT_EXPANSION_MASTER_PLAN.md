@@ -409,6 +409,6 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Added server-side validation for the seven-day opening-hours structure, optional Urdu/landmark fields, safe Google Maps hostnames and the existing two-facility limit. Add Business enforces the same two-facility limit in the UI.
 - Public business profile fetch now includes `map_url`, uses only validated Google Maps URLs for directions, and displays approved Urdu landmarks.
 - Latest [GitHub CI run 45616069591](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45616069591) passed both build and Edge Function checks.
-- Cloudflare Pages production deployment for `main` commit `a1b210633c23747b91758fa515e83b8941425080` succeeded at `https://hellosadiqabad.com`.
+- Cloudflare Pages deployment containing the application code from `a1b210633c23747b91758fa515e83b8941425080` succeeded for commit `8b778ba2dc7eb04192c5159696353f88ea44334a` with canonical alias `https://hellosadiqabad.com`.
 - Latest active Edge Function versions: `create-business-media-upload` v2, `cleanup-business-media-upload` v3, `submit-suggestion` v10, `review-business-media` v3, `manage-owner-registration` v5.
 - Total Phase 2 migrations applied to the existing project: **9**. No separate Supabase project was created. Test-only database writes were all rolled back; verification found no test media URLs, test submissions, test owner links or pending Storage objects.
