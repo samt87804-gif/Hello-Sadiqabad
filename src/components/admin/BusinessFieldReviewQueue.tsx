@@ -408,6 +408,14 @@ export function BusinessFieldReviewQueue({
         });
         if (error) throw error;
         result = (data ?? {}) as Record<string, unknown>;
+        const deferredFields = Array.isArray(result.deferred_fields)
+          ? result.deferred_fields.filter((value): value is string => typeof value === 'string')
+          : [];
+        if (deferredFields.length) {
+          partialErrors.push(deferredFields.map((key) => key === 'whatsapp'
+            ? 'WhatsApp remains pending until the business plan includes this feature.'
+            : `${FIELD_LABELS[key] ?? key} was deferred until the business is published.`).join(' · '));
+        }
       }
 
       const mediaActions = [
