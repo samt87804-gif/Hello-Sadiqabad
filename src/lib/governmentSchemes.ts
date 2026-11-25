@@ -65,7 +65,7 @@ export async function upsertGovernmentScheme(
  }
  const status=scheme.status??'draft';
  if(status==='published'&&!scheme.id){
-  const publicationErrors=getGovernmentPublicationErrors({titleUr:scheme.title_ur,summaryEn:scheme.summary_en,summaryUr:scheme.summary_ur,imageUrl:scheme.image_url,sourceName:scheme.source_name,sourceUrl:scheme.source_url,verifiedAt:scheme.verified_at});
+  const publicationErrors=getGovernmentPublicationErrors({titleUr:scheme.title_ur,summaryEn:scheme.summary_en,summaryUr:scheme.summary_ur,imageUrl:scheme.image_url,sourceName:scheme.source_name,sourceUrl:scheme.source_url,verifiedAt:scheme.verified_at,benefitDetailsEn:scheme.benefit_details,benefitDetailsUr:scheme.benefit_details_ur,eligibilityEn:scheme.eligibility_text,eligibilityUr:scheme.eligibility_text_ur,requiredDocumentsEn:scheme.required_documents,requiredDocumentsUr:scheme.required_documents_ur,applicationStepsEn:scheme.application_steps,applicationStepsUr:scheme.application_steps_ur,feesEn:scheme.fees_and_repayment,feesUr:scheme.fees_and_repayment_ur});
   if(publicationErrors.length)throw new Error(publicationErrors.join(' '));
  }
  if(status==='published'){
