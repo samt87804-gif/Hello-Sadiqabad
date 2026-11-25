@@ -86,8 +86,7 @@ export function isSafeGoogleMapsUrl(value: string | null | undefined): value is 
   try {
     const parsed = new URL(value.trim());
     const host = parsed.hostname.toLowerCase();
-    const allowedHost = host === 'google.com' || host.endsWith('.google.com') ||
-      host === 'maps.app.goo.gl' || host === 'goo.gl';
+    const allowedHost = ['google.com', 'www.google.com', 'maps.google.com', 'maps.app.goo.gl', 'goo.gl'].includes(host);
     return parsed.protocol === 'https:' && allowedHost &&
       !parsed.username && !parsed.password && (!parsed.port || parsed.port === '443');
   } catch {
