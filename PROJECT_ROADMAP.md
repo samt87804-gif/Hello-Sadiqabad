@@ -789,7 +789,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 - Migration `20261125110000_business_field_approval_workflow.sql` was added to `main` in commit `3794918e`, then a malformed trailing duplicate SQL fragment was removed in commit `1bb9d3e2`. Current file ends at its single `COMMIT` statement.
 - CI for `1bb9d3e2` passed both `build` and `edge-functions` jobs (run 45608741733). This validates repository build checks, not SQL execution.
 - A separate staging project was not created because the Free-project limit was reached. Owner then explicitly directed work in the existing Hello Sadiqabad project; additive migrations were applied there after transaction/rollback checks.
-- Next: obtain an isolated PostgreSQL/Supabase test target by freeing an existing Free project slot or approving an appropriate paid staging option; then validate both migrations against the live schema shape, RLS/Storage behavior, owner invite rollback and media workflow before porting the remaining code directly to `main`.
+- Next: complete authenticated Admin/browser QA and one controlled disposable end-to-end submission in the existing project; no separate staging project will be created.
 
 ### Data API grants review — 25 November 2026
 
