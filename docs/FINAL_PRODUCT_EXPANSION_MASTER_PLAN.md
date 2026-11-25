@@ -261,8 +261,9 @@ Phases are ordered for dependency and risk. The owner has approved this plan, bu
 - [x] Public SDK Jobs listing/detail routes, search/filters and share metadata.
 - [x] Candidate WhatsApp CTA and employer anonymity checks, including the privacy-safe public projection and social preview.
 - [x] Owner explicitly confirmed all Sections 1–8 of `docs/SDK_JOBS_PHASE4_ACCEPTANCE_CHECKLIST.md` passed on 26 November 2026.
-- [ ] Production Pages deployment and post-deployment route/sitemap/social-preview smoke checks.
-- **Gate:** owner acceptance is complete; production release evidence remains pending.
+- [x] Production Pages deployment succeeded: `cf208161-c3da-4116-a0bc-f3eb2a983cfb` for commit `c766470a26a0325d1bc6c21d2bce65255184d06f`.
+- [ ] Post-deployment SDK Jobs Owner/Admin/public/sitemap/social-preview smoke checks.
+- **Gate:** owner acceptance and production deployment are complete; post-deployment smoke evidence remains pending.
 
 ### Phase 5 — SDK Jobs recruitment operations
 - Candidate intake, private records, interview/suitability tracking, referrals, referral letter, fee ledger and Admin settings.
@@ -548,8 +549,8 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 ### Owner acceptance and Gov workstream continuation — 26 November 2026
 
 - Owner explicitly confirmed that they personally reviewed and tested every SDK Jobs Phase 4 acceptance checklist item in Sections 1–8 and all passed. The checklist is checked on that owner-confirmation basis; no repeat testing is requested.
-- The latest recorded SDK Jobs code CI before the Gov UI work passed run [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357). The new Gov landing/navigation changes have their own CI run pending.
-- SDK Jobs production Pages deployment and post-deployment Owner/Admin/public/sitemap smoke checks remain release gates; do not describe SDK Jobs as production-released until those checks pass.
+- The latest recorded SDK Jobs code CI before the Gov UI work passed run [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357). The new Gov landing/navigation changes passed CI run [45714887257](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45714887257); Cloudflare Pages deployment `cf208161-c3da-4116-a0bc-f3eb2a983cfb` succeeded for commit `c766470a26a0325d1bc6c21d2bce65255184d06f`.
+- SDK Jobs production Pages deployment is complete; post-deployment Owner/Admin/public/sitemap/social-preview smoke checks remain open.
 - Approved 4.5 implementation started: bilingual `/gov` landing with four existing-directory cards; mobile bottom navigation is reduced to Home, Search, Gov, SDK Jobs and Saved; Emergency page and Home Emergency card are preserved. Desktop Civic Services menu now links to the Gov landing while retaining the existing directory links.
 - Gov landing is included in the public route index, analytics allowlist (using the existing `static` analytics page type, avoiding a database migration) and sitemap. No authority records or database schema/data were changed.
-- Gov CI, production deployment and browser/deep-link/mobile acceptance remain pending. SDK Jobs Phase 5 candidate intake/PII/referral operations remain a separate, not-yet-implemented scope.
+- Gov CI and production deployment passed. `/gov` returned HTTP 200 with expected title/canonical metadata in a 390×844 rendered browser session; the five-item mobile bottom nav was confirmed in the rendered DOM. Full Gov card/deep-link, Urdu RTL and Emergency regression acceptance remains pending. SDK Jobs Phase 5 candidate intake/PII/referral operations remain a separate, not-yet-implemented scope.
