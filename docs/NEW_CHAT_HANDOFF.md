@@ -1114,8 +1114,8 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 ### Final Product Expansion master-plan sequence
 
 - First incomplete phase: **Phase 1 — Admin Business and Data Quality performance acceptance**. Source optimizations are on main, but authenticated desktop/mobile before/after timings, interaction traces and permission/error regression evidence remain open.
-- Phase 2 remaining gates: authenticated Admin/Owner click-through, real owner media approval roundtrip and invitation email/redirect verification.
-- Phase 3 remaining gates: authenticated Admin review, official poster upload/share-preview roundtrip, legacy no-poster records owner decision and scheme poster private-draft/public-approved media handling.
+- Phase 2 was owner-confirmed tested and accepted on 26 November 2026; only investigate if a regression is reported.
+- Phase 3 Government Jobs/Schemes was owner-confirmed tested and accepted on 26 November 2026; do not re-request those tests unless a regression is reported.
 - Continue Phases 4–7 in the exact approved sequence after their prerequisites/gates; do not mark a phase complete without evidence.
 
 
