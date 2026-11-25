@@ -3447,7 +3447,7 @@ export async function upsertGovernmentJob(
  for(const [label,value] of urlFields)if(value&&!isSafeGovernmentJobUrl(value))throw new Error(label+' must be a valid HTTPS URL and cannot be a shortened link.');
  const status=job.status??'draft';
  if(status==='published'&&!job.id){
-  const publicationErrors=getGovernmentPublicationErrors({titleUr:job.title_ur,summaryEn:job.summary_en,summaryUr:job.summary_ur,imageUrl:job.image_url,sourceName:job.source_name,sourceUrl:job.source_url,verifiedAt:job.verified_at});
+  const publicationErrors=getGovernmentPublicationErrors({titleUr:job.title_ur,summaryEn:job.summary_en,summaryUr:job.summary_ur,imageUrl:job.image_url,sourceName:job.source_name,sourceUrl:job.source_url,verifiedAt:job.verified_at,qualificationEn:job.qualification_text,qualificationUr:job.qualification_text_ur,experienceEn:job.experience_text,experienceUr:job.experience_text_ur,ageEn:job.age_text,ageUr:job.age_text_ur,domicileEn:job.domicile_text,domicileUr:job.domicile_text_ur,quotaEn:job.gender_or_quota_text,quotaUr:job.gender_or_quota_text_ur,otherEligibilityEn:job.other_eligibility_text,otherEligibilityUr:job.other_eligibility_text_ur,applicationStepsEn:job.application_steps,applicationStepsUr:job.application_steps_ur,feesEn:job.application_fee_text,feesUr:job.application_fee_text_ur});
   if(publicationErrors.length)throw new Error(publicationErrors.join(' '));
  }
  if(status==='published'||status==='closed'||status==='expired'){
