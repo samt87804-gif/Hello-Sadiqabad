@@ -1189,11 +1189,11 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 
 ## Latest SDK Jobs status — 26 November 2026
 
-- Database foundation and poster lifecycle migration are live; migration ledger now 112 versions. Existing private `hs-pending-business-media` bucket reused with no bucket limit changes.
+- Database foundation, poster lifecycle and Owner-visible feedback migrations are live; migration ledger now 113 versions. Existing private `hs-pending-business-media` bucket reused with no bucket limit changes.
 - Owner Portal poster upload UI, Admin private poster preview/approve/reject UI, and server-side publication privacy gate are committed. Edge Functions `create-sdk-job-poster-upload`, `review-sdk-job-poster`, and `publish-sdk-job` are deployed with JWT verification required.
 - Public `/sdk-jobs` and `/sdk-jobs/:slug` routes, filters, privacy-safe metadata, Admin WhatsApp CTA, approved office-hours instruction, navigation and sitemap integration are committed.
 - Rolled-back DB tests passed for Owner submission/path attachment, pending content mutation denial, cross-job path denial and anon employer-ID denial. No live SDK Jobs rows were created; live job/history/note counts remain zero.
-- Final CI run [45710844636](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45710844636) passed both build and Edge Function jobs.
+- Final CI run [45711210914](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45711210914) passed both build and Edge Function jobs. Owner correction feedback/resubmission UI and tests are included.
 - Not production-released: real authenticated Owner upload + Admin preview/approve/publish browser acceptance, final linked Owner/business display labels, production Pages deploy and public route/sitemap smoke tests remain open.
 - Do not add candidate CV/intake/referral/fee/office-hour settings in Phase 4. Those remain Phase 5.
 
