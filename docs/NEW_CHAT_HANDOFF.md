@@ -14,7 +14,7 @@ This repository now has two separate active workstreams that must not be confuse
 - Preserve all existing data. Inspect routes, callers, tests, live schema, RLS, permissions, Storage policies and migration ledger before changes.
 - Never claim CI, deployment, browser or physical-device acceptance without evidence. Update the master plan, roadmap, child plan and this handoff after verified milestones.
 - No candidate intake, CV, candidate PII, interviews, referrals, referral letters or fee collection have been implemented; these are Phase 5 and require their own approved consent/retention/security design.
-- Gov landing/mobile navigation code is committed, CI-passed and deployed: bilingual `/gov` four-card landing, exactly five mobile bottom-nav items (Home, Search, Gov, SDK Jobs, Saved), desktop Civic Services entry, public indexing, analytics and sitemap. Cloudflare Browser Rendering confirmed `/gov` HTTP 200 with expected title/canonical metadata and five-item mobile nav at 390×844. Live sitemap check and owner browser/deep-link/Urdu RTL/Emergency acceptance remain pending. Cloudflare Browser Rendering has imposed a long rate-limit cooldown; do not retry that endpoint until its cooldown expires.
+- Gov landing/mobile navigation code is committed, CI-passed and deployed: bilingual `/gov` four-card landing, six mobile bottom-nav items (Home, Search, News, Gov, SDK Jobs, Saved), desktop Civic Services entry, public indexing, analytics and sitemap. Cloudflare Browser Rendering confirmed `/gov` HTTP 200 with expected title/canonical metadata and five-item mobile nav at 390×844 (this was before the owner's News-preservation correction). Live sitemap check and owner browser/deep-link/Urdu RTL/Emergency acceptance remain pending. Cloudflare Browser Rendering has imposed a long rate-limit cooldown; do not retry that endpoint until its cooldown expires.
 
 ---
 
@@ -872,7 +872,7 @@ The owner has approved the requirements recorded in `docs/FINAL_PRODUCT_EXPANSIO
 - Each submitted business field has Pending Review / Approved & Published / Rejected / Unpublished status. Pending images remain private until approved. Owner can request maximum two profile/logo/cover image changes per business per calendar month.
 - Government Jobs/Schemes require English and Urdu, official/verified Admin-uploaded image before publishing, canonical share URL and approved social preview image.
 - Gov landing cards: Government Jobs, Government Schemes, Local Authorities, Authority Profiles.
-- Mobile bottom nav: Home, Search, Gov, SDK Jobs, Saved. Remove separate Jobs/Schemes and Urgent shortcuts only; preserve Home Emergency card and Emergency route.
+- Mobile bottom nav final order: Home, Search, News, Gov, SDK Jobs, Saved. Preserve News at `/news` with bilingual `nav.news` label and Newspaper icon. Remove separate Jobs/Schemes and Urgent shortcuts only; preserve Home Emergency card and Emergency route.
 - Admin Business and Data Quality performance issue is worse on desktop and is a priority.
 
 ## Next safe action
@@ -1217,3 +1217,10 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Design is read-only only. No candidate PII, CV upload, fee ledger, referral records, database migration or UI has been created.
 - Ask the owner to approve the retention/deletion periods, consent notice and recording method, staff permission matrix, fee amount/payment method, and referral-letter/public verification fields before collection.
 - Do not use candidate production data for testing. Prepare rollback/adversarial tests and verify current migration ledger/RLS before any future schema change.
+
+
+## Owner correction — retain News in mobile navigation (26 November 2026)
+
+- Owner pointed out that the News button must remain in the mobile bottom navigation, as in the earlier navigation design.
+- Updated `src/components/layout/AppBottomNav.tsx`: six items in order Home, Search, News, Gov, SDK Jobs, Saved. News links to the existing `/news` route and reuses the existing `nav.news` bilingual label and Newspaper icon. Grid now uses six columns.
+- This is a narrow navigation-only correction; no News page/content, database or permissions changed. New CI and Pages deployment are required; do not claim production release until both are verified.
