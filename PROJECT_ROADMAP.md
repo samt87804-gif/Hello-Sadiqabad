@@ -1030,7 +1030,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 ## SDK Jobs Phase 4 — poster lifecycle and public board update (26 November 2026)
 
-- [x] Live migrations `20261125220215_sdk_jobs_poster_private_upload` and `20261125221201_sdk_jobs_owner_visible_feedback`; migration ledger now 114 versions after the safe-slug/path safety migration.
+- [x] Live migrations `20261125220215_sdk_jobs_poster_private_upload` and `20261125221201_sdk_jobs_owner_visible_feedback`; migration ledger now 115 versions after safe-slug/path and one-time Admin authorization migrations.
 - [x] Private pending-media policy scoped to SDK Jobs and explicit `sdk_jobs.manage`; existing 5 MiB JPEG/PNG/WebP private bucket reused.
 - [x] Owner signed poster upload + retry UI; server checks active Owner, own pending-review job and rate limits.
 - [x] Admin private poster preview, magic-byte validation, approve/reject and public media promotion.
@@ -1058,3 +1058,6 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Added [SDK Jobs Phase 4 authenticated acceptance checklist](docs/SDK_JOBS_PHASE4_ACCEPTANCE_CHECKLIST.md); all browser/production acceptance boxes intentionally remain unchecked until tested.
 
 - [x] Migration `20261125222053_sdk_jobs_slug_path_safety` enforces safe slugs and prevents Owner slug mutation; rollback tests passed.
+
+- [x] Database-enforced poster approval/publication authorization: direct authenticated updates blocked; service-role-only RPC creates a 90-second token consumed by the DB trigger. Rolled-back direct-bypass/authorized-flow tests passed.
+- [x] CI [45712905357](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/45712905357) passed build and Supabase Edge Function checks for the final authorization gate.
