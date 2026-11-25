@@ -6,6 +6,7 @@ import { getGovernmentJobDisplayStatus } from '../lib/governmentJobs';
 import { useI18n } from '../lib/i18n';
 import { bilingualText, formatDateShort } from '../lib/format';
 import { updatePageSeo } from '../lib/seo';
+import { ContentShareActions } from '../components/ui/ContentShareActions';
 import type { GovernmentJobRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { EmptyState, Skeleton } from '../components/ui/Feedback';
@@ -117,7 +118,7 @@ export function GovernmentJobs() {
     </div>
     {job.summary_en&&<section className="space-y-1"><h2 className="text-base font-bold text-on-surface">Job summary</h2><p className="text-sm text-on-surface-variant leading-7">{bilingualText(lang,job.summary_en,job.summary_ur)}</p>{lang==='en'&&urduHints&&job.summary_ur&&<p className="font-urdu text-sm text-on-surface leading-8" dir="rtl">{job.summary_ur}</p>}</section>}
     <Card className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-     <div><p className="text-xs text-on-surface-variant">Qualification</p><p className="text-sm font-semibold">{job.qualification_text}</p></div>
+     <div><p className="text-xs text-on-surface-variant">Qualification</p><p className="text-sm font-semibold">{bilingualText(lang,job.qualification_text,job.qualification_text_ur)}</p></div>
      <div><p className="text-xs text-on-surface-variant">Vacancies</p><p className="text-sm font-semibold">{job.vacancy_count??'Not specified'}</p></div>
      <div><p className="text-xs text-on-surface-variant">Scale / Grade</p><p className="text-sm font-semibold">{job.scale_or_grade||'Not specified'}</p></div>
      <div><p className="text-xs text-on-surface-variant">Closing date</p><p className="text-sm font-semibold">{formatJobDate(job.deadline_at,lang)}</p></div>
@@ -125,10 +126,10 @@ export function GovernmentJobs() {
      <div><p className="text-xs text-on-surface-variant">Official case / ad number</p><p className="text-sm font-semibold">{job.official_case_number||'Not specified'}</p></div>
     </Card>
     {[
-     ['Experience',job.experience_text],['Age requirement',job.age_text],['Domicile',job.domicile_text],
-     ['Gender / quota',job.gender_or_quota_text],['Other eligibility',job.other_eligibility_text],
-     ['Application fee',job.application_fee_text],['Application instructions',job.application_steps],
-    ].filter(entry=>Boolean(entry[1])).map(entry=><section key={String(entry[0])} className="space-y-1"><h2 className="text-base font-bold text-on-surface">{entry[0]}</h2><p className="text-sm text-on-surface-variant whitespace-pre-line leading-7">{entry[1]}</p></section>)}
+     ['Experience',job.experience_text,job.experience_text_ur],['Age requirement',job.age_text,job.age_text_ur],['Domicile',job.domicile_text,job.domicile_text_ur],
+     ['Gender / quota',job.gender_or_quota_text,job.gender_or_quota_text_ur],['Other eligibility',job.other_eligibility_text,job.other_eligibility_text_ur],
+     ['Application fee',job.application_fee_text,job.application_fee_text_ur],['Application instructions',job.application_steps,job.application_steps_ur],
+    ].filter(entry=>Boolean(entry[1])).map(entry=><section key={String(entry[0])} className="space-y-1"><h2 className="text-base font-bold text-on-surface">{entry[0]}</h2><p className="text-sm text-on-surface-variant whitespace-pre-line leading-7">{bilingualText(lang,String(entry[1]||''),entry[2]||null)}</p></section>)}
     <Card className="p-4 space-y-3">
      <h2 className="font-bold text-on-surface">Official application & source</h2>
      {job.apply_url&&<a href={job.apply_url} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary">Apply on official portal <ExternalLink className="w-4 h-4"/></a>}
@@ -136,6 +137,7 @@ export function GovernmentJobs() {
      {job.source_document_url&&<p><a className="text-sm font-semibold text-primary underline" href={job.source_document_url} target="_blank" rel="noopener noreferrer nofollow">Open source document <ExternalLink className="inline w-3.5 h-3.5"/></a></p>}
      {job.source_url&&<p><a className="text-sm font-semibold text-primary underline" href={job.source_url} target="_blank" rel="noopener noreferrer nofollow">Source: {job.source_name||'Official department'} <ExternalLink className="inline w-3.5 h-3.5"/></a></p>}
      <p className="text-xs text-on-surface-variant">The official advertisement and department portal are authoritative if any summary differs. Hello Sadiqabad does not accept applications, collect fees or guarantee eligibility/selection.</p>
+      <ContentShareActions title={bilingualText(lang,job.title_en,job.title_ur)} description={bilingualText(lang,job.summary_en||'',job.summary_ur)} url={'https://hellosadiqabad.com/government-jobs/'+job.slug} lang={lang} contentType="government_job"/>
     </Card>
    </article>
    :<div className="space-y-4">
