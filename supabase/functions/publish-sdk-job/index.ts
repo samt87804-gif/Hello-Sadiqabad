@@ -70,7 +70,11 @@ Deno.serve(async (req: Request) => {
     if (job.status !== "pending_review" || !job.approved_image_url) {
       return response(req, { ok: false, error: "Job must be awaiting review and have an approved poster before publication" }, 409);
     }
-    if (job.closing_date && job.closing_date < new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" })) {
+    const dateParts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Karachi", year: "numeric", month: "2-digit", day: "2-digit",
+    }).formatToParts(new Date());
+    const today = `${dateParts.find((part) => part.type === "year")?.value}-${dateParts.find((part) => part.type === "month")?.value}-${dateParts.find((part) => part.type === "day")?.value}`;
+    if (job.closing_date && job.closing_date < today) {
       return response(req, { ok: false, error: "The closing date has already passed. Update the vacancy before publication." }, 409);
     }
 
