@@ -132,9 +132,9 @@ async function testGovernmentSharePreviews(browser) {
       const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
       const response = await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded', timeout: 45_000 });
       assert.ok(response && response.status() < 400, route + ' should render for visitors');
-      assert.equal(await page.getByRole('link', { name: 'WhatsApp' }).count(), 1, route + ' should show WhatsApp share action');
-      assert.equal(await page.getByRole('link', { name: 'Facebook' }).count(), 1, route + ' should show Facebook share action');
-      assert.equal(await page.getByRole('button', { name: /Copy link/ }).count(), 1, route + ' should show canonical copy-link action');
+      assert.equal(await page.getByRole('link', { name: /WhatsApp|واٹس ایپ/ }).count(), 1, route + ' should show WhatsApp share action');
+      assert.equal(await page.getByRole('link', { name: /Facebook|فیس بک/ }).count(), 1, route + ' should show Facebook share action');
+      assert.equal(await page.getByRole('button', { name: /Copy link|لنک کاپی کریں/ }).count(), 1, route + ' should show canonical copy-link action');
       await page.close();
 
       const socialResponse = await api.get(baseUrl + route, {
