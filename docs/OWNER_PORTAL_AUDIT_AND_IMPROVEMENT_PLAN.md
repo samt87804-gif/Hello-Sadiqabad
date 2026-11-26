@@ -1,6 +1,6 @@
 # Owner Portal — Audit & Improvement Implementation Plan
 
-**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 is in progress. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
+**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 technical implementation is deployed; Owner manual acceptance is pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
 
 ## Working agreement
 
@@ -19,12 +19,14 @@
 - [x] Applied additive Admin-only note-reader RPC to the existing Supabase project. Live migration version: `20261126202451` (`owner_submission_private_notes_rpc`). It checks Super Admin or `moderation.review`, uses a fixed empty search path, and is not executable by anon.
 - [x] Updated Owner submission query to stop requesting `admin_note`.
 - [x] Updated Business Field Review Admin queue to load prior private notes through the permission-checked RPC; generated database types updated.
-- [ ] Commit the application/RPC migration and verify GitHub CI + Cloudflare Pages deployment.
-- [ ] Apply the follow-up additive privilege migration: revoke table-wide SELECT from `authenticated`, grant SELECT only on non-private columns, and verify `admin_note` is no longer readable through PostgREST.
-- [ ] Verify non-Admin RPC denial, Admin note visibility, Owner submission history and plan-payment workflow.
-- [ ] Owner manual acceptance.
+- [x] Commit the application/RPC migration and verify GitHub CI + Cloudflare Pages deployment (commit `2d3f306839e17500abaa5f2b6bd7216bcdfc2330`; CI run `45890993686` succeeded; Cloudflare Pages deployment `7bf8e537-e786-4688-a283-8d0c16dbd355` build/deploy succeeded).
+- [x] Apply additive privilege migrations `20261126202642` and `20261126202723`: removed table-wide SELECT, granted only required non-private columns, and removed `assigned_to` SELECT.
+- [x] Verify live grants: authenticated table-wide SELECT is false; `admin_note` and `assigned_to` SELECT are false; required safe columns remain selectable.
+- [x] Rollback/auth simulation: non-Admin private-note RPC call is denied; simulated Super Admin can retrieve the note result through the protected RPC without exposing note text in the test output.
+- [ ] Manually verify the Admin Business Field Review screen, Owner request history and existing plan-payment screen in a signed-in browser.
+- [ ] Owner manual acceptance; do not mark Phase 0 accepted until the Owner confirms the practical tests.
 
-**Important migration note:** The repository contains a later-timestamped financial-profile migration file while the live ledger already records that feature under earlier versions. That file must not be replayed. The new notes migration was applied as its own live version; keep the repository file aligned to the exact live version above.
+**Important migration note:** The repository contains a later-timestamped financial-profile migration file while the live ledger already records that feature under earlier versions. That file must not be replayed. The notes RPC and access restrictions are recorded as live migrations `20261126202451` (`owner_submission_private_notes_rpc`), `20261126202642` (`restrict_owner_submission_private_note_select`) and `20261126202723` (`restrict_submission_assignment_column_select`). Keep each repository migration file aligned to the exact live version; do not replay the unmatched financial migration.
 
 ## Phase 1 — Data correctness
 
@@ -68,3 +70,14 @@
 - [ ] Give the Owner concise, numbered manual acceptance steps.
 - [ ] Record the Owner's reported result; leave acceptance unchecked until explicitly confirmed.
 - [ ] Update this plan, `PROJECT_ROADMAP.md` and `docs/NEW_CHAT_HANDOFF.md` with exact commit, migration, CI, deployment and remaining steps.
+
+
+## Phase 0 release evidence
+
+- Application commit: `2d3f306839e17500abaa5f2b6bd7216bcdfc2330`.
+- GitHub Actions CI: run `45890993686`, completed successfully. TypeScript typecheck, automated tests, production build and Edge Function typecheck passed.
+- Cloudflare Pages: deployment `7bf8e537-e786-4688-a283-8d0c16dbd355`, production build and deploy stages succeeded for the same commit; canonical domain alias is present.
+- Supabase live migrations: `20261126202451`, `20261126202642`, `20261126202723`.
+- Post-migration permission check: authenticated has no table-wide SELECT on `public.submissions`; SELECT on `admin_note` and `assigned_to` is false; required safe columns remain selectable.
+- Supabase security advisor still reports the generic authenticated SECURITY DEFINER warning for this new RPC. This is intentional: it is the only Admin read path for private notes, checks Super Admin / `moderation.review` inside the function, and non-Admin denial was tested. Other existing security/performance advisor findings remain separately tracked; no broad security relaxation was made.
+- Remaining acceptance: signed-in Owner/Admin browser testing by the Owner. No authenticated browser session was used by the assistant.

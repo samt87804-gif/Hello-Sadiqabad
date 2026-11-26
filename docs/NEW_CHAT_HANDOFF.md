@@ -69,6 +69,18 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Canonical rules remain authoritative: direct commits to `main`, no branches/PRs, preserve all workflows/data, read canonical docs and relevant source before each phase, update this handoff/roadmap/plan continuously, and explain practical Owner test steps.
 - Phase 0 confirmed issue: authenticated users had table-wide SELECT on `public.submissions`; Owner RLS allows reading their own eligible submissions and the Owner API selected the internal `admin_note` column.
 - Live additive RPC migration applied: `20261126202451` (`owner_submission_private_notes_rpc`). RPC is SECURITY DEFINER with empty search_path, checks Super Admin or `moderation.review`, and anon cannot execute it.
-- Current in-progress app changes remove `admin_note` from Owner history query and switch Business Field Review to the Admin-only RPC. Follow with a separate additive grant migration that removes authenticated table-wide SELECT and grants only safe columns; test RLS and all direct callers before applying.
+- App commit `2d3f306839e17500abaa5f2b6bd7216bcdfc2330` removes `admin_note` from the Owner history query and switches Business Field Review to the Admin-only RPC. CI run `45890993686` passed (TypeScript, tests, build, Edge Functions); Cloudflare Pages production deployment `7bf8e537-e786-4688-a283-8d0c16dbd355` succeeded for the same commit.
+- Live migrations applied: `20261126202451` (`owner_submission_private_notes_rpc`), `20261126202642` (`restrict_owner_submission_private_note_select`) and `20261126202723` (`restrict_submission_assignment_column_select`). Authenticated has no table-wide SELECT on `public.submissions`; `admin_note` and `assigned_to` SELECT are false; required safe columns remain selectable.
+- SQL rollback/auth simulation denied non-Admin private-note RPC access and verified the Super Admin RPC can return a private-note row without exposing note text in test output. Supabase advisor shows its generic SECURITY DEFINER warning; the function contains explicit Super Admin / `moderation.review` checks. Other pre-existing advisor findings remain separate.
 - Do not replay `20261127100000_owner_financial_profiles_and_payment_corrections.sql`: the live ledger already records the financial feature under `20261126193259` and `20261126193516`. This repo/live mismatch was observed and must remain explicit.
 - No Owner manual acceptance has been performed for this new workstream. After CI/deployment and permission verification, give the Owner practical steps and wait for their report.
+
+
+### Phase 0 practical acceptance — still required
+
+1. **Super Admin:** sign in to `https://hellosadiqabad.com`, open Admin → Business Field Review, open a request that has an earlier private note, and confirm the “Previous note” still appears. Add a test note to a designated test request and save; confirm the note is retained after refreshing.
+2. **Owner:** sign in with an Owner account, open Owner Portal → My Businesses / request history, and confirm the Owner's own requests and statuses still load. Confirm no internal Admin note is shown.
+3. **Plan payment:** open Owner Portal → My Payments and Plan, confirm payment history, pending correction status and plan request information still load normally. Do not submit a real payment or correction just for testing.
+4. Report any error text or screenshot. Do not include passwords, payment secrets or private account details.
+
+- Phase 0 technical implementation is deployed; Owner manual acceptance is not yet confirmed. Continue to Phase 1 only after this manual check or record the Owner's decision to proceed with acceptance pending.
