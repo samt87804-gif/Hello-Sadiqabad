@@ -29,6 +29,7 @@ import type {
   ReviewRow,
   StaffMemberRow,
   SubmissionRow,
+  SiteSettingRow,
 } from '../../types/database';
 import type { AdminDashboardCounts, BusinessPublicView } from '../../types/directory';
 import { formatDateShort, slugify } from '../../lib/format';
@@ -43,6 +44,7 @@ import {
   findDuplicateBusinesses,
   moderateReview,
   reviewSubmission,
+  reviewPlanUpgradeRequest,
   updateInquiryStatus,
   upsertArea,
 } from '../../lib/api';
@@ -58,6 +60,7 @@ import { UrlListEditor } from '../owner/UrlListEditor';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
 import { compressBusinessImage, deleteBusinessImages, getBusinessMediaObjectPath, uploadBusinessImage, type BusinessMediaKind } from '../../lib/businessMedia';
 import { AdminImageUpload } from './AdminImageUpload';
+import { DEFAULT_PLAN_PAYMENT_SETTINGS, type PlanPaymentSettings } from '../../lib/siteSettings';
 
 export function AdminDashboard({ counts }: { counts: AdminDashboardCounts }) {
   const cards = [
@@ -886,10 +889,9 @@ export function BusinessManager({
                     <td className="p-3">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Badge variant={STATUS_BADGE_VARIANT[b.status]}>{b.status}</Badge>
-                        <Badge variant={b.plan_code === 'premium' ? 'gold' : 'neutral'}>
-                          {b.plan_code}
-                        </Badge>
+                        <Badge variant={b.plan_code === 'premium' ? 'gold' : 'neutral'}>{b.plan_code}</Badge>
                       </div>
+                      {b.plan_code !== 'free' && b.plan_expires_at && <p className={`text-[10px] mt-1 ${Date.parse(b.plan_expires_at) <= Date.now() ? 'text-error' : 'text-on-surface-variant'}`}>{Date.parse(b.plan_expires_at) <= Date.now() ? 'Expired' : 'Valid until'} {formatDateShort(b.plan_expires_at)}</p>}
                     </td>
                     <td className="p-3">
                       <div className="flex items-center justify-end gap-1.5">
@@ -969,10 +971,9 @@ export function BusinessManager({
                     <span className="font-bold text-sm text-on-surface">{b.name_en}</span>
                     {b.is_verified && <BadgeCheck className="w-4 h-4 text-primary" />}
                     <Badge variant={STATUS_BADGE_VARIANT[b.status]}>{b.status}</Badge>
-                    <Badge variant={b.plan_code === 'premium' ? 'gold' : 'neutral'}>
-                      {b.plan_code}
-                    </Badge>
+                    <Badge variant={b.plan_code === 'premium' ? 'gold' : 'neutral'}>{b.plan_code}</Badge>
                   </div>
+                  {b.plan_code !== 'free' && b.plan_expires_at && <p className="text-[10px] text-on-surface-variant">{Date.parse(b.plan_expires_at) <= Date.now() ? 'Expired' : 'Valid until'} {formatDateShort(b.plan_expires_at)}</p>}
                   <div className="text-xs text-on-surface-variant flex items-center gap-2 flex-wrap">
                     <span dir="ltr" className="tabular-nums font-semibold">
                       {b.phone_primary}
@@ -1468,6 +1469,7 @@ export function ModerationManager({
   submissions,
   businesses,
   actorId,
+  settings = [],
   onJumpToBusiness,
   onReload,
 }: {
@@ -1475,6 +1477,7 @@ export function ModerationManager({
   submissions: SubmissionRow[];
   businesses: BusinessPublicView[];
   actorId: string;
+  settings?: SiteSettingRow[];
   onJumpToBusiness?: (query: string) => void;
   onReload: () => Promise<void>;
 }) {
@@ -1482,6 +1485,10 @@ export function ModerationManager({
   const [subTab, setSubTab] = useState<'submissions' | 'reviews'>('submissions');
   const [typeFilter, setTypeFilter] = useState<SubmissionFilterGroup>('all');
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const paymentSetting = settings.find((setting) => setting.key === 'plan_payment_methods');
+  const paymentSettings = paymentSetting?.value && typeof paymentSetting.value === 'object' ? paymentSetting.value as PlanPaymentSettings : DEFAULT_PLAN_PAYMENT_SETTINGS;
+  const paymentMethods = { ...DEFAULT_PLAN_PAYMENT_SETTINGS.methods, ...(paymentSettings.methods ?? {}) };
+
 
   const pendingReviews = reviews.filter((r) => r.status === 'pending');
   const newBusinessSubs = submissions.filter((s) => (s.status === 'new' || s.status === 'in_review') && s.type === 'new_business');
@@ -1506,6 +1513,12 @@ export function ModerationManager({
   const handleSubDecision = async (id: string, action: 'approve' | 'reject') => {
     await reviewSubmission(id, action, noteDrafts[id] ?? '', actorId);
     showToast(`Submission ${action === 'approve' ? 'approved & applied' : 'rejected'}.`, 'success');
+    await onReload();
+  };
+
+  const handlePlanPaymentDecision = async (id: string, action: 'approve' | 'reject') => {
+    await reviewPlanUpgradeRequest(id, action, noteDrafts[id] ?? '');
+    showToast(action === 'approve' ? 'Payment verified and one-month plan activated.' : 'Plan payment request rejected.', 'success');
     await onReload();
   };
 
@@ -1634,7 +1647,26 @@ export function ModerationManager({
                   </div>
 
                   {/* Diff Viewer when editing/correcting an existing listing */}
-                  {sub.type === 'correction' && targetBiz ? (
+                  {sub.type === 'plan_upgrade' ? (
+                    <div className="p-3 rounded-xl bg-surface-container-low text-xs space-y-2">
+                      {(() => {
+                        const methodKey = String(payload.payment_method ?? '') as keyof typeof paymentMethods;
+                        const method = paymentMethods[methodKey];
+                        const iconUrl = typeof payload.payment_icon_url === 'string' ? payload.payment_icon_url : method?.icon_url;
+                        return <>
+                          <div className="flex items-center gap-3">{iconUrl && <img src={iconUrl} alt="" className="w-9 h-9 rounded-lg object-contain border border-outline-variant/30"/>}<div><p className="font-bold text-sm">{String(payload.requested_plan ?? '').toUpperCase()} Plan · Rs. {Number(payload.monthly_amount_pkr ?? 0).toLocaleString('en-PK')} / month</p><p className="text-on-surface-variant">{String(payload.payment_method_label ?? method?.label ?? payload.payment_method ?? 'Unknown method')}</p></div></div>
+                          <p><strong>Account:</strong> {String(payload.payment_account_title ?? method?.account_title ?? '—')} · <span dir="ltr">{String(payload.payment_account_number ?? method?.account_number ?? '—')}</span></p>
+                          {(payload.payment_account_iban || method?.iban) && <p><strong>IBAN:</strong> <span dir="ltr">{String(payload.payment_account_iban ?? method?.iban)}</span></p>}
+                          <p><strong>Owner reports paid:</strong> {payload.owner_confirmed_paid === true ? 'Yes' : 'No'}</p>
+                          <p><strong>Payment verification:</strong> {payload.payment_verified === true ? 'Verified' : 'Not verified yet'}</p>
+                          <p><strong>Transaction reference:</strong> <span className="font-mono font-bold">{String(payload.transaction_reference ?? 'Not provided')}</span></p>
+                          {typeof payload.note === 'string' && payload.note && <p><strong>Owner note:</strong> {payload.note}</p>}
+                          {targetBiz && <p><strong>Current plan:</strong> {targetBiz.plan_code} · <strong>Current validity:</strong> {targetBiz.plan_expires_at ? formatDateShort(targetBiz.plan_expires_at) : 'No expiry date'}</p>}
+                          <p className="text-warning font-semibold">Receiving account mein transaction verify karne ke baad hi approve karein.</p>
+                        </>;
+                      })()}
+                    </div>
+                  ) : sub.type === 'correction' && targetBiz ? (
                     <div className="p-3 rounded-xl bg-surface-container-low text-xs space-y-2">
                       <div className="font-bold text-primary">Proposed Corrections (Current → Proposed):</div>
                       {Object.entries(payload).map(([k, v]) => {
@@ -1677,21 +1709,13 @@ export function ModerationManager({
                       className="flex-1 min-h-[40px] px-3 rounded-xl border border-outline-variant/60 bg-surface text-xs"
                     />
                     <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleSubDecision(sub.id, 'approve')}
-                        leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => handleSubDecision(sub.id, 'reject')}
-                        leftIcon={<XCircle className="w-3.5 h-3.5" />}
-                      >
-                        Reject
-                      </Button>
+                      {sub.type === 'plan_upgrade' ? <>
+                        <Button size="sm" disabled={payload.owner_confirmed_paid !== true || !String(payload.transaction_reference ?? '').trim()} onClick={() => handlePlanPaymentDecision(sub.id, 'approve')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Verify Payment &amp; Activate 1 Month</Button>
+                        <Button size="sm" variant="danger" onClick={() => handlePlanPaymentDecision(sub.id, 'reject')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject Payment</Button>
+                      </> : <>
+                        <Button size="sm" onClick={() => handleSubDecision(sub.id, 'approve')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve</Button>
+                        <Button size="sm" variant="danger" onClick={() => handleSubDecision(sub.id, 'reject')} leftIcon={<XCircle className="w-3.5 h-3.5" />}>Reject</Button>
+                      </>}
                     </div>
                   </div>
                 </Card>

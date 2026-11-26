@@ -56,7 +56,7 @@ import { BarChartSvg, LineChartSvg } from '../ui/Charts';
 import { ConfirmDialog, Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
-import type { DirectoryImageUrls } from '../../lib/siteSettings';
+import { DEFAULT_PLAN_PAYMENT_SETTINGS, type DirectoryImageUrls, type PlanPaymentMethodKey, type PlanPaymentSettings } from '../../lib/siteSettings';
 import { AdminImageUpload } from './AdminImageUpload';
 
 export function TaxonomyManager({
@@ -1485,6 +1485,35 @@ export function SettingsManager({
   };
   const heroBannerSetting = settings.find((setting) => setting.key === 'hero_banner_url');
   const heroBannerDraft = draftValues.hero_banner_url ?? String(heroBannerSetting?.value ?? '');
+  const paymentSetting = settings.find((setting) => setting.key === 'plan_payment_methods');
+  const storedPaymentSettings = paymentSetting?.value && typeof paymentSetting.value === 'object' ? paymentSetting.value as PlanPaymentSettings : DEFAULT_PLAN_PAYMENT_SETTINGS;
+  const paymentMethods = { ...DEFAULT_PLAN_PAYMENT_SETTINGS.methods, ...(storedPaymentSettings.methods ?? {}) };
+
+  const savePaymentMethod = async (methodKey: PlanPaymentMethodKey) => {
+    const current = paymentMethods[methodKey] ?? DEFAULT_PLAN_PAYMENT_SETTINGS.methods[methodKey];
+    const nextMethod = {
+      ...current,
+      account_title: (draftValues['payment:' + methodKey + ':account_title'] ?? current.account_title).trim(),
+      account_number: (draftValues['payment:' + methodKey + ':account_number'] ?? current.account_number).trim(),
+      ...(methodKey === 'ubl' ? { iban: (draftValues['payment:ubl:iban'] ?? current.iban ?? '').trim() } : {}),
+    };
+    if (!nextMethod.account_title || !nextMethod.account_number || (methodKey === 'ubl' && !nextMethod.iban)) {
+      showToast('Account title, account number and UBL IBAN are required.', 'error'); return;
+    }
+    const nextSettings: PlanPaymentSettings = { ...DEFAULT_PLAN_PAYMENT_SETTINGS, ...storedPaymentSettings, methods: { ...paymentMethods, [methodKey]: nextMethod } };
+    await updateSiteSetting('plan_payment_methods', nextSettings, actorId);
+    showToast(current.label + ' payment details saved.', 'success');
+    await onReload();
+  };
+
+  const savePaymentIcon = async (methodKey: PlanPaymentMethodKey, iconUrl: string) => {
+    const current = paymentMethods[methodKey] ?? DEFAULT_PLAN_PAYMENT_SETTINGS.methods[methodKey];
+    const nextSettings: PlanPaymentSettings = { ...DEFAULT_PLAN_PAYMENT_SETTINGS, ...storedPaymentSettings, methods: { ...paymentMethods, [methodKey]: { ...current, icon_url: iconUrl } } };
+    await updateSiteSetting('plan_payment_methods', nextSettings, actorId);
+    showToast(current.label + ' icon uploaded and saved.', 'success');
+    await onReload();
+  };
+
 
   const saveDirectoryImage = async (kind: keyof DirectoryImageUrls, itemKey: string, uploadedUrl?: string) => {
     const draftKey = `${kind}:${itemKey}`;
@@ -1682,10 +1711,23 @@ export function SettingsManager({
           Business logo/cover images use their existing compressed upload flow. Gallery, News, Authority, Owner Profile and Sponsor Campaign image fields also support direct compressed uploads. External HTTPS URLs remain supported.
         </div>
       </Card>
+      <Card className="p-5 space-y-4">
+        <div><h2 className="text-base font-bold text-on-surface">Owner Plan Payment Accounts</h2><p className="text-xs text-on-surface-variant mt-1">These public account details appear in the Owner Portal. Upload a small logo for each payment method; the image is automatically compressed to WebP before upload.</p></div>
+        {(['jazzcash','easypaisa','ubl'] as PlanPaymentMethodKey[]).map((methodKey) => {
+          const method = paymentMethods[methodKey] ?? DEFAULT_PLAN_PAYMENT_SETTINGS.methods[methodKey];
+          const titleKey = 'payment:' + methodKey + ':account_title';
+          const numberKey = 'payment:' + methodKey + ':account_number';
+          return <div key={methodKey} className="rounded-xl border border-outline-variant/50 p-3 space-y-3">
+            <div className="flex items-center gap-3">{method.icon_url ? <img src={method.icon_url} alt={method.label + ' icon'} className="w-10 h-10 rounded-lg object-contain border border-outline-variant/40"/> : <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-xs font-bold">{method.label.slice(0,3)}</div>}<div><p className="text-sm font-bold">{method.label}</p><p className="text-[10px] text-on-surface-variant">Owner Portal payment option</p></div></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><Input label="Account Title" value={draftValues[titleKey] ?? method.account_title} onChange={(event)=>setDraftValues((previous)=>({...previous,[titleKey]:event.target.value}))}/><Input label="Account Number" value={draftValues[numberKey] ?? method.account_number} onChange={(event)=>setDraftValues((previous)=>({...previous,[numberKey]:event.target.value}))}/>{methodKey==='ubl'&&<Input label="IBAN" value={draftValues['payment:ubl:iban'] ?? method.iban ?? ''} onChange={(event)=>setDraftValues((previous)=>({...previous,'payment:ubl:iban':event.target.value}))}/>}</div>
+            <div className="flex flex-wrap items-center justify-between gap-2"><AdminImageUpload purpose="payment" label="Upload payment icon" onUploaded={(url)=>savePaymentIcon(methodKey,url)}/><Button size="sm" variant="outline" onClick={()=>savePaymentMethod(methodKey)}>Save account details</Button></div>
+          </div>;
+        })}
+      </Card>
       <Card className="p-5 space-y-3">
         <h2 className="text-base font-bold text-on-surface">Site Settings &amp; Feature Flags</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {settings.filter((setting) => setting.key !== 'hero_banner_url' && setting.key !== 'directory_image_urls').map((s) => (
+          {settings.filter((setting) => !['hero_banner_url','directory_image_urls','plan_payment_methods'].includes(setting.key)).map((s) => (
             <div
               key={s.key}
               className="p-3 rounded-xl bg-surface-container-low flex flex-col gap-2 text-xs"

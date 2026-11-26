@@ -168,6 +168,10 @@ Deno.serve(async (req: Request) => {
       return reply(req, { ok: false, error: "Invalid contact phone" }, 400);
     }
 
+    if (body.type === "plan_upgrade") {
+      return reply(req, { ok: false, error: "Plan upgrades must be submitted from Owner Portal > Plans & Payments." }, 410);
+    }
+
     const sessionId = validString(body.session_id, 8, 128) ? body.session_id : "anonymous";
     const mediaSessionHash = await hashRateKey(sessionId);
     const sessionAllowed = await limited(`suggestion:session:${sessionId}`, 5, 3600);

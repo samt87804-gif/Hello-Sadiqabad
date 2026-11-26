@@ -400,6 +400,7 @@ export function AdminPortal() {
             submissions={submissions}
             businesses={businesses}
             actorId={actorId}
+            settings={settings}
             onJumpToBusiness={(name) => {
               setBusinessJumpQuery(name);
               navigate('/admin/businesses');
