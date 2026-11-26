@@ -396,7 +396,7 @@ export function ListingEditor({
 
   const requestImageChange = async (mediaField: 'logo' | 'cover' | 'gallery', file: File | null) => {
     if (!file || imageChangeBusy) return;
-    if (imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2) {
+    if (mediaField !== 'gallery' && imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2) {
       showToast('Monthly image-change limit reached (2 per business).', 'error');
       return;
     }
@@ -453,7 +453,7 @@ export function ListingEditor({
       if (mediaField === 'logo') setLogoChangeFile(null);
       else if (mediaField === 'cover') setCoverChangeFile(null);
       else setGalleryChangeFile(null);
-      showToast('Image change request sent to Admin. Your current image stays public until approval.', 'success');
+      showToast(mediaField === 'gallery' ? 'Gallery photo sent to Admin for approval. It will appear publicly after approval.' : 'Image change request sent to Admin. Your current image stays public until approval.', 'success');
       await reloadImageRequests().catch(() => undefined);
     } catch (error) {
       if (storagePath && !requestCreated) {
@@ -1170,7 +1170,7 @@ export function ListingEditor({
               </div>
             )}
             {!business.logo_url && !business.cover_url && !(business.gallery_urls ?? []).length && (
-              <p className="text-xs text-on-surface-variant rounded-lg bg-surface-container-low p-3">No business images have been added yet. Please contact Admin for image management.</p>
+              <p className="text-xs text-on-surface-variant rounded-lg bg-surface-container-low p-3">No business images have been added yet. Add gallery photos above or request a logo/cover change.</p>
             )}
             <UrlListEditor
               title="Promotional Video URLs (YouTube / Vimeo)"
