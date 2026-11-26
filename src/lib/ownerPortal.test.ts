@@ -16,6 +16,7 @@ import {
   fetchOwnerInquiriesPage,
   fetchOwnerReviews,
   fetchOwnerReviewsPage,
+  fetchOwnerSubmissionsPage,
   loadDemoDb,
   replyToReview,
   updateInquiryStatus,
