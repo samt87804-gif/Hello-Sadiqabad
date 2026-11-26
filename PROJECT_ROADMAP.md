@@ -1209,5 +1209,6 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Phase 1 data correctness implemented: pending review count includes `new` + `in_review`; inquiry `handled_by` is set only on `handled`, not on `read`; regression tests added. CI run `45891440166` passed and Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` succeeded.
 - [ ] Phase 1 Owner manual test of the pending-review count and inquiry read/handled workflow.
 - [x] Phase 2 Owner experience implemented: individual read/unread actions, safe internal notification links, Urdu notification content, action feedback, My Payments unread badge, collapsible mobile navigation and honest analytics empty state. Live notification UPDATE is restricted to `is_read` by migration `20261126203248`; CI run `45892045086` passed and Pages deployment `d788df3a-58a0-489f-9f47-e535c83601d9` succeeded.
-- [ ] Phases 3–6: race/scaling safeguards, listing gallery management, optional profile improvements and final acceptance. Follow the active plan in order.
+- [x] Phase 3A reliability safeguard implemented: overlapping Owner loads are sequenced; stale responses are ignored; business-scoped stats/offers/products clear on selection change. CI/deployment verification pending.
+- [ ] Phase 3B: reduce cross-page overfetch and add server-side pagination/filtering for reviews, inquiries and request history. Then continue Phases 4–6.
 - Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.

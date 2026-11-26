@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   BarChart3,
@@ -113,19 +113,55 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (routeListingId) {
+    if (routeListingId && routeListingId !== selectedId) {
+      setStats(null);
+      setOffers([]);
+      setProducts([]);
       setSelectedId(routeListingId);
     }
-  }, [routeListingId]);
+  }, [routeListingId, selectedId]);
+
+  const reloadSequenceRef = useRef(0);
 
   const reload = useCallback(async () => {
-    if (!user) return;
+    const requestId = ++reloadSequenceRef.current;
+    if (!user) {
+      setListings([]);
+      setSelectedId('');
+      setCategories([]);
+      setAreas([]);
+      setPlans([]);
+      setStats(null);
+      setOffers([]);
+      setProducts([]);
+      setReviews([]);
+      setInquiries([]);
+      setNotifications([]);
+      setSubmissions([]);
+      setProfileBusinessIds([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    // Clear business-scoped results immediately so a failed or slow switch
+    // can never leave the previous business's data on screen.
+    setStats(null);
+    setOffers([]);
+    setProducts([]);
+
     try {
       const [owned, cats, ar, pls, notifs, ownerRequests, profileSelection] = await Promise.all([
-        fetchOwnerListings(user.id), fetchAllCategories(), fetchAllAreas(), fetchPlans(),
-        fetchNotifications(user.id), fetchOwnerSubmissions(user.id), fetchOwnerPublicProfileBusinessIds(user.id),
+        fetchOwnerListings(user.id),
+        fetchAllCategories(),
+        fetchAllAreas(),
+        fetchPlans(),
+        fetchNotifications(user.id),
+        fetchOwnerSubmissions(user.id),
+        fetchOwnerPublicProfileBusinessIds(user.id),
       ]);
+      if (requestId !== reloadSequenceRef.current) return;
+
       setListings(owned);
       setCategories(cats);
       setAreas(ar);
@@ -155,6 +191,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
         fetchOwnerReviews(ids),
         fetchOwnerInquiries(ids),
       ]);
+      if (requestId !== reloadSequenceRef.current) return;
       setReviews(revs);
       setInquiries(inqs);
 
@@ -164,26 +201,29 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
           fetchBusinessOffers(preferredId),
           fetchBusinessProducts(preferredId),
         ]);
+        if (requestId !== reloadSequenceRef.current) return;
         setStats(st);
         setOffers(offs);
         setProducts(prods);
-      } else {
-        setStats(null);
-        setOffers([]);
-        setProducts([]);
       }
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : 'Owner portal data could not be loaded.',
-        'error'
-      );
+      if (requestId === reloadSequenceRef.current) {
+        showToast(
+          error instanceof Error ? error.message : 'Owner portal data could not be loaded.',
+          'error'
+        );
+      }
     } finally {
-      setLoading(false);
+      if (requestId === reloadSequenceRef.current) setLoading(false);
     }
   }, [user, selectedId, routeListingId, days, showToast]);
 
   useEffect(() => {
-    reload();
+    void reload();
+    return () => {
+      // Invalidate in-flight requests when the business, user, or page range changes.
+      reloadSequenceRef.current += 1;
+    };
   }, [reload]);
 
   useEffect(() => {
@@ -195,6 +235,15 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
     }
   }, [user, selectedId, listings]);
 
+  const selectBusiness = useCallback((nextId: string) => {
+    if (nextId !== selectedId) {
+      setStats(null);
+      setOffers([]);
+      setProducts([]);
+    }
+    setSelectedId(nextId);
+  }, [selectedId]);
+
   const activeBusiness = listings.find((b) => b.id === selectedId) ?? listings[0] ?? null;
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -202,7 +251,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
     listings,
     activeBusiness,
     selectedId,
-    setSelectedId,
+    setSelectedId: selectBusiness,
     categories,
     areas,
     plans,

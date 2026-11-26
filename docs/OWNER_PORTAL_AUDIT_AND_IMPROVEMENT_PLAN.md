@@ -47,8 +47,8 @@
 
 ## Phase 3 — Reliability and scale
 
-- [ ] Prevent stale business-scoped data from appearing after switching selected businesses.
-- [ ] Sequence/cancel overlapping Owner data loads and clear business-specific state before loading another business.
+- [x] Prevent stale business-scoped data from appearing after switching selected businesses: clear stats/offers/products immediately and discard results from superseded requests.
+- [x] Sequence overlapping Owner data loads; invalidate in-flight requests on dependency changes/unmount, ignore stale responses/errors, and clear business-scoped state before/at selection changes.
 - [ ] Reduce unnecessary cross-page fetching where safe.
 - [ ] Add server-side pagination/filtering for reviews, inquiries and request history without hiding older records.
 
@@ -106,3 +106,10 @@
 - Cloudflare Pages deployment `d788df3a-58a0-489f-9f47-e535c83601d9` succeeded for the same commit.
 - Supabase migration `20261126203248` restricts authenticated notification UPDATE to `is_read`; RLS still limits rows to `auth.uid()`. Verified table-wide UPDATE false, `is_read` UPDATE true, `title_en` and `link_path` UPDATE false. Existing mark-all-read RPC passed a rollback/authenticated-role check.
 - Owner manual acceptance remains pending.
+
+
+### Phase 3A — reliability release pending
+
+- Updated `useOwnerPortalData` with a request sequence guard and cleanup invalidation. Older requests cannot overwrite newer selected-business data or show stale errors.
+- Business-specific analytics, offers and products clear immediately when the selected listing changes or a reload starts; they remain empty if the new listing's data fails to load.
+- Remaining Phase 3 work: reduce unnecessary cross-page fetching and add server-side pagination/filtering for reviews, inquiries and request history.

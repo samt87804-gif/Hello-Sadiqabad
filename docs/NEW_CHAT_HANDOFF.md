@@ -123,3 +123,10 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 5. **Mobile menu:** on a phone, open the Owner Portal menu. All destinations should be visible in a compact grid; selecting one should close the menu. Sign Out should remain available.
 6. **Analytics:** open Owner Portal → Analytics. If no real search terms are available, the Top Search Terms section should show the explanatory empty message, not a blank panel or invented numbers.
 7. Report any issue or screenshot. Do not share passwords or payment secrets.
+
+
+### Phase 3A — Owner data-load reliability (implementation awaiting CI)
+
+- `useOwnerPortalData` now uses a monotonically increasing request sequence; effect cleanup invalidates in-flight work. Only the newest request may update data, show an error or clear loading.
+- Switching selected business immediately clears business-scoped analytics, offers and products. A failed load cannot leave the previous business's results visible under the new listing.
+- This is a narrow reliability fix. Cross-page overfetch and server-side pagination/filtering remain unchecked Phase 3 tasks.
