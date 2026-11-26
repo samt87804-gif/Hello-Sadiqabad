@@ -45,3 +45,15 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Security: financial tables are private, RLS-enabled and have no direct client grants; public RPCs check Super Admin authority. Direct authenticated updates to business plan fields are blocked except through trusted audited workflows.
 - Verified in rollback transactions: partial payment plus two instalments, full waiver/zero receipt, Super Admin assignment RPC, direct-update guard, non-admin dashboard denial and a simulated verified Owner approval creating one linked receipt with the correct renewal period start. GitHub CI passed for latest UI commit `2573a4782ac3a10961be45a72df001eaca5752ed` (run `45878673559`); Cloudflare production deployment `ba2ba359-801a-4a8c-ae1b-c917aeaa6079` succeeded for that commit. Finance CSV exports also guard against spreadsheet formula injection.
 - Owner manual acceptance is still pending. Do not claim the workflow is accepted until the Owner tests it in production.
+
+
+## Current workstream — Owner Financial Profiles, Payment History & Approval Workflows (27 November 2026)
+
+- Owner explicitly approved this scope. Active plan: [docs/OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md](OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md).
+- Admin → Owners should open an Owner Financial Profile with businesses, plan/expiry history, actual receipts, net adjustments, outstanding/waived amounts, correction requests and audit trail.
+- Owner Portal gets read-only My Payments; correction requests are requests only, never direct ledger edits.
+- Admin receipt correction/reversal uses append-only adjustment rows. Original receipts must never be hard-deleted or overwritten; corrected amount zero means reversal.
+- Owner Full Name/Phone changes require Admin approval; password self-service remains. Preserve live `owner_edits_require_approval=true` and the existing business listing moderation flow.
+- Read the current live schema, profile triggers, finance RPC definitions, Super Admin helpers and migration ledger. Latest live migration version at audit: `20261126184410`.
+- Permanent documentation-cycle rule added to `docs/PROJECT_WORKING_RULES.md` (commit `a74df37eb8dcc45887ac05b897cf91756b0a39e6`): read required docs and relevant source every task/phase, then update feature plan, roadmap and handoff; tick only verified work.
+- No production database or UI changes have yet been applied for this workstream. Continue from Phase B; do not re-request a source ZIP.
