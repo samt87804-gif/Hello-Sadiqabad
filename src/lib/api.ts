@@ -2150,11 +2150,14 @@ export async function adminUpsertBusiness(
 ): Promise<BusinessRow> {
   const normalized = normalizePkPhone(input.phone_primary);
   const slug = input.slug?.trim() || `${slugify(input.name_en)}-${Math.random().toString(36).slice(2, 5)}`;
+  const safeInput = { ...input } as Partial<BusinessRow>;
+  delete safeInput.plan_code;
+  delete safeInput.plan_expires_at;
 
   const client = getSupabaseClient();
   if (client) {
     const payload = {
-      ...input,
+      ...safeInput,
       // Record staff ownership for newly created drafts so the database can
       // enforce the business.edit_own row scope. Omit this field on updates.
       ...(!input.id ? { created_by: actorId } : {}),
@@ -2174,7 +2177,7 @@ export async function adminUpsertBusiness(
     if (idx !== -1) {
       const updated: BusinessRow = {
         ...db.businesses[idx],
-        ...input,
+        ...safeInput,
         phone_normalized: normalized,
         published_at:
           input.status === 'published' && !db.businesses[idx].published_at

@@ -77,7 +77,7 @@ export function AdminFinance() {
     }
   }, [search, plan, method, source, fromDate, toDate, balanceSearch, showToast]);
 
-  useEffect(() => { void reload(); }, [reload]);
+  useEffect(() => { void reload(); }, []);
 
   const exportCsv = () => {
     const columns = [
