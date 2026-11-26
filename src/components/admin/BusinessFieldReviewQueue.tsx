@@ -626,7 +626,7 @@ export function BusinessFieldReviewQueue({
                   <span className="text-[10px] text-on-surface-variant">{new Date(asset.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {asset.status !== 'rejected' && asset.status !== 'approved_published' && (
+                  {['pending_review', 'approved_pending_promotion'].includes(asset.status) && (
                     <Button size="sm" loading={busyMediaId === asset.id} disabled={Boolean(busyMediaId)} onClick={() => void reviewOtherMedia(asset.id, 'approved_published')} leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}>Approve / Retry Publish</Button>
                   )}
                   {['pending_review', 'approved_pending_promotion'].includes(asset.status) && (
