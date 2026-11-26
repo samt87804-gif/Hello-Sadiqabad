@@ -15,6 +15,14 @@ function json(data, status = 200) {
   });
 }
 
+function withPromiseTimeout(promise, timeoutMs) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Workers AI request timed out.')), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 function validateMessages(value) {
   if (!Array.isArray(value) || value.length === 0 || value.length > 20) return null;
   const messages = value.slice(-MAX_HISTORY_MESSAGES).map((item) => {
@@ -281,11 +289,11 @@ export async function onRequestPost({ request, env }) {
     context.business_search_total_count = businessSearch.total_count;
     context.business_search_scope = { category: businessSearch.matched_category, area: businessSearch.matched_area };
     failureStage = 'workers_ai';
-    const result = await env.AI.run(
+    const result = await withPromiseTimeout(env.AI.run(
       MODEL,
       { messages: [{ role: 'system', content: buildSystemPrompt(context) }, ...messages], max_tokens: 450, temperature: 0.2 },
       { gateway: { id: 'default', cacheTtl: 180 } },
-    );
+    ), 15000);
     const answer = typeof result?.response === 'string'
       ? result.response
       : typeof result?.choices?.[0]?.message?.content === 'string'
