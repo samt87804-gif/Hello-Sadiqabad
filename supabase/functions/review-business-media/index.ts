@@ -193,10 +193,18 @@ Deno.serve(async (req: Request) => {
       const { data: latestAsset } = await db.from("business_media_assets").select("status").eq("id", assetId).maybeSingle();
       if (latestAsset?.status !== action) {
         if (action === "approved_published" && approvalRollback) {
-          await db.from("businesses").update({
-            [approvalRollback.column]: approvalRollback.previousUrl,
-            updated_at: new Date().toISOString(),
-          }).eq("id", approvalRollback.businessId).eq(approvalRollback.column, approvalRollback.publicUrl);
+          if (asset.media_field === "gallery") {
+            const { data: latestBusiness } = await db.from("businesses")
+              .select("gallery_urls").eq("id", approvalRollback.businessId).maybeSingle();
+            const restoredGallery = (latestBusiness?.gallery_urls ?? []).filter((value: string) => !value.includes(approvalRollback.publicPath));
+            await db.from("businesses").update({ gallery_urls: restoredGallery, updated_at: new Date().toISOString() })
+              .eq("id", approvalRollback.businessId);
+          } else {
+            await db.from("businesses").update({
+              [approvalRollback.column]: approvalRollback.previousUrl,
+              updated_at: new Date().toISOString(),
+            }).eq("id", approvalRollback.businessId).eq(approvalRollback.column, approvalRollback.publicUrl);
+          }
           await removeIfPresent(publicBucket, approvalRollback.publicPath).catch(() => undefined);
         }
         throw finalizeError;
