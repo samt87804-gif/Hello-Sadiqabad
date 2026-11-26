@@ -106,7 +106,7 @@ async function updateRun(admin, runId, patch) {
 }
 
 async function fetchBusinessDirectoryCount(admin) {
-  const response = await fetch(`${admin.baseUrl}/rest/v1/rpc/search_businesses`, {
+  const response = await fetchWithTimeout(`${admin.baseUrl}/rest/v1/rpc/search_businesses`, {
     method: 'POST',
     headers: {
       apikey: admin.key,
@@ -128,7 +128,7 @@ async function fetchBusinessDirectoryCount(admin) {
       p_sort: 'relevance',
       p_limit: 1,
       p_offset: 0,
-    }),
+    }),, 8000
   });
   if (!response.ok) throw new Error('Published business directory could not be refreshed.');
   const rows = await response.json();
