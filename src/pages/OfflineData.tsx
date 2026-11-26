@@ -315,7 +315,7 @@ export function OfflineData() {
       if (!registration) registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
-      const cache = await caches.open('hs-sadiqabad-shell-v3');
+      const cache = await caches.open('hs-sadiqabad-shell-v4');
       const [appShell, emergencyFallback] = await Promise.all([
         cache.match(new URL('/', window.location.origin).href),
         cache.match(new URL('/offline.html', window.location.origin).href),
