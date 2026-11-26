@@ -37,6 +37,8 @@ import {
   submitOwnerPaymentCorrectionRequest,
   submitOwnerProfileChangeRequest,
   type OwnerPaymentHistory,
+  type OwnerReviewReplyFilter,
+  type OwnerInquiryStatusFilter,
   fetchOwnerInquiries,
   fetchOwnerInquiriesPage,
   fetchOwnerSubmissions,
@@ -115,7 +117,13 @@ const OWNER_PLAN_DATA: OwnerPortalDataOptions = { plans: true, submissions: true
 const OWNER_PUBLIC_PROFILE_DATA: OwnerPortalDataOptions = { profileBusinessIds: true };
 const OWNER_NOTIFICATIONS_DATA: OwnerPortalDataOptions = { notifications: true };
 
-function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPortalDataOptions = {}) {
+function useOwnerPortalData(
+  days = 30,
+  routeListingId?: string,
+  options: OwnerPortalDataOptions = {},
+  reviewReplyFilter: OwnerReviewReplyFilter = 'all',
+  inquiryStatusFilter: OwnerInquiryStatusFilter = 'all'
+) {
   const { user } = useAuth();
   const { showToast } = useToast();
   const includeCategories = options.categories === true;
@@ -210,8 +218,8 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
         includeProducts ? fetchBusinessProducts(preferredId) : Promise.resolve([]),
         includeReviews ? fetchOwnerReviews([preferredId]) : Promise.resolve([]),
         includeInquiries ? fetchOwnerInquiries([preferredId]) : Promise.resolve([]),
-        includePaginatedReviews ? fetchOwnerReviewsPage(preferredId, 0, 20) : Promise.resolve({ items: [], hasMore: false }),
-        includePaginatedInquiries ? fetchOwnerInquiriesPage(preferredId, 0, 20) : Promise.resolve({ items: [], hasMore: false }),
+        includePaginatedReviews ? fetchOwnerReviewsPage(preferredId, 0, 20, reviewReplyFilter) : Promise.resolve({ items: [], hasMore: false }),
+        includePaginatedInquiries ? fetchOwnerInquiriesPage(preferredId, 0, 20, inquiryStatusFilter) : Promise.resolve({ items: [], hasMore: false }),
       ]);
       if (requestId !== reloadSequenceRef.current) return;
       setStats(st); setOffers(offs); setProducts(prods);
@@ -232,6 +240,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
     user, selectedId, routeListingId, days, showToast, includeCategories, includeAreas,
     includePlans, includeStats, includeOffers, includeProducts, includeReviews, includeInquiries,
     includePaginatedReviews, includePaginatedInquiries, includeSubmissions, includeProfileBusinessIds, includeNotifications,
+    reviewReplyFilter, inquiryStatusFilter,
   ]);
 
   useEffect(() => {
@@ -258,7 +267,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
     const requestId = reloadSequenceRef.current;
     setReviewLoadingMore(true);
     try {
-      const page = await fetchOwnerReviewsPage(selectedId, reviewOffsetRef.current, 20);
+      const page = await fetchOwnerReviewsPage(selectedId, reviewOffsetRef.current, 20, reviewReplyFilter);
       if (requestId !== reloadSequenceRef.current) return;
       setReviews((current) => [...current, ...page.items]);
       reviewOffsetRef.current += page.items.length; setReviewHasMore(page.hasMore);
@@ -267,14 +276,14 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
     } finally {
       if (requestId === reloadSequenceRef.current) setReviewLoadingMore(false);
     }
-  }, [includePaginatedReviews, selectedId, reviewHasMore, reviewLoadingMore, showToast]);
+  }, [includePaginatedReviews, selectedId, reviewHasMore, reviewLoadingMore, reviewReplyFilter, showToast]);
 
   const loadMoreInquiries = useCallback(async () => {
     if (!includePaginatedInquiries || !selectedId || !inquiryHasMore || inquiryLoadingMore) return;
     const requestId = reloadSequenceRef.current;
     setInquiryLoadingMore(true);
     try {
-      const page = await fetchOwnerInquiriesPage(selectedId, inquiryOffsetRef.current, 20);
+      const page = await fetchOwnerInquiriesPage(selectedId, inquiryOffsetRef.current, 20, inquiryStatusFilter);
       if (requestId !== reloadSequenceRef.current) return;
       setInquiries((current) => [...current, ...page.items]);
       inquiryOffsetRef.current += page.items.length; setInquiryHasMore(page.hasMore);
@@ -283,7 +292,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
     } finally {
       if (requestId === reloadSequenceRef.current) setInquiryLoadingMore(false);
     }
-  }, [includePaginatedInquiries, selectedId, inquiryHasMore, inquiryLoadingMore, showToast]);
+  }, [includePaginatedInquiries, selectedId, inquiryHasMore, inquiryLoadingMore, inquiryStatusFilter, showToast]);
 
   const activeBusiness = listings.find((b) => b.id === selectedId) ?? listings[0] ?? null;
   return {
@@ -1107,7 +1116,8 @@ export function OwnerOffers() {
 }
 
 export function OwnerReviews() {
-  const data = useOwnerPortalData(30, undefined, OWNER_REVIEWS_DATA);
+  const [replyFilter, setReplyFilter] = useState<OwnerReviewReplyFilter>('all');
+  const data = useOwnerPortalData(30, undefined, OWNER_REVIEWS_DATA, replyFilter);
   const displayedReviews = data.activeBusiness
     ? data.reviews.filter((r) => r.business_id === data.activeBusiness?.id)
     : data.reviews;
@@ -1122,6 +1132,8 @@ export function OwnerReviews() {
     >
       <ReviewsReply
         reviews={displayedReviews}
+        replyFilter={replyFilter}
+        onReplyFilterChange={setReplyFilter}
         hasMore={data.reviewHasMore}
         loadingMore={data.reviewLoadingMore}
         onLoadMore={data.loadMoreReviews}
@@ -1136,7 +1148,8 @@ export function OwnerReviews() {
 
 export function OwnerInquiries() {
   const { user } = useAuth();
-  const data = useOwnerPortalData(30, undefined, OWNER_INQUIRIES_DATA);
+  const [statusFilter, setStatusFilter] = useState<OwnerInquiryStatusFilter>('all');
+  const data = useOwnerPortalData(30, undefined, OWNER_INQUIRIES_DATA, 'all', statusFilter);
   const displayedInquiries = data.activeBusiness
     ? data.inquiries.filter((i) => i.business_id === data.activeBusiness?.id)
     : data.inquiries;
@@ -1151,6 +1164,8 @@ export function OwnerInquiries() {
     >
       <InquiriesInbox
         inquiries={displayedInquiries}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         hasMore={data.inquiryHasMore}
         loadingMore={data.inquiryLoadingMore}
         onLoadMore={data.loadMoreInquiries}
