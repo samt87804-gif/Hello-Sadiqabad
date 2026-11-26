@@ -59,6 +59,7 @@ import { useToast } from '../ui/Toast';
 import { getSupabaseClient } from '../../lib/supabase';
 import type { OwnerPublicProfileRow } from '../../types/database';
 import { AdminImageUpload } from './AdminImageUpload';
+import { AdminOwnerFinancialProfile } from './AdminOwnerFinancialProfile';
 
 export function LeadsManager({
   leads,
@@ -182,11 +183,13 @@ export function OwnersManager({
   businesses,
   actorId,
   onReload,
+  isSuperAdmin = false,
 }: {
   profiles: Array<ProfileRow & { email?: string; is_active?: boolean; staff?: StaffMemberRow | null }>;
   businesses: BusinessPublicView[];
   actorId: string;
   onReload: () => Promise<void>;
+  isSuperAdmin?: boolean;
 }) {
   const { showToast } = useToast();
   const [resetOwner, setResetOwner] = useState<{ id: string; name: string; email: string } | null>(null);
@@ -212,6 +215,7 @@ export function OwnersManager({
   const [listingsOwner, setListingsOwner] = useState<(ProfileRow & { email?: string }) | null>(null);
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [listingsSaving, setListingsSaving] = useState(false);
+  const [financialOwner, setFinancialOwner] = useState<(ProfileRow & { email?: string }) | null>(null);
 
   const owners = useMemo(() => profiles.filter((p) => p.role === 'owner'), [profiles]);
 
@@ -369,6 +373,11 @@ export function OwnersManager({
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                {isSuperAdmin && (
+                  <Button size="sm" variant="primary" onClick={() => setFinancialOwner(owner)}>
+                    Financial Profile
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -518,6 +527,14 @@ export function OwnersManager({
           </div>
         </div>
       </Modal>
+
+      {financialOwner && (
+        <AdminOwnerFinancialProfile
+          ownerId={financialOwner.id}
+          ownerName={financialOwner.full_name || financialOwner.email || 'Owner'}
+          onClose={() => setFinancialOwner(null)}
+        />
+      )}
 
       <ConfirmDialog
         open={Boolean(resetOwner)}
