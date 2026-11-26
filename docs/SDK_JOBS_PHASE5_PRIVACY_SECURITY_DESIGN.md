@@ -2,7 +2,7 @@
 
 **Status:** Design-only; no Phase 5 application code, schema, migration, candidate data or fee ledger has been created.  
 **Date:** 26 November 2026.  
-**Scope source:** `docs/SDK_JOBS_RECRUITMENT_PLAN.md` §§5–9 and `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` Phase 5.
+**Scope source:** `docs/SDK_JOBS_RECRUITMENT_PLAN.md` §§5–9 and `docs/archive/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` Phase 5.
 
 ## 1. Phase boundary and safety gate
 

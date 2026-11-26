@@ -1,7 +1,7 @@
 # Business Registration & Admin Approval — ACTIVE Implementation Plan
 
 > **ACTIVE PLAN — FOLLOW THIS DOCUMENT.** Owner approved the redesigned workflow on 26 November 2026.
-> This document supersedes the earlier Business Registration / Owner Approval workflow design for future implementation decisions. The previous plan is retained for history only: [ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](ADD_BUSINESS_OWNER_APPROVAL_PLAN.md). **Do not implement or continue the superseded workflow described there.** Preserve compatible functionality already shipped; do not roll back production code because a design is archived.
+> This document supersedes the earlier Business Registration / Owner Approval workflow design for future implementation decisions. The previous plan is retained for history only: [archive/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](archive/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md). **Do not implement or continue the superseded workflow described there.** Preserve compatible functionality already shipped; do not roll back production code because a design is archived.
 
 ## 1. Owner decision and objective
 

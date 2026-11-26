@@ -1,7 +1,7 @@
 # SDK Jobs — Phase 4 Data Model & Security Design
 
 **Status:** Phase 4 started; audit/design checkpoint only.  
-**Owner-approved scope:** `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` §4.4 and Phase 4.  
+**Owner-approved scope:** `docs/archive/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` §4.4 and Phase 4.  
 **Reviewed against:** current `main`, existing migrations, live Supabase schema/RLS/grants, owner portal, Admin permission architecture and `docs/SDK_JOBS_RECRUITMENT_PLAN.md`.  
 **Date:** 26 November 2026.
 

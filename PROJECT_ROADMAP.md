@@ -9,7 +9,7 @@ This is the live application project checklist. Update it on `main` whenever a t
 ## Owner-approved business registration workflow redesign — 26 November 2026
 
 - Active source of truth: [Business Registration & Admin Approval — ACTIVE Implementation Plan](docs/ADD_BUSINESS_APPROVAL_ACTIVE_IMPLEMENTATION_PLAN.md).
-- Historical document retained but explicitly superseded: [ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md) — **ARCHIVED / DO NOT IMPLEMENT**. Do not follow its old workflow or create a parallel queue. Preserve compatible production functionality/data.
+- Historical document retained but explicitly superseded: [docs/archive/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md](docs/docs/archive/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md) — **ARCHIVED / DO NOT IMPLEMENT**. Do not follow its old workflow or create a parallel queue. Preserve compatible production functionality/data.
 - [x] Owner approved one card per Add Business request, one popup with grouped collapsible sections, per-field checkboxes, section/global Select All, private Owner details, optional Send Owner Invitation Link checkbox and one Save Approval action.
 - [x] Owner approved separation of Business Field Approval, Moderation Queue, standalone Owner Registration Requests, Businesses, Data Quality and Owners responsibilities.
 - [ ] Phase A: audit current routes, components, API, schema/RLS, invitation and media lifecycle.
@@ -192,7 +192,7 @@ Batch 3 — completed (16 November 2026):
 2. Keep incomplete sub-work unchecked and clearly labelled.
 3. Commit roadmap updates to `main` alongside the completed task.
 4. Work through user-requested improvements in batches of three; update this checklist after each verified batch and ask before starting the next batch.
-5. Keep docs/ROADMAP_EXECUTION_CHECKLIST.md synchronized with detailed acceptance criteria, source register, migrations, test results and deployment references.
+5. Keep docs/docs/archive/ROADMAP_EXECUTION_CHECKLIST.md synchronized with detailed acceptance criteria, source register, migrations, test results and deployment references.
 
 
 ## Phase 2 progress — Local SEO & directory quality (17 November 2026)
@@ -464,7 +464,7 @@ Batch 3 — completed (16 November 2026):
 
 ## Advanced Analytics Expansion — plan approved to begin (19 November 2026)
 
-- [x] Created [Advanced Analytics Expansion Roadmap](docs/ANALYTICS_EXPANSION_ROADMAP.md): prioritized P0 reliability/security, P1 reporting controls, P2 content/journeys, P3 audience/acquisition, P4 alerts and P5 exports/UX.
+- [x] Created [Advanced Analytics Expansion Roadmap](docs/docs/archive/ANALYTICS_EXPANSION_ROADMAP.md): prioritized P0 reliability/security, P1 reporting controls, P2 content/journeys, P3 audience/acquisition, P4 alerts and P5 exports/UX.
 - [ ] Phase 0 re-audit and P0 browser, collector-abuse and authorization verification.
 - [ ] Phase 2 custom date range, period comparison, visible filters, metric glossary/freshness and filter-scoped exports.
 - [ ] Phases 3–6: content/conversion funnels, audience/acquisition, alerts and advanced exports/UX.
@@ -617,7 +617,7 @@ Planning baseline inspected:
 
 - [x] Owner approval received for Phase 0 audit, requirements and design only.
 - [x] Read-only audit completed against the current `main` code and live Supabase schema, migration ledger, RLS, Storage policies, plan data, permission gates and relevant Owner/Admin flows.
-- [x] Detailed findings and proposed additive architecture documented in `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md`.
+- [x] Detailed findings and proposed additive architecture documented in `docs/docs/archive/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md`.
 - [x] Owner accepted the Phase 0 design and authorised Phase 1 Government Jobs implementation.
 - [x] Phase 1 MVP code committed; CI and Cloudflare Pages deployment passed.
 - [x] Additive Government Jobs database table, RLS, grants, audit triggers and dedicated permission applied.
@@ -726,11 +726,11 @@ Implementation is in progress on `main`. This change expands the existing Indexe
 
 ## 25 November 2026 — Owner-approved final product expansion plan (planning only)
 
-**Canonical plan:** `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`. Read it before starting any of the work below. It records the owner's final requirements and phase gates; none of these new workstreams is claimed implemented by this documentation update.
+**Canonical plan:** `docs/docs/archive/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`. Read it before starting any of the work below. It records the owner's final requirements and phase gates; none of these new workstreams is claimed implemented by this documentation update.
 
 Child plans:
 - `docs/ADMIN_PERFORMANCE_OPTIMIZATION_PLAN.md`
-- `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`
+- `docs/docs/archive/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`
 - `docs/GOVERNMENT_CONTENT_BILINGUAL_MEDIA_PLAN.md`
 - `docs/SDK_JOBS_RECRUITMENT_PLAN.md`
 - `docs/GOV_LANDING_AND_MOBILE_NAVIGATION_PLAN.md`
@@ -753,9 +753,9 @@ Owner-approved decisions:
 
 ## Final Product Expansion — owner-approved 25 November 2026
 
-Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md).
+Canonical scope and phase order: [Final Product Expansion Master Plan](docs/docs/archive/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md).
 
-- [x] Phase 0 source/schema/security audit and additive design documented in [Phase 0 Audit](docs/FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md).
+- [x] Phase 0 source/schema/security audit and additive design documented in [Phase 0 Audit](docs/docs/archive/FINAL_PRODUCT_EXPANSION_PHASE0_AUDIT.md).
 - [x] Phase 1 Admin Business and Data Quality performance optimization — owner confirms all testing/acceptance checks passed on 26 November 2026.
   - Audit found a 19-request all-tabs reload, eager imports of large Admin manager modules, unbounded rendering of business rows and repeated category scans in Data Quality.
   - Database-only business-list query baseline: 697 rows, 5.347 ms execution in the audit query. Authenticated desktop/browser load and click timings still need real traces.
@@ -794,7 +794,7 @@ Canonical scope and phase order: [Final Product Expansion Master Plan](docs/FINA
 ### Additional audit evidence — 25 November 2026
 
 - Live SQL comparison on 697 business rows: planner-estimated row width reduced from 2,676 bytes for the former broad joined projection to 1,419 bytes for the new allowlisted projection (about 47% narrower). Query timings from the compared runs had different cache state and are not used as a speed claim.
-- Phase 2 read-only preflight is a historical baseline documented in `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`; its findings have since been addressed in the production rollout checkpoint below.
+- Phase 2 read-only preflight is a historical baseline documented in `docs/docs/archive/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`; its findings have since been addressed in the production rollout checkpoint below.
 - Owner explicitly authorised Phase 2 to proceed while Phase 1 authenticated desktop/mobile acceptance remains outstanding; Phase 1 is still not accepted.
 
 
@@ -1128,7 +1128,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Traced `/add-business` → `submitPublicSuggestion()` → `submit-suggestion` Edge Function → `submissions`, linked Owner request and private media records.
 - [x] Traced field review RPC, minimum-publication gate, media promotion and existing Owner invitation/profile/business-link flow.
 - [x] Inspected live migration ledger, table columns/constraints, RLS policies, Storage bucket policies, function privileges and audit triggers.
-- [x] Recorded live baseline and compatibility risks in `docs/ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md`.
+- [x] Recorded live baseline and compatibility risks in `docs/docs/archive/ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md`.
 - [x] Confirmed baseline CI for app-code commit `37abe91ebfe0b3064dbdfc073a00d5cb64ec7d0c`: run `45717440342` passed build and Edge Functions jobs.
 - [ ] Phase B: one request card per registration, grouped review popup, private Owner panel, independent field/media selections, one Save Approval and unsaved-change protection.
 - [ ] Phase C: atomic bulk field decisions, minimum-safe-listing, durable invitation task/retry and idempotent account/business association.

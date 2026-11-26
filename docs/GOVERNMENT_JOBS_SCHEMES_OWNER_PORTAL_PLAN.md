@@ -19,7 +19,7 @@
 3. `PROJECT_ROADMAP.md` — live application-wide feature checklist.
 4. `docs/NEW_CHAT_HANDOFF.md` — latest cross-project continuation notes; reconcile it with current GitHub `main`.
 5. `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` — domain, security, SEO decisions and verification history.
-6. Relevant feature plans before touching those areas, especially `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md`, `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`, `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`, `docs/ANALYTICS_EXPANSION_ROADMAP.md`, and `DEPLOYMENT.md`.
+6. Relevant feature plans before touching those areas, especially `docs/CHATBOT_PUBLIC_KNOWLEDGE_PLAN.md`, `docs/OFFLINE_FIRST_IMPLEMENTATION_PLAN.md`, `docs/ADVANCED_ANALYTICS_IMPLEMENTATION_PLAN.md`, `docs/archive/ANALYTICS_EXPANSION_ROADMAP.md`, and `DEPLOYMENT.md`.
 
 **Source-of-truth hierarchy:** current GitHub `main` code and `supabase/migrations/` for implemented behavior/schema; `PROJECT_ROADMAP.md` for app-wide checklist; `docs/PROJECT_WORKING_RULES.md` for permanent rules; the relevant feature plan for its scope and acceptance criteria; `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` for domain/security/SEO. If a handoff or chat summary conflicts with current code, migrations or these canonical documents, inspect and reconcile—do not blindly follow the stale note.
 
@@ -458,7 +458,7 @@ Recommended defaults are listed; the owner can change them:
 
 Owner approved Phase 0 (read-only audit, requirements and design). The detailed audit and proposed additive design are recorded in:
 
-- `docs/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md`
+- `docs/archive/GOVERNMENT_JOBS_SCHEMES_OWNER_PORTAL_PHASE0_AUDIT.md`
 
 The audit inspected the current `main` code snapshot and live Supabase schema, migration ledger, RLS, Storage policies, plans, Admin permission gates, owner submission/registration flows and Supabase Advisors. It records the existing architecture, live counts, proposed routes/data model/security, and test/acceptance gates.
 
@@ -615,11 +615,11 @@ The PMYB&ALS record separates the three tiers still displayed by the official po
 
 ## 25 November 2026 — New owner-approved expansion plan
 
-The final owner-approved expansion scope is now documented in `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`. That master plan is the canonical new-chat starting point for the next workstreams and must be read alongside permanent project rules and current handoff.
+The final owner-approved expansion scope is now documented in `docs/archive/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md`. That master plan is the canonical new-chat starting point for the next workstreams and must be read alongside permanent project rules and current handoff.
 
 Child plans:
 - `docs/ADMIN_PERFORMANCE_OPTIMIZATION_PLAN.md`
-- `docs/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`
+- `docs/archive/ADD_BUSINESS_OWNER_APPROVAL_PLAN.md`
 - `docs/GOVERNMENT_CONTENT_BILINGUAL_MEDIA_PLAN.md`
 - `docs/SDK_JOBS_RECRUITMENT_PLAN.md`
 - `docs/GOV_LANDING_AND_MOBILE_NAVIGATION_PLAN.md`
