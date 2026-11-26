@@ -1293,3 +1293,12 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] Source audit found the My Businesses “Requests awaiting review” counter is calculated from the currently loaded request page (initially 20 rows), not the full Owner request set. Pending requests on older pages can therefore be omitted from the count.
 - [ ] Owner approval required for a narrow fix: Owner-scoped exact count of allowed submission types with status `new` / `in_review`, preserving RLS and existing paginated history. No schema/data mutation planned.
 - [ ] Phase 1 manual acceptance remains pending: verify the corrected full pending count and inquiry Read/Handled handler behavior.
+
+
+## Owner Portal — Phase 1 pending-request counter accuracy (27 November 2026)
+
+- Owner approved a narrow fix after the audit found the My Businesses summary counted only the first 20 loaded request-history rows.
+- The counter now uses an exact count scoped to the signed-in Owner, the existing six Owner-visible request types, and statuses `new` / `in_review`; final statuses and other request types are excluded.
+- Existing 20-row history pagination and Load older requests behavior remain unchanged. Demo mode counts the full matching in-memory set.
+- Added regression coverage for 28 matching Owner submissions with pending requests beyond row 20, plus other-owner, wrong-type and rejected exclusions.
+- No schema/RLS/permission/data changes or migration are included. Automated CI and matching Pages deployment must pass before the Owner manual acceptance test.

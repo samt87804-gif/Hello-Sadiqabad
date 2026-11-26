@@ -33,10 +33,19 @@
 ## Phase 1 — Data correctness
 
 - [x] Count both `new` and `in_review` Owner business requests in the pending-review summary; added a regression test.
+- [x] Pending-review summary now uses a separate exact count query scoped to the signed-in Owner and the same six Owner-visible submission types; it is independent of the 20-row request-history page. Demo mode counts the full matching set. Added a regression test with 28 Owner requests, including pending rows beyond the first 20, plus other-owner, wrong-type and final-status exclusions.
 - [x] Set `handled_by` only when an inquiry is marked `handled`; marking it `read` no longer assigns the current user as handler. Demo and live API paths match; added regression assertions.
 - [x] Added regression tests for pending-review counting and inquiry handler tracking.
 - [x] CI and production deployment verified: commit `b63a8a4a42a6dffd90f435e7ae1bb8e0d002015b`, CI run `45891440166`, Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b`.
 - [ ] Owner manual test of pending-review count and inquiry read/handled workflow.
+
+### Phase 1 count accuracy follow-up — implementation awaiting CI/deployment
+
+- Owner approved the narrow correction on 27 November 2026.
+- The counter now queries the exact count of rows for the signed-in Owner, limited to the existing Owner-visible request types and statuses `new` / `in_review`; it no longer derives the summary from the first 20 history rows.
+- Existing history pagination and Load older requests behavior are unchanged. Demo mode applies the same Owner/type/status filters across all in-memory submissions.
+- Regression coverage creates 28 matching Owner requests with pending rows only beyond the first 20, and verifies other-owner, correction-type and rejected rows are excluded.
+- No schema, RLS, permissions, submission records or migration changes are included. Await automated CI and production deployment verification before asking for manual acceptance.
 
 ## Phase 2 — Owner experience
 

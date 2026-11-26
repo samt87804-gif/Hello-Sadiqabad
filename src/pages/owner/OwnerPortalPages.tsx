@@ -43,6 +43,7 @@ import {
   fetchOwnerInquiriesPage,
   fetchOwnerSubmissions,
   fetchOwnerSubmissionsPage,
+  fetchOwnerSubmissionsAwaitingReviewCount,
   fetchOwnerPublicProfileBusinessIds,
   setOwnerPublicProfileBusinessIds,
   fetchOwnerListings,
@@ -64,7 +65,6 @@ import { evaluatePasswordStrength } from '../../lib/password';
 import { normalizePkPhone } from '../../lib/phone';
 import { effectivePlanCode } from '../../lib/searchFilter';
 import { countEffectiveActiveOffers } from '../../lib/offers';
-import { countOwnerRequestsAwaitingReview } from '../../lib/ownerPortal';
 import type {
   AreaRow,
   CategoryRow,
@@ -358,6 +358,7 @@ export function OwnerBusinesses() {
   const { showToast } = useToast();
   const [listings, setListings] = useState<BusinessPublicView[]>([]);
   const [requests, setRequests] = useState<SubmissionRow[]>([]);
+  const [requestsAwaitingReviewCount, setRequestsAwaitingReviewCount] = useState(0);
   const [requestsHasMore, setRequestsHasMore] = useState(false);
   const [requestsLoadingMore, setRequestsLoadingMore] = useState(false);
   const requestOffsetRef = useRef(0);
@@ -368,20 +369,24 @@ export function OwnerBusinesses() {
   useEffect(() => {
     let active = true;
     if (!user) {
+      setRequestsAwaitingReviewCount(0);
       setLoading(false);
       return () => { active = false; };
     }
     setLoading(true);
+    setRequestsAwaitingReviewCount(0);
     requestOffsetRef.current = 0;
     setRequestsHasMore(false);
     Promise.all([
       fetchOwnerListings(user.id),
       fetchOwnerSubmissionsPage(user.id, 0, 20),
       fetchNotifications(user.id),
-    ]).then(([owned, requestPage, notifications]) => {
+      fetchOwnerSubmissionsAwaitingReviewCount(user.id),
+    ]).then(([owned, requestPage, notifications, awaitingReviewCount]) => {
       if (!active) return;
       setListings(owned);
       setRequests(requestPage.items);
+      setRequestsAwaitingReviewCount(awaitingReviewCount);
       setRequestsHasMore(requestPage.hasMore);
       requestOffsetRef.current = requestPage.items.length;
       setUnreadCount(notifications.filter((item) => !item.is_read).length);
@@ -473,7 +478,7 @@ export function OwnerBusinesses() {
           </Card>
           <Card className="p-4">
             <p className="text-xs text-on-surface-variant">Requests awaiting review</p>
-            <p className="text-2xl font-extrabold text-on-surface tabular-nums">{countOwnerRequestsAwaitingReview(requests)}</p>
+            <p className="text-2xl font-extrabold text-on-surface tabular-nums">{requestsAwaitingReviewCount}</p>
           </Card>
         </div>
 

@@ -1611,6 +1611,10 @@ export async function recordPlanInstallment(input: {
   return (data ?? {}) as Record<string, unknown>;
 }
 
+const OWNER_VISIBLE_SUBMISSION_TYPES: SubmissionType[] = [
+  'new_business', 'claim', 'plan_upgrade', 'owner_product', 'owner_service', 'owner_offer',
+];
+
 export async function fetchOwnerSubmissions(ownerId: string): Promise<SubmissionRow[]> {
   const client = getSupabaseClient();
   if (!client) return [];
@@ -1618,7 +1622,7 @@ export async function fetchOwnerSubmissions(ownerId: string): Promise<Submission
     .from('submissions')
     .select('id,type,business_id,payload,contact_name,contact_phone,submitted_by,status,created_at,updated_at')
     .eq('submitted_by', ownerId)
-    .in('type', ['new_business', 'claim', 'plan_upgrade', 'owner_product', 'owner_service', 'owner_offer'])
+    .in('type', OWNER_VISIBLE_SUBMISSION_TYPES)
     .order('created_at', { ascending: false })
     .limit(50);
   if (error) throw error;
@@ -1637,12 +1641,33 @@ export async function fetchOwnerSubmissionsPage(
     .from('submissions')
     .select('id,type,business_id,payload,contact_name,contact_phone,submitted_by,status,created_at,updated_at')
     .eq('submitted_by', ownerId)
-    .in('type', ['new_business', 'claim', 'plan_upgrade', 'owner_product', 'owner_service', 'owner_offer'])
+    .in('type', OWNER_VISIBLE_SUBMISSION_TYPES)
     .order('created_at', { ascending: false })
     .range(offset, offset + pageSize);
   if (error) throw error;
   const rows = (data ?? []) as SubmissionRow[];
   return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
+}
+
+export async function fetchOwnerSubmissionsAwaitingReviewCount(ownerId: string): Promise<number> {
+  if (!ownerId) return 0;
+  const client = getSupabaseClient();
+  if (client) {
+    const { count, error } = await client
+      .from('submissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('submitted_by', ownerId)
+      .in('type', OWNER_VISIBLE_SUBMISSION_TYPES)
+      .in('status', ['new', 'in_review']);
+    if (error) throw error;
+    return count ?? 0;
+  }
+
+  return loadDemoDb().submissions.filter((submission) =>
+    submission.submitted_by === ownerId &&
+    OWNER_VISIBLE_SUBMISSION_TYPES.includes(submission.type) &&
+    (submission.status === 'new' || submission.status === 'in_review')
+  ).length;
 }
 
 export async function fetchOwnerDashboardStats(

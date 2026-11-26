@@ -334,3 +334,13 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Recommended narrow fix: add a server-side exact count query scoped to the authenticated Owner, existing allowed submission types, and `new` / `in_review` statuses; retain the existing request-history pagination and RLS. Demo mode should count the full matching Owner request set. No schema migration or record mutation expected.
 - **Do not implement until Owner explicitly approves**, per the permanent serious-issue/change-approval rule.
 - Inquiry status behavior remains: Mark Read should not assign `handled_by`; Handled should set it to the current signed-in Owner. Owner manual acceptance is still pending.
+
+
+## Owner Portal Phase 1 — exact pending-request count fix (27 November 2026)
+
+- Owner explicitly approved the narrow counter fix after the audit identified undercounting when pending requests exist beyond the first 20 history rows.
+- Implemented a Supabase exact count query scoped to the signed-in Owner, existing Owner-visible request types (`new_business`, `claim`, `plan_upgrade`, `owner_product`, `owner_service`, `owner_offer`) and statuses `new` / `in_review`. RLS remains the security boundary.
+- Demo mode counts the full in-memory set using the same Owner/type/status filters.
+- Existing request-history pagination, sorting, Load older requests, and stored records are unchanged. No schema, migration, RLS, permission or data mutation.
+- Added a regression test with 28 Owner requests so pending rows beyond the first 20 must still be included; also excludes other-owner, correction-type and rejected rows.
+- Next: verify GitHub Actions typecheck/tests/build/Edge Function checks and the matching Cloudflare Pages deployment. Only after both pass, ask Owner to test My Businesses counter and inquiry Read/Handled behavior. Do not mark Phase 1 manually accepted until Owner confirms.

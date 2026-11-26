@@ -17,6 +17,7 @@ import {
   fetchOwnerReviews,
   fetchOwnerReviewsPage,
   fetchOwnerSubmissionsPage,
+  fetchOwnerSubmissionsAwaitingReviewCount,
   fetchUnreadNotificationCount,
   loadDemoDb,
   replyToReview,
@@ -117,6 +118,38 @@ test('Owner review and inquiry pages are bounded and do not overlap', async () =
 
   db.reviews = db.reviews.filter((row) => !reviewIds.includes(row.id));
   db.inquiries = db.inquiries.filter((row) => !inquiryIds.includes(row.id));
+});
+
+test('Owner pending request count includes matching requests beyond the first 20 and excludes other owners, types and final statuses', async () => {
+  const db = loadDemoDb();
+  const stamp = Date.now();
+  const ownerId = `owner-count-test-${stamp}`;
+  const rows: SubmissionRow[] = Array.from({ length: 28 }, (_, index) => ({
+    id: `owner-count-${stamp}-${index}`,
+    type: 'new_business',
+    business_id: null,
+    payload: {},
+    contact_name: null,
+    contact_phone: null,
+    submitted_by: ownerId,
+    status: index < 20 ? 'done' : (index % 2 === 0 ? 'new' : 'in_review'),
+    assigned_to: null,
+    admin_note: null,
+    created_at: new Date(stamp + index).toISOString(),
+    updated_at: new Date(stamp + index).toISOString(),
+  }));
+  rows.push(
+    { ...rows[0], id: `owner-count-other-${stamp}`, submitted_by: 'another-owner', status: 'new' },
+    { ...rows[0], id: `owner-count-wrong-type-${stamp}`, type: 'correction', status: 'new' },
+    { ...rows[0], id: `owner-count-rejected-${stamp}`, status: 'rejected' },
+  );
+  db.submissions.push(...rows);
+  try {
+    assert.equal(await fetchOwnerSubmissionsAwaitingReviewCount(ownerId), 8);
+  } finally {
+    const testIds = new Set(rows.map((row) => row.id));
+    db.submissions = db.submissions.filter((row) => !testIds.has(row.id));
+  }
 });
 
 test('Owner request count includes both new and in-review submissions', () => {
