@@ -67,7 +67,13 @@ export async function onRequestGet({ request }) {
     }, 8000);
   } catch {
     // Do not let a slow or unavailable image host hold the visitor's page open.
-    return imagePlaceholder();
+    const placeholder = imagePlaceholder();
+    try {
+      await caches.default.put(cacheKey, placeholder.clone());
+    } catch {
+      // Cache failure must not block the fallback image.
+    }
+    return placeholder;
   }
 
   const contentType = (upstream.headers.get('content-type') || '').toLowerCase();
