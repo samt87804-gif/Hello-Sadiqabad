@@ -166,13 +166,14 @@ Follow `docs/PROJECT_WORKING_RULES.md` as the highest authority. Work directly o
 - Applied migrations:
   - `20261126120000_admin_plan_finance_ledger_and_assignment`
   - `20261126124500_guard_business_plan_financial_assignment`
+  - `20261126130000_fix_owner_plan_financial_period_start`
 - `private.plan_assignments` snapshots business/owner, plan, standard price, agreed fee, waived amount, period, source and assignment kind. `private.plan_receipts` stores actual positive receipts and is append-only (UPDATE/DELETE rejected).
 - Both financial tables have RLS enabled, direct client privileges revoked and deny-all policies. Financial reads/writes are only through public RPCs with `private.is_super_admin()` checks. The RPCs use `SECURITY DEFINER` with fixed empty search paths; anonymous execute is revoked.
-- A business trigger blocks direct authenticated changes to `plan_code` / `plan_expires_at`; the existing verified Owner review RPC and the new Super Admin assignment RPC remain trusted SECURITY DEFINER paths.
+- A business trigger blocks direct authenticated changes to `plan_code` / `plan_expires_at`; the existing verified Owner review RPC and the new Super Admin assignment RPC remain trusted SECURITY DEFINER paths. A rollback test confirmed a non-admin Owner cannot call the Finance dashboard and direct table privileges are false for anon/authenticated.
 - The existing Owner request review RPC remains unchanged. Its status transition now triggers assignment/receipt creation in the same transaction only when `type='plan_upgrade'`, `status='done'` and `payload.payment_verified=true`. A unique source-submission link makes it idempotent.
 - Historical backfill inserted only explicitly verified Owner records: 1 assignment, 1 receipt, Rs. 700 actual collection. It did not infer receipts from current business plan labels.
-- SQL verification completed inside rollback transactions: direct authenticated plan-field update rejected; Super Admin RPC allowed; partial payment and two instalments reduced Rs. 400 outstanding to zero; full Premium waiver recorded Rs. 1,500 waived with Rs. 0 received and Rs. 0 outstanding. Test mutations were rolled back.
-- Dashboard/ledger RPC verification returned Rs. 700 actual receipts, Rs. 0 outstanding and Rs. 0 waived. The one historical receipt is visible with source submission, payment method and reference.
-- GitHub CI: build, TypeScript, automated tests, production build and Edge Functions checks passed for commit `2c7a793817515b299ddfadee14fc5068062416c8`; latest migration commit `7bc894de6db4c7bc857560fa50dec2cbf60d43e5` also passed CI.
-- Cloudflare Pages production deployment `b3727b0f-6dfd-4c73-bea0-591bce4d5748` succeeded for `7bc894de6db4c7bc857560fa50dec2cbf60d43e5`.
+- SQL verification completed inside rollback transactions: direct authenticated plan-field update rejected; Super Admin RPC allowed; partial payment and two instalments reduced Rs. 400 outstanding to zero; full Premium waiver recorded Rs. 1,500 waived with Rs. 0 received and Rs. 0 outstanding; simulated verified Owner approval created exactly one linked assignment and receipt and used the correct future renewal period start. Test mutations were rolled back.
+- Dashboard/ledger RPC verification returned Rs. 700 actual receipts (today/month/lifetime), Rs. 0 outstanding, Rs. 0 waived, one receipt row and zero outstanding rows. The one historical receipt is visible with source submission, payment method and reference.
+- GitHub CI: build, TypeScript, automated tests, production build and Edge Functions checks passed for latest commit `d5957b63df86d401df5f60dafb8e68fcf5ec8e6b` (run `45877883972`).
+- Cloudflare Pages production deployment `4e5376fd-ce54-478f-a00f-0c021e6d5052` succeeded for `d5957b63df86d401df5f60dafb8e68fcf5ec8e6b`; canonical alias remains `https://hellosadiqabad.com`.
 - Owner manual acceptance remains pending; no browser/device confirmation has been claimed.
