@@ -137,7 +137,7 @@ No payment gateway integration, automated collection, refunds, debt write-off, o
 - [x] Phase B: additive schema, RLS, immutable ledger and Super Admin RPCs; rechecked live migration ledger, triggers and privileges before DDL.
 - [x] Phase C: direct plan assignment and replacement of the raw Plan Tier dropdown with the financial workflow.
 - [x] Phase D: Owner-request approvals create linked assignment/receipt records via an after-update trigger without changing the existing Owner-facing rules.
-- [x] Phase E: Super Admin Finance dashboard, receipt ledger, outstanding balances, instalment recording and CSV export.
+- [x] Phase E: Super Admin Finance dashboard, searchable receipt ledger, full plan assignment history (including waived/Free events), outstanding balances, instalment recording and CSV exports.
 - [x] Phase F: SQL rollback/adversarial checks, TypeScript/build/CI and Cloudflare production deployment verified. Browser/device workflow smoke tests remain part of Owner acceptance.
 - [ ] Phase G: Owner manual acceptance. Do not mark accepted until the Owner confirms.
 
@@ -156,6 +156,7 @@ No payment gateway integration, automated collection, refunds, debt write-off, o
 11. Duplicate RPC retries and duplicate source submissions cannot create duplicate receipts.
 12. Existing plan limits, features, Website URL entitlement, listings, Owner records and historical submissions remain unchanged.
 13. Exported date/plan/method filters match the visible ledger totals.
+14. Plan assignment history includes every assignment (including Free, fully waived and zero-receipt rows) and keeps standard fee, agreed fee, waived, received and outstanding separate; assignment CSV export matches the visible filtered rows.
 
 ## 7. Release safeguards
 
@@ -167,6 +168,8 @@ Follow `docs/PROJECT_WORKING_RULES.md` as the highest authority. Work directly o
   - `20261126120000_admin_plan_finance_ledger_and_assignment`
   - `20261126124500_guard_business_plan_financial_assignment`
   - `20261126130000_fix_owner_plan_financial_period_start`
+  - `20261126133000_allow_fk_cleanup_on_immutable_plan_receipts`
+  - `20261126140000_admin_finance_assignment_history`
 - `private.plan_assignments` snapshots business/owner, plan, standard price, agreed fee, waived amount, period, source and assignment kind. `private.plan_receipts` stores actual positive receipts and is append-only (UPDATE/DELETE rejected).
 - Both financial tables have RLS enabled, direct client privileges revoked and deny-all policies. Financial reads/writes are only through public RPCs with `private.is_super_admin()` checks. The RPCs use `SECURITY DEFINER` with fixed empty search paths; anonymous execute is revoked.
 - A business trigger blocks direct authenticated changes to `plan_code` / `plan_expires_at`; the existing verified Owner review RPC and the new Super Admin assignment RPC remain trusted SECURITY DEFINER paths. A rollback test confirmed a non-admin Owner cannot call the Finance dashboard and direct table privileges are false for anon/authenticated.
@@ -174,6 +177,6 @@ Follow `docs/PROJECT_WORKING_RULES.md` as the highest authority. Work directly o
 - Historical backfill inserted only explicitly verified Owner records: 1 assignment, 1 receipt, Rs. 700 actual collection. It did not infer receipts from current business plan labels.
 - SQL verification completed inside rollback transactions: direct authenticated plan-field update rejected; Super Admin RPC allowed; partial payment and two instalments reduced Rs. 400 outstanding to zero; full Premium waiver recorded Rs. 1,500 waived with Rs. 0 received and Rs. 0 outstanding; simulated verified Owner approval created exactly one linked assignment and receipt and used the correct future renewal period start. Test mutations were rolled back.
 - Dashboard/ledger RPC verification returned Rs. 700 actual receipts (today/month/lifetime), Rs. 0 outstanding, Rs. 0 waived, one receipt row and zero outstanding rows. The one historical receipt is visible with source submission, payment method and reference.
-- GitHub CI: build, TypeScript, automated tests, production build and Edge Functions checks passed for latest commit `d5957b63df86d401df5f60dafb8e68fcf5ec8e6b` (run `45877883972`).
-- Cloudflare Pages production deployment `4e5376fd-ce54-478f-a00f-0c021e6d5052` succeeded for `d5957b63df86d401df5f60dafb8e68fcf5ec8e6b`; canonical alias remains `https://hellosadiqabad.com`.
+- GitHub CI: build, TypeScript, automated tests, production build and Edge Functions checks passed for latest UI commit `043f8c36d75d5622258dfc893f21fd8ad0270462` (run `45878370517`).
+- Cloudflare Pages production deployment `ef26474d-0bc5-4745-810c-b19f604bfeec` succeeded for `043f8c36d75d5622258dfc893f21fd8ad0270462`; canonical alias remains `https://hellosadiqabad.com`.
 - Owner manual acceptance remains pending; no browser/device confirmation has been claimed.
