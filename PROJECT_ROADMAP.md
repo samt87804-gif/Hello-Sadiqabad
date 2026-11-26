@@ -1214,3 +1214,17 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Phase 3C implemented and deployed: My Businesses request history loads 20 records at a time with Load older requests. CI 45893853551 and Pages deployment 984fd83b-5b23-4aed-a659-942c50480be2 passed.
 - [ ] Phase 3D: authenticated browser/device checks and remaining search/filter improvements. Then continue Phases 4–6.
 - Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.
+
+
+## Phase 4B — Owner Gallery Management (owner approved 27 November 2026)
+
+- Active feature plan: [docs/OWNER_GALLERY_MANAGEMENT_PLAN.md](docs/OWNER_GALLERY_MANAGEMENT_PLAN.md).
+- [x] Read current rules, roadmap, handoff, Add Business active approval plan, relevant Owner/Admin source, migrations and live database/RLS/plan entitlements.
+- [x] Applied additive live migration `20261127110000_owner_gallery_moderation`: Owner upload records for `gallery`, Owner-scoped asset reads, and server-enforced plan limits/ownership/private upload metadata checks.
+- [x] Applied additive live migration `20261127120000_owner_gallery_removal_requests`: Owner-authorized removal requests and Admin finalization status.
+- [x] Extended and deployed existing `create-business-media-upload` (version 4) and `review-business-media` (version 7); no parallel queue or new Supabase project.
+- [x] Added Owner gallery upload, approval history and managed-photo removal request UI; Admin processes gallery approval/rejection/removal in the existing Business Field Approval business-media area.
+- [ ] Latest corrected CI and matching Cloudflare Pages production deployment; intermediate CI found a TypeScript status-union mismatch, corrected in commit `0b510799652d5b5e810682c89011d74be6f5acc1`; final run pending at this checkpoint.
+- [ ] Owner manual acceptance: private-before-approval, public-after-approval, rejection, removal request/approval and plan limits.
+- Existing legacy gallery URLs are preserved. Owner removal request button applies to photos managed through the new asset workflow; legacy URLs without a media-asset record remain Admin-managed.
+- No existing business gallery URL, Owner account or business record was modified during implementation.
