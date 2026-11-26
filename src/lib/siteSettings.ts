@@ -75,7 +75,7 @@ export function parseSiteSettings(rows: SiteSettingRow[] = SEED_SITE_SETTINGS): 
       const value = map.get('plan_payment_methods');
       if (!value || typeof value !== 'object' || Array.isArray(value)) return DEFAULT_PLAN_PAYMENT_SETTINGS;
       const record = value as Partial<PlanPaymentSettings>;
-      const methods = record.methods && typeof record.methods === 'object' ? record.methods : {};
+      const methods = (record.methods && typeof record.methods === 'object' ? record.methods : {}) as Partial<Record<PlanPaymentMethodKey, PlanPaymentMethod>>;
       return {
         instructions_en: typeof record.instructions_en === 'string' ? record.instructions_en : DEFAULT_PLAN_PAYMENT_SETTINGS.instructions_en,
         instructions_ur: typeof record.instructions_ur === 'string' ? record.instructions_ur : DEFAULT_PLAN_PAYMENT_SETTINGS.instructions_ur,

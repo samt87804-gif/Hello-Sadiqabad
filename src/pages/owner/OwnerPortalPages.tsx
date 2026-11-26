@@ -436,6 +436,7 @@ export function OwnerBusinesses() {
 }
 
 export function OwnerDashboard() {
+  const { profile } = useAuth();
   const data = useOwnerPortalData();
   const biz = data.activeBusiness;
   const [siteSettings, setSiteSettings] = useState<SiteSettingsMap>(DEFAULT_SITE_SETTINGS);
