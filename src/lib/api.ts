@@ -2101,6 +2101,21 @@ export async function updateInquiryStatus(
   }
 }
 
+export async function fetchUnreadNotificationCount(userId: string): Promise<number> {
+  if (!userId) return 0;
+  const client = getSupabaseClient();
+  if (client) {
+    const { count, error } = await client
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
+    if (error) throw error;
+    return count ?? 0;
+  }
+  return loadDemoDb().notifications.filter((notification) => notification.user_id === userId && !notification.is_read).length;
+}
+
 export async function fetchNotifications(userId: string): Promise<NotificationRow[]> {
   const client = getSupabaseClient();
   if (client) {
