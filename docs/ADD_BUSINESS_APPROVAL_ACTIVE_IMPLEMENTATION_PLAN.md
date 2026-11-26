@@ -166,12 +166,12 @@ Before each phase inspect current main, components, routes, API calls, migration
 - [ ] Test anonymous read denial before approval and public access only after promotion (manual Storage acceptance still open).
 
 ### Phase E — Existing Admin workflow clarity and audit
-- [~] Add navigation groups and purpose descriptions for the six pages (current feature PR; not yet merged).
+- [x] Add navigation groups and purpose descriptions for the six pages; merged to main and production deployed.
 - [x] Confirm Moderation Queue excludes new Add Business requests from legacy one-click approval and points Admins to Business Field Approval.
-- [~] Add before/after audit migration and viewer support in the current feature PR; migration is not yet applied to production.
+- [x] Add before/after audit migration and viewer support; migration applied to production on 26 November 2026 and rollback verification passed.
 - [x] Confirm Data Quality is an issue monitor only; explicit Admin action is required for corrections.
 - [x] Filter Owner Registration Requests to standalone rows only; linked Add Business invitations are managed in Business Field Approval.
-- [~] Current feature PR removes manual Owner creation and temporary-password setting; existing-account management remains.
+- [x] Remove manual Owner creation and temporary-password setting; existing-account management and secure password-reset link remain.
 
 ### Phase F — End-to-end QA and release
 - [ ] Test new Add Business request with fields/media.
@@ -187,10 +187,12 @@ Before each phase inspect current main, components, routes, API calls, migration
 
 ## 10. Current status and next action
 
-**Plan status (26 November 2026):** Phase A is complete. The first Phase B/C production implementation is on main commit `84d72a4746d69a08eeb87238856a3b92a687b7ca`, passed GitHub Actions run `45722802681`, and is deployed to Cloudflare Pages production. The bulk review RPC, plan-gated decision deferral, linked Owner read policy and invitation/media Edge Functions are live. See [BUSINESS_APPROVAL_PHASE_BC_IMPLEMENTATION_CHECKPOINT.md](BUSINESS_APPROVAL_PHASE_BC_IMPLEMENTATION_CHECKPOINT.md).
+**Verified production checkpoint — 26 November 2026:** Phases A–E code work is merged to `main` in merge commit `fd16c05c7d054f3e98dff1e73dd9ebaa3bf80154`. GitHub Actions run `45724137772` passed both `build` and `edge-functions` jobs. Cloudflare Pages production deployment `eac33069-409b-480a-878f-c3262e9963c5` succeeded for that exact main commit; canonical alias is `https://hellosadiqabad.com`.
 
-**Current feature branch:** `feature/admin-business-workflow-phase-e`. It adds collapsible sections, clearer Admin navigation, a stricter Owners page (no manual temporary-password account creation), readable before/after audit details and a business audit migration. These changes are not merged or deployed yet. The audit migration is intentionally not applied to production before PR approval.
+**Audit migration:** `20261126075257_business_admin_field_change_audit` is applied and recorded in the live Supabase migration ledger. A transaction using the existing Super Admin identity changed a business name, verified `source=admin_direct_edit` and exact old/new values in `audit_logs.details.changes`, then rolled back. Follow-up read confirmed the original business name remains unchanged and no test audit row remains. The migration excludes private Owner identity fields and usage counters and skips detailed business diffs during field-review RPC operations.
 
-**Production acceptance still open:** authenticated Admin popup walkthrough, real invite success/failure/retry with an owner-approved test account, anonymous Storage read denial / post-approval media access, Owner Portal isolation and Owner-change moderation journey. No invitation email or Auth account was created during the current tests.
+**Current live data snapshot:** 4 active `new_business` submissions; 36 `pending_review` field rows; 100 `approved_published` field rows; 2 `pending_review` media assets. The `hs-pending-business-media` bucket remains private and its read policies are limited to authenticated Admin permission checks. No invitation email, Auth account, production submission, media object or existing business data was created/deleted/changed by these verification tests.
 
-**Next action:** finish Phase E on the feature branch, run CI and open a Pull Request. After approval/merge, apply the Admin before/after audit migration and complete Phase F end-to-end acceptance. Do not mark the whole workflow complete until these gates are evidenced.
+**Remaining Phase D/F acceptance gates:** authenticated Admin popup walkthrough; anonymous Storage read denial and successful public media access only after approved promotion; invitation unchecked/success/failure/retry plus Owner self-service password setup using an owner-approved test account; Owner Portal cross-owner isolation; Owner edit → Moderation Queue → approval while the prior public value remains visible; and six Admin pages/permissions/mobile/legacy submission regression. These require an authenticated browser session and/or an owner-authorized test account. Do not use real Owner accounts or send invitations without explicit owner authorization.
+
+**Next action:** complete the remaining controlled acceptance tests without changing live customer data. Keep all future repository changes directly on `main`; no feature branches or Pull Requests unless the owner explicitly changes this rule.
