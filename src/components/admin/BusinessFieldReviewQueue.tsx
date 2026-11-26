@@ -25,7 +25,7 @@ interface BusinessMedia {
   id: string;
   submission_id: string | null;
   business_id: string | null;
-  media_field: 'logo' | 'cover';
+  media_field: 'logo' | 'cover' | 'gallery';
   storage_path: string;
   status: MediaStatus;
   created_at: string;
@@ -619,7 +619,7 @@ export function BusinessFieldReviewQueue({
             {visibleOtherMedia.map((asset) => (
               <Card key={asset.id} className="p-4 space-y-3">
                 {asset.preview_url
-                  ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Business logo preview' : 'Business cover preview'} className="w-full h-40 object-contain rounded-xl bg-surface-container-low" />
+                  ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Business logo preview' : asset.media_field === 'cover' ? 'Business cover preview' : 'Business gallery photo preview'} className="w-full h-40 object-contain rounded-xl bg-surface-container-low" />
                   : <div className="h-40 rounded-xl bg-surface-container-low flex items-center justify-center text-xs text-on-surface-variant">Private image preview unavailable</div>}
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-bold capitalize">{asset.media_field} · {statusLabel(asset.status)}</p>
@@ -745,7 +745,7 @@ export function BusinessFieldReviewQueue({
             <section className="rounded-xl border border-outline-variant/40 p-3 space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
-                  <h3 className="font-bold text-sm">Logo & Cover Images</h3>
+                  <h3 className="font-bold text-sm">Business Images</h3>
                   <span className="text-xs text-on-surface-variant">{activeMedia.length} submitted image(s)</span>
                 </div>
                 <div className="flex gap-2">
@@ -754,7 +754,7 @@ export function BusinessFieldReviewQueue({
                 </div>
               </div>
               {activeMedia.length === 0 ? (
-                <p className="text-xs text-on-surface-variant">No logo or cover images were submitted with this request.</p>
+                <p className="text-xs text-on-surface-variant">No logo, cover or gallery images were submitted with this request.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {activeMedia.map((asset) => {
@@ -762,7 +762,7 @@ export function BusinessFieldReviewQueue({
                     return (
                       <div key={asset.id} className="rounded-xl bg-surface-container-low/70 p-3 space-y-2">
                         {asset.preview_url
-                          ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Submitted business logo' : 'Submitted business cover'} className="w-full h-36 object-contain rounded-lg bg-surface-container-lowest" />
+                          ? <img src={asset.preview_url} alt={asset.media_field === 'logo' ? 'Submitted business logo' : asset.media_field === 'cover' ? 'Submitted business cover' : 'Submitted business gallery photo'} className="w-full h-36 object-contain rounded-lg bg-surface-container-lowest" />
                           : <div className="h-36 rounded-lg bg-surface-container-lowest flex items-center justify-center text-xs text-on-surface-variant">Private image preview unavailable</div>}
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold capitalize">{asset.media_field}</span>
@@ -792,7 +792,7 @@ export function BusinessFieldReviewQueue({
                         )}
                         {rejected && <p className="text-[11px] text-error">This image will be rejected and removed from private pending storage.</p>}
                         {unpublishMediaIds.includes(asset.id) && <p className="text-[11px] text-error">This image will be removed from the public listing.</p>}
-                        {asset.media_field === 'cover' && <p className="text-[10px] text-on-surface-variant">Cover promotion requires a Basic or Premium plan.</p>}
+                        {asset.media_field === 'cover' && <p className="text-[10px] text-on-surface-variant">Cover promotion requires a Basic or Premium plan.</p>}{asset.media_field === 'gallery' && <p className="text-[10px] text-on-surface-variant">Gallery photos count toward the business plan photo limit.</p>}
                       </div>
                     );
                   })}
