@@ -31,6 +31,7 @@ import {
   fetchBusinessOffers,
   fetchBusinessProducts,
   fetchNotifications,
+  fetchUnreadNotificationCount,
   fetchOwnerDashboardStats,
   fetchOwnerPaymentHistory,
   submitOwnerPaymentCorrectionRequest,
@@ -100,7 +101,7 @@ import { DemoModeNotice } from '../../components/ui/DemoModeNotice';
 interface OwnerPortalDataOptions {
   categories?: boolean; areas?: boolean; plans?: boolean; stats?: boolean;
   offers?: boolean; products?: boolean; reviews?: boolean; inquiries?: boolean;
-  paginatedReviews?: boolean; paginatedInquiries?: boolean; submissions?: boolean;
+  paginatedReviews?: boolean; paginatedInquiries?: boolean; submissions?: boolean; notifications?: boolean;
   profileBusinessIds?: boolean;
 }
 const OWNER_DASHBOARD_DATA: OwnerPortalDataOptions = { stats: true, offers: true, reviews: true, inquiries: true };
@@ -112,6 +113,7 @@ const OWNER_INQUIRIES_DATA: OwnerPortalDataOptions = { paginatedInquiries: true 
 const OWNER_ANALYTICS_DATA: OwnerPortalDataOptions = { stats: true };
 const OWNER_PLAN_DATA: OwnerPortalDataOptions = { plans: true, submissions: true };
 const OWNER_PUBLIC_PROFILE_DATA: OwnerPortalDataOptions = { profileBusinessIds: true };
+const OWNER_NOTIFICATIONS_DATA: OwnerPortalDataOptions = { notifications: true };
 
 function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPortalDataOptions = {}) {
   const { user } = useAuth();
@@ -128,6 +130,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
   const includePaginatedInquiries = options.paginatedInquiries === true;
   const includeSubmissions = options.submissions === true;
   const includeProfileBusinessIds = options.profileBusinessIds === true;
+  const includeNotifications = options.notifications === true;
   const [listings, setListings] = useState<BusinessPublicView[]>([]);
   const [selectedId, setSelectedId] = useState<string>(routeListingId ?? '');
   const [categories, setCategories] = useState<CategoryRow[]>([]);
@@ -143,6 +146,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
   const [reviewLoadingMore, setReviewLoadingMore] = useState(false);
   const [inquiryLoadingMore, setInquiryLoadingMore] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [profileBusinessIds, setProfileBusinessIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -168,14 +172,14 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
     if (!user) {
       setListings([]); setSelectedId(''); setCategories([]); setAreas([]); setPlans([]);
       setStats(null); setOffers([]); setProducts([]); setNotifications([]);
-      setSubmissions([]); setProfileBusinessIds([]); setLoading(false);
+      setSubmissions([]); setProfileBusinessIds([]); setUnreadCount(0); setLoading(false);
       return;
     }
 
     setLoading(true); setStats(null); setOffers([]); setProducts([]);
     try {
-      const [owned, notifs, cats, ar, pls, ownerRequests, profileSelection] = await Promise.all([
-        fetchOwnerListings(user.id), fetchNotifications(user.id),
+      const [owned, notificationData, cats, ar, pls, ownerRequests, profileSelection] = await Promise.all([
+        fetchOwnerListings(user.id), includeNotifications ? fetchNotifications(user.id) : fetchUnreadNotificationCount(user.id),
         includeCategories ? fetchAllCategories() : Promise.resolve([]),
         includeAreas ? fetchAllAreas() : Promise.resolve([]),
         includePlans ? fetchPlans() : Promise.resolve([]),
@@ -183,7 +187,11 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
         includeProfileBusinessIds ? fetchOwnerPublicProfileBusinessIds(user.id) : Promise.resolve([]),
       ]);
       if (requestId !== reloadSequenceRef.current) return;
-      setListings(owned); setNotifications(notifs); setCategories(cats); setAreas(ar);
+      const notificationRows = includeNotifications ? notificationData as NotificationRow[] : [];
+      const nextUnreadCount = includeNotifications
+        ? notificationRows.filter((notification) => !notification.is_read).length
+        : notificationData as number;
+      setListings(owned); setNotifications(notificationRows); setUnreadCount(nextUnreadCount); setCategories(cats); setAreas(ar);
       setPlans(pls); setSubmissions(ownerRequests); setProfileBusinessIds(profileSelection);
 
       let persistedId = '';
@@ -223,7 +231,7 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
   }, [
     user, selectedId, routeListingId, days, showToast, includeCategories, includeAreas,
     includePlans, includeStats, includeOffers, includeProducts, includeReviews, includeInquiries,
-    includePaginatedReviews, includePaginatedInquiries, includeSubmissions, includeProfileBusinessIds,
+    includePaginatedReviews, includePaginatedInquiries, includeSubmissions, includeProfileBusinessIds, includeNotifications,
   ]);
 
   useEffect(() => {
@@ -278,7 +286,6 @@ function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPo
   }, [includePaginatedInquiries, selectedId, inquiryHasMore, inquiryLoadingMore, showToast]);
 
   const activeBusiness = listings.find((b) => b.id === selectedId) ?? listings[0] ?? null;
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
   return {
     listings, activeBusiness, selectedId, setSelectedId: selectBusiness, categories, areas, plans,
     stats, offers, products, reviews, inquiries, reviewHasMore, inquiryHasMore,
@@ -1210,8 +1217,8 @@ export function OwnerPayments() {
       setUnreadCount(0);
       return () => { active = false; };
     }
-    void fetchNotifications(user.id)
-      .then((items) => { if (active) setUnreadCount(items.filter((item) => !item.is_read).length); })
+    void fetchUnreadNotificationCount(user.id)
+      .then((count) => { if (active) setUnreadCount(count); })
       .catch(() => { if (active) setUnreadCount(0); });
     return () => { active = false; };
   }, [user]);
@@ -1506,7 +1513,7 @@ export function OwnerPublicProfileSettings() {
 
 export function OwnerNotifications() {
   const { user } = useAuth();
-  const data = useOwnerPortalData();
+  const data = useOwnerPortalData(30, undefined, OWNER_NOTIFICATIONS_DATA);
   return (
     <OwnerShell
       unreadCount={data.unreadCount}
