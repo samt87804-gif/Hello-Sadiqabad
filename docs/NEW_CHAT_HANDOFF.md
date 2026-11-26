@@ -214,3 +214,25 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 2. The start date should default to today (Pakistan time); the end date should default to 30 days later.
 3. Change the end date to one day before the start date and attempt to save. A clear validation message should prevent saving.
 4. Open an existing offer for editing and confirm its saved dates remain unchanged unless you intentionally edit them.
+
+
+## Current workstream — Owner Gallery Management Phase 4B (Owner approved 27 November 2026)
+
+- Active plan: `docs/OWNER_GALLERY_MANAGEMENT_PLAN.md`.
+- Owner Portal → My Businesses → Edit Listing → Preview now has a Manage photo gallery section. Owner uploads JPG/PNG/WebP; image is compressed to smaller WebP before upload, and if compression cannot reduce size the upload is blocked.
+- New gallery images go to private `hs-pending-business-media` through the existing server-issued signed-upload workflow. The existing Admin business-media review area handles approval/rejection; no separate queue was added.
+- Approval promotes the photo to the public business media bucket and adds its URL to `businesses.gallery_urls`. Owner removal request keeps a published photo public until Admin approves removal.
+- Plan limits from live plans remain unchanged: Free 0, Basic 5, Premium 15. Database RPC locks the business row and checks owner, published status, plan limit, storage path, actual MIME and size. Logo/cover monthly 2-request quota remains separate.
+- Live additive migrations applied: `20261127110000_owner_gallery_moderation`, `20261127120000_owner_gallery_removal_requests`.
+- Existing Supabase Edge Functions deployed: `create-business-media-upload` version 4, `review-business-media` version 7.
+- Owner removal request currently supports gallery photos created by this managed-media workflow. Older legacy gallery URLs without matching asset records remain Admin-managed; existing gallery URLs were preserved.
+- Intermediate CI run 45897237220 failed because Admin UI's media status union did not yet include `removal_requested`. Fixed in commit `0b510799652d5b5e810682c89011d74be6f5acc1`; verify the newest CI and Cloudflare Pages deployment before calling the release deployed.
+- No existing business, Owner account, gallery URL or production media object was modified. Schema/functions only were changed.
+- Owner manual acceptance is still required after successful deployment:
+  1. Sign in as Owner with a published Basic/Premium business → My Businesses → Edit Listing → Preview.
+  2. Upload one gallery photo; expect success message and no public visibility yet.
+  3. Super Admin → Business Field Approval → approve that photo; refresh public business profile and verify photo appears.
+  4. Upload another photo and reject it; verify it never appears publicly and Owner history says rejected.
+  5. On a managed approved photo, click Request removal; verify it remains public while awaiting Admin.
+  6. Admin existing media-review card → Approve Owner removal; verify photo disappears from public gallery.
+  7. Confirm Free plan cannot upload; Basic max 5; Premium max 15; logo/cover quota still works.
