@@ -1181,3 +1181,18 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Verified Owner request history backfilled idempotently: 1 assignment and 1 receipt, Rs. 700 actual collection. Finance dashboard and ledger RPCs returned the expected figures.
 - [x] GitHub CI passed on latest UI commit `2573a4782ac3a10961be45a72df001eaca5752ed` (run `45878673559`); Cloudflare Pages production deployment `ba2ba359-801a-4a8c-ae1b-c917aeaa6079` succeeded for that commit. Finance CSV exports also guard against spreadsheet formula injection.
 - [ ] Owner still needs to manually test the production Admin UI. CI/deployment and SQL rollback tests do not replace Owner acceptance.
+
+
+## Owner Financial Profiles, Payment History & Approval Workflows — 27 November 2026
+
+- [x] Owner approved the Admin Owner Financial Profile, Owner Portal read-only Payment History, audited receipt correction/reversal, Owner correction requests and Admin-approved Owner Full Name/Phone changes.
+- [x] Read current canonical project rules, roadmap, handoff, Finance plan, relevant Owner/Admin components, auth/API code, live profile/finance schema and triggers, Super Admin helpers, and live migration ledger.
+- [x] Added the permanent documentation-cycle rule: reread the canonical rules, roadmap, handoff, active plan and directly relevant source before each task/phase; keep the feature plan, roadmap and handoff current; tick only verified work. Commit `a74df37eb8dcc45887ac05b897cf91756b0a39e6`.
+- [x] Added [Owner Financial Profiles, Payment History & Approval Workflows plan](docs/OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md) with the approved scope, accounting/security rules, phases and acceptance tests.
+- [ ] Phase B: additive private schema, RLS, immutable receipt adjustments, Owner-scoped RPCs, Super Admin review/profile RPCs and direct Owner profile-edit guard.
+- [ ] Phase C: Owner Portal read-only My Payments page and approval-based profile change request.
+- [ ] Phase D: Admin Owners Financial Profile and correction/reversal/profile approval workflows.
+- [ ] Phase E: net adjusted receipts reflected across Finance dashboard, ledger, assignments, balances and CSV.
+- [ ] Phase F: rollback/adversarial SQL tests, TypeScript/tests/build/CI, production deployment and endpoint checks.
+- [ ] Phase G: Owner manual acceptance. Do not mark accepted until explicitly confirmed.
+- Live schema/migration audit: latest migration version `20261126184410`; no production schema or UI changes have yet been applied for this feature.
