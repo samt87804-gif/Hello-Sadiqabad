@@ -86,9 +86,18 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Phase 0 technical implementation is deployed; Owner manual acceptance is not yet confirmed. Continue to Phase 1 only after this manual check or record the Owner's decision to proceed with acceptance pending.
 
 
-### Phase 1 — data correctness (implementation awaiting CI)
+### Phase 1 — data correctness (implemented, CI-passed and deployed)
 
 - Owner's pending-review counter now counts both `new` and `in_review` submissions.
 - `updateInquiryStatus` now assigns `handled_by` only when status becomes `handled`; a simple `read` action changes only status/time and preserves the handler field. Demo mode follows the same behavior.
-- Added tests for both states in `src/lib/ownerPortal.test.ts`.
+- Added tests for both behaviors in `src/lib/ownerPortal.test.ts`.
+- Commit `b63a8a4a42a6dffd90f435e7ae1bb8e0d002015b`; CI run `45891440166` passed; Cloudflare Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` succeeded.
 - Owner authorized continuing the full roadmap while Phase 0 manual acceptance remains pending; do not mark Phase 0 accepted until the Owner completes the practical checks above.
+
+
+### Phase 1 practical acceptance — still required
+
+1. Owner Portal → My Businesses: “Requests awaiting review” should include `new` and `in_review`, but exclude `done` and `rejected`.
+2. Owner Portal → a business → Inquiries: choose a new/test inquiry and click **Mark Read**. It should become **READ** without assigning you as the handler.
+3. Click **Handled** on that test inquiry. It should become **HANDLED** and record the current signed-in user as handler.
+4. Report any mismatch or error. Avoid changing a real customer inquiry unless it is appropriate to mark it handled.

@@ -1,6 +1,6 @@
 # Owner Portal — Audit & Improvement Implementation Plan
 
-**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 technical implementation is deployed; Owner manual acceptance is pending. Phase 1 data-correctness fixes are implemented and awaiting CI/deployment verification. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
+**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 technical implementation is deployed; Owner manual acceptance is pending. Phase 1 data-correctness changes are implemented, CI-verified and deployed. Owner manual acceptance for both phases remains pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
 
 ## Working agreement
 
@@ -33,7 +33,8 @@
 - [x] Count both `new` and `in_review` Owner business requests in the pending-review summary; added a regression test.
 - [x] Set `handled_by` only when an inquiry is marked `handled`; marking it `read` no longer assigns the current user as handler. Demo and live API paths match; added regression assertions.
 - [x] Added regression tests for pending-review counting and inquiry handler tracking.
-- [ ] Verify CI, production deployment, and the Owner/Admin inquiry flows.
+- [x] CI and production deployment verified: commit `b63a8a4a42a6dffd90f435e7ae1bb8e0d002015b`, CI run `45891440166`, Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b`.
+- [ ] Owner manual test of pending-review count and inquiry read/handled workflow.
 
 ## Phase 2 — Owner experience
 
@@ -82,3 +83,11 @@
 - Post-migration permission check: authenticated has no table-wide SELECT on `public.submissions`; SELECT on `admin_note` and `assigned_to` is false; required safe columns remain selectable.
 - Supabase security advisor still reports the generic authenticated SECURITY DEFINER warning for this new RPC. This is intentional: it is the only Admin read path for private notes, checks Super Admin / `moderation.review` inside the function, and non-Admin denial was tested. Other existing security/performance advisor findings remain separately tracked; no broad security relaxation was made.
 - Remaining acceptance: signed-in Owner/Admin browser testing by the Owner. No authenticated browser session was used by the assistant.
+
+
+## Phase 1 release evidence
+
+- Commit: `b63a8a4a42a6dffd90f435e7ae1bb8e0d002015b`.
+- GitHub Actions CI run `45891440166` passed: TypeScript, automated tests (including the new pending-count and inquiry-handler regression tests), production build and Edge Function typecheck.
+- Cloudflare Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` succeeded for the same commit.
+- Owner manual acceptance remains pending.
