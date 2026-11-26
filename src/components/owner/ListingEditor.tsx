@@ -53,7 +53,7 @@ import {
 
 interface OwnerImageChangeRequest {
   id: string;
-  media_field: 'logo' | 'cover';
+  media_field: 'logo' | 'cover' | 'gallery';
   status: string;
   requested_at: string;
 }
@@ -125,9 +125,11 @@ export function ListingEditor({
   const [saving, setSaving] = useState(false);
   const [imageRequests, setImageRequests] = useState<OwnerImageChangeRequest[]>([]);
   const [loadingImageRequests, setLoadingImageRequests] = useState(false);
-  const [imageChangeBusy, setImageChangeBusy] = useState<'logo' | 'cover' | ''>('');
+  const [imageChangeBusy, setImageChangeBusy] = useState<'logo' | 'cover' | 'gallery' | ''>('');
   const [logoChangeFile, setLogoChangeFile] = useState<File | null>(null);
   const [coverChangeFile, setCoverChangeFile] = useState<File | null>(null);
+  const [galleryChangeFile, setGalleryChangeFile] = useState<File | null>(null);
+  const [galleryRequests, setGalleryRequests] = useState<Array<{id:string;media_field:string;status:string;created_at:string}>>([]);
 
   const [form, setForm] = useState<Partial<BusinessRow>>(() => buildInitialForm(business));
   const [samePhone, setSamePhone] = useState(() => {
@@ -162,13 +164,15 @@ export function ListingEditor({
     if (!client) return;
     setLoadingImageRequests(true);
     try {
-      const { data, error } = await client.from('business_image_change_requests')
+      const [{ data, error }, { data: galleryData, error: galleryError }] = await Promise.all([client.from('business_image_change_requests')
         .select('id,media_field,status,requested_at')
         .eq('business_id', business.id)
         .order('requested_at', { ascending: false })
-        .limit(12);
+        .limit(12), client.from('business_media_assets').select('id,media_field,status,created_at').eq('business_id', business.id).eq('media_field', 'gallery').order('created_at', { ascending: false }).limit(20)]);
       if (error) throw error;
+      if (galleryError) throw galleryError;
       setImageRequests((data ?? []) as OwnerImageChangeRequest[]);
+      setGalleryRequests((galleryData ?? []) as Array<{id:string;media_field:string;status:string;created_at:string}>);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Image-change requests could not be loaded.', 'error');
     } finally {
@@ -187,6 +191,7 @@ export function ListingEditor({
   const effPlanCode = effectivePlanCode(business.plan_code, business.plan_expires_at);
   const activePlan = plans.find((p) => p.code === effPlanCode) ?? plans[0];
   const maxVideos = activePlan?.limits.max_videos ?? 0;
+  const maxGallery = activePlan?.limits.gallery ?? 0;
   const maxSocialLinks = activePlan?.limits.social_links ?? 0;
   const canWhatsApp = activePlan?.features.whatsapp ?? false;
   const canSocial = maxSocialLinks > 0;
@@ -389,7 +394,7 @@ export function ListingEditor({
     }
   };
 
-  const requestImageChange = async (mediaField: 'logo' | 'cover', file: File | null) => {
+  const requestImageChange = async (mediaField: 'logo' | 'cover' | 'gallery', file: File | null) => {
     if (!file || imageChangeBusy) return;
     if (imageRequests.filter((request) => pakistanMonthKey(request.requested_at) === pakistanMonthKey(new Date())).length >= 2) {
       showToast('Monthly image-change limit reached (2 per business).', 'error');
@@ -446,7 +451,8 @@ export function ListingEditor({
       if (requestError || !requestId) throw requestError ?? new Error('The image-change request could not be recorded.');
       requestCreated = true;
       if (mediaField === 'logo') setLogoChangeFile(null);
-      else setCoverChangeFile(null);
+      else if (mediaField === 'cover') setCoverChangeFile(null);
+      else setGalleryChangeFile(null);
       showToast('Image change request sent to Admin. Your current image stays public until approval.', 'success');
       await reloadImageRequests().catch(() => undefined);
     } catch (error) {
@@ -1141,6 +1147,18 @@ export function ListingEditor({
                 ))}
               </div>
             )}
+            <div className="rounded-xl border border-outline-variant/40 p-3 space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div><p className="text-xs font-bold text-on-surface">Manage photo gallery</p><p className="text-[11px] text-on-surface-variant">New photos stay private until Admin approval.</p></div>
+                <Badge variant="neutral">{(business.gallery_urls ?? []).length} / {maxGallery} photos</Badge>
+              </div>
+              {maxGallery > 0 ? <>
+                <Input label="Add gallery photo (JPG, PNG or WebP · max 5 MB)" type="file" accept="image/jpeg,image/png,image/webp" disabled={imageChangeBusy !== '' || (business.gallery_urls ?? []).length + galleryRequests.filter((item) => ['pending_review','approved_pending_promotion'].includes(item.status)).length >= maxGallery} onChange={(event) => { setGalleryChangeFile(event.target.files?.[0] ?? null); event.currentTarget.value = ''; }} />
+                {galleryChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{galleryChangeFile.name}</p>}
+                <Button size="sm" fullWidth disabled={!galleryChangeFile || imageChangeBusy !== '' || (business.gallery_urls ?? []).length + galleryRequests.filter((item) => ['pending_review','approved_pending_promotion'].includes(item.status)).length >= maxGallery} loading={imageChangeBusy === 'gallery'} onClick={() => void requestImageChange('gallery', galleryChangeFile)}>Send gallery photo for Admin review</Button>
+              </> : <p className="text-xs text-on-surface-variant">Photo gallery is not included in your current plan. <Link to="/owner/plan" className="font-bold text-primary underline">View plans</Link></p>}
+              {galleryRequests.length > 0 && <div className="space-y-1"><p className="text-xs font-semibold">Gallery upload history</p>{galleryRequests.slice(0,5).map((item) => <div key={item.id} className="flex items-center justify-between text-xs rounded-lg bg-surface-container-low p-2"><span>{new Date(item.created_at).toLocaleDateString()}</span><Badge variant={item.status === 'approved_published' ? 'success' : item.status === 'rejected' ? 'danger' : 'warning'}>{item.status.replaceAll('_',' ')}</Badge></div>)}</div>}
+            </div>
             {(business.gallery_urls ?? []).length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-bold">Current photo gallery</p>
