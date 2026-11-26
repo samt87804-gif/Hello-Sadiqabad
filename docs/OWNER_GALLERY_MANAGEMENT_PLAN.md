@@ -28,8 +28,9 @@
 - [x] Add gallery media and Owner removal requests to the existing Admin business-media review cards; no parallel approval queue.
 - [x] Corrected Admin media status typing; final GitHub Actions CI run `45897858810` passed both `build` and `edge-functions` jobs (TypeScript, automated tests, production build and Edge Function typecheck).
 - [x] Cloudflare Pages production deployment `45e643b1-ef0e-4d82-b992-142c2d2c9bec` succeeded for the latest documentation/main commit `7fe21cc6b2c725d0158bd7342f6fcd63b24289e2`; canonical alias `https://hellosadiqabad.com`.
-- [ ] Owner manual acceptance: upload/approve/reject/remove a gallery photo and verify plan limits and public visibility.
+- [x] Owner manual acceptance confirmed by Owner on 27 November 2026: upload, Admin approval, public visibility, rejection, Owner removal request and Admin removal approval all passed. Owner also confirmed the full supplied gallery test checklist passed.
 - [ ] Optional follow-up: extend Owner removal requests to older legacy gallery URLs that have no media-asset record, after a safe asset-linking design.
+- [x] Owner-reported public gallery viewer issue investigated: an icon-only close control existed but was not sufficiently discoverable. Replaced it with a high-contrast, bilingual Close / بند کریں button with a larger touch target and visible focus state. Automated CI and production deployment are pending.
 
 ## Release evidence
 
@@ -53,4 +54,4 @@
 9. Check Free plan: gallery upload is unavailable. Basic permits at most 5 and Premium at most 15, counting existing published photos and pending submissions. The server must block attempts beyond the limit.
 10. Verify logo/cover change requests still retain their existing 2-per-Pakistan-month combined allowance and current public image remains visible until Admin approval.
 
-**Acceptance status:** code, migrations, Edge Functions, CI and production Pages deployment are verified. Owner manual acceptance is still pending.
+**Acceptance status:** code, migrations, Edge Functions, CI, production Pages deployment and Owner manual gallery acceptance are verified. A separate public-gallery viewer usability fix is now in progress: make the close action unmistakable on mobile and desktop.
