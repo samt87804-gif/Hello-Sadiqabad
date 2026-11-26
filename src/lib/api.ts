@@ -3681,3 +3681,123 @@ export async function upsertGovernmentJob(
  const {data,error}=await client.from('government_jobs').upsert(payload).select().single();
  if(error)throw error;return data as GovernmentJobRow;
 }
+
+
+export interface OwnerPaymentReceipt {
+  receipt_id: string;
+  assignment_id: string;
+  business_id: string | null;
+  business_name: string;
+  plan_code: 'basic' | 'premium';
+  period_start: string | null;
+  period_end: string | null;
+  original_amount_pkr: number;
+  amount_pkr: number;
+  adjustment_total_pkr: number;
+  payment_method: string;
+  transaction_reference: string | null;
+  received_at: string;
+  recorded_at: string;
+  receipt_source: string;
+}
+export interface OwnerPaymentHistory {
+  business_count: number;
+  paid_pkr: number;
+  outstanding_pkr: number;
+  active_paid_plans: number;
+  businesses: Array<{ business_id: string; business_name: string; plan_code: string; plan_expires_at: string | null }>;
+  receipts: OwnerPaymentReceipt[];
+  payment_correction_requests: Array<{
+    id: string; receipt_id: string; requested_amount_pkr: number; reason: string;
+    evidence_reference: string | null; status: string; admin_response: string | null; created_at: string; reviewed_at: string | null;
+  }>;
+  profile_change_requests: Array<{
+    id: string; current_full_name: string | null; current_phone: string | null;
+    requested_full_name: string | null; requested_phone: string | null; reason: string;
+    status: string; admin_response: string | null; created_at: string; reviewed_at: string | null;
+  }>;
+}
+export interface AdminOwnerFinancialProfile {
+  owner: { id: string; full_name: string | null; phone: string | null; email?: string; role: string; is_active: boolean; created_at: string };
+  summary: { business_count: number; paid_pkr: number; outstanding_pkr: number; waived_pkr: number };
+  businesses: Array<Record<string, unknown>>;
+  assignments: Array<Record<string, unknown>>;
+  receipts: Array<Record<string, unknown>>;
+  payment_correction_requests: Array<Record<string, unknown>>;
+  profile_change_requests: Array<Record<string, unknown>>;
+  audit: Array<Record<string, unknown>>;
+}
+
+export async function fetchOwnerPaymentHistory(): Promise<OwnerPaymentHistory> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Payment history requires your signed-in Owner account.');
+  const { data, error } = await client.rpc('owner_my_payment_history');
+  if (error) throw error;
+  if (!data) throw new Error('Payment history could not be loaded.');
+  return data as OwnerPaymentHistory;
+}
+
+export async function submitOwnerPaymentCorrectionRequest(input: {
+  receiptId: string; requestedAmountPkr: number; reason: string; evidenceReference?: string;
+}): Promise<string> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Payment correction requests require your signed-in Owner account.');
+  const { data, error } = await client.rpc('owner_submit_payment_correction_request', {
+    p_receipt_id: input.receiptId,
+    p_requested_amount_pkr: input.requestedAmountPkr,
+    p_reason: input.reason.trim(),
+    p_evidence_reference: input.evidenceReference?.trim() || null,
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+export async function submitOwnerProfileChangeRequest(input: {
+  fullName: string; phone: string; reason: string;
+}): Promise<string> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Profile change requests require your signed-in Owner account.');
+  const { data, error } = await client.rpc('owner_submit_profile_change_request', {
+    p_full_name: input.fullName.trim() || null,
+    p_phone: input.phone.trim() || null,
+    p_reason: input.reason.trim(),
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+export async function fetchAdminOwnerFinancialProfile(ownerId: string): Promise<AdminOwnerFinancialProfile> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Owner financial profiles require the live Super Admin account.');
+  const { data, error } = await client.rpc('admin_owner_financial_profile', { p_owner_id: ownerId });
+  if (error) throw error;
+  if (!data) throw new Error('Owner financial profile could not be loaded.');
+  return data as AdminOwnerFinancialProfile;
+}
+
+export async function reviewOwnerPaymentCorrectionRequest(requestId: string, decision: 'approve' | 'reject', adminResponse: string): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Payment correction review requires the live Super Admin account.');
+  const { error } = await client.rpc('admin_review_owner_payment_correction', {
+    p_request_id: requestId, p_decision: decision, p_admin_response: adminResponse.trim() || null,
+  });
+  if (error) throw error;
+}
+
+export async function reviewOwnerProfileChangeRequest(requestId: string, decision: 'approve' | 'reject', adminResponse: string): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Owner profile review requires the live Super Admin account.');
+  const { error } = await client.rpc('admin_review_owner_profile_change_request', {
+    p_request_id: requestId, p_decision: decision, p_admin_response: adminResponse.trim() || null,
+  });
+  if (error) throw error;
+}
+
+export async function correctPlanReceipt(input: { receiptId: string; correctedAmountPkr: number; reason: string }): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Receipt corrections require the live Super Admin account.');
+  const { error } = await client.rpc('admin_correct_plan_receipt', {
+    p_receipt_id: input.receiptId, p_corrected_amount_pkr: input.correctedAmountPkr, p_reason: input.reason.trim(),
+  });
+  if (error) throw error;
+}
