@@ -23,7 +23,7 @@ Database: PostgreSQL 17
 - Authenticated active owners submitting a claim or new-business request are linked through submissions.submitted_by. Ownership is assigned only after moderator approval.
 - Anonymous claims remain unlinked and require manual admin account assignment.
 - Successful owner claim/new-listing approvals create bilingual Owner Portal notifications.
-- Detailed audit and remaining gaps: docs/../docs/archive/OWNER_PORTAL_AUDIT.md.
+- Detailed audit and remaining gaps: ../docs/archive/OWNER_PORTAL_AUDIT.md.
 
 ## Edge Functions
 
