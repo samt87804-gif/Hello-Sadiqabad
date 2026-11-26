@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Clock3, EyeOff, Mail, MapPin, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock3, EyeOff, Mail, MapPin, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase';
 import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, countApprovedCoreFields, shouldProcessOwnerInvitation } from '../../lib/businessApproval';
 import type { AreaRow, CategoryRow } from '../../types/database';
@@ -115,6 +115,8 @@ export function BusinessFieldReviewQueue({
   const [media, setMedia] = useState<BusinessMedia[]>([]);
   const [ownerRequests, setOwnerRequests] = useState<LinkedOwnerRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [loadWarning, setLoadWarning] = useState('');
   const [busy, setBusy] = useState(false);
   const [busyMediaId, setBusyMediaId] = useState('');
   const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
@@ -182,8 +184,14 @@ export function BusinessFieldReviewQueue({
 
   const reload = useCallback(async () => {
     const client = getSupabaseClient();
-    if (!client) return;
+    if (!client) {
+      setLoadError('Supabase connection is unavailable. Check the connection and retry.');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setLoadError('');
+    setLoadWarning('');
     try {
       const { data: rows, error: submissionError } = await client.from('submissions')
         .select('id,payload,contact_name,contact_phone,submitted_by,status,created_at,business_id')
@@ -216,22 +224,26 @@ export function BusinessFieldReviewQueue({
           : Promise.resolve({ data: [], error: null }),
       ]);
       if (reviewResult.error) throw reviewResult.error;
-      if (mediaResult.error) throw mediaResult.error;
-      if (ownerResult.error) throw ownerResult.error;
-      if (privateNotesResult.error) throw privateNotesResult.error;
 
-      const mediaAssets = (mediaResult.data ?? []) as BusinessMedia[];
+      const optionalWarnings: string[] = [];
+      if (mediaResult.error) optionalWarnings.push('Business image records could not be loaded; request cards are still available.');
+      if (ownerResult.error) optionalWarnings.push('Linked Owner invitation details could not be loaded; invitation actions may be unavailable.');
+      if (privateNotesResult.error) optionalWarnings.push('Private Admin notes could not be loaded; no note content is being displayed.');
+
+      const mediaAssets = mediaResult.error ? [] : (mediaResult.data ?? []) as BusinessMedia[];
       const mediaPaths = mediaAssets.map((asset) => asset.storage_path);
-      const { data: signedRows, error: signedError } = mediaPaths.length
-        ? await client.storage.from('hs-pending-business-media').createSignedUrls(mediaPaths, 900)
-        : { data: [], error: null };
-      if (signedError) throw signedError;
+      let signedRows: Array<{ path: string; signedUrl?: string | null }> = [];
+      if (mediaPaths.length) {
+        const { data, error } = await client.storage.from('hs-pending-business-media').createSignedUrls(mediaPaths, 900);
+        if (error) optionalWarnings.push('Private image previews could not be loaded; request cards remain available.');
+        else signedRows = (data ?? []) as Array<{ path: string; signedUrl?: string | null }>;
+      }
       const signedUrlByPath = new Map(
         (signedRows ?? []).flatMap((item) => item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
       );
 
       const privateNoteBySubmission = new Map(
-        ((privateNotesResult.data ?? []) as Array<{ submission_id: string; admin_note: string | null }>)
+        ((privateNotesResult.error ? [] : privateNotesResult.data ?? []) as Array<{ submission_id: string; admin_note: string | null }>)
           .map((item) => [item.submission_id, item.admin_note] as const)
       );
       const candidateRows = (rows ?? []).map((row) => ({
@@ -239,7 +251,7 @@ export function BusinessFieldReviewQueue({
         admin_note: privateNoteBySubmission.get(row.id) ?? null,
       })) as BusinessSubmission[];
       const fieldRows = (reviewResult.data ?? []) as FieldReview[];
-      const linkedOwnerRows = (ownerResult.data ?? []) as LinkedOwnerRequest[];
+      const linkedOwnerRows = (ownerResult.error ? [] : ownerResult.data ?? []) as LinkedOwnerRequest[];
       const activeRows = candidateRows.filter((submission) => {
         if (submission.status === 'new' || submission.status === 'in_review') return true;
         if (submission.status !== 'done') return false;
@@ -260,8 +272,11 @@ export function BusinessFieldReviewQueue({
         preview_url: signedUrlByPath.get(asset.storage_path) ?? undefined,
       })));
       setOwnerRequests(linkedOwnerRows.filter((item) => activeIds.has(item.submission_id)));
+      setLoadWarning(optionalWarnings.join(' '));
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not load business field reviews.', 'error');
+      const message = error instanceof Error ? error.message : 'Could not load business field reviews.';
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -541,9 +556,19 @@ export function BusinessFieldReviewQueue({
         <Button size="sm" variant="outline" onClick={() => void reload()} leftIcon={<RefreshCw className="w-4 h-4" />}>Refresh</Button>
       </div>
 
+      {loadError && (
+        <Card className="p-4 border border-error/30 bg-error/5 space-y-2" role="alert">
+          <div className="flex items-center gap-2 text-sm font-semibold text-error"><AlertCircle className="w-4 h-4" />Business requests could not be fully loaded</div>
+          <p className="text-xs text-on-surface-variant">{loadError}</p>
+          <div><Button size="sm" variant="outline" onClick={() => void reload()} leftIcon={<RefreshCw className="w-3.5 h-3.5" />}>Retry loading requests</Button></div>
+        </Card>
+      )}
+      {loadWarning && (
+        <Card className="p-3 border border-warning/30 bg-warning/5 text-xs text-on-surface-variant" role="status">{loadWarning}</Card>
+      )}
       {loading ? (
         <Card className="p-6 text-sm text-on-surface-variant">Loading business requests…</Card>
-      ) : submissions.length === 0 ? (
+      ) : loadError && submissions.length === 0 ? null : submissions.length === 0 ? (
         <Card className="p-6 text-sm text-on-surface-variant">No new Business Registration requests are waiting for review.</Card>
       ) : (
         <div className="space-y-3">
