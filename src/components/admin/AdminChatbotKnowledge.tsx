@@ -67,6 +67,7 @@ export function AdminChatbotKnowledge() {
       const response = await fetch('/api/chat/sync', {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
+        signal: AbortSignal.timeout(20000),
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body?.error || 'Chatbot sync history could not be loaded.');
@@ -93,6 +94,7 @@ export function AdminChatbotKnowledge() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ mode: 'full' }),
+        signal: AbortSignal.timeout(45000),
       });
       const body = await response.json();
       await loadRuns();

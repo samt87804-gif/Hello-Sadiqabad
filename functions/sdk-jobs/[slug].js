@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../_shared/fetchWithTimeout.js';
+
 const SITE_ORIGIN = 'https://hellosadiqabad.com';
 const FALLBACK_IMAGE = SITE_ORIGIN + '/site-logo.png';
 const SAFE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -106,9 +108,9 @@ async function fetchPublishedJob(env, slug) {
   url.searchParams.set('select', 'slug,title_en,title_ur,summary_en,summary_ur,description_en,qualifications_en,experience_en,job_type,work_location_en,area_name_en,image_url,published_at,closing_date');
   url.searchParams.set('slug', 'eq.' + slug);
   url.searchParams.set('limit', '1');
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: { apikey: publicKey, Authorization: 'Bearer ' + publicKey, Accept: 'application/json' },
-  });
+  }, 8000);
   if (!response.ok) throw new Error('Published SDK Jobs metadata request failed (' + response.status + ').');
   const rows = await response.json();
   return Array.isArray(rows) ? rows[0] || null : null;

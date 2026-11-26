@@ -315,7 +315,7 @@ export function OfflineData() {
       if (!registration) registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
-      const cache = await caches.open('hs-sadiqabad-shell-v3');
+      const cache = await caches.open('hs-sadiqabad-shell-v4');
       const [appShell, emergencyFallback] = await Promise.all([
         cache.match(new URL('/', window.location.origin).href),
         cache.match(new URL('/offline.html', window.location.origin).href),
@@ -323,7 +323,7 @@ export function OfflineData() {
 
       let manifestResponse = await cache.match(new URL('/offline-precache.json', window.location.origin).href);
       if (!manifestResponse) {
-        const networkManifest = await fetch('/offline-precache.json', { cache: 'no-store' });
+        const networkManifest = await fetch('/offline-precache.json', { cache: 'no-store', signal: AbortSignal.timeout(8000) });
         if (!networkManifest.ok) throw new Error('The app asset manifest is not available in this browser.');
         manifestResponse = networkManifest;
       }
@@ -496,7 +496,7 @@ export function OfflineData() {
       }
 
       const directoryImages = siteSettings.directory_image_urls;
-      const manifestResponse = await raceWithAbort(fetch('/offline-precache.json', { cache: 'no-store' }), signal);
+      const manifestResponse = await raceWithAbort(fetch('/offline-precache.json', { cache: 'no-store', signal: AbortSignal.timeout(8000) }), signal);
       if (!manifestResponse.ok) throw new Error('The public image manifest could not be verified. The previous offline package was kept.');
       const manifestValue: unknown = await raceWithAbort(manifestResponse.json(), signal);
       const staticImagePaths = Array.isArray(manifestValue)

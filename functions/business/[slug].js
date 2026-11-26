@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '../_shared/fetchWithTimeout.js';
 import {
   buildBusinessJsonLd,
   buildBusinessSeoMetadata,
@@ -97,13 +98,13 @@ async function fetchPublishedBusiness(env, slug) {
   url.searchParams.set('status', 'eq.published');
   url.searchParams.set('limit', '1');
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: {
       apikey: publicKey,
       Authorization: 'Bearer ' + publicKey,
       Accept: 'application/json',
     },
-  });
+  }, 8000);
   if (!response.ok) throw new Error('Published business metadata request failed (' + response.status + ').');
   const rows = await response.json();
   return Array.isArray(rows) ? rows[0] || null : null;

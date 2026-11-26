@@ -1,4 +1,5 @@
 import { fetchPublicContext } from '../chat.js';
+import { fetchWithTimeout } from '../../_shared/fetchWithTimeout.js';
 
 const SOURCE_KEYS = [
   'business_directory',
@@ -51,7 +52,7 @@ async function authorizeSuperAdmin(request, env) {
 
   const { baseUrl, key } = getConfig(env);
   const headers = { apikey: key, Authorization: `Bearer ${token}`, Accept: 'application/json' };
-  const userResponse = await fetch(`${baseUrl}/auth/v1/user`, { headers });
+  const userResponse = await fetchWithTimeout(`${baseUrl}/auth/v1/user`, { headers }, 8000);
   if (!userResponse.ok) return { ok: false, status: 401, error: 'Admin session is invalid or expired.' };
   const user = await userResponse.json();
   if (!user?.id) return { ok: false, status: 401, error: 'Admin session could not be verified.' };
@@ -60,7 +61,7 @@ async function authorizeSuperAdmin(request, env) {
   profileUrl.searchParams.set('id', `eq.${user.id}`);
   profileUrl.searchParams.set('select', 'role,is_active');
   profileUrl.searchParams.set('limit', '1');
-  const profileResponse = await fetch(profileUrl, { headers });
+  const profileResponse = await fetchWithTimeout(profileUrl, { headers }, 8000);
   if (!profileResponse.ok) return { ok: false, status: 403, error: 'Admin permissions could not be verified.' };
   const profiles = await profileResponse.json();
   const profile = Array.isArray(profiles) ? profiles[0] : null;
@@ -72,7 +73,7 @@ async function authorizeSuperAdmin(request, env) {
 }
 
 async function supabaseRest(admin, path, options = {}) {
-  const response = await fetch(`${admin.baseUrl}/rest/v1/${path}`, {
+  const response = await fetchWithTimeout(`${admin.baseUrl}/rest/v1/${path}`, {
     method: options.method || 'GET',
     headers: {
       apikey: admin.key,
@@ -82,7 +83,7 @@ async function supabaseRest(admin, path, options = {}) {
       ...(options.returnRepresentation ? { Prefer: 'return=representation' } : {}),
     },
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
-  });
+  }, 8000);
   const text = await response.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = null; }
@@ -105,7 +106,7 @@ async function updateRun(admin, runId, patch) {
 }
 
 async function fetchBusinessDirectoryCount(admin) {
-  const response = await fetch(`${admin.baseUrl}/rest/v1/rpc/search_businesses`, {
+  const response = await fetchWithTimeout(`${admin.baseUrl}/rest/v1/rpc/search_businesses`, {
     method: 'POST',
     headers: {
       apikey: admin.key,
@@ -128,7 +129,7 @@ async function fetchBusinessDirectoryCount(admin) {
       p_limit: 1,
       p_offset: 0,
     }),
-  });
+  }, 8000);
   if (!response.ok) throw new Error('Published business directory could not be refreshed.');
   const rows = await response.json();
   if (!Array.isArray(rows)) throw new Error('Published business directory returned an invalid response.');

@@ -1,4 +1,5 @@
 import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveBusinessSearchIntent, resolveChatKnowledgeQuery, selectRelevantPublicKnowledge } from '../_shared/chatKnowledge.js';
+import { fetchWithTimeout } from '../_shared/fetchWithTimeout.js';
 
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_MESSAGE_LENGTH = 500;
@@ -12,6 +13,14 @@ function json(data, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
   });
+}
+
+function withPromiseTimeout(promise, timeoutMs) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Workers AI request timed out.')), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 function validateMessages(value) {
@@ -44,9 +53,9 @@ function allowRequest(ip) {
 async function fetchTable(baseUrl, key, table, params) {
   const url = new URL(`${baseUrl}/rest/v1/${table}`);
   for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
-  });
+  }, 8000);
   if (!response.ok) throw new Error(`Public directory query failed: ${table}`);
   const data = await response.json();
   return Array.isArray(data) ? data : [];
@@ -62,7 +71,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
 
   try {
     const intent = resolveBusinessSearchIntent(searchText, publicContext.categories, publicContext.areas);
-    const response = await fetch(`${baseUrl}/rest/v1/rpc/search_businesses`, {
+    const response = await fetchWithTimeout(`${baseUrl}/rest/v1/rpc/search_businesses`, {
       method: 'POST',
       headers: {
         apikey: key,
@@ -85,7 +94,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
         p_limit: 12,
         p_offset: 0,
       }),
-    });
+    }, 8000);
     if (!response.ok) return { matches: [], status: 'unavailable', total_count: 0 };
     const rows = await response.json();
     if (!Array.isArray(rows)) return { matches: [], status: 'unavailable', total_count: 0 };
@@ -280,11 +289,11 @@ export async function onRequestPost({ request, env }) {
     context.business_search_total_count = businessSearch.total_count;
     context.business_search_scope = { category: businessSearch.matched_category, area: businessSearch.matched_area };
     failureStage = 'workers_ai';
-    const result = await env.AI.run(
+    const result = await withPromiseTimeout(env.AI.run(
       MODEL,
       { messages: [{ role: 'system', content: buildSystemPrompt(context) }, ...messages], max_tokens: 450, temperature: 0.2 },
       { gateway: { id: 'default', cacheTtl: 180 } },
-    );
+    ), 15000);
     const answer = typeof result?.response === 'string'
       ? result.response
       : typeof result?.choices?.[0]?.message?.content === 'string'

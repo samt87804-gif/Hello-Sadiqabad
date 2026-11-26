@@ -1,6 +1,6 @@
-// Reuse v3 cache namespace: the currently deployed v3 worker deletes every
-// cache except this exact key on activation. Keeping it makes rollback compatible.
-const CACHE_NAME = 'hs-sadiqabad-shell-v3';
+// v4 is the active shell cache namespace. Older shell caches are pruned only
+// after the previous worker has no controlled tabs left during activation.
+const CACHE_NAME = 'hs-sadiqabad-shell-v4';
 const MEDIA_CACHE_NAME = 'hs-sadiqabad-public-media-v1';
 const SUPABASE_MEDIA_HOST = 'efwohfzqitevkuybnyif.supabase.co';
 const SUPABASE_MEDIA_PREFIX = '/storage/v1/object/public/Hello%20Sadiqabad/';
@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
     // application assets only (not API responses or user data). Failures are
     // best-effort so a constrained device can still install the emergency shell.
     try {
-      const manifestResponse = await fetch(PRECACHE_MANIFEST_URL, { cache: 'no-store' });
+      const manifestResponse = await fetch(PRECACHE_MANIFEST_URL, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
       if (manifestResponse.ok) {
         await cache.put(PRECACHE_MANIFEST_URL, manifestResponse.clone()).catch(() => undefined);
         const manifest = await manifestResponse.json();
@@ -43,10 +43,15 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  // Deliberately retain older app-shell caches. Deleting them during activation
-  // can break a still-open document or a rollback that references old chunks.
-  // A later storage-management phase can prune caches after client-use checks.
-  event.waitUntil(Promise.resolve());
+  // skipWaiting() is intentionally not used, so activation waits until the
+  // previous worker's controlled tabs have closed. It is now safe to remove
+  // stale shell caches; keep the separate public-media cache untouched.
+  event.waitUntil((async () => {
+    const staleShellCaches = (await caches.keys()).filter((name) =>
+      name.startsWith('hs-sadiqabad-shell-') && name !== CACHE_NAME
+    );
+    await Promise.all(staleShellCaches.map((name) => caches.delete(name)));
+  })());
   // Deliberately do not call clients.claim(): let the new worker take control
   // through the browser's normal navigation lifecycle.
 });
@@ -59,17 +64,35 @@ function isFingerprintAsset(url, request) {
 
 async function networkFirstNavigation(request, url) {
   try {
-    return await fetch(request, { cache: 'no-store' });
-  } catch {
-    // Preserve the dedicated emergency page at /offline. Other app routes can
-    // use the cached SPA entry document, allowing React Router to resolve them.
-    const cache = await caches.open(CACHE_NAME);
-    if (url.pathname === '/offline' || url.pathname === '/offline/') {
-      return (await cache.match(OFFLINE_URL)) || Response.error();
+    const response = await fetch(request, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
+    // An HTTP 5xx means the origin failed, not that the visitor lost internet.
+    // Prefer the cached app shell so an online visitor is not told they are offline.
+    if (response.status >= 500) {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        return (await cache.match(APP_SHELL_URL)) || response;
+      } catch {
+        return response;
+      }
     }
-    return (await cache.match(APP_SHELL_URL)) ||
-      (await cache.match(OFFLINE_URL)) ||
-      Response.error();
+    return response;
+  } catch {
+    // Show the dedicated offline page only when the network request actually
+    // rejects or times out. Other app routes can resolve through the cached shell.
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      if (url.pathname === '/offline' || url.pathname === '/offline/' || url.pathname === OFFLINE_URL) {
+        return (await cache.match(OFFLINE_URL)) || Response.error();
+      }
+      return (await cache.match(APP_SHELL_URL)) ||
+        (await cache.match(OFFLINE_URL)) ||
+        Response.error();
+    } catch {
+      return Response.error();
+    }
   }
 }
 
@@ -77,7 +100,7 @@ async function cachePublicMedia(request) {
   const cache = await caches.open(MEDIA_CACHE_NAME);
   const cached = await cache.match(request);
   if (cached) return cached;
-  const response = await fetch(request);
+  const response = await fetch(request, { signal: AbortSignal.timeout(10000) });
   const contentType = (response.headers.get('content-type') || '').toLowerCase();
   if (response.ok && contentType.startsWith('image/')) {
     await cache.put(request, response.clone()).catch(() => undefined);
@@ -90,7 +113,7 @@ async function cacheFingerprintAsset(request) {
   const cached = await cache.match(request);
   if (cached) return cached;
 
-  const response = await fetch(request);
+  const response = await fetch(request, { signal: AbortSignal.timeout(8000) });
   if (response.ok && response.type === 'basic') {
     await cache.put(request, response.clone()).catch(() => undefined);
   }
