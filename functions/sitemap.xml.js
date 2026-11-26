@@ -1,4 +1,5 @@
 import { buildSitemapXml, filterIndexableTaxonomy } from '../src/lib/sitemap.ts';
+import { fetchWithTimeout } from './_shared/fetchWithTimeout.js';
 
 const SITE_ORIGIN = 'https://hellosadiqabad.com';
 const PAGE_SIZE = 1000;
@@ -40,13 +41,13 @@ async function fetchPublicRows(baseUrl, publicKey, table, select, filters = {}, 
     url.searchParams.set('offset', String(page * PAGE_SIZE));
     for (const [key, value] of Object.entries(filters)) url.searchParams.set(key, value);
 
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       headers: {
         apikey: publicKey,
         Authorization: 'Bearer ' + publicKey,
         Accept: 'application/json',
       },
-    });
+    }, 8000);
     if (!response.ok) throw new Error('Public sitemap read failed for ' + table + ' (' + response.status + ').');
 
     const batch = await response.json();
