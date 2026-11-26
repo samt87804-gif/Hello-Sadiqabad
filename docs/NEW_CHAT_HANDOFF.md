@@ -187,8 +187,30 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 5. Report any missing, repeated or incorrectly ordered request.
 
 
-### Phase 4A — dynamic Owner offer expiry (implementation awaiting CI)
+### Phase 4A — dynamic Owner offer expiry (implemented, CI-passed and deployed)
 
 - New offer forms now default their end date to 30 calendar days after the current Pakistan-local date, not a hard-coded date. Existing offer dates remain unchanged when editing.
 - Existing validation rejects an end date earlier than the start date.
 - Added regression tests for month boundaries and leap-year arithmetic.
+
+
+### Phase 4A release evidence
+
+- Commit d6700c75b7626c597ec57bc0969c0e117231c5c0.
+- CI 45894239701 passed: TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment 99e9d170-37a8-487c-a31b-7186ca455f3e succeeded for the same commit.
+
+### Owner feedback — Phase 0 partial acceptance (27 Nov 2026)
+
+- Owner reports My Businesses request history loads, statuses are visible and internal Admin notes are not visible in the Owner Portal.
+- Owner reports My Payments history and Plan details still load correctly.
+- Admin Previous note check is still blocked because no cards are visible to the Owner. Database read-only check: 4 active new-business submissions (2 new, 2 in_review), 13 completed, 26 pending field-review rows; simulated authenticated Super Admin can read 17 total new-business submissions and 26 pending fields. No new-business submission has a non-null legacy admin_note. Completed records are not ordinarily listed in the active queue unless media/invitation follow-up remains.
+- The intended navigation item is Admin → Business Field Approval. Moderation Queue is a different page and intentionally excludes new-business registrations. If Business Field Approval still shows no cards after Refresh, ask for a screenshot with page heading and any toast/error. Do not create dummy records.
+- Phase 0 is partially accepted only; keep Admin queue visibility unresolved.
+
+### Phase 4A practical acceptance — Owner
+
+1. Sign in as an Owner and open Owner Portal → Offers → Add Offer.
+2. The start date should default to today (Pakistan time); the end date should default to 30 days later.
+3. Change the end date to one day before the start date and attempt to save. A clear validation message should prevent saving.
+4. Open an existing offer for editing and confirm its saved dates remain unchanged unless you intentionally edit them.

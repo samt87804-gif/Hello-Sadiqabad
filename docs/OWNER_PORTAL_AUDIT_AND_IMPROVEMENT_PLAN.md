@@ -151,7 +151,22 @@
 - An initial CI run for commit b164654cf2c07f5ed4f6d58a99f64dcfc9b75737 caught a missing test import; the import was corrected in 44fee047 and the full CI passed. No production data was changed.
 
 
-### Phase 4A — offer expiry default (implementation pending CI)
+### Phase 4A — offer expiry default (implemented, CI-passed and deployed)
 
 - New Owner offers now default to 30 days from the current Pakistan-local date instead of a fixed 2027 date. Editing an existing offer continues to preserve its saved dates.
 - Added tests for normal month rollover and leap-year date arithmetic. Existing validation still prevents an end date before the start date.
+
+
+### Phase 4A release evidence
+
+- Commit: d6700c75b7626c597ec57bc0969c0e117231c5c0.
+- GitHub Actions CI run 45894239701 passed: TypeScript, automated tests (including date-default boundary/leap-year tests), production build and Edge Function typecheck.
+- Cloudflare Pages deployment 99e9d170-37a8-487c-a31b-7186ca455f3e succeeded for the same commit.
+
+### Owner manual feedback — Phase 0 partial acceptance (27 November 2026)
+
+- Owner confirmed the Owner request history loads, request statuses are visible and private Admin notes are not shown in the Owner Portal.
+- Owner confirmed My Payments payment history and Plan details still load as before.
+- Admin Business Field Approval / Previous note check is blocked: Owner reports no cards visible. Live read-only checks show 2 new + 2 in_review new-business submissions and 26 pending field rows. Authenticated Super Admin simulation can read these rows. There are 13 completed new-business submissions, which are not shown in the active queue unless media/invitation work remains. None of the 17 new-business submissions currently has a non-null legacy admin_note, so there is no existing Previous note content to display.
+- Correct menu destination is Admin → Business Field Approval, not Admin → Moderation Queue. If the correct page still appears empty after Refresh, collect a screenshot including heading and any toast/error. Do not alter data to manufacture a test record.
+- Phase 0 remains partially accepted, not fully accepted, until the Admin queue visibility check is resolved.
