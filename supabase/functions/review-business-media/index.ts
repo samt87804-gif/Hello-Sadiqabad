@@ -69,7 +69,7 @@ Deno.serve(async (req: Request) => {
       .select("id,submission_id,business_id,media_field,bucket_id,storage_path,mime_type,status")
       .eq("id", assetId).maybeSingle();
     if (assetError || !asset) return response(req, { ok: false, error: "Business media asset not found" }, 404);
-    if (asset.bucket_id !== pendingBucket || !["logo", "cover"].includes(asset.media_field)) {
+    if (asset.bucket_id !== pendingBucket || !["logo", "cover", "gallery"].includes(asset.media_field)) {
       return response(req, { ok: false, error: "Invalid private media asset" }, 400);
     }
     if (asset.status === "rejected" && action === "approved_published") {
@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
         return response(req, { ok: true, status: "approved_pending_promotion", waiting_for_business: true, changed: deferred === true });
       }
       const { data: business, error: businessReadError } = await db.from("businesses")
-        .select("id,status,plan_code,logo_url,cover_url").eq("id", businessId).maybeSingle();
+        .select("id,status,plan_code,logo_url,cover_url,gallery_urls").eq("id", businessId).maybeSingle();
       if (businessReadError) throw businessReadError;
       if (!business || business.status !== "published") {
         const { data: deferred, error: deferError } = await db.rpc("finalize_business_media_review", {
@@ -131,29 +131,54 @@ Deno.serve(async (req: Request) => {
         }
       }
 
+      if (asset.media_field === "gallery") {
+        const { data: plan, error: planError } = await db.from("plans").select("limits").eq("code", business.plan_code).maybeSingle();
+        if (planError) throw planError;
+        const maxGallery = Number(plan?.limits?.gallery ?? 0);
+        if (maxGallery <= 0 || (business.gallery_urls ?? []).length >= maxGallery) {
+          const { data: deferred, error: deferError } = await db.rpc("finalize_business_media_review", {
+            p_asset_id: assetId, p_action: "approved_pending_promotion",
+            p_actor_id: auth.user.id, p_admin_note: note,
+          });
+          if (deferError) throw deferError;
+          return response(req, { ok: true, status: "approved_pending_promotion", waiting_for_plan: true, changed: deferred === true });
+        }
+      }
       const previousUrl = (asset.media_field === "logo" ? business.logo_url : business.cover_url) ?? null;
       if (!await hasObject(publicBucket, publicPath)) {
         const { error: copyError } = await db.storage.from(pendingBucket).copy(asset.storage_path, publicPath, { destinationBucket: publicBucket });
         if (copyError && !await hasObject(publicBucket, publicPath)) throw copyError;
       }
       const { data: publicData } = db.storage.from(publicBucket).getPublicUrl(publicPath);
+      const updatePayload = asset.media_field === "gallery"
+        ? { gallery_urls: [...new Set([...(business.gallery_urls ?? []), publicData.publicUrl])], updated_at: new Date().toISOString() }
+        : { [column]: publicData.publicUrl, updated_at: new Date().toISOString() };
       const { data: updatedBusiness, error: businessUpdateError } = await db.from("businesses")
-        .update({ [column]: publicData.publicUrl, updated_at: new Date().toISOString() })
-        .eq("id", businessId).eq("status", "published").select("id").maybeSingle();
+        .update(updatePayload).eq("id", businessId).eq("status", "published").select("id").maybeSingle();
       if (businessUpdateError || !updatedBusiness) {
         await removeIfPresent(publicBucket, publicPath).catch(() => undefined);
         throw businessUpdateError ?? new Error("The published business could not be updated");
       }
       approvalRollback = { businessId, column, previousUrl, publicUrl: publicData.publicUrl, publicPath };
     } else if ((action === "unpublished" || action === "rejected") && businessId && publicPath) {
-      const { data: business, error: businessReadError } = await db.from("businesses")
-        .select("logo_url,cover_url").eq("id", businessId).maybeSingle();
-      if (businessReadError) throw businessReadError;
-      const currentUrl = asset.media_field === "logo" ? business?.logo_url : business?.cover_url;
-      if (currentUrl?.includes(publicPath)) {
-        const { error: clearError } = await db.from("businesses")
-          .update({ [column]: null, updated_at: new Date().toISOString() }).eq("id", businessId);
-        if (clearError) throw clearError;
+      if (asset.media_field === "gallery" && action === "unpublished") {
+        const { data: business, error: businessReadError } = await db.from("businesses")
+          .select("gallery_urls").eq("id", businessId).maybeSingle();
+        if (businessReadError) throw businessReadError;
+        const nextGallery = (business?.gallery_urls ?? []).filter((value: string) => !value.includes(publicPath));
+        const { error: updateError } = await db.from("businesses")
+          .update({ gallery_urls: nextGallery, updated_at: new Date().toISOString() }).eq("id", businessId);
+        if (updateError) throw updateError;
+      } else if (asset.media_field !== "gallery") {
+        const { data: business, error: businessReadError } = await db.from("businesses")
+          .select("logo_url,cover_url").eq("id", businessId).maybeSingle();
+        if (businessReadError) throw businessReadError;
+        const currentUrl = asset.media_field === "logo" ? business?.logo_url : business?.cover_url;
+        if (currentUrl?.includes(publicPath)) {
+          const { error: clearError } = await db.from("businesses")
+            .update({ [column]: null, updated_at: new Date().toISOString() }).eq("id", businessId);
+          if (clearError) throw clearError;
+        }
       }
       await removeIfPresent(publicBucket, publicPath);
     }
