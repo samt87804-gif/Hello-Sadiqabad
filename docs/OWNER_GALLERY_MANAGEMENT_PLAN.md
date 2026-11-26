@@ -26,8 +26,8 @@
 - [x] Extend the existing media review function to promote approved gallery photos, defer when plan capacity is unavailable, remove approved gallery photos after Admin approval, and roll back a failed publication; deployed to the existing Supabase project (function version 8).
 - [x] Add Owner gallery upload, status history and managed-photo removal request controls to Listing Editor.
 - [x] Add gallery media and Owner removal requests to the existing Admin business-media review cards; no parallel approval queue.
-- [ ] Fix all CI failures and confirm the latest main commit passes TypeScript, tests, production build and Edge Function checks.
-- [ ] Confirm the latest matching Cloudflare Pages production deployment succeeds.
+- [x] Corrected Admin media status typing; final GitHub Actions CI run `45897858810` passed both `build` and `edge-functions` jobs (TypeScript, automated tests, production build and Edge Function typecheck).
+- [x] Cloudflare Pages production deployment `45e643b1-ef0e-4d82-b992-142c2d2c9bec` succeeded for the latest documentation/main commit `7fe21cc6b2c725d0158bd7342f6fcd63b24289e2`; canonical alias `https://hellosadiqabad.com`.
 - [ ] Owner manual acceptance: upload/approve/reject/remove a gallery photo and verify plan limits and public visibility.
 - [ ] Optional follow-up: extend Owner removal requests to older legacy gallery URLs that have no media-asset record, after a safe asset-linking design.
 
@@ -37,7 +37,7 @@
 - Applied live migrations: `20261127110000_owner_gallery_moderation`, `20261127120000_owner_gallery_removal_requests`, `20261127130000_serialize_gallery_publication`.
 - Edge Functions deployed: `create-business-media-upload` version 4; `review-business-media` version 8.
 - Main commits during implementation: `ef766d4753495bce19a49644549660f376bf9e59`, `3c0b451b2ee702e709a4edd9b59c63aa4d183bd1`, `5f9c1b0a561209a176f2f80739cc6666fcde64d9`, `bd35cbd0c7a21d88ad437b4b91c7d52656a8f3c8`, `fe660c8460a6a94b621f09c74e9419080d24985c`, `8f115d7abc8ba7f9470a2be309b6c1ab70c63269`, `63e60f7dc9c121e414df651baa19742d9e9bcd42`, `2a44794f5e0c266f4541805e04d781b05e7001d3`, `29b05bdaadfffbc733900565fdd7c6ea69527a4f`, `4aa304959a399db8280ee158f7346a8bdfd1dcf7`, `634c484168e28cb076c337b97a0e2f2c81090340`, `93485a011db2a7571a9793f244e8636d3dab8e77`, `7ce52bbb8c14392affe0c41f6cb7a4a148ae6663`, `0b510799652d5b5e810682c89011d74be6f5acc1`.
-- An intermediate CI run `45897237220` failed on the Admin media status TypeScript union; the type was corrected in commit `0b510799652d5b5e810682c89011d74be6f5acc1`. The corrected commit's CI/deployment are still pending at this checkpoint.
+- Intermediate CI found two status-union typing mistakes while introducing `removal_requested`; both were corrected. Final CI run `45897858810` passed. Cloudflare Pages deployment `45e643b1-ef0e-4d82-b992-142c2d2c9bec` succeeded for the final main commit.
 - No existing business gallery URL, Owner account, business record or uploaded media object was modified during implementation. The two schema migrations add constraints/policies/functions only.
 
 ## Owner manual acceptance — do not mark complete until confirmed
@@ -53,4 +53,4 @@
 9. Check Free plan: gallery upload is unavailable. Basic permits at most 5 and Premium at most 15, counting existing published photos and pending submissions. The server must block attempts beyond the limit.
 10. Verify logo/cover change requests still retain their existing 2-per-Pakistan-month combined allowance and current public image remains visible until Admin approval.
 
-**Acceptance status:** implementation is in progress until the corrected CI and matching Pages deployment are green and the Owner confirms the manual tests.
+**Acceptance status:** code, migrations, Edge Functions, CI and production Pages deployment are verified. Owner manual acceptance is still pending.
