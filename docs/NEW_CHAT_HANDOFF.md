@@ -246,3 +246,17 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Fix commit: a9ca81982695ef5d07aa94b8a54b55f8be82e3d9. GitHub CI and Cloudflare Pages production deployment are pending verification.
 - Next: check CI for this commit, confirm matching Pages deployment, then ask Owner to open any public business profile, tap a gallery image and confirm the labelled close button closes the viewer on both mobile and desktop. Do not claim the viewer fix is accepted until Owner confirms.
 - Continue the already-approved Owner Portal roadmap after the close-button verification; retain the outstanding optional legacy-gallery URL removal design and any unchecked roadmap work rather than silently closing them.
+
+
+## Latest continuation — Owner Portal Phase 5 and gallery viewer deployment (27 November 2026)
+
+- Re-read `docs/PROJECT_WORKING_RULES.md`, `PROJECT_ROADMAP.md`, `docs/NEW_CHAT_HANDOFF.md`, `docs/OWNER_PORTAL_AUDIT_AND_IMPROVEMENT_PLAN.md`, and relevant source before continuing.
+- Owner confirmed all Phase 4B gallery manual tests passed. The visible bilingual `Close / بند کریں` public gallery viewer button is deployed. Its specific code commit is `a9ca81982695ef5d07aa94b8a54b55f8be82e3d9`; CI run `45901260609` passed and Cloudflare Pages deployment `1456045e-5c5f-4c4e-9916-b54e2939d8ac` succeeded. Owner device confirmation of the close control is still pending.
+- Continued the previously Owner-approved Owner Portal roadmap Phase 5. Source audit found `OwnerPayments` previously only toasted fetch failures, while `OwnerProfile` silently swallowed profile-history fetch errors; submission handlers did not have immediate in-flight guards. Updated `src/pages/owner/OwnerPortalPages.tsx` only:
+  - My Payments: visible load error + Retry, preserve prior loaded data on refresh failure, guard overlapping reload responses, prevent duplicate correction submission and disable relevant controls while busy.
+  - Owner Profile: show profile request-history loading/error + Retry, block profile change submission until request history loads, prevent duplicate profile change requests, and show/lock password update while in flight.
+- Evaluated profile-photo and persisted notification-preference controls. They are intentionally deferred: no existing preference persistence model is present, and profile photo needs a separately approved upload/compression/private-review/publication lifecycle. No new personal data fields, image uploads, schema changes or database migrations were added.
+- Phase 5 commit: `f4a211284354ec4d02f1894e0ff9bc8049235a11`. GitHub CI `45902085685` passed TypeScript, automated tests, production build and Edge Function typecheck. Cloudflare Pages production deployment `cb4d87a5-9254-44b7-9761-c0dfaf5cebc3` succeeded with canonical alias `https://hellosadiqabad.com`.
+- No database, payment receipt, profile record, approval request, existing business or media record was changed.
+- Next Owner action: manually test Owner Portal → My Payments refresh/retry and correction submit busy state; Owner Portal → Profile request-history loading/retry, profile request single-submit/pending status and password update busy state. Do not use a real receipt correction or change account details just to test; use an appropriate test account.
+- Keep Phase 0 partially accepted until Admin Business Field Review visibility is resolved. Keep Phase 5 Owner manual acceptance pending. Do not claim authenticated browser/device testing has been performed.
