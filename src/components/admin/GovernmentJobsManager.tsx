@@ -8,6 +8,7 @@ import { Badge, Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
 import { getSupabaseClient } from '../../lib/supabase';
+import { compressImageFile } from '../../lib/imageCompression';
 
 type FormState = {
  id:string; title_en:string; title_ur:string; summary_en:string; summary_ur:string; slug:string; department_name:string; department_scope:string; job_type:string;
@@ -83,20 +84,17 @@ export function GovernmentJobsManager({actorId}:{actorId:string}) {
  };
  const uploadJobImage=async(file:File|null)=>{
   if(!file)return;
-  const extensions:Record<string,string>={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'};
-  const extension=extensions[file.type];
-  if(!extension){showToast('Upload a JPG, PNG, WebP or AVIF image.','error');return;}
-  if(file.size>5*1024*1024){showToast('Job poster must be 5 MB or smaller.','error');return;}
-  const client=getSupabaseClient();
-  if(!client){showToast('Image upload requires the live database.','error');return;}
+  if(file.size<=0||file.size>5*1024*1024){showToast('Job poster must be 5 MB or smaller.','error');return;}
+  const client=getSupabaseClient();if(!client){showToast('Image upload requires the live database.','error');return;}
   setImageUploading(true);
   try{
-   const path='government-jobs/'+actorId+'/'+crypto.randomUUID()+'.'+extension;
-   const {data,error}=await client.storage.from('Hello Sadiqabad').upload(path,file,{cacheControl:'3600',contentType:file.type,upsert:false});
+   const compressed=await compressImageFile(file,{maxDimension:1800,quality:0.82,maxInputBytes:5*1024*1024,maxOutputBytes:4*1024*1024});
+   const path='government-jobs/'+actorId+'/'+crypto.randomUUID()+'.webp';
+   const {data,error}=await client.storage.from('Hello Sadiqabad').upload(path,compressed.file,{cacheControl:'3600',contentType:'image/webp',upsert:false});
    if(error)throw error;
    const {data:publicData}=client.storage.from('Hello Sadiqabad').getPublicUrl(data.path);
    update('image_url',publicData.publicUrl);
-   showToast('Job image uploaded. Save the job to keep the image linked.','success');
+   showToast('Job image WebP mein compress ho kar upload ho gayi. Save the job to keep it linked.','success');
   }catch(error){showToast(error instanceof Error?error.message:'Job image could not be uploaded.','error');}
   finally{setImageUploading(false);}
  };

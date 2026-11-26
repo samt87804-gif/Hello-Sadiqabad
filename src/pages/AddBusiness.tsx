@@ -7,6 +7,7 @@ import { normalizePkPhone } from '../lib/phone';
 import { updatePageSeo } from '../lib/seo';
 import { useAuth } from '../lib/auth';
 import { getSupabaseClient } from '../lib/supabase';
+import { compressImageFile } from '../lib/imageCompression';
 import type { AreaRow, CategoryRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
@@ -87,31 +88,15 @@ function ImageUploadCard({
 }
 
 async function compressBusinessImage(file: File, mediaField: 'logo' | 'cover'): Promise<File> {
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
-    throw new Error('Business images must be JPG, PNG or WebP and no larger than 5 MB.');
-  }
-  if (typeof createImageBitmap !== 'function') return file;
-  const bitmap = await createImageBitmap(file);
-  try {
-    const maxDimension = mediaField === 'logo' ? 640 : 1800;
-    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-    const width = Math.max(1, Math.round(bitmap.width * scale));
-    const height = Math.max(1, Math.round(bitmap.height * scale));
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext('2d');
-    if (!context) return file;
-    context.drawImage(bitmap, 0, 0, width, height);
-    const encode = (quality: number) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', quality));
-    let blob = await encode(0.84);
-    if (blob && blob.size > 4 * 1024 * 1024) blob = await encode(0.72);
-    if (!blob || blob.type !== 'image/webp' || blob.size >= file.size) return file;
-    const baseName = file.name.replace(/\.[^.]+$/, '') || mediaField;
-    return new File([blob], `${baseName}-compressed.webp`, { type: 'image/webp', lastModified: Date.now() });
-  } finally {
-    bitmap.close();
-  }
+  if (file.size <= 0 || file.size > 5 * 1024 * 1024) throw new Error('Business images must be no larger than 5 MB.');
+  const compressed = await compressImageFile(file, {
+    maxDimension: mediaField === 'logo' ? 640 : 1800,
+    quality: mediaField === 'logo' ? 0.82 : 0.80,
+    maxInputBytes: 5 * 1024 * 1024,
+    maxOutputBytes: 4 * 1024 * 1024,
+  });
+  return compressed.file;
+}
 }
 
 export function AddBusiness() {

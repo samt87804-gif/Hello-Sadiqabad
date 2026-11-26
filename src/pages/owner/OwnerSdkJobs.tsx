@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { BriefcaseBusiness, CalendarDays, RefreshCw, Send } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { getSupabaseClient } from '../../lib/supabase';
+import { compressImageFile } from '../../lib/imageCompression';
 import { fetchAllAreas, fetchOwnerListings } from '../../lib/api';
 import type { AreaRow } from '../../types/database';
 import type { BusinessPublicView } from '../../types/directory';
@@ -172,23 +173,25 @@ export function OwnerSdkJobs() {
   };
 
   const uploadPoster = async (jobId: string, file: File): Promise<boolean> => {
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
-      showToast('Poster JPEG, PNG ya WebP ho aur size 5 MB se zyada na ho.', 'error');
+    if (file.size <= 0 || file.size > 5 * 1024 * 1024) {
+      showToast('Original poster 5 MB ya is se chhota hona chahiye.', 'error');
       return false;
     }
     setUploadingPosterJobId(jobId);
     try {
+      const compressed = await compressImageFile(file, { maxDimension: 1600, quality: 0.82, maxInputBytes: 5 * 1024 * 1024, maxOutputBytes: 4 * 1024 * 1024 });
+      const uploadFile = compressed.file;
       const client = getSupabaseClient();
       if (!client) throw new Error('Supabase is not configured.');
       const { data, error } = await client.functions.invoke('create-sdk-job-poster-upload', {
-        body: { job_id: jobId, mime_type: file.type, file_size_bytes: file.size },
+        body: { job_id: jobId, mime_type: uploadFile.type, file_size_bytes: uploadFile.size },
       });
       if (error) throw error;
       if (!data?.ok || !data?.data?.path || !data?.data?.token) {
         throw new Error(data?.error || 'Secure poster upload could not be prepared.');
       }
       const { error: uploadError } = await client.storage.from('hs-pending-business-media')
-        .uploadToSignedUrl(data.data.path, data.data.token, file, { contentType: file.type, upsert: false });
+        .uploadToSignedUrl(data.data.path, data.data.token, uploadFile, { contentType: uploadFile.type, upsert: false });
       if (uploadError) throw uploadError;
       const { error: attachError } = await client.from('sdk_jobs')
         .update({ pending_media_path: data.data.path }).eq('id', jobId).select('id').single();

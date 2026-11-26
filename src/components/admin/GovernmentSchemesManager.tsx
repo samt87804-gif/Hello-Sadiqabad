@@ -6,6 +6,7 @@ import {Badge,Card} from '../ui/Surface';
 import {Button} from '../ui/Button';
 import {useToast} from '../ui/Toast';
 import {getSupabaseClient} from '../../lib/supabase';
+import {compressImageFile} from '../../lib/imageCompression';
 import {getGovernmentPublicationErrors} from '../../lib/governmentPublication';
 
 type FormState={
@@ -56,20 +57,16 @@ export function GovernmentSchemesManager({actorId}:{actorId:string}){
  const edit=(row:GovernmentSchemeRow)=>{setForm(toForm(row));setEditingPublished(row.status==='published');setShowForm(true);};
  const uploadSchemeImage=async(file:File|null)=>{
   if(!file)return;
-  if(!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type)){showToast('Upload a JPG, PNG, WebP or AVIF poster.','error');return;}
   if(file.size<=0||file.size>5*1024*1024){showToast('Scheme poster must be 5 MB or smaller.','error');return;}
   const client=getSupabaseClient();if(!client){showToast('Poster upload requires the connected database.','error');return;}
   setImageUploading(true);
   try{
-   let uploadFile=file;const extensions:Record<string,string>={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'};
-   if(typeof createImageBitmap==='function'){
-    const bitmap=await createImageBitmap(file);
-    try{const scale=Math.min(1,1800/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const context=canvas.getContext('2d');if(context){context.drawImage(bitmap,0,0,canvas.width,canvas.height);const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/webp',0.88));if(blob&&blob.type==='image/webp'&&blob.size<file.size)uploadFile=new File([blob],(file.name.replace(/\\.[^.]+$/,'')||'scheme-poster')+'.webp',{type:'image/webp',lastModified:Date.now()});}}
-    finally{bitmap.close();}
-   }
-   const extension=extensions[uploadFile.type]||'webp';const path='government-schemes/'+actorId+'/'+crypto.randomUUID()+'.'+extension;
-   const {data,error}=await client.storage.from('Hello Sadiqabad').upload(path,uploadFile,{cacheControl:'3600',contentType:uploadFile.type,upsert:false});if(error)throw error;
-   const {data:publicData}=client.storage.from('Hello Sadiqabad').getPublicUrl(data.path);update('image_url',publicData.publicUrl);showToast('Official scheme poster uploaded. Save the scheme to link it.','success');
+   const compressed=await compressImageFile(file,{maxDimension:1800,quality:0.82,maxInputBytes:5*1024*1024,maxOutputBytes:4*1024*1024});
+   const path='government-schemes/'+actorId+'/'+crypto.randomUUID()+'.webp';
+   const {data,error}=await client.storage.from('Hello Sadiqabad').upload(path,compressed.file,{cacheControl:'3600',contentType:'image/webp',upsert:false});
+   if(error)throw error;
+   const {data:publicData}=client.storage.from('Hello Sadiqabad').getPublicUrl(data.path);
+   update('image_url',publicData.publicUrl);showToast('Official scheme poster WebP mein compress ho kar upload ho gaya. Save the scheme to link it.','success');
   }catch(error){showToast(error instanceof Error?error.message:'Scheme poster could not be uploaded.','error');}
   finally{setImageUploading(false);}
  };
