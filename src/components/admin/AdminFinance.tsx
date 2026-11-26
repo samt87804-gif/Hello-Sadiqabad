@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Download, RefreshCw } from 'lucide-react';
 import {
+  fetchAdminFinanceAssignments,
   fetchAdminFinanceBalances,
   fetchAdminFinanceDashboard,
   fetchAdminFinanceLedger,
   recordPlanInstallment,
+  type AdminFinanceAssignment,
   type AdminFinanceBalance,
   type AdminFinanceReceipt,
   type AdminFinanceSummary,
@@ -40,6 +42,7 @@ export function AdminFinance() {
   const [summary, setSummary] = useState<AdminFinanceSummary | null>(null);
   const [receipts, setReceipts] = useState<AdminFinanceReceipt[]>([]);
   const [balances, setBalances] = useState<AdminFinanceBalance[]>([]);
+  const [assignments, setAssignments] = useState<AdminFinanceAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [plan, setPlan] = useState('');
@@ -48,6 +51,9 @@ export function AdminFinance() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [balanceSearch, setBalanceSearch] = useState('');
+  const [assignmentSearch, setAssignmentSearch] = useState('');
+  const [assignmentPlan, setAssignmentPlan] = useState('');
+  const [assignmentSource, setAssignmentSource] = useState('');
   const [installmentTarget, setInstallmentTarget] = useState<AdminFinanceBalance | null>(null);
   const [installmentAmount, setInstallmentAmount] = useState('');
   const [installmentMethod, setInstallmentMethod] = useState('');
@@ -58,7 +64,7 @@ export function AdminFinance() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [dashboard, ledger, outstanding] = await Promise.all([
+      const [dashboard, ledger, outstanding, history] = await Promise.all([
         fetchAdminFinanceDashboard(),
         fetchAdminFinanceLedger({
           search, plan, method, source,
@@ -66,16 +72,22 @@ export function AdminFinance() {
           to: dateToIsoExclusiveEnd(toDate),
         }),
         fetchAdminFinanceBalances(balanceSearch),
+        fetchAdminFinanceAssignments({
+          search: assignmentSearch,
+          plan: assignmentPlan,
+          source: assignmentSource,
+        }),
       ]);
       setSummary(dashboard);
       setReceipts(ledger);
       setBalances(outstanding);
+      setAssignments(history);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Finance data load nahi ho saka.', 'error');
     } finally {
       setLoading(false);
     }
-  }, [search, plan, method, source, fromDate, toDate, balanceSearch, showToast]);
+  }, [search, plan, method, source, fromDate, toDate, balanceSearch, assignmentSearch, assignmentPlan, assignmentSource, showToast]);
 
   useEffect(() => { void reload(); }, []);
 
@@ -96,6 +108,30 @@ export function AdminFinance() {
     const link = document.createElement('a');
     link.href = url;
     link.download = 'hello-sadiqabad-finance-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportAssignmentsCsv = () => {
+    const columns = [
+      'Assigned at', 'Business', 'Owner', 'Plan', 'Standard fee (PKR)',
+      'Agreed fee (PKR)', 'Waived (PKR)', 'Received (PKR)', 'Outstanding (PKR)',
+      'Period start', 'Period end', 'Source', 'Assignment kind', 'Assigned by', 'Admin note',
+    ];
+    const rows = assignments.map((row) => [
+      row.assigned_at, row.business_name, row.owner_name, row.plan_code,
+      row.standard_price_pkr, row.agreed_fee_pkr, row.waived_amount_pkr,
+      row.received_pkr, row.outstanding_pkr, row.period_start, row.period_end,
+      row.source, row.assignment_kind, row.assigned_by_name, row.internal_note,
+    ]);
+    const csv = [columns, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'hello-sadiqabad-plan-assignments-' + new Date().toISOString().slice(0, 10) + '.csv';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -249,6 +285,50 @@ export function AdminFinance() {
                     </tr>
                   ))}
                   {!receipts.length && <tr><td colSpan={7} className="p-6 text-center text-on-surface-variant">No receipts match these filters.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <Card className="p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-bold text-on-surface">Plan assignment history</h2>
+                <p className="text-[11px] text-on-surface-variant">Includes Free plans, zero-receipt assignments and full waivers — separate from actual income.</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportAssignmentsCsv} disabled={!assignments.length} leftIcon={<Download className="w-4 h-4" />}>Export assignments CSV</Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <Input label="Search business / owner" value={assignmentSearch} onChange={(event) => setAssignmentSearch(event.target.value)} />
+              <Select label="Plan" value={assignmentPlan} onChange={(event) => setAssignmentPlan(event.target.value)}>
+                <option value="">All plans</option><option value="free">Free</option><option value="basic">Basic</option><option value="premium">Premium</option>
+              </Select>
+              <Select label="Assignment source" value={assignmentSource} onChange={(event) => setAssignmentSource(event.target.value)}>
+                <option value="">All sources</option><option value="admin">Admin</option><option value="owner_request">Owner request</option>
+              </Select>
+            </div>
+            <div className="flex justify-end"><Button size="sm" onClick={() => void reload()} loading={loading}>Apply assignment filters</Button></div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1180px] text-xs text-left">
+                <thead><tr className="border-b border-outline-variant text-on-surface-variant">
+                  {['Assigned', 'Business / Owner', 'Plan', 'Standard', 'Agreed', 'Waived', 'Received', 'Outstanding', 'Period', 'Source / Type'].map((label) => <th key={label} className="p-2 font-semibold">{label}</th>)}
+                </tr></thead>
+                <tbody>
+                  {assignments.map((row) => (
+                    <tr key={row.assignment_id} className="border-b border-outline-variant/40">
+                      <td className="p-2 whitespace-nowrap">{dateTime(row.assigned_at)}</td>
+                      <td className="p-2"><strong>{row.business_name}</strong><div className="text-on-surface-variant">{row.owner_name || 'No owner linked'}</div></td>
+                      <td className="p-2 uppercase font-bold">{row.plan_code}</td>
+                      <td className="p-2">{money(row.standard_price_pkr)}</td>
+                      <td className="p-2">{money(row.agreed_fee_pkr)}</td>
+                      <td className="p-2">{money(row.waived_amount_pkr)}</td>
+                      <td className="p-2">{money(row.received_pkr)}</td>
+                      <td className="p-2 font-bold">{money(row.outstanding_pkr)}</td>
+                      <td className="p-2 whitespace-nowrap">{dateOnly(row.period_start)} – {dateOnly(row.period_end)}</td>
+                      <td className="p-2 capitalize">{row.source.replace('_', ' ')}<div className="text-on-surface-variant">{row.assignment_kind}</div></td>
+                    </tr>
+                  ))}
+                  {!assignments.length && <tr><td colSpan={10} className="p-6 text-center text-on-surface-variant">No plan assignments match these filters.</td></tr>}
                 </tbody>
               </table>
             </div>
