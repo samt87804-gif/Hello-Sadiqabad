@@ -81,6 +81,9 @@ const OwnerInquiries = lazy(() =>
 const OwnerAnalyticsPage = lazy(() =>
   import('./pages/owner/OwnerPortalPages').then((m) => ({ default: m.OwnerAnalyticsPage }))
 );
+const OwnerPayments = lazy(() =>
+  import('./pages/owner/OwnerPortalPages').then((m) => ({ default: m.OwnerPayments }))
+);
 const OwnerPlan = lazy(() =>
   import('./pages/owner/OwnerPortalPages').then((m) => ({ default: m.OwnerPlan }))
 );
@@ -545,6 +548,16 @@ export default function App() {
                         <RequireAuth>
                           <RequireRole roles={['owner']}>
                             <OwnerPlan />
+                          </RequireRole>
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/owner/payments"
+                      element={
+                        <RequireAuth>
+                          <RequireRole roles={['owner']}>
+                            <OwnerPayments />
                           </RequireRole>
                         </RequireAuth>
                       }
