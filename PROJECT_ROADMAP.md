@@ -1286,3 +1286,10 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] Combined with prior Owner confirmations of request history/statuses, Admin-note privacy, My Payments history and Plan details, Phase 0 is manually accepted.
 - [x] No non-null legacy `admin_note` exists on the 17 current new-business submissions; Previous note text cannot be demonstrated without a real historical note. No production note or test row was created.
 - [ ] Phase 1 Owner manual acceptance: verify pending-review count includes `new` + `in_review` only; verify marking an inquiry Read does not assign a handler, while marking it Handled records the current signed-in Owner as handler. Use an appropriate test inquiry; do not alter a real customer inquiry just to test.
+
+
+### Phase 1 audit finding — counter accuracy (27 November 2026)
+
+- [x] Source audit found the My Businesses “Requests awaiting review” counter is calculated from the currently loaded request page (initially 20 rows), not the full Owner request set. Pending requests on older pages can therefore be omitted from the count.
+- [ ] Owner approval required for a narrow fix: Owner-scoped exact count of allowed submission types with status `new` / `in_review`, preserving RLS and existing paginated history. No schema/data mutation planned.
+- [ ] Phase 1 manual acceptance remains pending: verify the corrected full pending count and inquiry Read/Handled handler behavior.
