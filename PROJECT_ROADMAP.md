@@ -1267,3 +1267,14 @@ Active detailed plan: `docs/OWNER_PORTAL_AUDIT_AND_IMPROVEMENT_PLAN.md`.
 - [ ] Owner manual acceptance: test each Reviews/Inquiries filter and confirm Load more returns older matching records without duplicates.
 
 No database migration, RLS/grant change or existing production data mutation was made for Phase 3D/3E.
+
+
+## Owner Portal — Business Field Approval visibility diagnostic (27 November 2026)
+
+- [x] Re-read canonical project working rules and inspect the current queue component, Admin route/permission gate, migration policies and live RLS/grants.
+- [x] Read-only live verification: authenticated Super Admin can read 4 active new-business submissions (2 `new`, 2 `in_review`) and 39 linked field-review rows (26 pending); required columns are selectable and direct private `admin_note` / `assigned_to` access remains denied. No production data was changed.
+- [x] Diagnostic-only UI hardening deployed on `main`: commit `8cc2e5027c1fd8ef613141550e40df0c39f3551c`. Optional media, Owner-link, private-note and signed-preview failures no longer hide the primary request cards; required load errors are shown with Retry.
+- [x] Cloudflare Pages production deployment `4a8d53e3-5550-43c6-93b0-1b55343a5a75` succeeded for the same commit; canonical alias `https://hellosadiqabad.com` is attached.
+- [ ] GitHub Actions CI status for this diagnostic commit is unverified; do not claim automated tests passed.
+- [ ] Owner must verify Admin → Business Field Approval → Refresh shows the 4 active requests. If still empty, provide a screenshot including page heading and any error/warning. Root cause is not confirmed until this browser check.
+- [ ] Phase 0 remains partially accepted. No legacy non-null Admin note exists on the current 17 new-business submissions, so there is no prior-note text to display from existing records.
