@@ -1189,10 +1189,11 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Read current canonical project rules, roadmap, handoff, Finance plan, relevant Owner/Admin components, auth/API code, live profile/finance schema and triggers, Super Admin helpers, and live migration ledger.
 - [x] Added the permanent documentation-cycle rule: reread the canonical rules, roadmap, handoff, active plan and directly relevant source before each task/phase; keep the feature plan, roadmap and handoff current; tick only verified work. Commit `a74df37eb8dcc45887ac05b897cf91756b0a39e6`.
 - [x] Added [Owner Financial Profiles, Payment History & Approval Workflows plan](docs/OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md) with the approved scope, accounting/security rules, phases and acceptance tests.
-- [ ] Phase B: additive private schema, RLS, immutable receipt adjustments, Owner-scoped RPCs, Super Admin review/profile RPCs and direct Owner profile-edit guard.
-- [ ] Phase C: Owner Portal read-only My Payments page and approval-based profile change request.
-- [ ] Phase D: Admin Owners Financial Profile and correction/reversal/profile approval workflows.
-- [ ] Phase E: net adjusted receipts reflected across Finance dashboard, ledger, assignments, balances and CSV.
-- [ ] Phase F: rollback/adversarial SQL tests, TypeScript/tests/build/CI, production deployment and endpoint checks.
-- [ ] Phase G: Owner manual acceptance. Do not mark accepted until explicitly confirmed.
-- Live schema/migration audit: latest migration version `20261126184410`; no production schema or UI changes have yet been applied for this feature.
+- [x] Phase B: additive private schema, RLS, immutable receipt adjustments, Owner-scoped RPCs, Super Admin review/profile/direct-correction RPCs and direct Owner profile-edit guard. Live migration versions: `20261126193259`, `20261126193516`.
+- [x] Phase C: Owner Portal read-only My Payments page, correction requests and approval-based profile change request.
+- [x] Phase D: Admin Owners Financial Profile, businesses/assignments/receipts/audit history, correction/reversal approvals and profile-change review.
+- [x] Phase E: net adjusted receipts reflected across Finance dashboard, ledger, assignments, balances, installment validation and CSV (original and net amounts exported).
+- [x] Phase F1: rollback/adversarial SQL checks and Cloudflare Pages production build/deploy succeeded for feature commit `c5ea0e23118be7785ff7b1e60b63104938fbb0b6`; deployment `9d78a58f-1157-4211-bd02-0cbce0a8b24f`.
+- [ ] Phase F2: repository `npm run check` and authenticated browser smoke tests. The Pages build verified `npm run build`; separate CI/check status was not exposed in the available GitHub connector.
+- [ ] Phase G: Owner manual acceptance. Do not mark accepted until explicitly confirmed. See `docs/OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md`.
+- `owner_edits_require_approval=true` remains unchanged; existing business listing moderation flow preserved.
