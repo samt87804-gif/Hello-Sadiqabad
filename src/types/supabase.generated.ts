@@ -1326,6 +1326,10 @@ export type Database = {
         Args: { p_submission_id: string; p_action: string; p_admin_note?: string | null }
         Returns: Json
       }
+      admin_submission_private_notes: {
+        Args: { p_submission_ids: string[] }
+        Returns: { submission_id: string; admin_note: string | null }[]
+      }
       admin_analytics: { Args: { p_days?: number }; Returns: Json }
       admin_dashboard_counts: { Args: never; Returns: Json }
       approve_submission: {

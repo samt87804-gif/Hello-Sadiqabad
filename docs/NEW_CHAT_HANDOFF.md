@@ -61,3 +61,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - GitHub Actions CI run `45885425664` passed: `build` and `edge-functions` jobs; npm audit high/critical gate, TypeScript typecheck, automated tests, production build and Edge Function typecheck all succeeded.
 - Remaining: authenticated browser/device smoke tests and Owner manual acceptance. Do not claim acceptance until Owner confirms.
 - Continue from Phase F3/Phase G. Do not re-request a source ZIP.
+
+
+## Current workstream — Owner Portal audit and improvements (27 November 2026)
+
+- Owner explicitly approved the full implementation roadmap in this conversation. Continue Phase 0 first, then follow [docs/OWNER_PORTAL_AUDIT_AND_IMPROVEMENT_PLAN.md](OWNER_PORTAL_AUDIT_AND_IMPROVEMENT_PLAN.md) in order.
+- Canonical rules remain authoritative: direct commits to `main`, no branches/PRs, preserve all workflows/data, read canonical docs and relevant source before each phase, update this handoff/roadmap/plan continuously, and explain practical Owner test steps.
+- Phase 0 confirmed issue: authenticated users had table-wide SELECT on `public.submissions`; Owner RLS allows reading their own eligible submissions and the Owner API selected the internal `admin_note` column.
+- Live additive RPC migration applied: `20261126202451` (`owner_submission_private_notes_rpc`). RPC is SECURITY DEFINER with empty search_path, checks Super Admin or `moderation.review`, and anon cannot execute it.
+- Current in-progress app changes remove `admin_note` from Owner history query and switch Business Field Review to the Admin-only RPC. Follow with a separate additive grant migration that removes authenticated table-wide SELECT and grants only safe columns; test RLS and all direct callers before applying.
+- Do not replay `20261127100000_owner_financial_profiles_and_payment_corrections.sql`: the live ledger already records the financial feature under `20261126193259` and `20261126193516`. This repo/live mismatch was observed and must remain explicit.
+- No Owner manual acceptance has been performed for this new workstream. After CI/deployment and permission verification, give the Owner practical steps and wait for their report.

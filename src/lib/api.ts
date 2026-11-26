@@ -1616,7 +1616,7 @@ export async function fetchOwnerSubmissions(ownerId: string): Promise<Submission
   if (!client) return [];
   const { data, error } = await client
     .from('submissions')
-    .select('id,type,business_id,payload,contact_name,contact_phone,submitted_by,status,admin_note,created_at,updated_at')
+    .select('id,type,business_id,payload,contact_name,contact_phone,submitted_by,status,created_at,updated_at')
     .eq('submitted_by', ownerId)
     .in('type', ['new_business', 'claim', 'plan_upgrade', 'owner_product', 'owner_service', 'owner_offer'])
     .order('created_at', { ascending: false })

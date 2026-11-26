@@ -186,7 +186,7 @@ export function BusinessFieldReviewQueue({
     setLoading(true);
     try {
       const { data: rows, error: submissionError } = await client.from('submissions')
-        .select('id,payload,contact_name,contact_phone,submitted_by,status,admin_note,created_at,business_id')
+        .select('id,payload,contact_name,contact_phone,submitted_by,status,created_at,business_id')
         .eq('type', 'new_business')
         .in('status', ['new', 'in_review', 'done'])
         .order('created_at', { ascending: false })
@@ -194,7 +194,7 @@ export function BusinessFieldReviewQueue({
       if (submissionError) throw submissionError;
       const ids = (rows ?? []).map((row) => row.id);
 
-      const [reviewResult, mediaResult, ownerResult] = await Promise.all([
+      const [reviewResult, mediaResult, ownerResult, privateNotesResult] = await Promise.all([
         ids.length
           ? client.from('business_field_reviews')
             .select('id,submission_id,field_key,field_value,status,admin_note')
@@ -211,10 +211,14 @@ export function BusinessFieldReviewQueue({
             .select('id,full_name,email,phone,business_name,business_id,submission_id,status,invitation_requested,invitation_status,invitation_attempts,invitation_last_error,invitation_sent_at')
             .in('submission_id', ids)
           : Promise.resolve({ data: [], error: null }),
+        ids.length
+          ? client.rpc('admin_submission_private_notes', { p_submission_ids: ids })
+          : Promise.resolve({ data: [], error: null }),
       ]);
       if (reviewResult.error) throw reviewResult.error;
       if (mediaResult.error) throw mediaResult.error;
       if (ownerResult.error) throw ownerResult.error;
+      if (privateNotesResult.error) throw privateNotesResult.error;
 
       const mediaAssets = (mediaResult.data ?? []) as BusinessMedia[];
       const mediaPaths = mediaAssets.map((asset) => asset.storage_path);
@@ -226,7 +230,14 @@ export function BusinessFieldReviewQueue({
         (signedRows ?? []).flatMap((item) => item.signedUrl ? [[item.path, item.signedUrl] as const] : [])
       );
 
-      const candidateRows = (rows ?? []) as BusinessSubmission[];
+      const privateNoteBySubmission = new Map(
+        ((privateNotesResult.data ?? []) as Array<{ submission_id: string; admin_note: string | null }>)
+          .map((item) => [item.submission_id, item.admin_note] as const)
+      );
+      const candidateRows = (rows ?? []).map((row) => ({
+        ...row,
+        admin_note: privateNoteBySubmission.get(row.id) ?? null,
+      })) as BusinessSubmission[];
       const fieldRows = (reviewResult.data ?? []) as FieldReview[];
       const linkedOwnerRows = (ownerResult.data ?? []) as LinkedOwnerRequest[];
       const activeRows = candidateRows.filter((submission) => {

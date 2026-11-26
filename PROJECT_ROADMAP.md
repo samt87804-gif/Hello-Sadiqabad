@@ -1198,3 +1198,13 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Phase F3: Authenticated browser/device smoke tests for Owner and Admin screens.
 - [ ] Phase G: Owner manual acceptance. Do not mark accepted until explicitly confirmed. See `docs/OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md`.
 - `owner_edits_require_approval=true` remains unchanged; existing business listing moderation flow preserved.
+
+
+## Owner Portal audit and improvement work — Owner approved 27 November 2026
+
+- Active checklist and source of truth: [Owner Portal Audit & Improvement Plan](docs/OWNER_PORTAL_AUDIT_AND_IMPROVEMENT_PLAN.md).
+- [x] Phase 0 discovery: private `submissions.admin_note` exposure confirmed against live authenticated grants and Owner RLS.
+- [x] Added live Admin-only note-reader RPC (migration `20261126202451`); Owner request query no longer needs private notes; Business Field Review will read prior notes through the protected RPC.
+- [ ] Phase 0 remaining: release app changes, revoke direct authenticated SELECT on private note column, verify Admin/Owner access and manual acceptance.
+- [ ] Phases 1–6: data correctness, notifications/mobile UX, race/scaling safeguards, listing gallery management, optional profile improvements and final acceptance. Follow the active plan in order.
+- Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.
