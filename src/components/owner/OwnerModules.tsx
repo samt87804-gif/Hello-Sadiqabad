@@ -41,6 +41,7 @@ import { DemoModeNotice } from '../ui/DemoModeNotice';
 import {
   countEffectiveActiveOffers,
   getEffectiveOfferStatus,
+  getDefaultOfferExpiryDate,
   getPakistanDateString,
   getPlanOfferLimit,
 } from '../../lib/offers';
@@ -271,7 +272,7 @@ export function OffersManager({
   const [imageUrl, setImageUrl] = useState('');
   const todayStr = getPakistanDateString();
   const [validFrom, setValidFrom] = useState(todayStr);
-  const [validTo, setValidTo] = useState('2027-06-30');
+  const [validTo, setValidTo] = useState(getDefaultOfferExpiryDate(todayStr));
   const [saving, setSaving] = useState(false);
   const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -297,7 +298,7 @@ export function OffersManager({
     setDesc('');
     setImageUrl('');
     setValidFrom(todayStr);
-    setValidTo('2027-06-30');
+    setValidTo(getDefaultOfferExpiryDate(todayStr));
     setModalOpen(true);
   };
 

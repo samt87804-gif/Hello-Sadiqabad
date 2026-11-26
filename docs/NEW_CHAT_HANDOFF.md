@@ -185,3 +185,10 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 3. If the account has more than 20 requests, click “Load older requests”. The next older records should appear underneath, without repeating existing cards. If there are 20 or fewer, the button should not appear.
 4. Check that each request keeps its original date and status (Pending review, Approved, Rejected, etc.). Do not change any request status just to test pagination.
 5. Report any missing, repeated or incorrectly ordered request.
+
+
+### Phase 4A — dynamic Owner offer expiry (implementation awaiting CI)
+
+- New offer forms now default their end date to 30 calendar days after the current Pakistan-local date, not a hard-coded date. Existing offer dates remain unchanged when editing.
+- Existing validation rejects an end date earlier than the start date.
+- Added regression tests for month boundaries and leap-year arithmetic.

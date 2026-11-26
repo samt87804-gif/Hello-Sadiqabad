@@ -26,6 +26,18 @@ export function getPakistanDateString(now: Date = new Date()): string {
 }
 
 /**
+ * Default end date for a newly created offer: 30 calendar days after the
+ * current Pakistan-local date. Uses UTC date arithmetic to avoid local-device
+ * timezone differences while preserving the YYYY-MM-DD calendar date.
+ */
+export function getDefaultOfferExpiryDate(todayStr: string = getPakistanDateString()): string {
+  const [year, month, day] = todayStr.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + 30);
+  return date.toISOString().slice(0, 10);
+}
+
+/**
  * Normalizes ISO date string or timestamp to 'YYYY-MM-DD'.
  */
 export function normalizeDateOnly(dateStr: string): string {

@@ -54,7 +54,7 @@
 
 ## Phase 4 — Business listing management
 
-- [ ] Replace the hard-coded offer expiry default with a date derived from the current day and validate it.
+- [x] Replace the hard-coded offer expiry default with a date 30 calendar days after today's Pakistan-local date; existing start/end-date validation remains enforced.
 - [ ] Design Owner gallery management with mandatory WebP compression, smaller-than-original enforcement, plan limits, private upload and Admin approval.
 - [ ] Implement gallery changes only after the full upload/review/promotion lifecycle is verified; preserve existing media.
 
@@ -149,3 +149,9 @@
 - GitHub Actions CI run 45893853551 passed: TypeScript, automated tests, production build and Edge Function typecheck.
 - Cloudflare Pages deployment 984fd83b-5b23-4aed-a659-942c50480be2 succeeded for the same commit.
 - An initial CI run for commit b164654cf2c07f5ed4f6d58a99f64dcfc9b75737 caught a missing test import; the import was corrected in 44fee047 and the full CI passed. No production data was changed.
+
+
+### Phase 4A — offer expiry default (implementation pending CI)
+
+- New Owner offers now default to 30 days from the current Pakistan-local date instead of a fixed 2027 date. Editing an existing offer continues to preserve its saved dates.
+- Added tests for normal month rollover and leap-year date arithmetic. Existing validation still prevents an end date before the start date.
