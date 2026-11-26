@@ -1,6 +1,6 @@
 import { fetchWithTimeout } from './_shared/fetchWithTimeout.js';
 
-const ALLOWED_IMAGE_HOST = /(^|\\.)googleusercontent\\.com$/i;
+const ALLOWED_IMAGE_HOST = /(^|\.)googleusercontent\.com$/i;
 const SUPABASE_STORAGE_HOST = 'efwohfzqitevkuybnyif.supabase.co';
 const SUPABASE_PUBLIC_BUCKET_PREFIX = '/storage/v1/object/public/Hello%20Sadiqabad/';
 
