@@ -132,7 +132,7 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - This is a narrow reliability fix. Cross-page overfetch and server-side pagination/filtering remain unchecked Phase 3 tasks.
 
 
-### Phase 3B — page-specific loading and Owner list pagination (implementation awaiting CI)
+### Phase 3B — page-specific loading and Owner list pagination (implemented, CI-passed and deployed)
 
 - The common Owner data hook now accepts page needs. Dashboard loads engagement aggregates; Listing loads categories/areas/plans/requests; Products loads products/requests; Offers loads plans/offers/requests; Reviews and Inquiries load their own list pages; Analytics loads stats; Plan loads plans/requests; public profile settings load profile selection. All screens still load the signed-in Owner's businesses and unread notification count for navigation.
 - Reviews and Inquiries now request 20 rows for the selected business, ordered newest first, and show a Load more control only when another page exists.
@@ -140,3 +140,25 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Demo tests create 23 sample rows, verify first page 20 + next page 3, hasMore state and no overlap, then clean up test rows.
 - Request history remains capped at latest 50 and needs its own paginated history workflow.
 - Admin Business Field Approval database check on 27 Nov 2026: live DB has 4 active new-business submissions (2 new, 2 in_review) and 26 pending_review field rows. No new_business submission currently has a non-null legacy admin_note (count 0), so an old Previous note is not available to display. The queue should nevertheless contain four submission cards; Owner reports seeing no cards, so Admin screen visibility remains an unresolved manual issue. No records were changed.
+
+
+### Phase 3B release evidence
+
+- Commit 93f414bc5a745f00a3d08453421a15893702cd5e.
+- GitHub Actions CI 45893377773 passed: TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment 3d9864f2-ae0c-4238-8b23-64614921e1c4 succeeded for the same commit.
+
+### Admin Business Field Approval visibility follow-up
+
+- Correct Admin navigation label is “Business Field Approval”. The separate “Moderation Queue” intentionally excludes new-business registrations.
+- Live DB read-only counts: 2 new + 2 in_review new-business submissions, 13 done submissions, and 26 pending_review field rows. The queue code shows new/in_review records; completed records appear only if media or Owner invitation work remains outstanding.
+- Authenticated-role simulation with the active Super Admin profile saw 17 total new-business submissions and 26 pending field reviews; the private-note RPC executed and returned zero notes. This confirms database access for a Super Admin. No current new_business submission has a non-null legacy admin_note, so no “Previous note” text is available in the existing records.
+- Owner reports no cards visible in the Admin UI. Ask the Owner to open Admin → Business Field Approval (not Moderation Queue) and press Refresh; if still empty, capture a screenshot including the page heading and any toast/error. No database records were modified.
+
+### Phase 3B practical acceptance — Owner
+
+1. Sign in as an Owner and open Owner Portal → Reviews. The first page should show at most 20 newest approved reviews for the selected business. If more exist, a “Load more reviews” button appears; click it and confirm older reviews append without duplicates.
+2. Open Owner Portal → Inquiries. The first page should show at most 20 newest inquiries. If more exist, click “Load more inquiries” and confirm the next records append without duplicates.
+3. Switch between two businesses (if the account has two) and confirm reviews/inquiries belong only to the selected business.
+4. Open My Businesses, Listing, Products, Offers, Analytics, Plan, Profile, Public Profile and Notifications. Confirm each page still shows its required information and no missing sections/errors.
+5. If a selected business has fewer than 20 records, no Load more button is expected. Report any mismatch; do not mark manual acceptance complete until the Owner confirms.

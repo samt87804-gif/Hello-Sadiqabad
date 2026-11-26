@@ -127,3 +127,11 @@
 - Reviews and Inquiries screens fetch 20 records at a time for the selected business and offer a Load more control. Dashboard full engagement data remains unchanged so its counts are not silently under-reported.
 - Added demo-mode regression coverage for page boundaries, has-more state and duplicate-free concatenation.
 - Request history still shows the most recent 50 records; pagination for that history remains a separate follow-up.
+
+
+### Phase 3B release evidence
+
+- Commit: 93f414bc5a745f00a3d08453421a15893702cd5e.
+- GitHub Actions CI run 45893377773 passed: TypeScript type check, automated tests, production build and Edge Function type check.
+- Cloudflare Pages deployment 3d9864f2-ae0c-4238-8b23-64614921e1c4 succeeded for the same commit.
+- Owner manual acceptance remains pending.
