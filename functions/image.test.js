@@ -29,7 +29,7 @@ test('image proxy returns a 200 SVG placeholder when the upstream image is missi
   await withImageMocks(async () => new Response('not found', { status: 404 }), {}, async () => {
     const response = await onRequestGet(request());
     assert.equal(response.status, 200);
-    assert.match(response.headers.get('content-type') || '', /^image\\/svg\\+xml/);
+    assert.match(response.headers.get('content-type') || '', /^image\/svg\+xml/);
     assert.match(await response.text(), /Image unavailable/);
   });
 });
@@ -40,7 +40,7 @@ test('image proxy returns a placeholder when upstream fetch times out', async ()
   }), {}, async () => {
     const response = await onRequestGet(request());
     assert.equal(response.status, 200);
-    assert.match(response.headers.get('content-type') || '', /^image\\/svg\\+xml/);
+    assert.match(response.headers.get('content-type') || '', /^image\/svg\+xml/);
   });
 });
 
@@ -48,6 +48,6 @@ test('image proxy still returns fallback if edge cache write fails', async () =>
   await withImageMocks(async () => new Response('missing', { status: 404 }), { put: async () => { throw new Error('cache unavailable'); } }, async () => {
     const response = await onRequestGet(request());
     assert.equal(response.status, 200);
-    assert.match(response.headers.get('content-type') || '', /^image\\/svg\\+xml/);
+    assert.match(response.headers.get('content-type') || '', /^image\/svg\+xml/);
   });
 });
