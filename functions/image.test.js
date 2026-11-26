@@ -35,9 +35,7 @@ test('image proxy returns a 200 SVG placeholder when the upstream image is missi
 });
 
 test('image proxy returns a placeholder when upstream fetch times out', async () => {
-  await withImageMocks((_input, { signal }) => new Promise((_, reject) => {
-    signal.addEventListener('abort', () => reject(signal.reason), { once: true });
-  }), {}, async () => {
+  await withImageMocks(async () => { throw new DOMException('Timed out', 'TimeoutError'); }, {}, async () => {
     const response = await onRequestGet(request());
     assert.equal(response.status, 200);
     assert.match(response.headers.get('content-type') || '', /^image\/svg\+xml/);
