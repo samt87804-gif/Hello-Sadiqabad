@@ -19,6 +19,7 @@ const ImportManager = React.lazy(() => import('../../components/admin/GrowthAndO
 const LeadsManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.LeadsManager })));
 const OwnersManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.OwnersManager })));
 const PlansManager = React.lazy(() => import('../../components/admin/GrowthAndOps').then((m) => ({ default: m.PlansManager })));
+const AdminFinance = React.lazy(() => import('../../components/admin/AdminFinance').then((m) => ({ default: m.AdminFinance })));
 const AnalyticsView = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.AnalyticsView })));
 const AnnouncementsManager = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.AnnouncementsManager })));
 const AuditLogsViewer = React.lazy(() => import('../../components/admin/SystemAndTaxonomy').then((m) => ({ default: m.AuditLogsViewer })));
@@ -436,6 +437,7 @@ export function AdminPortal() {
             profiles={profiles}
             actorId={actorId}
             canPublish={hasPermission('business.publish')}
+            canAssignPlan={isSuperAdmin}
             initialSearch={businessJumpQuery}
             onReload={reload}
           />
@@ -513,6 +515,8 @@ export function AdminPortal() {
         return isSuperAdmin ? <LocalAuthoritiesManager authorities={localAuthorities} actorId={actorId} onReload={reload} /> : <PermissionDenied />;
       case 'authority-profiles':
         return isSuperAdmin ? <AuthorityProfilesManager profiles={authorityProfiles} businesses={businesses} actorId={actorId} onReload={reload} /> : <PermissionDenied />;
+      case 'finance':
+        return isSuperAdmin ? <AdminFinance /> : <PermissionDenied />;
       case 'plans':
         return hasPermission('tiers.manage') ? (
           <PlansManager

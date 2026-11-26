@@ -28,6 +28,7 @@ import {
   UserRoundPlus,
   UserRound,
   Wrench,
+  Wallet,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { usePermissions } from '../../lib/permissions';
@@ -65,6 +66,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { tab: 'leads', label: 'Sales Leads', icon: Briefcase, requiredPerm: 'leads.manage', badgeKey: 'open_leads' },
   { tab: 'ads', label: 'Sponsored Ads', icon: Sparkles, requiredPerm: 'ads.review' },
   { tab: 'plans', label: 'Plans & Expiry', icon: Crown, requiredPerm: 'tiers.manage', badgeKey: 'expiring_plans' },
+  { tab: 'finance', label: 'Finance & Payments', icon: Wallet, superAdminOnly: true },
   { tab: 'emergency', label: 'Emergency Contacts', icon: PhoneCall, superAdminOnly: true },
   { tab: 'local-authorities', label: 'Local Authorities', icon: Landmark, superAdminOnly: true },
   { tab: 'authority-profiles', label: 'Authority Profiles', icon: UserRound, superAdminOnly: true },
@@ -82,6 +84,7 @@ const ADMIN_NAV_GROUPS = [
   { label: 'Review & Approvals', tabs: ['business-review', 'moderation', 'owner-requests'] },
   { label: 'Directory Management', tabs: ['businesses', 'quality', 'import', 'export', 'categories', 'areas'] },
   { label: 'Owner Management', tabs: ['owners'] },
+  { label: 'Finance', tabs: ['finance'] },
   { label: 'Other Operations & System', tabs: ['overview', 'analytics', 'sdk-jobs', 'inquiries', 'leads', 'ads', 'plans', 'emergency', 'local-authorities', 'authority-profiles', 'announcements', 'news', 'government-jobs', 'government-schemes', 'chatbot-knowledge', 'staff', 'settings', 'audit'] },
 ] as const;
 
