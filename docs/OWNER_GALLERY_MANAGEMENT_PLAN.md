@@ -30,7 +30,9 @@
 - [x] Cloudflare Pages production deployment `45e643b1-ef0e-4d82-b992-142c2d2c9bec` succeeded for the latest documentation/main commit `7fe21cc6b2c725d0158bd7342f6fcd63b24289e2`; canonical alias `https://hellosadiqabad.com`.
 - [x] Owner manual acceptance confirmed by Owner on 27 November 2026: upload, Admin approval, public visibility, rejection, Owner removal request and Admin removal approval all passed. Owner also confirmed the full supplied gallery test checklist passed.
 - [ ] Optional follow-up: extend Owner removal requests to older legacy gallery URLs that have no media-asset record, after a safe asset-linking design.
-- [x] Owner-reported public gallery viewer issue investigated: an icon-only close control existed but was not sufficiently discoverable. Replaced it with a high-contrast, bilingual Close / بند کریں button with a larger touch target and visible focus state. Automated CI and production deployment are pending.
+- [x] Owner-reported public gallery viewer issue investigated: an icon-only close control existed but was not sufficiently discoverable. Replaced it with a high-contrast, bilingual Close / بند کریں button with a larger touch target and visible focus state.
+- [x] Viewer close-button CI run `45901260609` passed; Cloudflare Pages deployment `1456045e-5c5f-4c4e-9916-b54e2939d8ac` succeeded for commit `a9ca81982695ef5d07aa94b8a54b55f8be82e3d9`.
+- [ ] Owner manual confirmation that the visible close button closes the photo viewer on mobile and desktop.
 
 ## Release evidence
 
