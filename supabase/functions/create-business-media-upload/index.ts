@@ -120,7 +120,7 @@ Deno.serve(async (req: Request) => {
     const mode = body.mode === "owner_change" ? "owner_change" : "submission";
     const sessionId = body.session_id;
 
-    if (!["logo", "cover"].includes(String(field)) ||
+    if (!["logo", "cover", "gallery"].includes(String(field)) ||
         !["image/jpeg", "image/png", "image/webp"].includes(String(mime)) ||
         !Number.isInteger(size) || size <= 0 || size > 5 * 1024 * 1024) {
       return response(req, { ok: false, error: "Invalid image upload details" }, 400);
@@ -167,17 +167,34 @@ Deno.serve(async (req: Request) => {
           return response(req, { ok: false, error: "A Basic or Premium plan is required to request a cover image" }, 403);
         }
       }
-
-      const month = pakistanMonthRange();
-      const { count, error: usageError } = await db.from("business_image_change_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("business_id", business.id)
-        .eq("owner_id", auth.user.id)
-        .gte("requested_at", month.start)
-        .lt("requested_at", month.end);
-      if (usageError) return response(req, { ok: false, error: "Image-change allowance could not be checked" }, 503);
-      if ((count ?? 0) >= 2) {
-        return response(req, { ok: false, error: "Monthly image-change limit reached (2 per business)" }, 429);
+      if (field === "gallery") {
+        const { data: plan, error: planError } = await db.from("plans")
+          .select("limits").eq("code", business.plan_code).eq("is_active", true).maybeSingle();
+        if (planError || !plan) return response(req, { ok: false, error: "Gallery plan allowance could not be checked" }, 503);
+        const maxGallery = Number(plan.limits?.gallery ?? 0);
+        const { data: current, error: businessReadError } = await db.from("businesses")
+          .select("gallery_urls").eq("id", business.id).maybeSingle();
+        if (businessReadError || !current) return response(req, { ok: false, error: "Gallery details could not be checked" }, 503);
+        const { count: pendingCount, error: pendingError } = await db.from("business_media_assets")
+          .select("id", { count: "exact", head: true })
+          .eq("business_id", business.id).eq("media_field", "gallery")
+          .in("status", ["pending_review", "approved_pending_promotion"]);
+        if (pendingError) return response(req, { ok: false, error: "Pending gallery uploads could not be checked" }, 503);
+        if (maxGallery <= 0 || (current.gallery_urls?.length ?? 0) + (pendingCount ?? 0) >= maxGallery) {
+          return response(req, { ok: false, error: "Your current plan gallery limit has been reached" }, 403);
+        }
+      } else {
+        const month = pakistanMonthRange();
+        const { count, error: usageError } = await db.from("business_image_change_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("business_id", business.id)
+          .eq("owner_id", auth.user.id)
+          .gte("requested_at", month.start)
+          .lt("requested_at", month.end);
+        if (usageError) return response(req, { ok: false, error: "Image-change allowance could not be checked" }, 503);
+        if ((count ?? 0) >= 2) {
+          return response(req, { ok: false, error: "Monthly image-change limit reached (2 per business)" }, 429);
+        }
       }
 
       const ownerKey = await hashRateKey(`${auth.user.id}:${business.id}`);
