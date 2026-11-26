@@ -42,7 +42,7 @@ test('Owner review and inquiry pages are bounded and do not overlap', async () =
   const reviewIds: string[] = [];
   const inquiryIds: string[] = [];
   const stamp = Date.now();
-  for (let index = 0; index < 23; index += 1) {
+  for (let index = 0; index < 63; index += 1) {
     const reviewId = `review-page-${stamp}-${index}`;
     const inquiryId = `inquiry-page-${stamp}-${index}`;
     reviewIds.push(reviewId); inquiryIds.push(inquiryId);
@@ -64,34 +64,55 @@ test('Owner review and inquiry pages are bounded and do not overlap', async () =
   }
   const firstReviews = await fetchOwnerReviewsPage(businessId, 0, 20);
   const nextReviews = await fetchOwnerReviewsPage(businessId, 20, 20);
+  const finalReviews = await fetchOwnerReviewsPage(businessId, 40, 20);
+  const lastReviews = await fetchOwnerReviewsPage(businessId, 60, 20);
   assert.equal(firstReviews.items.length, 20);
   assert.equal(firstReviews.hasMore, true);
-  assert.equal(nextReviews.items.length, 3);
-  assert.equal(nextReviews.hasMore, false);
-  assert.equal(new Set([...firstReviews.items, ...nextReviews.items].map((row) => row.id)).size, 23);
+  assert.equal(nextReviews.items.length, 20);
+  assert.equal(nextReviews.hasMore, true);
+  assert.equal(finalReviews.items.length, 20);
+  assert.equal(finalReviews.hasMore, true);
+  assert.equal(lastReviews.items.length, 3);
+  assert.equal(lastReviews.hasMore, false);
+  assert.equal(new Set([...firstReviews.items, ...nextReviews.items, ...finalReviews.items, ...lastReviews.items].map((row) => row.id)).size, 63);
 
-  const repliedReviews = await fetchOwnerReviewsPage(businessId, 0, 20, 'replied');
-  const unrepliedReviews = await fetchOwnerReviewsPage(businessId, 0, 20, 'not_replied');
-  assert.equal(repliedReviews.items.length, 12);
-  assert.equal(repliedReviews.hasMore, false);
-  assert.ok(repliedReviews.items.every((row) => Boolean(row.owner_reply?.trim())));
-  assert.equal(unrepliedReviews.items.length, 11);
-  assert.equal(unrepliedReviews.hasMore, false);
-  assert.ok(unrepliedReviews.items.every((row) => !row.owner_reply?.trim()));
+  const repliedFirst = await fetchOwnerReviewsPage(businessId, 0, 20, 'replied');
+  const repliedNext = await fetchOwnerReviewsPage(businessId, 20, 20, 'replied');
+  const unrepliedFirst = await fetchOwnerReviewsPage(businessId, 0, 20, 'not_replied');
+  const unrepliedNext = await fetchOwnerReviewsPage(businessId, 20, 20, 'not_replied');
+  assert.equal(repliedFirst.items.length, 20);
+  assert.equal(repliedFirst.hasMore, true);
+  assert.equal(repliedNext.items.length, 12);
+  assert.equal(repliedNext.hasMore, false);
+  assert.ok([...repliedFirst.items, ...repliedNext.items].every((row) => Boolean(row.owner_reply?.trim())));
+  assert.equal(unrepliedFirst.items.length, 20);
+  assert.equal(unrepliedFirst.hasMore, true);
+  assert.equal(unrepliedNext.items.length, 11);
+  assert.equal(unrepliedNext.hasMore, false);
+  assert.ok([...unrepliedFirst.items, ...unrepliedNext.items].every((row) => !row.owner_reply?.trim()));
 
   const firstInquiries = await fetchOwnerInquiriesPage(businessId, 0, 20);
   const nextInquiries = await fetchOwnerInquiriesPage(businessId, 20, 20);
+  const finalInquiries = await fetchOwnerInquiriesPage(businessId, 40, 20);
+  const lastInquiries = await fetchOwnerInquiriesPage(businessId, 60, 20);
   assert.equal(firstInquiries.items.length, 20);
   assert.equal(firstInquiries.hasMore, true);
-  assert.equal(nextInquiries.items.length, 3);
-  assert.equal(nextInquiries.hasMore, false);
-  assert.equal(new Set([...firstInquiries.items, ...nextInquiries.items].map((row) => row.id)).size, 23);
+  assert.equal(nextInquiries.items.length, 20);
+  assert.equal(nextInquiries.hasMore, true);
+  assert.equal(finalInquiries.items.length, 20);
+  assert.equal(finalInquiries.hasMore, true);
+  assert.equal(lastInquiries.items.length, 3);
+  assert.equal(lastInquiries.hasMore, false);
+  assert.equal(new Set([...firstInquiries.items, ...nextInquiries.items, ...finalInquiries.items, ...lastInquiries.items].map((row) => row.id)).size, 63);
 
   for (const status of ['new', 'read', 'handled'] as const) {
-    const filtered = await fetchOwnerInquiriesPage(businessId, 0, 20, status);
-    assert.equal(filtered.items.length, status === 'handled' ? 7 : 8);
-    assert.equal(filtered.hasMore, false);
-    assert.ok(filtered.items.every((row) => row.status === status));
+    const firstFilteredPage = await fetchOwnerInquiriesPage(businessId, 0, 20, status);
+    const secondFilteredPage = await fetchOwnerInquiriesPage(businessId, 20, 20, status);
+    assert.equal(firstFilteredPage.items.length, 20);
+    assert.equal(firstFilteredPage.hasMore, true);
+    assert.equal(secondFilteredPage.items.length, 1);
+    assert.equal(secondFilteredPage.hasMore, false);
+    assert.ok([...firstFilteredPage.items, ...secondFilteredPage.items].every((row) => row.status === status));
   }
 
   db.reviews = db.reviews.filter((row) => !reviewIds.includes(row.id));
