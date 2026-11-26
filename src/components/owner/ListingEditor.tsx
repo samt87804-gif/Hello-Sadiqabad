@@ -33,6 +33,7 @@ import type {
 import type { BusinessPublicView } from '../../types/directory';
 import { effectivePlanCode } from '../../lib/searchFilter';
 import { getSupabaseClient } from '../../lib/supabase';
+import { compressBusinessImage } from '../../lib/businessMedia';
 import { isValidHttpsUrl, normalizePkPhone } from '../../lib/phone';
 import { validateOpeningHoursRanges } from '../../lib/hours';
 import { Badge, Card } from '../ui/Surface';
@@ -413,13 +414,15 @@ export function ListingEditor({
     let storagePath: string | null = null;
     let requestCreated = false;
     try {
+      const compressedImage = await compressBusinessImage(file, mediaField);
+      const uploadFile = compressedImage.file;
       const { data: authorization, error: authorizationError } = await client.functions.invoke('create-business-media-upload', {
         body: {
           mode: 'owner_change',
           business_id: business.id,
           media_field: mediaField,
-          mime_type: file.type,
-          file_size_bytes: file.size,
+          mime_type: uploadFile.type,
+          file_size_bytes: uploadFile.size,
         },
       });
       if (authorizationError || !authorization?.ok ||
@@ -430,15 +433,15 @@ export function ListingEditor({
       const uploadPath = authorization.data.path;
       storagePath = uploadPath;
       const { error: uploadError } = await client.storage.from('hs-pending-business-media')
-        .uploadToSignedUrl(uploadPath, authorization.data.token, file, { contentType: file.type, upsert: false });
+        .uploadToSignedUrl(uploadPath, authorization.data.token, uploadFile, { contentType: uploadFile.type, upsert: false });
       if (uploadError) throw uploadError;
 
       const { data: requestId, error: requestError } = await client.rpc('request_business_image_change', {
         p_business_id: business.id,
         p_media_field: mediaField,
         p_storage_path: storagePath,
-        p_mime_type: file.type,
-        p_file_size_bytes: file.size,
+        p_mime_type: uploadFile.type,
+        p_file_size_bytes: uploadFile.size,
       });
       if (requestError || !requestId) throw requestError ?? new Error('The image-change request could not be recorded.');
       requestCreated = true;
