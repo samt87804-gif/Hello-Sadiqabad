@@ -73,7 +73,7 @@ async function authorizeSuperAdmin(request, env) {
 }
 
 async function supabaseRest(admin, path, options = {}) {
-  const response = await fetch(`${admin.baseUrl}/rest/v1/${path}`, {
+  const response = await fetchWithTimeout(`${admin.baseUrl}/rest/v1/${path}`, {
     method: options.method || 'GET',
     headers: {
       apikey: admin.key,
