@@ -36,5 +36,4 @@ export async function uploadAdminImage(
   if (!data?.path) throw new Error('Supabase Storage ne upload path return nahi kiya.');
   const { data: publicData } = client.storage.from(ADMIN_MEDIA_BUCKET).getPublicUrl(data.path);
   return { path: data.path, publicUrl: publicData.publicUrl, originalBytes: compressed.originalBytes, compressedBytes: compressed.compressedBytes, width: compressed.width, height: compressed.height };
-  }
 }
