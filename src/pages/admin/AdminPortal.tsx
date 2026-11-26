@@ -496,6 +496,7 @@ export function AdminPortal() {
             businesses={businesses}
             actorId={actorId}
             onReload={reload}
+            isSuperAdmin={isSuperAdmin}
           />
         ) : (
           <PermissionDenied />
