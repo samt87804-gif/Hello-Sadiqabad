@@ -203,7 +203,7 @@ export function BusinessFieldReviewQueue({
           : Promise.resolve({ data: [], error: null }),
         client.from('business_media_assets')
           .select('id,submission_id,business_id,media_field,storage_path,status,created_at,admin_note')
-          .in('status', ['pending_review', 'approved_pending_promotion', 'approved_published', 'unpublished'])
+          .in('status', ['pending_review', 'approved_pending_promotion', 'approved_published', 'removal_requested', 'unpublished'])
           .order('created_at', { ascending: false })
           .limit(200),
         ids.length
@@ -634,6 +634,9 @@ export function BusinessFieldReviewQueue({
                   )}
                   {asset.status === 'approved_published' && (
                     <Button size="sm" variant="outline" disabled={Boolean(busyMediaId)} onClick={() => void reviewOtherMedia(asset.id, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Unpublish</Button>
+                  )}
+                  {asset.status === 'removal_requested' && (
+                    <Button size="sm" variant="danger" disabled={Boolean(busyMediaId)} onClick={() => void reviewOtherMedia(asset.id, 'unpublished')} leftIcon={<EyeOff className="w-3.5 h-3.5" />}>Approve Owner removal</Button>
                   )}
                 </div>
                 {asset.media_field === 'cover' && <p className="text-[11px] text-on-surface-variant">Cover publication is subject to the business plan entitlement.</p>}
