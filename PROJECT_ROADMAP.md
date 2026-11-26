@@ -1163,7 +1163,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Added [Admin Finance & Direct Plan Assignment — Active Implementation Plan](docs/ADMIN_FINANCE_AND_PLAN_ASSIGNMENT_IMPLEMENTATION_PLAN.md) with accounting definitions, security direction, implementation phases and manual acceptance criteria.
 - [x] Identified existing untracked Plan Tier dropdown in Admin Business Editor; it must be replaced by a financial assignment flow so future plan changes cannot bypass payment accounting.
 - [x] Confirmed no dedicated plan-payment ledger tables exist in the live schema at this audit checkpoint. Existing Owner-request approval RPC remains the source workflow and must be extended atomically without changing its user-facing rules.
-- [x] Phase B: private schema, RLS, append-only receipts, guarded plan fields and Super Admin RPCs applied in migrations `20261126120000_admin_plan_finance_ledger_and_assignment` and `20261126124500_guard_business_plan_financial_assignment`.
+- [x] Phase B: private schema, RLS, append-only receipts, guarded plan fields and Super Admin RPCs applied in migrations `20261126120000_admin_plan_finance_ledger_and_assignment` and `20261126124500_guard_business_plan_financial_assignment` and `20261126130000_fix_owner_plan_financial_period_start`.
 - [x] Phase C: direct Admin Free/Basic/Premium assignment with agreed fee, received amount, outstanding balance, discounts/waivers and reason; removed the raw Plan Tier dropdown.
 - [x] Phase D: verified Owner-request approvals now create linked assignment and receipt records in the same database transaction via a submissions trigger; historical backfill limited to explicitly verified records.
 - [x] Phase E: Super Admin Finance dashboard, searchable/date-filtered ledger, outstanding balances, later instalments and CSV export.
@@ -1176,8 +1176,8 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Replaced the Business Editor's unaccounted Plan Tier dropdown with a Super Admin-only **Assign / Change Plan** modal.
 - [x] Finance dashboard reports actual receipts separately from agreed fees, waivers and outstanding balances; includes payment-method and assignment-kind summaries.
 - [x] Ledger supports business/owner/reference search, plan/method/source/date filters and CSV export; outstanding assignments support append-only instalment receipts.
-- [x] Backend restricts plan field changes to trusted audited workflows. Direct authenticated table updates are blocked; the Super Admin RPC was tested successfully inside a rollback transaction.
-- [x] Rollback-only workflow tests passed for partial payment followed by two instalments (Rs. 300 + Rs. 200 + Rs. 200) and a fully waived Premium assignment (Rs. 0 received, Rs. 1,500 waived).
+- [x] Backend restricts plan field changes to trusted audited workflows. Direct authenticated table updates are blocked; a non-admin Owner cannot read the Finance dashboard or private receipt table; the Super Admin RPC was tested successfully inside a rollback transaction.
+- [x] Rollback-only workflow tests passed for partial payment followed by two instalments (Rs. 300 + Rs. 200 + Rs. 200), a fully waived Premium assignment (Rs. 0 received, Rs. 1,500 waived), and a simulated verified Owner approval producing one linked receipt with the correct renewal-period start.
 - [x] Verified Owner request history backfilled idempotently: 1 assignment and 1 receipt, Rs. 700 actual collection. Finance dashboard and ledger RPCs returned the expected figures.
-- [x] GitHub CI passed on `2c7a793817515b299ddfadee14fc5068062416c8` and `7bc894de6db4c7bc857560fa50dec2cbf60d43e5`; Cloudflare Pages production deployment `b3727b0f-6dfd-4c73-bea0-591bce4d5748` succeeded for `7bc894de6db4c7bc857560fa50dec2cbf60d43e5`.
+- [x] GitHub CI passed on latest commit `d5957b63df86d401df5f60dafb8e68fcf5ec8e6b` (run `45877883972`); Cloudflare Pages production deployment `4e5376fd-ce54-478f-a00f-0c021e6d5052` succeeded for that commit.
 - [ ] Owner still needs to manually test the production Admin UI. CI/deployment and SQL rollback tests do not replace Owner acceptance.
