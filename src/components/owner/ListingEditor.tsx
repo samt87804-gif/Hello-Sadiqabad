@@ -129,7 +129,7 @@ export function ListingEditor({
   const [logoChangeFile, setLogoChangeFile] = useState<File | null>(null);
   const [coverChangeFile, setCoverChangeFile] = useState<File | null>(null);
   const [galleryChangeFile, setGalleryChangeFile] = useState<File | null>(null);
-  const [galleryRequests, setGalleryRequests] = useState<Array<{id:string;media_field:string;status:string;created_at:string}>>([]);
+  const [galleryRequests, setGalleryRequests] = useState<Array<{id:string;media_field:string;status:string;created_at:string;mime_type:string}>>([]);
 
   const [form, setForm] = useState<Partial<BusinessRow>>(() => buildInitialForm(business));
   const [samePhone, setSamePhone] = useState(() => {
@@ -168,11 +168,11 @@ export function ListingEditor({
         .select('id,media_field,status,requested_at')
         .eq('business_id', business.id)
         .order('requested_at', { ascending: false })
-        .limit(12), client.from('business_media_assets').select('id,media_field,status,created_at').eq('business_id', business.id).eq('media_field', 'gallery').order('created_at', { ascending: false }).limit(20)]);
+        .limit(12), client.from('business_media_assets') .select('id,media_field,status,created_at,mime_type').eq('business_id', business.id).eq('media_field', 'gallery').order('created_at', { ascending: false }).limit(20)]);
       if (error) throw error;
       if (galleryError) throw galleryError;
       setImageRequests((data ?? []) as OwnerImageChangeRequest[]);
-      setGalleryRequests((galleryData ?? []) as Array<{id:string;media_field:string;status:string;created_at:string}>);
+      setGalleryRequests((galleryData ?? []) as Array<{id:string;media_field:string;status:string;created_at:string;mime_type:string}>);
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Image-change requests could not be loaded.', 'error');
     } finally {
@@ -464,6 +464,19 @@ export function ListingEditor({
       showToast(error instanceof Error ? error.message : 'The image-change request could not be sent.', 'error');
     } finally {
       setImageChangeBusy('');
+    }
+  };
+
+  const requestGalleryRemoval = async (assetId: string) => {
+    const client = getSupabaseClient();
+    if (!client) return;
+    try {
+      const { error } = await client.rpc('request_business_gallery_removal', { p_asset_id: assetId });
+      if (error) throw error;
+      showToast('Photo removal request sent to Admin. The photo stays public until approval.', 'success');
+      await reloadImageRequests();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Photo removal request could not be sent.', 'error');
     }
   };
 
@@ -1157,7 +1170,18 @@ export function ListingEditor({
                 {galleryChangeFile && <p className="text-[11px] text-on-surface-variant truncate">{galleryChangeFile.name}</p>}
                 <Button size="sm" fullWidth disabled={!galleryChangeFile || imageChangeBusy !== '' || (business.gallery_urls ?? []).length + galleryRequests.filter((item) => ['pending_review','approved_pending_promotion'].includes(item.status)).length >= maxGallery} loading={imageChangeBusy === 'gallery'} onClick={() => void requestImageChange('gallery', galleryChangeFile)}>Send gallery photo for Admin review</Button>
               </> : <p className="text-xs text-on-surface-variant">Photo gallery is not included in your current plan. <Link to="/owner/plan" className="font-bold text-primary underline">View plans</Link></p>}
-              {galleryRequests.length > 0 && <div className="space-y-1"><p className="text-xs font-semibold">Gallery upload history</p>{galleryRequests.slice(0,5).map((item) => <div key={item.id} className="flex items-center justify-between text-xs rounded-lg bg-surface-container-low p-2"><span>{new Date(item.created_at).toLocaleDateString()}</span><Badge variant={item.status === 'approved_published' ? 'success' : item.status === 'rejected' ? 'danger' : 'warning'}>{item.status.replaceAll('_',' ')}</Badge></div>)}</div>}
+              {galleryRequests.length > 0 && <div className="space-y-2"><p className="text-xs font-semibold">Gallery photo history & removal</p>{galleryRequests.slice(0,10).map((item) => {
+                const extension = item.mime_type === 'image/jpeg' ? 'jpg' : item.mime_type === 'image/png' ? 'png' : 'webp';
+                const publicPath = `businesses/${business.id}/gallery/${item.id}.${extension}`;
+                const publicUrl = getSupabaseClient()?.storage.from('Hello Sadiqabad').getPublicUrl(publicPath).data.publicUrl;
+                return <div key={item.id} className="flex items-center gap-2 text-xs rounded-lg bg-surface-container-low p-2">
+                  {item.status === 'approved_published' && publicUrl && <ImageWithFallback src={publicUrl} alt="Approved gallery photo" className="w-12 h-12 rounded object-cover" />}
+                  <span className="flex-1">{new Date(item.created_at).toLocaleDateString()}</span>
+                  <Badge variant={item.status === 'approved_published' ? 'success' : item.status === 'rejected' ? 'danger' : 'warning'}>{item.status.replaceAll('_',' ')}</Badge>
+                  {item.status === 'approved_published' && <Button size="sm" variant="outline" onClick={() => void requestGalleryRemoval(item.id)}>Request removal</Button>}
+                  {item.status === 'removal_requested' && <span className="text-[10px] text-warning">Waiting for Admin</span>}
+                </div>;
+              })}</div>}
             </div>
             {(business.gallery_urls ?? []).length > 0 && (
               <div className="space-y-2">
