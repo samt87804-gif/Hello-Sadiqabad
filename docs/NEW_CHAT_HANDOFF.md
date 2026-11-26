@@ -1284,7 +1284,7 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - Main merge commit: `fd16c05c7d054f3e98dff1e73dd9ebaa3bf80154`.
 - GitHub Actions run `45724137772`: `build` and `edge-functions` jobs both succeeded.
 - Cloudflare Pages production deployment `eac33069-409b-480a-878f-c3262e9963c5` succeeded for the exact merge commit; production alias `https://hellosadiqabad.com`.
-- Applied migration `20261126075257_business_admin_field_change_audit` (file version `20261125235000`); live migration ledger confirms it is recorded.
+- Applied migration `20261126075257_business_admin_field_change_audit` (repository migration filename now matches the live version); live migration ledger confirms it is recorded.
 - Transactional audit test changed an existing business name under the existing Super Admin identity, verified `admin_direct_edit` with old/new values in audit details, then rolled back. Re-read confirmed original name restored and no test audit row remains.
 - Private owner identity fields and usage counters are excluded from detailed business field diffs; field-review RPC path skips detailed Admin-edit diffs.
 - Live counts at checkpoint: 4 active new-business submissions, 36 pending-review field rows, 100 approved-published field rows, 2 pending-review media assets. Pending media bucket remains private; Storage read policies are authenticated Admin-only.
