@@ -1,6 +1,6 @@
 # Owner Portal — Audit & Improvement Implementation Plan
 
-**Status:** Owner approved the full roadmap on 27 November 2026. Phases 0–5 technical work is implemented/deployed as recorded below; Phase 4B gallery, Phase 5 Profile/My Payments, gallery close button and Phase 3D unread-badge manual acceptance are Owner-confirmed. Phase 0 remains partially accepted pending Admin Business Field Review visibility. Phase 3E Reviews/Inquiries filters are implemented on `main`; final test/deployment verification and Owner acceptance are pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`.
+**Status:** Owner approved the full roadmap on 27 November 2026. Phases 0–5 technical work is implemented/deployed as recorded below; Phase 4B gallery, Phase 5 Profile/My Payments, gallery close button and Phase 3D unread-badge manual acceptance are Owner-confirmed. Phase 0 remains partially accepted pending Admin Business Field Review visibility. Phase 3E Reviews/Inquiries filters are implemented on `main` and Cloudflare Pages build/deployment is verified on the canonical production domain; GitHub Actions status is unverified and Owner acceptance is pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`.
 
 ## Working agreement
 
@@ -81,15 +81,16 @@
 - GitHub Actions status for the added regression test remains unverified because the connected commit-status check returned no statuses; do not claim CI passed.
 
 
-### Phase 3E — Reviews and Inquiries status filters (implemented; verification pending)
+### Phase 3E — Reviews and Inquiries status filters (implemented and Pages-deployed; GitHub CI status unverified; Owner acceptance pending)
 
 - Owner Reviews now has All / Replied / Not replied filters. Replied state is based on a non-empty `owner_reply`; only approved public reviews remain eligible, as before.
 - Owner Inquiries now has All / New / Read / Handled filters using the existing inquiry status values.
 - Filters are applied in the Supabase query before the existing 20-row pagination, so matching older records are not missed. Demo mode applies the same filter before pagination.
 - Changing a filter resets the list to its first page; Load more continues within that filter. Existing sort order, owner-selected business scope, reply editing, inquiry actions and Dashboard aggregate loaders remain unchanged.
 - No schema migration, RLS/grant change, new data field or existing-record mutation was introduced.
-- Commits: API `dc68cdd464c3523b38d351c5763a4679ddf1e323`; Owner page wiring `41781e579de653626105c3974c74d3046aad96a1`; filter controls `36408b907bdfa10244dbb0ad72922ad20e89abd4`; regression tests `f4869d72cffd5c995d73d33f545644b37747eaac`.
-- Cloudflare Pages build for test commit `f4869d72` was still running at the time of this documentation update. GitHub Actions automated test status is not available through the connected commit-status check. Do not claim release verification until the matching deployment completes successfully.
+- Commits: API `dc68cdd464c3523b38d351c5763a4679ddf1e323`; Owner page wiring `41781e579de653626105c3974c74d3046aad96a1`; filter controls `36408b907bdfa10244dbb0ad72922ad20e89abd4`; initial regression tests `f4869d72cffd5c995d73d33f545644b37747eaac`; expanded 63-row filtered-pagination regression tests `4590ce4ee79ffd0d534ce76ccfe6c669993b0ef5`.
+- Cloudflare Pages production deployment `a9db5c36-39db-47f4-a73c-6ef67a69d5e5` succeeded for test commit `4590ce4`; all stages passed and canonical alias `https://hellosadiqabad.com` is attached. This deploy includes the filter UI and server-side query changes.
+- GitHub combined commit status returned no statuses for the test commit; automated test execution is not claimed. Pages `npm run build` passed, but it does not substitute for the separate automated test suite.
 - [ ] Owner manual acceptance of all four filter choices, correct results and Load more pagination.
 
 ## Phase 6 — Final verification and release
