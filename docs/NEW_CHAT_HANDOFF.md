@@ -316,3 +316,12 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Owner manual acceptance is still pending. Next: Super Admin (or staff with `moderation.review`) → Admin → Business Field Approval → Refresh. Expected: four active request cards. If an optional warning appears, cards should still display. If the page remains empty or a required error appears, send a screenshot showing the page heading, all warning/error text and the Refresh result. No dummy submissions should be created.
 - Existing records contain no non-null legacy `submissions.admin_note` among the 17 new-business submissions, so a prior-note preview cannot be confirmed from current legacy data. Phase 0 remains partially accepted until the queue is visible and Owner confirms the manual check.
 - Other Owner Portal acceptance remains open: Phase 3E Reviews/Inquiries filters and Load more; Phase 1 pending count/inquiry handled workflow; Phase 2 notifications/mobile navigation/analytics empty state; Phase 3B Reviews/Inquiries pagination; Phase 3C My Businesses request-history pagination; Phase 4A offer date behavior. Do not mark these owner-tested without explicit confirmation.
+
+
+## Owner confirmation — Phase 0 queue visibility passed (27 November 2026)
+
+- Owner explicitly reported **test pass** after Super Admin → Admin → Business Field Approval → Refresh displayed all four active request cards. The earlier empty-queue visibility blocker is resolved.
+- Together with previously confirmed Owner request history/statuses, private Admin-note non-disclosure, My Payments history and Plan details, Phase 0 manual acceptance is complete.
+- Previous-note text could not be manually demonstrated because none of the current 17 new-business submissions has a non-null legacy `admin_note`. Do not create a note or dummy request just to test this.
+- Next documented step: Phase 1 Owner manual acceptance. Test the “Requests awaiting review” count (includes `new` and `in_review`, excludes `done` and `rejected`), then use an appropriate test inquiry: Mark Read should set READ without assigning a handler; Handled should set HANDLED and assign the current signed-in user. Do not mark a genuine customer inquiry handled unless it is actually resolved.
+- Current code was re-inspected: `countOwnerRequestsAwaitingReview` counts only `new` / `in_review`; `updateInquiryStatus` has a regression test for handler assignment. Phase 1 CI run `45891440166` and Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` previously passed. Owner manual acceptance remains pending.
