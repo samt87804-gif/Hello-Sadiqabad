@@ -61,7 +61,7 @@ async function authorizeSuperAdmin(request, env) {
   profileUrl.searchParams.set('id', `eq.${user.id}`);
   profileUrl.searchParams.set('select', 'role,is_active');
   profileUrl.searchParams.set('limit', '1');
-  const profileResponse = await fetch(profileUrl, { headers });
+  const profileResponse = await fetchWithTimeout(profileUrl, { headers }, 8000);
   if (!profileResponse.ok) return { ok: false, status: 403, error: 'Admin permissions could not be verified.' };
   const profiles = await profileResponse.json();
   const profile = Array.isArray(profiles) ? profiles[0] : null;
