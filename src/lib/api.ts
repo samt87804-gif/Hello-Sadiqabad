@@ -1980,19 +1980,26 @@ export interface OwnerListPage<T> {
   hasMore: boolean;
 }
 
+export type OwnerReviewReplyFilter = 'all' | 'replied' | 'not_replied';
+export type OwnerInquiryStatusFilter = 'all' | InquiryStatus;
+
 export async function fetchOwnerReviewsPage(
   businessId: string,
   offset = 0,
-  pageSize = 20
+  pageSize = 20,
+  replyFilter: OwnerReviewReplyFilter = 'all'
 ): Promise<OwnerListPage<ReviewRow>> {
   if (!businessId) return { items: [], hasMore: false };
   const client = getSupabaseClient();
   if (client) {
-    const { data, error } = await client
+    let query = client
       .from('reviews')
       .select('*')
       .eq('business_id', businessId)
-      .eq('status', 'approved')
+      .eq('status', 'approved');
+    if (replyFilter === 'replied') query = query.not('owner_reply', 'is', null);
+    if (replyFilter === 'not_replied') query = query.is('owner_reply', null);
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + pageSize);
     if (error) throw error;
@@ -2000,7 +2007,12 @@ export async function fetchOwnerReviewsPage(
     return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
   }
   const rows = loadDemoDb().reviews
-    .filter((review) => review.business_id === businessId && review.status === 'approved')
+    .filter((review) =>
+      review.business_id === businessId &&
+      review.status === 'approved' &&
+      (replyFilter === 'all' ||
+        (replyFilter === 'replied' ? Boolean(review.owner_reply?.trim()) : !review.owner_reply?.trim()))
+    )
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(offset, offset + pageSize + 1);
   return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
@@ -2050,15 +2062,18 @@ export async function fetchOwnerInquiries(businessIds: string[]): Promise<Inquir
 export async function fetchOwnerInquiriesPage(
   businessId: string,
   offset = 0,
-  pageSize = 20
+  pageSize = 20,
+  statusFilter: OwnerInquiryStatusFilter = 'all'
 ): Promise<OwnerListPage<InquiryRow>> {
   if (!businessId) return { items: [], hasMore: false };
   const client = getSupabaseClient();
   if (client) {
-    const { data, error } = await client
+    let query = client
       .from('inquiries')
       .select('*')
-      .eq('business_id', businessId)
+      .eq('business_id', businessId);
+    if (statusFilter !== 'all') query = query.eq('status', statusFilter);
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + pageSize);
     if (error) throw error;
@@ -2066,7 +2081,7 @@ export async function fetchOwnerInquiriesPage(
     return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
   }
   const rows = loadDemoDb().inquiries
-    .filter((inquiry) => inquiry.business_id === businessId)
+    .filter((inquiry) => inquiry.business_id === businessId && (statusFilter === 'all' || inquiry.status === statusFilter))
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(offset, offset + pageSize + 1);
   return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
