@@ -664,9 +664,11 @@ export function OffersManager({
 }
 
 export function ReviewsReply({
-  reviews, hasMore = false, loadingMore = false, onLoadMore, onReply,
+  reviews, replyFilter = 'all', onReplyFilterChange, hasMore = false, loadingMore = false, onLoadMore, onReply,
 }: {
   reviews: ReviewRow[];
+  replyFilter?: 'all' | 'replied' | 'not_replied';
+  onReplyFilterChange?: (filter: 'all' | 'replied' | 'not_replied') => void;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => Promise<void>;
@@ -708,6 +710,21 @@ export function ReviewsReply({
             Only approved public reviews for your selected business appear here.
           </p>
         </div>
+        {onReplyFilterChange && (
+          <label className="flex items-center gap-2 text-xs font-semibold text-on-surface-variant">
+            Reply status
+            <select
+              value={replyFilter}
+              onChange={(event) => onReplyFilterChange(event.target.value as 'all' | 'replied' | 'not_replied')}
+              aria-label="Filter reviews by reply status"
+              className="h-9 px-3 rounded-xl border border-outline-variant bg-surface text-xs font-semibold text-on-surface"
+            >
+              <option value="all">All reviews</option>
+              <option value="replied">Replied</option>
+              <option value="not_replied">Not replied</option>
+            </select>
+          </label>
+        )}
       </div>
 
       {reviews.length === 0 ? (
@@ -799,9 +816,11 @@ export function ReviewsReply({
 }
 
 export function InquiriesInbox({
-  inquiries, hasMore = false, loadingMore = false, onLoadMore, onStatusChange,
+  inquiries, statusFilter = 'all', onStatusFilterChange, hasMore = false, loadingMore = false, onLoadMore, onStatusChange,
 }: {
   inquiries: InquiryRow[];
+  statusFilter?: 'all' | InquiryStatus;
+  onStatusFilterChange?: (filter: 'all' | InquiryStatus) => void;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => Promise<void>;
@@ -849,6 +868,22 @@ export function InquiriesInbox({
             Direct phone inquiries and WhatsApp leads submitted by visitors.
           </p>
         </div>
+        {onStatusFilterChange && (
+          <label className="flex items-center gap-2 text-xs font-semibold text-on-surface-variant">
+            Inquiry status
+            <select
+              value={statusFilter}
+              onChange={(event) => onStatusFilterChange(event.target.value as 'all' | InquiryStatus)}
+              aria-label="Filter inquiries by status"
+              className="h-9 px-3 rounded-xl border border-outline-variant bg-surface text-xs font-semibold text-on-surface"
+            >
+              <option value="all">All inquiries</option>
+              <option value="new">New</option>
+              <option value="read">Read</option>
+              <option value="handled">Handled</option>
+            </select>
+          </label>
+        )}
       </div>
 
       {inquiries.length === 0 ? (
