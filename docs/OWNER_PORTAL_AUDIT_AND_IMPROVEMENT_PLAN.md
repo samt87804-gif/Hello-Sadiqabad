@@ -231,3 +231,12 @@
 - This resolves the prior queue-visibility blocker. Combined with the previously confirmed Owner request history/statuses, private Admin-note non-disclosure, My Payments history and Plan details, Phase 0 manual acceptance is complete.
 - Existing production data has no non-null legacy `submissions.admin_note` among the 17 new-business submissions, so actual Previous note text could not be demonstrated; no note was created or changed just for testing. Admin-only note access remains protected.
 - Next in documented order: Phase 1 manual acceptance — pending-review count and inquiry Read/Handled behavior. Do not change real customer inquiry state solely for testing; use an appropriate test inquiry or an existing inquiry that is genuinely ready to be handled.
+
+
+## Phase 1 audit finding — pending-review count is page-limited (27 November 2026)
+
+- During source audit after Phase 0 acceptance, found `OwnerBusinesses` loads only the first 20 submissions initially via `fetchOwnerSubmissionsPage(user.id, 0, 20)`.
+- The “Requests awaiting review” summary currently calls `countOwnerRequestsAwaitingReview(requests)` on that in-memory first page. Therefore, when an Owner has more than 20 requests, pending `new` / `in_review` requests on older pages are omitted until Load older requests is used; the displayed count can be understated.
+- Proposed narrow remedy (awaiting Owner approval): add an Owner-scoped exact-count query for allowed submission types and statuses `new` / `in_review`, preserving existing RLS and pagination. Demo mode should count the full Owner request set. No schema change, existing record mutation or workflow replacement is needed.
+- [ ] Owner approval required before implementing this accuracy fix. After approval, add regression coverage for more than 20 submissions and verify CI/production deployment.
+- Phase 1 inquiry handler behavior remains separately awaiting Owner manual acceptance: Read must not set `handled_by`; Handled should set the current Owner as handler.
