@@ -103,7 +103,7 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 4. Report any mismatch or error. Avoid changing a real customer inquiry unless it is appropriate to mark it handled.
 
 
-### Phase 2 — Owner experience (implementation awaiting CI)
+### Phase 2 — Owner experience (implemented, CI-passed and deployed)
 
 - Notifications now support per-item read/unread and mark-all-read; errors and successes are shown to the Owner.
 - Stored `link_path` is used only when it resolves to an internal `/owner` route; external/unknown paths are not rendered as links.
@@ -112,3 +112,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Mobile Owner navigation is a compact collapsible menu; every prior destination and sign-out remains available. Desktop sidebar is unchanged.
 - Analytics shows an honest empty state when no real top-search-term data exists.
 - Live migration `20261126203248` restricts authenticated notification UPDATE to the `is_read` column only. RLS still scopes rows to the signed-in user.
+
+
+### Phase 2 practical acceptance — still required
+
+1. **Per-item notifications:** Owner Portal → Notifications. Mark one notification read; its New highlight should disappear. Mark it unread again; it should return to the unread state. Use a test notification where possible.
+2. **Notification link:** open a notification with an available Open/کھولیں link. It should navigate to an internal Owner Portal page, not an external website.
+3. **Urdu:** change the app language to Urdu and confirm notification title/body display Urdu where supplied; missing Urdu text should fall back to English.
+4. **Payments badge:** open Owner Portal → My Payments. The navigation unread badge should show the same unread count.
+5. **Mobile menu:** on a phone, open the Owner Portal menu. All destinations should be visible in a compact grid; selecting one should close the menu. Sign Out should remain available.
+6. **Analytics:** open Owner Portal → Analytics. If no real search terms are available, the Top Search Terms section should show the explanatory empty message, not a blank panel or invented numbers.
+7. Report any issue or screenshot. Do not share passwords or payment secrets.

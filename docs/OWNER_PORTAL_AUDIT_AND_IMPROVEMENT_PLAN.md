@@ -97,3 +97,12 @@
 
 - Live migration `20261126203248` (`restrict_notification_updates_to_read_flag`) revokes table-wide notification UPDATE from `authenticated` and grants UPDATE only on `is_read`.
 - Existing RLS remains in force: users can update only their own notification rows. The existing mark-all-read RPC changes only `is_read` and remains compatible.
+
+
+## Phase 2 release evidence
+
+- App commit: `1cc43f63c1499308fbe417dd08509fb0e8ccfcb5`.
+- GitHub Actions CI run `45892045086` passed: TypeScript, automated tests (including safe-link and per-notification read/unread tests), production build and Edge Function typecheck.
+- Cloudflare Pages deployment `d788df3a-58a0-489f-9f47-e535c83601d9` succeeded for the same commit.
+- Supabase migration `20261126203248` restricts authenticated notification UPDATE to `is_read`; RLS still limits rows to `auth.uid()`. Verified table-wide UPDATE false, `is_read` UPDATE true, `title_en` and `link_path` UPDATE false. Existing mark-all-read RPC passed a rollback/authenticated-role check.
+- Owner manual acceptance remains pending.
