@@ -43,10 +43,15 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  // Deliberately retain older app-shell caches. Deleting them during activation
-  // can break a still-open document or a rollback that references old chunks.
-  // A later storage-management phase can prune caches after client-use checks.
-  event.waitUntil(Promise.resolve());
+  // skipWaiting() is intentionally not used, so activation waits until the
+  // previous worker's controlled tabs have closed. It is now safe to remove
+  // stale shell caches; keep the separate public-media cache untouched.
+  event.waitUntil((async () => {
+    const staleShellCaches = (await caches.keys()).filter((name) =>
+      name.startsWith('hs-sadiqabad-shell-') && name !== CACHE_NAME
+    );
+    await Promise.all(staleShellCaches.map((name) => caches.delete(name)));
+  })());
   // Deliberately do not call clients.claim(): let the new worker take control
   // through the browser's normal navigation lifecycle.
 });
