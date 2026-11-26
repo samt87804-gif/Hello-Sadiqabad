@@ -83,7 +83,7 @@ async function supabaseRest(admin, path, options = {}) {
       ...(options.returnRepresentation ? { Prefer: 'return=representation' } : {}),
     },
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
-  });
+  }, 8000);
   const text = await response.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = null; }
@@ -128,8 +128,8 @@ async function fetchBusinessDirectoryCount(admin) {
       p_sort: 'relevance',
       p_limit: 1,
       p_offset: 0,
-    }),, 8000
-  });
+    }),
+  }, 8000);
   if (!response.ok) throw new Error('Published business directory could not be refreshed.');
   const rows = await response.json();
   if (!Array.isArray(rows)) throw new Error('Published business directory returned an invalid response.');
