@@ -1194,6 +1194,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Phase D: Admin Owners Financial Profile, businesses/assignments/receipts/audit history, correction/reversal approvals and profile-change review.
 - [x] Phase E: net adjusted receipts reflected across Finance dashboard, ledger, assignments, balances, installment validation and CSV (original and net amounts exported).
 - [x] Phase F1: rollback/adversarial SQL checks and Cloudflare Pages production build/deploy succeeded for feature commit `c5ea0e23118be7785ff7b1e60b63104938fbb0b6`; deployment `9d78a58f-1157-4211-bd02-0cbce0a8b24f`.
-- [ ] Phase F2: repository `npm run check` and authenticated browser smoke tests. The Pages build verified `npm run build`; separate CI/check status was not exposed in the available GitHub connector.
+- [x] Phase F2: GitHub Actions CI run `45885425664` passed `build` and `edge-functions`: dependency audit high/critical gate, TypeScript typecheck, automated tests, production build and Edge Function typecheck all succeeded.
+- [ ] Phase F3: Authenticated browser/device smoke tests for Owner and Admin screens.
 - [ ] Phase G: Owner manual acceptance. Do not mark accepted until explicitly confirmed. See `docs/OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md`.
 - `owner_edits_require_approval=true` remains unchanged; existing business listing moderation flow preserved.
