@@ -223,10 +223,10 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - New gallery images go to private `hs-pending-business-media` through the existing server-issued signed-upload workflow. The existing Admin business-media review area handles approval/rejection; no separate queue was added.
 - Approval promotes the photo to the public business media bucket and adds its URL to `businesses.gallery_urls`. Owner removal request keeps a published photo public until Admin approves removal.
 - Plan limits from live plans remain unchanged: Free 0, Basic 5, Premium 15. Database RPC locks the business row and checks owner, published status, plan limit, storage path, actual MIME and size. Logo/cover monthly 2-request quota remains separate.
-- Live additive migrations applied: `20261127110000_owner_gallery_moderation`, `20261127120000_owner_gallery_removal_requests`.
-- Existing Supabase Edge Functions deployed: `create-business-media-upload` version 4, `review-business-media` version 7.
+- Live additive migrations applied: `20261127110000_owner_gallery_moderation`, `20261127120000_owner_gallery_removal_requests`, `20261127130000_serialize_gallery_publication`.
+- Existing Supabase Edge Functions deployed: `create-business-media-upload` version 4, `review-business-media` version 8.
 - Owner removal request currently supports gallery photos created by this managed-media workflow. Older legacy gallery URLs without matching asset records remain Admin-managed; existing gallery URLs were preserved.
-- Intermediate CI run 45897237220 failed because Admin UI's media status union did not yet include `removal_requested`. Fixed in commit `0b510799652d5b5e810682c89011d74be6f5acc1`; verify the newest CI and Cloudflare Pages deployment before calling the release deployed.
+- Intermediate CI found two media-status TypeScript union mistakes while adding `removal_requested`; both were corrected. Final CI run `45897858810` passed build and Edge Functions. Cloudflare Pages deployment `45e643b1-ef0e-4d82-b992-142c2d2c9bec` succeeded for commit `7fe21cc6b2c725d0158bd7342f6fcd63b24289e2`, canonical alias `https://hellosadiqabad.com`.
 - No existing business, Owner account, gallery URL or production media object was modified. Schema/functions only were changed.
 - Owner manual acceptance is still required after successful deployment:
   1. Sign in as Owner with a published Basic/Premium business → My Businesses → Edit Listing → Preview.
