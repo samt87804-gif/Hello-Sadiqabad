@@ -65,17 +65,17 @@
 - [x] Payment correction submission has an immediate in-flight guard to prevent rapid duplicate submissions; receipt data remains read-only until Admin approval.
 - [x] Owner Profile now shows request-history loading/error states and a Retry action; profile approval submission stays disabled until existing request history is loaded successfully, preventing an unnoticed duplicate pending request.
 - [x] Profile approval and password update buttons show busy states and block repeat submissions while their requests are in flight.
-- [ ] Owner manual acceptance of Profile and My Payments loading, retry and submission behavior.
+- [x] Owner confirmed Profile and My Payments manual tests passed on 27 November 2026 (loading/retry and busy/duplicate-submit behavior).
 - [ ] If Owner wants profile photos or saved notification preferences later, request separate scope approval before design/implementation.
 
 ## Phase 6 — Final verification and release
 
 - [x] GitHub CI run `45902085685` passed TypeScript typecheck, automated tests, production build and Supabase Edge Function typecheck for Phase 5 commit `f4a211284354ec4d02f1894e0ff9bc8049235a11`.
 - [x] Verified GitHub Actions CI run `45902085685` and matching Cloudflare Pages production deployment `cb4d87a5-9254-44b7-9761-c0dfaf5cebc3` for Phase 5 commit `f4a211284354ec4d02f1894e0ff9bc8049235a11`.
-- [ ] Verify relevant live routes and database permissions; do not claim authenticated browser coverage unless performed.
-- [ ] Give the Owner concise, numbered manual acceptance steps.
-- [ ] Record the Owner's reported result; leave acceptance unchecked until explicitly confirmed.
-- [ ] Update this plan, `PROJECT_ROADMAP.md` and `docs/NEW_CHAT_HANDOFF.md` with exact commit, migration, CI, deployment and remaining steps.
+- [x] Owner confirmed the Phase 5 Profile/My Payments checks passed on 27 November 2026.
+- [x] Owner confirmed the deployed public gallery `Close / بند کریں` button test passed; mobile/desktop confirmation is recorded as Owner-reported, not independently browser-tested.
+- [x] Updated this plan, `PROJECT_ROADMAP.md` and `docs/NEW_CHAT_HANDOFF.md` with Owner acceptance and the next safe roadmap task.
+- [ ] Continue Phase 3D audit: identify any remaining safe reductions in cross-page Owner data fetching; preserve dashboard aggregate accuracy and existing pagination.
 
 
 ## Phase 0 release evidence
