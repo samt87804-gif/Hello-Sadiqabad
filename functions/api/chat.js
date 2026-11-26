@@ -86,7 +86,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
         p_limit: 12,
         p_offset: 0,
       }),
-    });
+    }, 8000);
     if (!response.ok) return { matches: [], status: 'unavailable', total_count: 0 };
     const rows = await response.json();
     if (!Array.isArray(rows)) return { matches: [], status: 'unavailable', total_count: 0 };
