@@ -1139,3 +1139,15 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 
 - [x] Owner confirms the production mobile `/gov` page and bottom navigation look correct.
 - [ ] Gov destination deep links and Emergency card/route remain separate acceptance checks; do not infer them from the visual confirmation.
+
+
+## Business Registration/Admin workflow — merged production checkpoint (26 November 2026)
+
+- [x] Phase A audit, Phases B/C production workflow and Phase E Admin page/navigation/audit UI changes are on `main`.
+- [x] Merge commit `fd16c05c7d054f3e98dff1e73dd9ebaa3bf80154`; GitHub Actions `45724137772` passed build and Edge Functions jobs.
+- [x] Cloudflare Pages production deployment `eac33069-409b-480a-878f-c3262e9963c5` succeeded for the merge commit; canonical alias `https://hellosadiqabad.com`.
+- [x] Applied and recorded `20261126075257_business_admin_field_change_audit`; rollback test verified Admin direct-edit before/after audit data without leaving a business mutation or test audit row.
+- [x] Confirmed pending-media bucket remains private; Storage SELECT policies for this bucket are restricted to authenticated Admin permissions.
+- [ ] Remaining authenticated acceptance: Admin popup, anonymous Storage denial and approved-media public promotion, owner-authorized invitation/password setup, Owner Portal isolation, Owner change moderation journey and full Admin-route permission regression.
+- Live snapshot: 4 active new-business submissions, 36 pending field reviews, 100 approved/published field reviews and 2 pending-review media assets. No invitation or Auth account was created.
+- Permanent owner rule: commit directly to `main`; do not create branches or Pull Requests unless the owner explicitly changes this instruction.
