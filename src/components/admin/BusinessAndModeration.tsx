@@ -24,7 +24,6 @@ import type {
   InquiryRow,
   InquiryStatus,
   OpeningHoursJson,
-  PlanCode,
   ProfileRow,
   ReviewRow,
   StaffMemberRow,
@@ -60,6 +59,7 @@ import { UrlListEditor } from '../owner/UrlListEditor';
 import { DemoModeNotice } from '../ui/DemoModeNotice';
 import { compressBusinessImage, deleteBusinessImages, getBusinessMediaObjectPath, uploadBusinessImage, type BusinessMediaKind } from '../../lib/businessMedia';
 import { AdminImageUpload } from './AdminImageUpload';
+import { PlanAssignmentModal } from './PlanAssignmentModal';
 import { DEFAULT_PLAN_PAYMENT_SETTINGS, type PlanPaymentSettings } from '../../lib/siteSettings';
 
 export function AdminDashboard({ counts }: { counts: AdminDashboardCounts }) {
@@ -163,7 +163,6 @@ interface AdminBusinessForm {
   gallery_urls: string[];
   status: BusinessStatus;
   rejection_reason: string;
-  plan_code: PlanCode;
   owner_id: string;
   is_verified: boolean;
   is_featured: boolean;
@@ -185,6 +184,7 @@ export function BusinessManager({
   profiles = [],
   actorId,
   canPublish,
+  canAssignPlan,
   initialSearch = '',
   onReload,
 }: {
@@ -194,6 +194,7 @@ export function BusinessManager({
   profiles?: Array<ProfileRow & { email?: string; is_active?: boolean; staff?: StaffMemberRow | null }>;
   actorId: string;
   canPublish: boolean;
+  canAssignPlan: boolean;
   initialSearch?: string;
   onReload: () => Promise<void>;
 }) {
@@ -212,6 +213,7 @@ export function BusinessManager({
   const [confirmBulkArchive, setConfirmBulkArchive] = useState(false);
   const [confirmSuspendBiz, setConfirmSuspendBiz] = useState<BusinessPublicView | null>(null);
   const [confirmDeleteBiz, setConfirmDeleteBiz] = useState<BusinessPublicView | null>(null);
+  const [planAssignmentBiz, setPlanAssignmentBiz] = useState<BusinessPublicView | null>(null);
   const [deletingBiz, setDeletingBiz] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -268,7 +270,6 @@ export function BusinessManager({
     gallery_urls: [],
     status: canPublish ? 'published' : 'draft',
     rejection_reason: '',
-    plan_code: 'free',
     owner_id: '',
     is_verified: false,
     is_featured: false,
@@ -467,7 +468,6 @@ export function BusinessManager({
         gallery_urls: b.gallery_urls ?? [],
         status: b.status,
         rejection_reason: b.rejection_reason ?? '',
-        plan_code: b.plan_code,
         owner_id: b.owner_id ?? '',
         is_verified: b.is_verified,
         is_featured: b.is_featured,
@@ -898,6 +898,11 @@ export function BusinessManager({
                         <Button size="sm" variant="outline" onClick={() => openEdit(b)}>
                           Edit
                         </Button>
+                        {canAssignPlan && (
+                          <Button size="sm" variant="outline" onClick={() => setPlanAssignmentBiz(b)}>
+                            Assign / Change Plan
+                          </Button>
+                        )}
                         {canDeleteBusiness && (
                           <Button
                             size="sm"
@@ -991,6 +996,11 @@ export function BusinessManager({
                 <Button size="sm" variant="outline" onClick={() => openEdit(b)}>
                   Edit
                 </Button>
+                {canAssignPlan && (
+                  <Button size="sm" variant="outline" onClick={() => setPlanAssignmentBiz(b)}>
+                    Assign / Change Plan
+                  </Button>
+                )}
                 {canDeleteBusiness && (
                   <Button
                     size="sm"
@@ -1046,7 +1056,7 @@ export function BusinessManager({
             active={modalTab}
             onChange={setModalTab}
             tabs={[
-              { id: 'core', label: 'Basic & Plan' },
+              { id: 'core', label: 'Basic Details' },
               { id: 'location', label: 'Address & Map Pin' },
               { id: 'hours', label: 'Opening Hours' },
               { id: 'media', label: 'Logo & Gallery' },
@@ -1179,15 +1189,6 @@ export function BusinessManager({
                   <option value="rejected">Rejected</option>
                   <option value="suspended">Suspended</option>
                   <option value="archived">Archived</option>
-                </Select>
-                <Select
-                  label="Plan Tier"
-                  value={form.plan_code}
-                  onChange={(e) => setForm({ ...form, plan_code: e.target.value as PlanCode })}
-                >
-                  <option value="free">Free</option>
-                  <option value="basic">Basic Verified</option>
-                  <option value="premium">Premium Plan</option>
                 </Select>
               </div>
 
@@ -1437,6 +1438,12 @@ export function BusinessManager({
         message={`Delete "${confirmDeleteBiz?.name_en ?? ''}" permanently? Related offers, reviews, inquiries, notes, products, ads and statistics will also be deleted. This cannot be undone.`}
         confirmLabel="Delete Permanently"
         onConfirm={handleDeleteBusiness}
+      />
+
+      <PlanAssignmentModal
+        business={planAssignmentBiz}
+        onClose={() => setPlanAssignmentBiz(null)}
+        onSuccess={onReload}
       />
 
       <ConfirmDialog
