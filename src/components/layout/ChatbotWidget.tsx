@@ -65,6 +65,7 @@ export function ChatbotWidget() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: nextMessages.slice(-8) }),
+        signal: AbortSignal.timeout(35000),
       });
       const result = await response.json();
       if (!response.ok || typeof result.answer !== 'string') {
