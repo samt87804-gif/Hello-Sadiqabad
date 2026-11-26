@@ -34,7 +34,8 @@ function dateToIsoExclusiveEnd(value: string) {
 }
 function csvCell(value: unknown) {
   const text = value == null ? '' : String(value);
-  return '"' + text.replace(/"/g, '""') + '"';
+  const safeText = /^[=+@\\t\\r-]/.test(text) ? "'" + text : text;
+  return '"' + safeText.replace(/"/g, '""') + '"';
 }
 
 export function AdminFinance() {
