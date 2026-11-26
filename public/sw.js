@@ -58,7 +58,6 @@ function isFingerprintAsset(url, request) {
 }
 
 async function networkFirstNavigation(request, url) {
-  const cache = await caches.open(CACHE_NAME);
   try {
     const response = await fetch(request, {
       cache: 'no-store',
@@ -66,17 +65,29 @@ async function networkFirstNavigation(request, url) {
     });
     // An HTTP 5xx means the origin failed, not that the visitor lost internet.
     // Prefer the cached app shell so an online visitor is not told they are offline.
-    if (response.status >= 500) return (await cache.match(APP_SHELL_URL)) || response;
+    if (response.status >= 500) {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        return (await cache.match(APP_SHELL_URL)) || response;
+      } catch {
+        return response;
+      }
+    }
     return response;
   } catch {
     // Show the dedicated offline page only when the network request actually
     // rejects or times out. Other app routes can resolve through the cached shell.
-    if (url.pathname === '/offline' || url.pathname === '/offline/' || url.pathname === OFFLINE_URL) {
-      return (await cache.match(OFFLINE_URL)) || Response.error();
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      if (url.pathname === '/offline' || url.pathname === '/offline/' || url.pathname === OFFLINE_URL) {
+        return (await cache.match(OFFLINE_URL)) || Response.error();
+      }
+      return (await cache.match(APP_SHELL_URL)) ||
+        (await cache.match(OFFLINE_URL)) ||
+        Response.error();
+    } catch {
+      return Response.error();
     }
-    return (await cache.match(APP_SHELL_URL)) ||
-      (await cache.match(OFFLINE_URL)) ||
-      Response.error();
   }
 }
 
