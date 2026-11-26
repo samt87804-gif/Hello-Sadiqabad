@@ -4,7 +4,7 @@ import { compressImageFile } from './imageCompression';
 export const BUSINESS_MEDIA_BUCKET = 'Hello Sadiqabad';
 export const MAX_RAW_BUSINESS_IMAGE_BYTES = 15 * 1024 * 1024;
 
-export type BusinessMediaKind = 'logo' | 'cover';
+export type BusinessMediaKind = 'logo' | 'cover' | 'gallery';
 
 export interface CompressedBusinessImage {
   file: File;
