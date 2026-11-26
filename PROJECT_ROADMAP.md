@@ -1163,7 +1163,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Added [Admin Finance & Direct Plan Assignment — Active Implementation Plan](docs/ADMIN_FINANCE_AND_PLAN_ASSIGNMENT_IMPLEMENTATION_PLAN.md) with accounting definitions, security direction, implementation phases and manual acceptance criteria.
 - [x] Identified existing untracked Plan Tier dropdown in Admin Business Editor; it must be replaced by a financial assignment flow so future plan changes cannot bypass payment accounting.
 - [x] Confirmed no dedicated plan-payment ledger tables exist in the live schema at this audit checkpoint. Existing Owner-request approval RPC remains the source workflow and must be extended atomically without changing its user-facing rules.
-- [x] Phase B: private schema, RLS, append-only receipts, guarded plan fields and Super Admin RPCs applied in migrations `20261126120000_admin_plan_finance_ledger_and_assignment` and `20261126124500_guard_business_plan_financial_assignment` and `20261126130000_fix_owner_plan_financial_period_start`.
+- [x] Phase B: private schema, RLS, append-only receipts, guarded plan fields and Super Admin RPCs applied in migrations `20261126120000_admin_plan_finance_ledger_and_assignment` and `20261126124500_guard_business_plan_financial_assignment` and `20261126130000_fix_owner_plan_financial_period_start`, `20261126133000_allow_fk_cleanup_on_immutable_plan_receipts` and `20261126140000_admin_finance_assignment_history`.
 - [x] Phase C: direct Admin Free/Basic/Premium assignment with agreed fee, received amount, outstanding balance, discounts/waivers and reason; removed the raw Plan Tier dropdown.
 - [x] Phase D: verified Owner-request approvals now create linked assignment and receipt records in the same database transaction via a submissions trigger; historical backfill limited to explicitly verified records.
 - [x] Phase E: Super Admin Finance dashboard, searchable/date-filtered ledger, outstanding balances, later instalments and CSV export.
@@ -1174,10 +1174,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 ## Admin Finance & Direct Plan Assignment — deployed checkpoint (26 November 2026)
 
 - [x] Replaced the Business Editor's unaccounted Plan Tier dropdown with a Super Admin-only **Assign / Change Plan** modal.
-- [x] Finance dashboard reports actual receipts separately from agreed fees, waivers and outstanding balances; includes payment-method and assignment-kind summaries.
-- [x] Ledger supports business/owner/reference search, plan/method/source/date filters and CSV export; outstanding assignments support append-only instalment receipts.
+- [x] Finance dashboard reports actual receipts separately from agreed fees, waivers and outstanding balances; includes payment-method and assignment-kind summaries plus full plan assignment history (including Free and fully waived/zero-receipt events).
+- [x] Receipt ledger supports business/owner/reference search, plan/method/source/date filters and CSV export; assignment history separately shows standard/agreed/waived/received/outstanding for every plan change and has its own CSV export; outstanding assignments support append-only instalment receipts.
 - [x] Backend restricts plan field changes to trusted audited workflows. Direct authenticated table updates are blocked; a non-admin Owner cannot read the Finance dashboard or private receipt table; the Super Admin RPC was tested successfully inside a rollback transaction.
 - [x] Rollback-only workflow tests passed for partial payment followed by two instalments (Rs. 300 + Rs. 200 + Rs. 200), a fully waived Premium assignment (Rs. 0 received, Rs. 1,500 waived), and a simulated verified Owner approval producing one linked receipt with the correct renewal-period start.
 - [x] Verified Owner request history backfilled idempotently: 1 assignment and 1 receipt, Rs. 700 actual collection. Finance dashboard and ledger RPCs returned the expected figures.
-- [x] GitHub CI passed on latest commit `d5957b63df86d401df5f60dafb8e68fcf5ec8e6b` (run `45877883972`); Cloudflare Pages production deployment `4e5376fd-ce54-478f-a00f-0c021e6d5052` succeeded for that commit.
+- [x] GitHub CI passed on latest UI commit `043f8c36d75d5622258dfc893f21fd8ad0270462` (run `45878370517`); Cloudflare Pages production deployment `ef26474d-0bc5-4745-810c-b19f604bfeec` succeeded for that commit.
 - [ ] Owner still needs to manually test the production Admin UI. CI/deployment and SQL rollback tests do not replace Owner acceptance.
