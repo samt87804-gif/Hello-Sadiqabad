@@ -9,7 +9,7 @@ import { Textarea } from '../ui/FormFields';
 import { Modal, ConfirmDialog } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 
-type FieldStatus = 'pending_review' | 'approved_published' | 'rejected' | 'unpublished';
+type FieldStatus = 'pending_review' | 'approved_published' | 'removal_requested' | 'rejected' | 'unpublished';
 type MediaStatus = 'pending_review' | 'approved_pending_promotion' | 'approved_published' | 'rejected' | 'unpublished';
 
 interface FieldReview {
