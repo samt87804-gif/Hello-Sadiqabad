@@ -1222,9 +1222,10 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Read current rules, roadmap, handoff, Add Business active approval plan, relevant Owner/Admin source, migrations and live database/RLS/plan entitlements.
 - [x] Applied additive live migration `20261127110000_owner_gallery_moderation`: Owner upload records for `gallery`, Owner-scoped asset reads, and server-enforced plan limits/ownership/private upload metadata checks.
 - [x] Applied additive live migration `20261127120000_owner_gallery_removal_requests`: Owner-authorized removal requests and Admin finalization status.
-- [x] Extended and deployed existing `create-business-media-upload` (version 4) and `review-business-media` (version 7); no parallel queue or new Supabase project.
+- [x] Applied additive live migration `20261127130000_serialize_gallery_publication` so concurrent Admin approvals/removals serialize against the business row and cannot exceed plan photo limits.
+- [x] Extended and deployed existing `create-business-media-upload` (version 4) and `review-business-media` (version 8); no parallel queue or new Supabase project.
 - [x] Added Owner gallery upload, approval history and managed-photo removal request UI; Admin processes gallery approval/rejection/removal in the existing Business Field Approval business-media area.
-- [ ] Latest corrected CI and matching Cloudflare Pages production deployment; intermediate CI found a TypeScript status-union mismatch, corrected in commit `0b510799652d5b5e810682c89011d74be6f5acc1`; final run pending at this checkpoint.
+- [x] Final GitHub Actions CI run `45897858810` passed build + Edge Functions (TypeScript, automated tests, production build and Edge Function typecheck). Cloudflare Pages deployment `45e643b1-ef0e-4d82-b992-142c2d2c9bec` succeeded for commit `7fe21cc6b2c725d0158bd7342f6fcd63b24289e2`; canonical alias `https://hellosadiqabad.com`.
 - [ ] Owner manual acceptance: private-before-approval, public-after-approval, rejection, removal request/approval and plan limits.
 - Existing legacy gallery URLs are preserved. Owner removal request button applies to photos managed through the new asset workflow; legacy URLs without a media-asset record remain Admin-managed.
 - No existing business gallery URL, Owner account or business record was modified during implementation.
