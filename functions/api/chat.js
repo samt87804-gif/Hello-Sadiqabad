@@ -63,7 +63,7 @@ async function fetchBusinessMatches(env, query, publicContext) {
 
   try {
     const intent = resolveBusinessSearchIntent(searchText, publicContext.categories, publicContext.areas);
-    const response = await fetch(`${baseUrl}/rest/v1/rpc/search_businesses`, {
+    const response = await fetchWithTimeout(`${baseUrl}/rest/v1/rpc/search_businesses`, {
       method: 'POST',
       headers: {
         apikey: key,
