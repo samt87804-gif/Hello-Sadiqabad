@@ -1458,6 +1458,8 @@ export interface AdminFinanceReceipt {
   period_start: string | null;
   period_end: string | null;
   amount_pkr: number;
+  original_amount_pkr?: number;
+  adjustment_total_pkr?: number;
   payment_method: string;
   transaction_reference: string | null;
   received_at: string;
