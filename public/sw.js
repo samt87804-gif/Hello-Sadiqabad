@@ -1,6 +1,6 @@
-// Reuse v3 cache namespace: the currently deployed v3 worker deletes every
-// cache except this exact key on activation. Keeping it makes rollback compatible.
-const CACHE_NAME = 'hs-sadiqabad-shell-v3';
+// v4 is the active shell cache namespace. Older shell caches are retained so
+// an already-open tab or a rollback can still use its fingerprinted assets.
+const CACHE_NAME = 'hs-sadiqabad-shell-v4';
 const MEDIA_CACHE_NAME = 'hs-sadiqabad-public-media-v1';
 const SUPABASE_MEDIA_HOST = 'efwohfzqitevkuybnyif.supabase.co';
 const SUPABASE_MEDIA_PREFIX = '/storage/v1/object/public/Hello%20Sadiqabad/';
@@ -58,13 +58,20 @@ function isFingerprintAsset(url, request) {
 }
 
 async function networkFirstNavigation(request, url) {
+  const cache = await caches.open(CACHE_NAME);
   try {
-    return await fetch(request, { cache: 'no-store' });
+    const response = await fetch(request, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
+    // An HTTP 5xx means the origin failed, not that the visitor lost internet.
+    // Prefer the cached app shell so an online visitor is not told they are offline.
+    if (response.status >= 500) return (await cache.match(APP_SHELL_URL)) || response;
+    return response;
   } catch {
-    // Preserve the dedicated emergency page at /offline. Other app routes can
-    // use the cached SPA entry document, allowing React Router to resolve them.
-    const cache = await caches.open(CACHE_NAME);
-    if (url.pathname === '/offline' || url.pathname === '/offline/') {
+    // Show the dedicated offline page only when the network request actually
+    // rejects or times out. Other app routes can resolve through the cached shell.
+    if (url.pathname === '/offline' || url.pathname === '/offline/' || url.pathname === OFFLINE_URL) {
       return (await cache.match(OFFLINE_URL)) || Response.error();
     }
     return (await cache.match(APP_SHELL_URL)) ||
