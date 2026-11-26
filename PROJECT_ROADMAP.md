@@ -1252,3 +1252,16 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Owner confirmed Profile and My Payments loading/retry and busy-state manual tests passed on 27 November 2026. No database, receipt, profile or approval-request data was changed by this release.
 - [x] Phase 3D notification-fetch optimization is implemented and Pages-deployed: API `4bde7385f1b0936e40543125963c9f5cd8d5df6c`, Owner UI `08e6a06d277e224a656d1cb25692f63d1f675313`, regression test `fad60e254f66c8b8783245b1e132bf42a6fd6cdb`; Pages deployment `f4095c61-159d-4489-b4d7-02b2b0d46a9b` succeeded with canonical alias. No schema/RLS/data changes. GitHub Actions status was not returned by the connected check, so automated test execution remains unverified. Owner manual unread-badge acceptance was subsequently confirmed as passed on 27 November 2026.
 - [ ] Continue the remaining Phase 3D audit of safe cross-page fetch reductions; preserve existing dashboard aggregate accuracy and pagination.
+
+## Owner Portal — latest approved roadmap progress (27 November 2026)
+
+Active detailed plan: `docs/OWNER_PORTAL_AUDIT_AND_IMPROVEMENT_PLAN.md`.
+
+- [x] Phase 3D notification overfetch reduction: Owner pages use a count-only unread query for the navigation badge; full notification rows remain limited to the Notifications page. Dashboard review/inquiry aggregate data is preserved.
+- [x] Owner confirmed Phase 3D unread badge tests passed: Read decreases the badge, Unread increases it, and Dashboard/My Payments counts match. Owner-reported acceptance recorded 27 November 2026.
+- [x] Phase 3E implementation: Customer Reviews filters (All / Replied / Not replied) and Customer Inquiries filters (All / New / Read / Handled) are wired to server-side filtered pages. Existing 20-row pagination, business scope, review replies, inquiry status actions and Dashboard aggregates are preserved.
+- [x] Demo-mode regression coverage added for review reply filters and all three inquiry statuses, including page result boundaries.
+- [ ] Verify matching Cloudflare Pages production build/deployment for Phase 3E test commit and confirm GitHub Actions automated test status where accessible.
+- [ ] Owner manual acceptance: test each Reviews/Inquiries filter and confirm Load more returns older matching records without duplicates.
+
+No database migration, RLS/grant change or existing production data mutation was made for Phase 3D/3E.
