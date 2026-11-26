@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/lib/*.test.ts && node --test scripts/sdk-job-social-preview.test.mjs scripts/mobile-bottom-nav.test.mjs scripts/gov-navigation.test.mjs",
+    "test": "tsx --test src/lib/*.test.ts && node --test functions/_shared/fetchWithTimeout.test.js scripts/sdk-job-social-preview.test.mjs scripts/mobile-bottom-nav.test.mjs scripts/gov-navigation.test.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test && npm run build"
   },
