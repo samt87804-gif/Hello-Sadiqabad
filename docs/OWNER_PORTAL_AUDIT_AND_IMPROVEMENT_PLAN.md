@@ -51,7 +51,7 @@
 - [x] Sequence overlapping Owner data loads; invalidate in-flight requests on dependency changes/unmount, ignore stale responses/errors, and clear business-scoped state before/at selection changes.
 - [x] Reduce unnecessary cross-page notification fetching: Owner pages now request only the unread count for the navigation badge; the full notification rows load only on Owner Portal → Notifications. Dashboard's full reviews/inquiries data remains intact for accurate aggregate counts.
 - [x] Reviews and Inquiries use server-side pages of 20; My Businesses request history uses pages of 20 with Load older requests. Existing records and order are preserved.
-- [ ] Complete Phase 3D automated regression/CI verification and Owner manual badge acceptance.
+- [x] Owner confirmed all Phase 3D unread-badge manual tests passed on 27 November 2026 (badge decreases on Read, increases on Unread, and stays consistent on Dashboard/My Payments).
 
 ## Phase 4 — Business listing management
 
@@ -86,7 +86,8 @@
 - [x] Owner confirmed the Phase 5 Profile/My Payments checks passed on 27 November 2026.
 - [x] Owner confirmed the deployed public gallery `Close / بند کریں` button test passed; mobile/desktop confirmation is recorded as Owner-reported, not independently browser-tested.
 - [x] Updated this plan, `PROJECT_ROADMAP.md` and `docs/NEW_CHAT_HANDOFF.md` with Owner acceptance and the next safe roadmap task.
-- [ ] Continue Phase 3D audit: identify any remaining safe reductions in cross-page Owner data fetching; preserve dashboard aggregate accuracy and existing pagination.
+- [x] Owner confirmed Phase 3D notification badge behavior passed on 27 November 2026.
+- [ ] Continue remaining Phase 3D search/filter audit; preserve Dashboard aggregate accuracy, notification privacy and existing pagination.
 
 
 ## Phase 0 release evidence
