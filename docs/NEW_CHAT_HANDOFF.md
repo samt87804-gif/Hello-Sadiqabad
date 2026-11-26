@@ -236,3 +236,13 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
   5. On a managed approved photo, click Request removal; verify it remains public while awaiting Admin.
   6. Admin existing media-review card → Approve Owner removal; verify photo disappears from public gallery.
   7. Confirm Free plan cannot upload; Basic max 5; Premium max 15; logo/cover quota still works.
+
+
+## Latest Owner feedback — Gallery acceptance and public viewer close fix (27 November 2026)
+
+- Owner explicitly confirmed all Phase 4B manual gallery tests passed. Mark gallery Owner acceptance complete in the active plan and roadmap.
+- Owner then reported that opening a gallery photo on the public business profile did not present an obvious close button.
+- Inspected the shared src/components/ui/DataDisplay.tsx Lightbox. It already had an icon-only X control, but it was visually subtle and lacked visible text. Updated it to a high-contrast white close button labelled Close / بند کریں, with a larger touch target, shadow, focus ring and active feedback. This is a narrow UI-only change; no business/gallery data, media, permissions, storage or database behavior changed.
+- Fix commit: a9ca81982695ef5d07aa94b8a54b55f8be82e3d9. GitHub CI and Cloudflare Pages production deployment are pending verification.
+- Next: check CI for this commit, confirm matching Pages deployment, then ask Owner to open any public business profile, tap a gallery image and confirm the labelled close button closes the viewer on both mobile and desktop. Do not claim the viewer fix is accepted until Owner confirms.
+- Continue the already-approved Owner Portal roadmap after the close-button verification; retain the outstanding optional legacy-gallery URL removal design and any unchecked roadmap work rather than silently closing them.
