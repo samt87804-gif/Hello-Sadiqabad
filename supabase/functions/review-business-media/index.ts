@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
     if (asset.status === "rejected" && action === "approved_published") {
       return response(req, { ok: false, error: "Rejected media cannot be published" }, 409);
     }
-    if (action === "unpublished" && asset.status !== "approved_published") {
+    if (action === "unpublished" && !["approved_published", "removal_requested"].includes(asset.status)) {
       return response(req, { ok: false, error: "Only a published image can be unpublished" }, 409);
     }
 
