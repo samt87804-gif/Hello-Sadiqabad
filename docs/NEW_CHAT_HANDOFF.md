@@ -325,3 +325,12 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Previous-note text could not be manually demonstrated because none of the current 17 new-business submissions has a non-null legacy `admin_note`. Do not create a note or dummy request just to test this.
 - Next documented step: Phase 1 Owner manual acceptance. Test the “Requests awaiting review” count (includes `new` and `in_review`, excludes `done` and `rejected`), then use an appropriate test inquiry: Mark Read should set READ without assigning a handler; Handled should set HANDLED and assign the current signed-in user. Do not mark a genuine customer inquiry handled unless it is actually resolved.
 - Current code was re-inspected: `countOwnerRequestsAwaitingReview` counts only `new` / `in_review`; `updateInquiryStatus` has a regression test for handler assignment. Phase 1 CI run `45891440166` and Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` previously passed. Owner manual acceptance remains pending.
+
+
+## Phase 1 source audit — pending-review count limitation (27 November 2026)
+
+- After Owner confirmed Phase 0 queue visibility, continued Phase 1 source audit.
+- Found `OwnerBusinesses` initially loads only 20 Owner submissions; the “Requests awaiting review” count is currently calculated from this first-page array. If older pending requests exist beyond those 20 rows, the summary can undercount until older pages are loaded.
+- Recommended narrow fix: add a server-side exact count query scoped to the authenticated Owner, existing allowed submission types, and `new` / `in_review` statuses; retain the existing request-history pagination and RLS. Demo mode should count the full matching Owner request set. No schema migration or record mutation expected.
+- **Do not implement until Owner explicitly approves**, per the permanent serious-issue/change-approval rule.
+- Inquiry status behavior remains: Mark Read should not assign `handled_by`; Handled should set it to the current signed-in Owner. Owner manual acceptance is still pending.
