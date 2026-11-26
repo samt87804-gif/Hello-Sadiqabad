@@ -1212,7 +1212,8 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Phase 3A reliability safeguard implemented and deployed: overlapping Owner loads are sequenced; stale responses are ignored; business-scoped stats/offers/products clear on selection change. CI 45892395019 and Pages deployment d85a8d11-4fe5-4908-98c1-534a175091f6 passed.
 - [x] Phase 3B implemented and deployed: page-specific Owner data loading and 20-at-a-time server-side pagination for Reviews/Inquiries with Load more. CI 45893377773 and Pages deployment 3d9864f2-ae0c-4238-8b23-64614921e1c4 passed.
 - [x] Phase 3C implemented and deployed: My Businesses request history loads 20 records at a time with Load older requests. CI 45893853551 and Pages deployment 984fd83b-5b23-4aed-a659-942c50480be2 passed.
-- [ ] Phase 3D: authenticated browser/device checks and remaining search/filter improvements. Then continue Phases 4–6.
+- [x] Phase 3D implementation: reduce cross-page notification payloads by fetching only the unread count for the shared navigation badge; full notification rows load only on the Notifications page. Dashboard full reviews/inquiries data remains unchanged for accurate totals.
+- [ ] Phase 3D remaining: automated regression/CI verification and Owner manual unread-badge acceptance; remaining search/filter improvements.
 - Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.
 
 
@@ -1248,4 +1249,5 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Added busy/duplicate-submit protection for profile approval requests and password updates.
 - [x] GitHub CI run `45902085685` passed; Cloudflare Pages production deployment `cb4d87a5-9254-44b7-9761-c0dfaf5cebc3` succeeded for commit `f4a211284354ec4d02f1894e0ff9bc8049235a11`.
 - [x] Owner confirmed Profile and My Payments loading/retry and busy-state manual tests passed on 27 November 2026. No database, receipt, profile or approval-request data was changed by this release.
+- [x] Phase 3D notification-fetch optimization is implemented and Pages-deployed: API `4bde7385f1b0936e40543125963c9f5cd8d5df6c`, Owner UI `08e6a06d277e224a656d1cb25692f63d1f675313`, regression test `fad60e254f66c8b8783245b1e132bf42a6fd6cdb`; Pages deployment `f4095c61-159d-4489-b4d7-02b2b0d46a9b` succeeded with canonical alias. No schema/RLS/data changes. GitHub Actions status was not returned by the connected check, so automated test execution and Owner manual badge acceptance remain pending.
 - [ ] Continue the remaining Phase 3D audit of safe cross-page fetch reductions; preserve existing dashboard aggregate accuracy and pagination.
