@@ -1,4 +1,5 @@
 import { buildPublicKnowledgeContext, mapPublicBusinessSearchResult, resolveBusinessSearchIntent, resolveChatKnowledgeQuery, selectRelevantPublicKnowledge } from '../_shared/chatKnowledge.js';
+import { fetchWithTimeout } from '../_shared/fetchWithTimeout.js';
 
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_MESSAGE_LENGTH = 500;
@@ -44,9 +45,9 @@ function allowRequest(ip) {
 async function fetchTable(baseUrl, key, table, params) {
   const url = new URL(`${baseUrl}/rest/v1/${table}`);
   for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
-  });
+  }, 8000);
   if (!response.ok) throw new Error(`Public directory query failed: ${table}`);
   const data = await response.json();
   return Array.isArray(data) ? data : [];
