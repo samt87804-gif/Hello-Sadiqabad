@@ -30,7 +30,7 @@ import { parseStepParam, STEPS } from './listingWizard';
 import { buildTelUrl } from './phone';
 import { countOwnerRequestsAwaitingReview } from './ownerPortal';
 import { getSafeOwnerNotificationPath } from './notifications';
-import type { ReviewRow } from '../types/database';
+import type { ReviewRow, SubmissionRow } from '../types/database';
 
 test('Owner request history page safely returns an empty page without a live session', async () => {
   const page = await fetchOwnerSubmissionsPage('demo-owner', 0, 20);

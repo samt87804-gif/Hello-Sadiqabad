@@ -45,7 +45,7 @@
 - The counter now queries the exact count of rows for the signed-in Owner, limited to the existing Owner-visible request types and statuses `new` / `in_review`; it no longer derives the summary from the first 20 history rows.
 - Existing history pagination and Load older requests behavior are unchanged. Demo mode applies the same Owner/type/status filters across all in-memory submissions.
 - Regression coverage creates 28 matching Owner requests with pending rows only beyond the first 20, and verifies other-owner, correction-type and rejected rows are excluded.
-- No schema, RLS, permissions, submission records or migration changes are included. Await automated CI and production deployment verification before asking for manual acceptance.
+- No schema, RLS, permissions, submission records or migration changes are included. Initial CI run `45911358060` passed automated tests and production build but TypeScript caught a missing `SubmissionRow` type import in the new test; the import has now been corrected in a follow-up commit. Await the follow-up CI and matching Pages deployment before asking for manual acceptance.
 
 ## Phase 2 — Owner experience
 

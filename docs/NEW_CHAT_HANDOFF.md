@@ -343,4 +343,5 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Demo mode counts the full in-memory set using the same Owner/type/status filters.
 - Existing request-history pagination, sorting, Load older requests, and stored records are unchanged. No schema, migration, RLS, permission or data mutation.
 - Added a regression test with 28 Owner requests so pending rows beyond the first 20 must still be included; also excludes other-owner, correction-type and rejected rows.
-- Next: verify GitHub Actions typecheck/tests/build/Edge Function checks and the matching Cloudflare Pages deployment. Only after both pass, ask Owner to test My Businesses counter and inquiry Read/Handled behavior. Do not mark Phase 1 manually accepted until Owner confirms.
+- Initial GitHub Actions run `45911358060`: automated tests and production build passed; TypeScript failed because the new test referenced `SubmissionRow` without importing its type. Added the missing type-only import in a follow-up commit. Re-check the follow-up CI and matching Cloudflare Pages deployment before Owner testing.
+- Next: after follow-up CI and Pages deployment pass, ask Owner to test My Businesses counter and inquiry Read/Handled behavior. Do not mark Phase 1 manually accepted until Owner confirms.

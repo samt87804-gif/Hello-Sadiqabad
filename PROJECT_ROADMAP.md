@@ -1301,4 +1301,4 @@ No database migration, RLS/grant change or existing production data mutation was
 - The counter now uses an exact count scoped to the signed-in Owner, the existing six Owner-visible request types, and statuses `new` / `in_review`; final statuses and other request types are excluded.
 - Existing 20-row history pagination and Load older requests behavior remain unchanged. Demo mode counts the full matching in-memory set.
 - Added regression coverage for 28 matching Owner submissions with pending requests beyond row 20, plus other-owner, wrong-type and rejected exclusions.
-- No schema/RLS/permission/data changes or migration are included. Automated CI and matching Pages deployment must pass before the Owner manual acceptance test.
+- No schema/RLS/permission/data changes or migration are included. Initial CI run `45911358060` passed tests/build but failed TypeScript on a missing test-only type import; that import is corrected in a follow-up commit. Follow-up CI and matching Pages deployment must pass before Owner manual acceptance.
