@@ -17,7 +17,7 @@
 
 # Hello Sadiqabad — Permanent Project Working Rules
 
-Last owner-confirmed: 25 November 2026. These rules apply to every future AI-assisted change unless the owner explicitly changes them.
+Last owner-confirmed: 26 November 2026. These rules apply to every future AI-assisted change unless the owner explicitly changes them.
 
 ## Source of truth
 
@@ -30,7 +30,7 @@ Last owner-confirmed: 25 November 2026. These rules apply to every future AI-ass
 ## Mandatory working rules
 
 1. **Protect the live website and its users.** Hello Sadiqabad is already being used by real visitors. Prefer narrow, backward-compatible, additive changes. Do not replace core architecture or rewrite working flows for convenience.
-2. **Direct `main` workflow (owner-confirmed 25 November 2026).** Make changes directly on GitHub `main`. Do not create feature branches or Pull Requests. Keep each commit narrowly scoped and backward-compatible. Before committing application/database changes, inspect affected code, tests, migrations, RLS and deployment behavior. Because commits to `main` trigger production deployment, never commit a partial or incompatible release; complete relevant validation first. Do not apply untested production migrations or bypass the database safeguards below.
+2. **Direct `main` workflow (owner-confirmed 26 November 2026).** Make changes directly on GitHub `main`. Do not create feature branches or Pull Requests. Keep each commit narrowly scoped and backward-compatible. Before committing application/database changes, inspect affected code, tests, migrations, RLS and deployment behavior. Because commits to `main` trigger production deployment, never commit a partial or incompatible release; complete relevant validation first. Do not apply untested production migrations or bypass the database safeguards below.
 3. **Inspect before every change.** Read the current implementation, callers, tests, configuration, routes, data flow, migrations, RLS and relevant Cloudflare settings before editing.
 4. **Preserve existing data.** Never delete, truncate, bulk-replace, re-seed over, or mutate existing business, user, review, inquiry, owner, media or operational data. No destructive database action without explicit owner approval. Prefer additive and reversible changes.
 5. **Preserve security boundaries.** Never bypass or weaken RLS, authentication, authorization, moderation, validation, rate limits or privacy protections. Never put service-role/secret credentials in frontend code, GitHub or chat.
@@ -45,7 +45,7 @@ Last owner-confirmed: 25 November 2026. These rules apply to every future AI-ass
 ## Database and deployment safeguards
 
 - The connected Supabase project has an existing migration history that differs from the consolidated repository baseline. Never replay the baseline, run an unreviewed schema push, or assume the live migration ledger matches the repo.
-- **Existing Supabase project only (owner-confirmed 25 November 2026).** Do not create another Supabase project or staging project. Work only in the existing Hello Sadiqabad project. Before applying production migrations, inspect the live schema and migration ledger, use additive changes, test reversible behavior inside explicit rollback transactions where possible, and verify RLS/Storage/privileges. Never use production business/user data as disposable test data.
+- **Existing Supabase project only (owner-confirmed 26 November 2026).** Do not create another Supabase project or staging project. Work only in the existing Hello Sadiqabad project. Before applying production migrations, inspect the live schema and migration ledger, use additive changes, test reversible behavior inside explicit rollback transactions where possible, and verify RLS/Storage/privileges. Never use production business/user data as disposable test data.
 - Do not modify Cloudflare DNS, Pages environment variables, Workers, R2, Auth dashboard settings or other infrastructure unless the feature specifically requires it and the change has been reviewed.
 - Preserve the canonical production domain `https://hellosadiqabad.com`; do not introduce a second indexable hostname.
 - Production deployments are triggered by commits to `main`. Check the latest commit's CI and the matching Pages deployment before describing a release as live.
