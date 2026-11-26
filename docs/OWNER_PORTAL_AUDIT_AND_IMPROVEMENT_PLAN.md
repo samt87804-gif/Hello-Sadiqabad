@@ -137,7 +137,15 @@
 - Owner manual acceptance remains pending.
 
 
-### Phase 3C — Owner request history pagination (implementation pending CI)
+### Phase 3C — Owner request history pagination (implemented, CI-passed and deployed)
 
 - My Businesses request history now fetches 20 newest Owner submissions per request and offers Load older requests when another page exists.
 - Existing request rows and status meanings are preserved; records are appended without duplicate IDs. No submissions are modified.
+
+
+### Phase 3C release evidence
+
+- App commit: 44fee047542dc1c1735e891b4ded48ecbb39121a.
+- GitHub Actions CI run 45893853551 passed: TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment 984fd83b-5b23-4aed-a659-942c50480be2 succeeded for the same commit.
+- An initial CI run for commit b164654cf2c07f5ed4f6d58a99f64dcfc9b75737 caught a missing test import; the import was corrected in 44fee047 and the full CI passed. No production data was changed.

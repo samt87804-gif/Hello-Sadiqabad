@@ -164,8 +164,24 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 5. If a selected business has fewer than 20 records, no Load more button is expected. Report any mismatch; do not mark manual acceptance complete until the Owner confirms.
 
 
-### Phase 3C — My Businesses request-history pagination (implementation awaiting CI)
+### Phase 3C — My Businesses request-history pagination (implemented, CI-passed and deployed)
 
 - My Businesses now loads the latest 20 Owner-submitted requests initially and provides “Load older requests” if another page exists.
 - Older requests append without duplicate IDs; existing statuses, messages and ordering are preserved.
 - No request records were edited or deleted.
+
+
+### Phase 3C release evidence
+
+- Fix commit 44fee047542dc1c1735e891b4ded48ecbb39121a.
+- CI 45893853551 passed: TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment 984fd83b-5b23-4aed-a659-942c50480be2 succeeded for the same commit.
+- The preceding commit's CI caught a missing import in the new regression test. The test import was corrected; the subsequent complete CI passed. The production build had succeeded on the initial attempt; no database or user records were changed.
+
+### Phase 3C practical acceptance — Owner
+
+1. Sign in and open Owner Portal → My Businesses.
+2. Scroll to “My Requests & Approval History”. The newest 20 requests should load first.
+3. If the account has more than 20 requests, click “Load older requests”. The next older records should appear underneath, without repeating existing cards. If there are 20 or fewer, the button should not appear.
+4. Check that each request keeps its original date and status (Pending review, Approved, Rejected, etc.). Do not change any request status just to test pagination.
+5. Report any missing, repeated or incorrectly ordered request.
