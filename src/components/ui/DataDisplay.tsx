@@ -237,11 +237,13 @@ export function Lightbox({
           )}
           <button
             type="button"
-            aria-label="Close gallery"
+            aria-label="Close photo viewer"
+            title="Close photo viewer"
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25 cursor-pointer"
+            className="min-h-11 min-w-11 px-3 rounded-full bg-white text-black shadow-lg ring-2 ring-white/40 flex items-center justify-center gap-1.5 hover:bg-white/90 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 shrink-0" />
+            <span className="text-xs font-extrabold whitespace-nowrap">Close / بند کریں</span>
           </button>
         </div>
       </div>
