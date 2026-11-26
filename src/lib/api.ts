@@ -1431,6 +1431,147 @@ export async function reviewPlanUpgradeRequest(submissionId: string, action: 'ap
   if (error) throw error;
 }
 
+
+
+export interface AdminFinanceSummary {
+  received_today_pkr: number;
+  received_month_pkr: number;
+  received_lifetime_pkr: number;
+  outstanding_pkr: number;
+  waived_lifetime_pkr: number;
+  basic_collections_pkr: number;
+  premium_collections_pkr: number;
+  payment_methods: Record<string, number>;
+  assignment_kinds: Record<string, number>;
+  active_paid_subscriptions: number;
+  expiring_in_14_days: number;
+}
+
+export interface AdminFinanceReceipt {
+  receipt_id: string;
+  assignment_id: string;
+  business_id: string | null;
+  business_name: string;
+  owner_id: string | null;
+  owner_name: string;
+  plan_code: 'basic' | 'premium';
+  period_start: string | null;
+  period_end: string | null;
+  amount_pkr: number;
+  payment_method: string;
+  transaction_reference: string | null;
+  received_at: string;
+  recorded_at: string;
+  recorded_by_name: string;
+  receipt_source: string;
+  assignment_source: string;
+}
+
+export interface AdminFinanceBalance {
+  assignment_id: string;
+  business_id: string | null;
+  business_name: string;
+  owner_id: string | null;
+  owner_name: string;
+  plan_code: 'basic' | 'premium';
+  standard_price_pkr: number;
+  agreed_fee_pkr: number;
+  waived_amount_pkr: number;
+  received_pkr: number;
+  outstanding_pkr: number;
+  period_start: string | null;
+  period_end: string | null;
+  source: string;
+  assignment_kind: string;
+  assigned_at: string;
+  internal_note: string | null;
+}
+
+export async function assignBusinessPlan(input: {
+  businessId: string;
+  planCode: 'free' | 'basic' | 'premium';
+  agreedFeePkr: number;
+  receivedNowPkr: number;
+  paymentMethod?: string | null;
+  transactionReference?: string | null;
+  adminNote?: string | null;
+}): Promise<Record<string, unknown>> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Direct plan assignment requires the live Super Admin account.');
+  const { data, error } = await client.rpc('admin_assign_business_plan', {
+    p_business_id: input.businessId,
+    p_plan_code: input.planCode,
+    p_agreed_fee_pkr: input.agreedFeePkr,
+    p_received_now_pkr: input.receivedNowPkr,
+    p_payment_method: input.paymentMethod || null,
+    p_transaction_reference: input.transactionReference?.trim() || null,
+    p_admin_note: input.adminNote?.trim() || null,
+  });
+  if (error) throw error;
+  return (data ?? {}) as Record<string, unknown>;
+}
+
+export async function fetchAdminFinanceDashboard(): Promise<AdminFinanceSummary> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Finance dashboard requires the live Super Admin account.');
+  const { data, error } = await client.rpc('admin_finance_dashboard');
+  if (error) throw error;
+  if (!data) throw new Error('Finance dashboard could not be loaded.');
+  return data as AdminFinanceSummary;
+}
+
+export async function fetchAdminFinanceLedger(filters: {
+  search?: string;
+  plan?: string;
+  method?: string;
+  source?: string;
+  from?: string | null;
+  to?: string | null;
+}): Promise<AdminFinanceReceipt[]> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Finance ledger requires the live Super Admin account.');
+  const { data, error } = await client.rpc('admin_finance_ledger', {
+    p_search: filters.search?.trim() || null,
+    p_plan: filters.plan || null,
+    p_method: filters.method || null,
+    p_source: filters.source || null,
+    p_from: filters.from || null,
+    p_to: filters.to || null,
+  });
+  if (error) throw error;
+  return (data ?? []) as AdminFinanceReceipt[];
+}
+
+export async function fetchAdminFinanceBalances(search = ''): Promise<AdminFinanceBalance[]> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Outstanding balances require the live Super Admin account.');
+  const { data, error } = await client.rpc('admin_finance_balances', {
+    p_search: search.trim() || null,
+  });
+  if (error) throw error;
+  return (data ?? []) as AdminFinanceBalance[];
+}
+
+export async function recordPlanInstallment(input: {
+  assignmentId: string;
+  amountPkr: number;
+  paymentMethod: string;
+  transactionReference?: string | null;
+  adminNote?: string | null;
+}): Promise<Record<string, unknown>> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Recording instalments requires the live Super Admin account.');
+  const { data, error } = await client.rpc('admin_record_plan_installment', {
+    p_assignment_id: input.assignmentId,
+    p_amount_pkr: input.amountPkr,
+    p_payment_method: input.paymentMethod,
+    p_transaction_reference: input.transactionReference?.trim() || null,
+    p_admin_note: input.adminNote?.trim() || null,
+  });
+  if (error) throw error;
+  return (data ?? {}) as Record<string, unknown>;
+}
+
 export async function fetchOwnerSubmissions(ownerId: string): Promise<SubmissionRow[]> {
   const client = getSupabaseClient();
   if (!client) return [];
@@ -2004,7 +2145,7 @@ export async function fetchAdminBusinessById(id: string): Promise<BusinessPublic
 }
 
 export async function adminUpsertBusiness(
-  input: Partial<BusinessRow> & { name_en: string; phone_primary: string; category_id: string },
+  input: Partial<Omit<BusinessRow, 'plan_code' | 'plan_expires_at'>> & { name_en: string; phone_primary: string; category_id: string },
   actorId: string
 ): Promise<BusinessRow> {
   const normalized = normalizePkPhone(input.phone_primary);
@@ -2092,8 +2233,8 @@ export async function adminUpsertBusiness(
     established_year: input.established_year ?? null,
     status: input.status ?? 'pending_approval',
     rejection_reason: input.rejection_reason ?? null,
-    plan_code: input.plan_code ?? 'free',
-    plan_expires_at: input.plan_expires_at ?? null,
+    plan_code: 'free',
+    plan_expires_at: null,
     is_verified: input.is_verified ?? false,
     is_featured: input.is_featured ?? false,
     tags: input.tags ?? [],
