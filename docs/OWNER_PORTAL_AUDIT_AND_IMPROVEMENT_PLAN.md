@@ -38,12 +38,12 @@
 
 ## Phase 2 — Owner experience
 
-- [ ] Add per-notification read/unread actions and use stored `link_path` for safe in-app navigation.
-- [ ] Show available Urdu notification title/body when Urdu is selected, with a sensible fallback.
-- [ ] Add clear loading, success and error feedback for notification actions.
-- [ ] Correct unread badge count on My Payments.
-- [ ] Improve Owner navigation on narrow screens without removing any destinations.
-- [ ] Add honest empty states for analytics with no search-attribution data; do not invent search metrics.
+- [x] Add per-notification read/unread actions and use stored `link_path` only for safe internal Owner Portal navigation; added regression tests for the path guard and demo read/unread behavior.
+- [x] Show Urdu notification title/body when Urdu is selected, falling back to English when Urdu text is empty.
+- [x] Add per-item and mark-all loading states plus success/error feedback for notification actions.
+- [x] Load the current unread notification count on My Payments instead of hard-coding zero.
+- [x] Replace the long horizontal mobile navigation strip with a compact collapsible menu; all existing destinations and sign-out remain available.
+- [x] Add an honest empty state when no real search-attribution terms are available; no fabricated metrics.
 
 ## Phase 3 — Reliability and scale
 
@@ -91,3 +91,9 @@
 - GitHub Actions CI run `45891440166` passed: TypeScript, automated tests (including the new pending-count and inquiry-handler regression tests), production build and Edge Function typecheck.
 - Cloudflare Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` succeeded for the same commit.
 - Owner manual acceptance remains pending.
+
+
+### Phase 2 database hardening
+
+- Live migration `20261126203248` (`restrict_notification_updates_to_read_flag`) revokes table-wide notification UPDATE from `authenticated` and grants UPDATE only on `is_read`.
+- Existing RLS remains in force: users can update only their own notification rows. The existing mark-all-read RPC changes only `is_read` and remains compatible.

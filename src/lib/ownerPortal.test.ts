@@ -17,12 +17,14 @@ import {
   loadDemoDb,
   replyToReview,
   updateInquiryStatus,
+  setNotificationRead,
   updateOwnerBusiness,
   upsertOffer,
 } from './api';
 import { parseStepParam, STEPS } from './listingWizard';
 import { buildTelUrl } from './phone';
 import { countOwnerRequestsAwaitingReview } from './ownerPortal';
+import { getSafeOwnerNotificationPath } from './notifications';
 import type { ReviewRow } from '../types/database';
 
 test('Owner request count includes both new and in-review submissions', () => {
@@ -32,6 +34,36 @@ test('Owner request count includes both new and in-review submissions', () => {
     { status: 'done' },
     { status: 'rejected' },
   ]), 2);
+});
+
+test('Notification links are restricted to internal Owner Portal routes', () => {
+  assert.equal(getSafeOwnerNotificationPath('/owner'), '/owner');
+  assert.equal(getSafeOwnerNotificationPath('/owner/plan'), '/owner/plan');
+  assert.equal(getSafeOwnerNotificationPath('https://example.com'), null);
+  assert.equal(getSafeOwnerNotificationPath('//example.com'), null);
+  assert.equal(getSafeOwnerNotificationPath('/admin'), null);
+});
+
+test('Owner can mark one notification read and unread in demo mode', async () => {
+  const db = loadDemoDb();
+  const notification = {
+    id: 'notification-toggle-test',
+    user_id: 'user-owner-1',
+    type: 'general' as const,
+    title_en: 'Test notification',
+    title_ur: 'آزمائشی اطلاع',
+    body_en: 'Test body',
+    body_ur: 'آزمائشی متن',
+    link_path: '/owner',
+    is_read: false,
+    created_at: new Date().toISOString(),
+  };
+  db.notifications.push(notification);
+  await setNotificationRead('user-owner-1', notification.id, true);
+  assert.equal(db.notifications.find((item) => item.id === notification.id)?.is_read, true);
+  await setNotificationRead('user-owner-1', notification.id, false);
+  assert.equal(db.notifications.find((item) => item.id === notification.id)?.is_read, false);
+  db.notifications = db.notifications.filter((item) => item.id !== notification.id);
 });
 
 test('1. Creating a new offer defaults to active', async () => {

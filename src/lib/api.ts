@@ -2055,6 +2055,25 @@ export async function markNotificationsRead(userId: string, ids?: string[]): Pro
   saveDemoDb(db);
 }
 
+export async function setNotificationRead(userId: string, notificationId: string, isRead: boolean): Promise<void> {
+  const client = getSupabaseClient();
+  if (client) {
+    const { error } = await client
+      .from('notifications')
+      .update({ is_read: isRead })
+      .eq('id', notificationId)
+      .eq('user_id', userId);
+    if (error) throw error;
+    return;
+  }
+  const db = loadDemoDb();
+  const notification = db.notifications.find((item) => item.id === notificationId && item.user_id === userId);
+  if (notification) {
+    notification.is_read = isRead;
+    saveDemoDb(db);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // ADMIN & STAFF PORTAL
 // ---------------------------------------------------------------------------

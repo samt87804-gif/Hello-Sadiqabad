@@ -101,3 +101,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 2. Owner Portal → a business → Inquiries: choose a new/test inquiry and click **Mark Read**. It should become **READ** without assigning you as the handler.
 3. Click **Handled** on that test inquiry. It should become **HANDLED** and record the current signed-in user as handler.
 4. Report any mismatch or error. Avoid changing a real customer inquiry unless it is appropriate to mark it handled.
+
+
+### Phase 2 — Owner experience (implementation awaiting CI)
+
+- Notifications now support per-item read/unread and mark-all-read; errors and successes are shown to the Owner.
+- Stored `link_path` is used only when it resolves to an internal `/owner` route; external/unknown paths are not rendered as links.
+- Notification title/body uses Urdu when the app language is Urdu and the Urdu field is non-empty; otherwise it falls back to English.
+- My Payments now loads the unread badge instead of passing a hard-coded zero.
+- Mobile Owner navigation is a compact collapsible menu; every prior destination and sign-out remains available. Desktop sidebar is unchanged.
+- Analytics shows an honest empty state when no real top-search-term data exists.
+- Live migration `20261126203248` restricts authenticated notification UPDATE to the `is_read` column only. RLS still scopes rows to the signed-in user.

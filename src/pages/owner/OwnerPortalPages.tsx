@@ -45,6 +45,7 @@ import {
   fetchPlans,
   fetchPublicSiteSettings,
   markNotificationsRead,
+  setNotificationRead,
   replyToReview,
   updateInquiryStatus,
   updateOwnerBusiness,
@@ -1096,7 +1097,20 @@ export function OwnerPlan() {
 
 
 export function OwnerPayments() {
+  const { user } = useAuth();
   const { showToast } = useToast();
+  const [unreadCount, setUnreadCount] = useState(0);
+  useEffect(() => {
+    let active = true;
+    if (!user) {
+      setUnreadCount(0);
+      return () => { active = false; };
+    }
+    void fetchNotifications(user.id)
+      .then((items) => { if (active) setUnreadCount(items.filter((item) => !item.is_read).length); })
+      .catch(() => { if (active) setUnreadCount(0); });
+    return () => { active = false; };
+  }, [user]);
   const [history, setHistory] = useState<OwnerPaymentHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeReceipt, setActiveReceipt] = useState<string | null>(null);
@@ -1130,7 +1144,7 @@ export function OwnerPayments() {
     finally { setSaving(false); }
   };
   return (
-    <OwnerShell unreadCount={0} listings={[]} selectedId="" onSelect={() => {}} loading={loading} showSwitcher={false}>
+    <OwnerShell unreadCount={unreadCount} listings={[]} selectedId="" onSelect={() => {}} loading={loading} showSwitcher={false}>
       <div className="space-y-5">
         <div><h1 className="text-xl sm:text-2xl font-extrabold text-on-surface">My Payments</h1><p className="text-sm text-on-surface-variant">Your read-only payment history across all linked businesses. Only Admin can change financial records.</p></div>
         {history && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1342,8 +1356,13 @@ export function OwnerNotifications() {
       <NotificationsList
         items={data.notifications}
         onMarkAllRead={async () => {
-          if (!user) return;
+          if (!user) throw new Error('Please sign in again.');
           await markNotificationsRead(user.id);
+          await data.reload();
+        }}
+        onSetRead={async (notificationId, isRead) => {
+          if (!user) throw new Error('Please sign in again.');
+          await setNotificationRead(user.id, notificationId, isRead);
           await data.reload();
         }}
       />

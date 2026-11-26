@@ -1208,5 +1208,6 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Phase 0 remaining: release app changes, revoke direct authenticated SELECT on private note column, verify Admin/Owner access and manual acceptance.
 - [x] Phase 1 data correctness implemented: pending review count includes `new` + `in_review`; inquiry `handled_by` is set only on `handled`, not on `read`; regression tests added. CI run `45891440166` passed and Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` succeeded.
 - [ ] Phase 1 Owner manual test of the pending-review count and inquiry read/handled workflow.
-- [ ] Phases 2–6: notifications/mobile UX, race/scaling safeguards, listing gallery management, optional profile improvements and final acceptance. Follow the active plan in order.
+- [x] Phase 2 Owner experience implemented: individual read/unread actions, safe internal notification links, Urdu notification content, action feedback, My Payments unread badge, collapsible mobile navigation and honest analytics empty state. Live notification UPDATE is restricted to `is_read` by migration `20261126203248`; CI/deployment verification pending.
+- [ ] Phases 3–6: race/scaling safeguards, listing gallery management, optional profile improvements and final acceptance. Follow the active plan in order.
 - Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.

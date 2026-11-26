@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../lib/i18n';
+import { getSafeOwnerNotificationPath } from '../../lib/notifications';
 import {
   AlertCircle,
   Calendar,
@@ -1090,17 +1092,23 @@ export function OwnerAnalytics({
       {isFullAnalytics && (
         <Card className="p-5">
           <h3 className="text-base font-bold text-on-surface mb-3">Top Search Terms Finding You</h3>
-          <div className="space-y-2">
-            {stats.top_search_terms.map((t) => (
-              <div
-                key={t.query}
-                className="flex items-center justify-between text-sm px-3 py-2 rounded-xl bg-surface-container-low"
-              >
-                <span className="font-medium text-on-surface">“{t.query}”</span>
-                <span className="font-bold text-primary tabular-nums">{t.count} searches</span>
-              </div>
-            ))}
-          </div>
+          {stats.top_search_terms.length > 0 ? (
+            <div className="space-y-2">
+              {stats.top_search_terms.map((t) => (
+                <div
+                  key={t.query}
+                  className="flex items-center justify-between text-sm px-3 py-2 rounded-xl bg-surface-container-low"
+                >
+                  <span className="font-medium text-on-surface">“{t.query}”</span>
+                  <span className="font-bold text-primary tabular-nums">{t.count} searches</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-xl bg-surface-container-low p-3 text-sm text-on-surface-variant">
+              Search-term insights are not available yet. This section will appear when reliable search data is collected for your listing.
+            </p>
+          )}
         </Card>
       )}
     </div>
@@ -1150,46 +1158,104 @@ export function PlanCard({ business, plans, requests, onReload }: { business: Bu
 export function NotificationsList({
   items,
   onMarkAllRead,
+  onSetRead,
 }: {
   items: NotificationRow[];
   onMarkAllRead: () => Promise<void>;
+  onSetRead: (notificationId: string, isRead: boolean) => Promise<void>;
 }) {
+  const { isUrdu } = useI18n();
+  const { showToast } = useToast();
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [markingAll, setMarkingAll] = useState(false);
+
+  const handleMarkAllRead = async () => {
+    if (markingAll) return;
+    setMarkingAll(true);
+    try {
+      await onMarkAllRead();
+      showToast(isUrdu ? 'تمام اطلاعات پڑھ لی گئی ہیں۔' : 'All notifications marked as read.', 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : (isUrdu ? 'اطلاعات اپ ڈیٹ نہیں ہو سکیں۔' : 'Notifications could not be updated.'), 'error');
+    } finally {
+      setMarkingAll(false);
+    }
+  };
+
+  const handleSetRead = async (notification: NotificationRow) => {
+    if (updatingId) return;
+    setUpdatingId(notification.id);
+    try {
+      await onSetRead(notification.id, !notification.is_read);
+      showToast(
+        notification.is_read
+          ? (isUrdu ? 'اطلاع دوبارہ نئی کر دی گئی۔' : 'Notification marked unread.')
+          : (isUrdu ? 'اطلاع پڑھ لی گئی۔' : 'Notification marked as read.'),
+        'success'
+      );
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : (isUrdu ? 'اطلاع اپ ڈیٹ نہیں ہو سکی۔' : 'Notification could not be updated.'), 'error');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-bold text-on-surface">Notifications ({items.length})</h2>
+        <h2 className="text-lg font-bold text-on-surface">{isUrdu ? 'اطلاعات' : 'Notifications'} ({items.length})</h2>
         {items.some((n) => !n.is_read) && (
-          <Button size="sm" variant="outline" onClick={onMarkAllRead}>
-            Mark All Read
+          <Button size="sm" variant="outline" disabled={markingAll} onClick={() => void handleMarkAllRead()}>
+            {isUrdu ? 'سب پڑھ لیں' : 'Mark All Read'}
           </Button>
         )}
       </div>
 
       {items.length === 0 ? (
         <Card className="p-6 text-center text-sm text-on-surface-variant">
-          No notifications yet.
+          {isUrdu ? 'ابھی کوئی اطلاع موجود نہیں۔' : 'No notifications yet.'}
         </Card>
       ) : (
         <div className="space-y-2.5">
-          {items.map((n) => (
-            <Card
-              key={n.id}
-              className={`p-4 flex items-start justify-between gap-3 ${
-                !n.is_read ? 'border-s-4 border-s-primary bg-surface-container-low/50' : ''
-              }`}
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-on-surface">{n.title_en}</span>
-                  {!n.is_read && <Badge variant="primary">New</Badge>}
+          {items.map((n) => {
+            const title = isUrdu && n.title_ur.trim() ? n.title_ur : n.title_en;
+            const body = isUrdu && n.body_ur.trim() ? n.body_ur : n.body_en;
+            const safePath = getSafeOwnerNotificationPath(n.link_path);
+            return (
+              <Card
+                key={n.id}
+                className={`p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 ${
+                  !n.is_read ? 'border-s-4 border-s-primary bg-surface-container-low/50' : ''
+                }`}
+              >
+                <div className="min-w-0 flex-1" dir={isUrdu ? 'rtl' : 'ltr'}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm text-on-surface">{title}</span>
+                    {!n.is_read && <Badge variant="primary">{isUrdu ? 'نئی' : 'New'}</Badge>}
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-1 whitespace-pre-wrap">{body}</p>
+                  <span className="text-[11px] text-outline mt-1 block">
+                    {formatDateShort(n.created_at)}
+                  </span>
                 </div>
-                <p className="text-xs text-on-surface-variant mt-1">{n.body_en}</p>
-                <span className="text-[11px] text-outline mt-1 block">
-                  {formatDateShort(n.created_at)}
-                </span>
-              </div>
-            </Card>
-          ))}
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  {safePath && (
+                    <Link to={safePath} className="min-h-[34px] px-3 rounded-xl bg-surface-container-low text-xs font-bold text-primary inline-flex items-center">
+                      {isUrdu ? 'کھولیں' : 'Open'}
+                    </Link>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={Boolean(updatingId) || markingAll}
+                    onClick={() => void handleSetRead(n)}
+                  >
+                    {n.is_read ? (isUrdu ? 'نئی نشان زد کریں' : 'Mark Unread') : (isUrdu ? 'پڑھ لیا' : 'Mark Read')}
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
