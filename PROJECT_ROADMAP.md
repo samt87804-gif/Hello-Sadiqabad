@@ -1236,7 +1236,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Owner confirmed all manual gallery tests passed: Owner upload stays private pending review; Admin approval publishes; public profile shows approved image; rejected upload stays private; Owner removal request leaves image public until Admin approves removal; approved removal hides the image.
 - [x] Phase 4B Owner manual acceptance is complete. Existing Free/Basic/Premium limits and logo/cover quota were included in the Owner's reported all-pass checklist.
 - [x] Owner reported a public gallery usability issue: the photo viewer's icon-only close control was not apparent. Improved the shared Lightbox close action to a high-contrast, bilingual labelled button with a larger touch target and focus styling.
-- [ ] Verify the revised close button on a public business profile on mobile and desktop after deployment. No gallery data, image URLs, approval state or media storage was changed for this UI fix.
+- [x] Owner confirmed the deployed revised close button test passed. This is Owner-reported device acceptance; no independent authenticated browser test was performed. No gallery data, image URLs, approval state or media storage was changed for this UI fix.
 
 
 ## Owner Portal Phase 5 — Profile and My Payments reliability (27 November 2026)
@@ -1247,4 +1247,5 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Added Profile request-history loading/error/Retry states. Profile change submission stays disabled until request history is available, preventing hidden pending requests from being duplicated.
 - [x] Added busy/duplicate-submit protection for profile approval requests and password updates.
 - [x] GitHub CI run `45902085685` passed; Cloudflare Pages production deployment `cb4d87a5-9254-44b7-9761-c0dfaf5cebc3` succeeded for commit `f4a211284354ec4d02f1894e0ff9bc8049235a11`.
-- [ ] Owner manual acceptance: verify payment/profile retry and busy states on the live site. No database, receipt, profile or approval-request data was changed by this release.
+- [x] Owner confirmed Profile and My Payments loading/retry and busy-state manual tests passed on 27 November 2026. No database, receipt, profile or approval-request data was changed by this release.
+- [ ] Continue the remaining Phase 3D audit of safe cross-page fetch reductions; preserve existing dashboard aggregate accuracy and pagination.
