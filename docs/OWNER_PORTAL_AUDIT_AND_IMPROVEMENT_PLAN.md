@@ -45,7 +45,7 @@
 - The counter now queries the exact count of rows for the signed-in Owner, limited to the existing Owner-visible request types and statuses `new` / `in_review`; it no longer derives the summary from the first 20 history rows.
 - Existing history pagination and Load older requests behavior are unchanged. Demo mode applies the same Owner/type/status filters across all in-memory submissions.
 - Regression coverage creates 28 matching Owner requests with pending rows only beyond the first 20, and verifies other-owner, correction-type and rejected rows are excluded.
-- No schema, RLS, permissions, submission records or migration changes are included. Initial CI run `45911358060` passed automated tests and production build but TypeScript caught a missing `SubmissionRow` type import in the new test; the import has now been corrected in a follow-up commit. Await the follow-up CI and matching Pages deployment before asking for manual acceptance.
+- No schema, RLS, permissions, submission records or migration changes are included. Follow-up commit `251ca5b8c15d285daef86696b9b8b37b5cde1b67` corrected a test-only missing type import. GitHub Actions CI run `45911463787` passed TypeScript, automated tests, production build and Edge Function typecheck. Cloudflare Pages production deployment `06180522-7bd2-4592-ab49-3471600c9017` passed build and deploy. Owner manual acceptance is still pending.
 
 ## Phase 2 — Owner experience
 
@@ -249,3 +249,13 @@
 - Proposed narrow remedy (awaiting Owner approval): add an Owner-scoped exact-count query for allowed submission types and statuses `new` / `in_review`, preserving existing RLS and pagination. Demo mode should count the full Owner request set. No schema change, existing record mutation or workflow replacement is needed.
 - [ ] Owner approval required before implementing this accuracy fix. After approval, add regression coverage for more than 20 submissions and verify CI/production deployment.
 - Phase 1 inquiry handler behavior remains separately awaiting Owner manual acceptance: Read must not set `handled_by`; Handled should set the current Owner as handler.
+
+
+### Phase 1 exact-count release evidence
+
+- Implementation commit: `e98caf117daa8365c5bb341d3fcd8495838cb4d3`.
+- Follow-up test-import correction and documentation commit: `251ca5b8c15d285daef86696b9b8b37b5cde1b67`.
+- GitHub Actions CI run `45911463787` passed: TypeScript typecheck, automated tests, production build and Supabase Edge Function typecheck. The first run `45911358060` caught a missing test-only type import; the follow-up run is fully green.
+- Cloudflare Pages production deployment `06180522-7bd2-4592-ab49-3471600c9017` completed successfully for the follow-up commit.
+- No schema migration, RLS/grant/permission change, existing-record mutation or data migration was performed.
+- [ ] Owner manual acceptance: verify My Businesses pending count and inquiry Read/Handled behavior. The exact count is independent of the 20-row history page; loading older history must not change the summary count.
