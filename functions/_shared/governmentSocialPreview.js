@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './fetchWithTimeout.js';
+
 const SITE_ORIGIN = 'https://hellosadiqabad.com';
 const FALLBACK_IMAGE = SITE_ORIGIN + '/site-logo.png';
 const SAFE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -71,9 +73,9 @@ async function fetchPublishedContent(env, config, slug) {
   url.searchParams.set('status', config.statusFilter);
   url.searchParams.set('published_at', 'lte.' + new Date().toISOString());
   url.searchParams.set('limit', '1');
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: { apikey: publicKey, Authorization: 'Bearer ' + publicKey, Accept: 'application/json' },
-  });
+  }, 8000);
   if (!response.ok) throw new Error('Government social metadata request failed (' + response.status + ').');
   const rows = await response.json();
   return Array.isArray(rows) ? rows[0] || null : null;
