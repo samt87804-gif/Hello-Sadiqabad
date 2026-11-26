@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
     // application assets only (not API responses or user data). Failures are
     // best-effort so a constrained device can still install the emergency shell.
     try {
-      const manifestResponse = await fetch(PRECACHE_MANIFEST_URL, { cache: 'no-store' });
+      const manifestResponse = await fetch(PRECACHE_MANIFEST_URL, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
       if (manifestResponse.ok) {
         await cache.put(PRECACHE_MANIFEST_URL, manifestResponse.clone()).catch(() => undefined);
         const manifest = await manifestResponse.json();
@@ -100,7 +100,7 @@ async function cachePublicMedia(request) {
   const cache = await caches.open(MEDIA_CACHE_NAME);
   const cached = await cache.match(request);
   if (cached) return cached;
-  const response = await fetch(request);
+  const response = await fetch(request, { signal: AbortSignal.timeout(10000) });
   const contentType = (response.headers.get('content-type') || '').toLowerCase();
   if (response.ok && contentType.startsWith('image/')) {
     await cache.put(request, response.clone()).catch(() => undefined);
@@ -113,7 +113,7 @@ async function cacheFingerprintAsset(request) {
   const cached = await cache.match(request);
   if (cached) return cached;
 
-  const response = await fetch(request);
+  const response = await fetch(request, { signal: AbortSignal.timeout(8000) });
   if (response.ok && response.type === 'basic') {
     await cache.put(request, response.clone()).catch(() => undefined);
   }
