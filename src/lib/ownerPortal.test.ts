@@ -49,13 +49,15 @@ test('Owner review and inquiry pages are bounded and do not overlap', async () =
     db.reviews.push({
       id: reviewId, business_id: businessId, author_name: `Reviewer ${index}`,
       rating: 5, comment: 'Pagination test', status: 'approved',
-      owner_reply: null, owner_reply_at: null,
+      owner_reply: index % 2 === 0 ? 'Thanks for your feedback.' : null,
+      owner_reply_at: index % 2 === 0 ? new Date(stamp + index).toISOString() : null,
       created_at: new Date(stamp + index).toISOString(),
       updated_at: new Date(stamp + index).toISOString(),
     });
     db.inquiries.push({
       id: inquiryId, business_id: businessId, name: `Customer ${index}`,
-      phone: '03001234567', message: 'Pagination test', status: 'new',
+      phone: '03001234567', message: 'Pagination test',
+      status: (['new', 'read', 'handled'] as const)[index % 3],
       handled_by: null, created_at: new Date(stamp + index).toISOString(),
       updated_at: new Date(stamp + index).toISOString(),
     });
@@ -68,6 +70,15 @@ test('Owner review and inquiry pages are bounded and do not overlap', async () =
   assert.equal(nextReviews.hasMore, false);
   assert.equal(new Set([...firstReviews.items, ...nextReviews.items].map((row) => row.id)).size, 23);
 
+  const repliedReviews = await fetchOwnerReviewsPage(businessId, 0, 20, 'replied');
+  const unrepliedReviews = await fetchOwnerReviewsPage(businessId, 0, 20, 'not_replied');
+  assert.equal(repliedReviews.items.length, 12);
+  assert.equal(repliedReviews.hasMore, false);
+  assert.ok(repliedReviews.items.every((row) => Boolean(row.owner_reply?.trim())));
+  assert.equal(unrepliedReviews.items.length, 11);
+  assert.equal(unrepliedReviews.hasMore, false);
+  assert.ok(unrepliedReviews.items.every((row) => !row.owner_reply?.trim()));
+
   const firstInquiries = await fetchOwnerInquiriesPage(businessId, 0, 20);
   const nextInquiries = await fetchOwnerInquiriesPage(businessId, 20, 20);
   assert.equal(firstInquiries.items.length, 20);
@@ -75,6 +86,13 @@ test('Owner review and inquiry pages are bounded and do not overlap', async () =
   assert.equal(nextInquiries.items.length, 3);
   assert.equal(nextInquiries.hasMore, false);
   assert.equal(new Set([...firstInquiries.items, ...nextInquiries.items].map((row) => row.id)).size, 23);
+
+  for (const status of ['new', 'read', 'handled'] as const) {
+    const filtered = await fetchOwnerInquiriesPage(businessId, 0, 20, status);
+    assert.equal(filtered.items.length, status === 'handled' ? 7 : 8);
+    assert.equal(filtered.hasMore, false);
+    assert.ok(filtered.items.every((row) => row.status === status));
+  }
 
   db.reviews = db.reviews.filter((row) => !reviewIds.includes(row.id));
   db.inquiries = db.inquiries.filter((row) => !inquiryIds.includes(row.id));
