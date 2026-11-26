@@ -144,34 +144,34 @@ Before each phase inspect current main, components, routes, API calls, migration
 - [x] Record compatibility risks and test baseline before editing.
 
 ### Phase B — One-card queue and popup UI
-- [ ] Convert Business Field Approval list to one request card per registration.
-- [ ] Build one popup/drawer with grouped collapsible field sections.
-- [ ] Add per-field checkbox, section Select All and global Select All/Clear All.
-- [ ] Add private Owner details panel and invitation checkbox.
-- [ ] Add public preview, unsaved-change warning and one Save Approval action.
-- [ ] Add queue counts/statuses without exposing private data.
+- [x] Convert Business Field Approval list to one request card per registration.
+- [~] Build one popup/drawer with grouped field sections; collapsible section polish is in the current feature PR.
+- [x] Add per-field checkbox, section Select All and global Select All/Clear All.
+- [x] Add private Owner details panel and invitation checkbox.
+- [x] Add public preview, unsaved-change warning and one Save Approval action.
+- [x] Add queue counts/statuses without exposing private data.
 
 ### Phase C — Atomic approval and invitation orchestration
-- [ ] Implement server-side save of field decisions and audit history.
-- [ ] Enforce checked = approve; unchecked = remain pending; reject/unpublish only by explicit action.
-- [ ] Enforce minimum-safe-listing before business appears publicly.
-- [ ] Make invitation idempotent, retryable and linked to exactly the reviewed business.
-- [ ] Keep field approval durable if invite delivery fails; surface retry state.
-- [ ] Verify account/association cannot be created from client-supplied identity.
+- [x] Implement server-side bulk save of field decisions with per-field reviewer/time/status audit history.
+- [x] Enforce checked = approve; unchecked = remain pending; reject/unpublish only by explicit action.
+- [x] Enforce the five-field minimum-safe-listing gate before business publication.
+- [x] Add a JWT-protected, idempotent, retryable linked Owner invitation Edge Function with compare-and-swap processing and exact business association.
+- [x] Keep field approval durable if invite delivery fails; persist failure state and expose a separate retry action.
+- [x] Resolve the Owner account server-side from the private request email; never accept a client-supplied Auth user ID.
 
 ### Phase D — Private media lifecycle
-- [ ] Confirm private pending bucket, signed upload authorization, rate limiting and MIME/size/path constraints.
-- [ ] Keep approved media visible until replacement approval and promotion succeed.
-- [ ] Promote only checked and verified media; retain failed promotion for safe retry.
-- [ ] Test anonymous read denial before approval and public access only after promotion.
+- [x] Confirm the existing private pending bucket, signed upload authorization, rate limiting and MIME/size/path checks; retain the existing upload controls.
+- [x] Keep approved media visible until replacement approval and promotion succeed.
+- [x] Promote only explicitly approved and verified media; defer promotion until the business is public and plan entitlements allow it.
+- [ ] Test anonymous read denial before approval and public access only after promotion (manual Storage acceptance still open).
 
 ### Phase E — Existing Admin workflow clarity and audit
-- [ ] Add navigation groups and purpose descriptions for the six pages.
-- [ ] Confirm Moderation Queue does not duplicate new Add Business requests.
-- [ ] Confirm Businesses direct edits have before/after audit records.
-- [ ] Confirm Data Quality suggestions never auto-delete or unpublish.
-- [ ] Confirm standalone Owner Registration Requests remain separate.
-- [ ] Confirm Owners page exposes only authorized account/association controls.
+- [~] Add navigation groups and purpose descriptions for the six pages (current feature PR; not yet merged).
+- [x] Confirm Moderation Queue excludes new Add Business requests from legacy one-click approval and points Admins to Business Field Approval.
+- [~] Add before/after audit migration and viewer support in the current feature PR; migration is not yet applied to production.
+- [x] Confirm Data Quality is an issue monitor only; explicit Admin action is required for corrections.
+- [x] Filter Owner Registration Requests to standalone rows only; linked Add Business invitations are managed in Business Field Approval.
+- [~] Current feature PR removes manual Owner creation and temporary-password setting; existing-account management remains.
 
 ### Phase F — End-to-end QA and release
 - [ ] Test new Add Business request with fields/media.
@@ -187,6 +187,10 @@ Before each phase inspect current main, components, routes, API calls, migration
 
 ## 10. Current status and next action
 
-**Plan status:** Owner-approved. Phase A audit completed against GitHub main and the live Supabase schema on 26 November 2026; see [ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md](ADD_BUSINESS_APPROVAL_PHASE_A_AUDIT.md). No application code, schema or production records were changed during the audit. The earlier illustrative popup prototype remains non-production and is not counted as implementation.
+**Plan status (26 November 2026):** Phase A is complete. The first Phase B/C production implementation is on main commit `84d72a4746d69a08eeb87238856a3b92a687b7ca`, passed GitHub Actions run `45722802681`, and is deployed to Cloudflare Pages production. The bulk review RPC, plan-gated decision deferral, linked Owner read policy and invitation/media Edge Functions are live. See [BUSINESS_APPROVAL_PHASE_BC_IMPLEMENTATION_CHECKPOINT.md](BUSINESS_APPROVAL_PHASE_BC_IMPLEMENTATION_CHECKPOINT.md).
 
-**Next action:** implement Phase B (one-card queue and popup UI) in a complete, backward-compatible release. Before shipping, coordinate the UI with the required atomic field-save/invitation orchestration and preserve the existing moderation, owner, media and legacy submission paths.
+**Current feature branch:** `feature/admin-business-workflow-phase-e`. It adds collapsible sections, clearer Admin navigation, a stricter Owners page (no manual temporary-password account creation), readable before/after audit details and a business audit migration. These changes are not merged or deployed yet. The audit migration is intentionally not applied to production before PR approval.
+
+**Production acceptance still open:** authenticated Admin popup walkthrough, real invite success/failure/retry with an owner-approved test account, anonymous Storage read denial / post-approval media access, Owner Portal isolation and Owner-change moderation journey. No invitation email or Auth account was created during the current tests.
+
+**Next action:** finish Phase E on the feature branch, run CI and open a Pull Request. After approval/merge, apply the Admin before/after audit migration and complete Phase F end-to-end acceptance. Do not mark the whole workflow complete until these gates are evidenced.

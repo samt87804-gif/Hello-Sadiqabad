@@ -45,22 +45,26 @@ export interface AdminNavItem {
 
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { tab: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { tab: 'analytics', label: 'Analytics', icon: BarChart3, requiredPerm: 'analytics.view' },
+  // Review & Approvals
+  { tab: 'business-review', label: 'Business Field Approval', icon: ClipboardCheck, requiredPerm: 'moderation.review', badgeKey: 'new_submissions' },
   { tab: 'moderation', label: 'Moderation Queue', icon: ClipboardCheck, requiredPerm: 'moderation.review', badgeKey: 'moderation_total' },
-  { tab: 'sdk-jobs', label: 'SDK Jobs', icon: BriefcaseBusiness, requiredPerm: 'sdk_jobs.manage' },
-  { tab: 'business-review', label: 'Business Field Review', icon: ClipboardCheck, requiredPerm: 'moderation.review', badgeKey: 'new_submissions' },
-  { tab: 'inquiries', label: 'Inquiries', icon: MessageSquare, requiredPerm: 'support.read' },
-  { tab: 'leads', label: 'Sales Leads', icon: Briefcase, requiredPerm: 'leads.manage', badgeKey: 'open_leads' },
+  { tab: 'owner-requests', label: 'Owner Registration Requests', icon: UserRoundPlus, requiredPerm: 'owners.create' },
+  // Directory Management
   { tab: 'businesses', label: 'Businesses', icon: Building2, requiredPerm: 'business.create', badgeKey: 'pending_businesses' },
   { tab: 'quality', label: 'Data Quality', icon: Wrench, requiredPerm: 'business.create' },
   { tab: 'import', label: 'CSV Import', icon: FileSpreadsheet, requiredPerm: 'import.run' },
   { tab: 'export', label: 'Backup & Export', icon: Download, superAdminOnly: true },
-  { tab: 'owners', label: 'Owners', icon: Users, requiredPerm: 'owners.create' },
-  { tab: 'owner-requests', label: 'Owner Requests', icon: UserRoundPlus, requiredPerm: 'owners.create' },
-  { tab: 'ads', label: 'Sponsored Ads', icon: Sparkles, requiredPerm: 'ads.review' },
-  { tab: 'plans', label: 'Plans & Expiry', icon: Crown, requiredPerm: 'tiers.manage', badgeKey: 'expiring_plans' },
   { tab: 'categories', label: 'Categories', icon: FolderTree, superAdminOnly: true },
   { tab: 'areas', label: 'Areas', icon: MapPin, superAdminOnly: true },
+  // Owner Management
+  { tab: 'owners', label: 'Owners', icon: Users, requiredPerm: 'owners.create' },
+  // Other operations and system tools
+  { tab: 'analytics', label: 'Analytics', icon: BarChart3, requiredPerm: 'analytics.view' },
+  { tab: 'sdk-jobs', label: 'SDK Jobs', icon: BriefcaseBusiness, requiredPerm: 'sdk_jobs.manage' },
+  { tab: 'inquiries', label: 'Inquiries', icon: MessageSquare, requiredPerm: 'support.read' },
+  { tab: 'leads', label: 'Sales Leads', icon: Briefcase, requiredPerm: 'leads.manage', badgeKey: 'open_leads' },
+  { tab: 'ads', label: 'Sponsored Ads', icon: Sparkles, requiredPerm: 'ads.review' },
+  { tab: 'plans', label: 'Plans & Expiry', icon: Crown, requiredPerm: 'tiers.manage', badgeKey: 'expiring_plans' },
   { tab: 'emergency', label: 'Emergency Contacts', icon: PhoneCall, superAdminOnly: true },
   { tab: 'local-authorities', label: 'Local Authorities', icon: Landmark, superAdminOnly: true },
   { tab: 'authority-profiles', label: 'Authority Profiles', icon: UserRound, superAdminOnly: true },
@@ -73,6 +77,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { tab: 'settings', label: 'Settings & Pages', icon: Settings, requiredPerm: 'settings.manage' },
   { tab: 'audit', label: 'Audit Logs', icon: History, superAdminOnly: true },
 ];
+
+const ADMIN_NAV_GROUPS = [
+  { label: 'Review & Approvals', tabs: ['business-review', 'moderation', 'owner-requests'] },
+  { label: 'Directory Management', tabs: ['businesses', 'quality', 'import', 'export', 'categories', 'areas'] },
+  { label: 'Owner Management', tabs: ['owners'] },
+  { label: 'Other Operations & System', tabs: ['overview', 'analytics', 'sdk-jobs', 'inquiries', 'leads', 'ads', 'plans', 'emergency', 'local-authorities', 'authority-profiles', 'announcements', 'news', 'government-jobs', 'government-schemes', 'chatbot-knowledge', 'staff', 'settings', 'audit'] },
+] as const;
 
 function resolveBadgeValue(counts: AdminDashboardCounts | null | undefined, badgeKey?: AdminNavItem['badgeKey']): number {
   if (!counts || !badgeKey) return 0;
@@ -147,32 +158,43 @@ export function AdminNav({ counts }: { counts?: AdminDashboardCounts | null }) {
             <p className="text-[11px] opacity-80">Hello Sadiqabad Operations</p>
           </div>
 
-          <nav className="space-y-0.5" aria-label="Admin navigation">
-            {visibleItems.map((item) => {
-              const Icon = item.icon;
-              const badgeVal = resolveBadgeValue(counts, item.badgeKey);
+          <nav className="space-y-4" aria-label="Admin navigation">
+            {ADMIN_NAV_GROUPS.map((group) => {
+              const groupItems = visibleItems.filter((item) => (group.tabs as readonly string[]).includes(item.tab));
+              if (groupItems.length === 0) return null;
               return (
-                <NavLink
-                  key={item.tab}
-                  to={`/admin/${item.tab}`}
-                  className={({ isActive }) =>
-                    `flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
-                      isActive
-                        ? 'bg-primary text-on-primary shadow-xs'
-                        : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
-                    }`
-                  }
-                >
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </span>
-                  {badgeVal > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold tabular-nums">
-                      {badgeVal}
-                    </span>
-                  )}
-                </NavLink>
+                <section key={group.label} className="space-y-1">
+                  <h2 className="px-3 text-[10px] uppercase tracking-wider font-extrabold text-on-surface-variant/80">{group.label}</h2>
+                  <div className="space-y-0.5">
+                    {groupItems.map((item) => {
+                      const Icon = item.icon;
+                      const badgeVal = resolveBadgeValue(counts, item.badgeKey);
+                      return (
+                        <NavLink
+                          key={item.tab}
+                          to={`/admin/${item.tab}`}
+                          className={({ isActive }) =>
+                            `flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                              isActive
+                                ? 'bg-primary text-on-primary shadow-xs'
+                                : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
+                            }`
+                          }
+                        >
+                          <span className="flex items-center gap-2.5 min-w-0">
+                            <Icon className="w-4 h-4 shrink-0" />
+                            <span className="truncate">{item.label}</span>
+                          </span>
+                          {badgeVal > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold tabular-nums">
+                              {badgeVal}
+                            </span>
+                          )}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </section>
               );
             })}
           </nav>

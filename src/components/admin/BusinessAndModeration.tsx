@@ -641,9 +641,10 @@ export function BusinessManager({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-on-surface">
-          Businesses Directory ({filtered.length})
-        </h2>
+        <div>
+          <h2 className="text-lg font-bold text-on-surface">Businesses Directory ({filtered.length})</h2>
+          <p className="text-xs text-on-surface-variant mt-1">Direct Admin edits are saved to the business record and recorded in Audit Logs with before-and-after field values.</p>
+        </div>
         <Button onClick={openCreate} leftIcon={<Plus className="w-4 h-4" />}>
           Add Business
         </Button>
@@ -1510,9 +1511,12 @@ export function ModerationManager({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <ClipboardCheck className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-bold text-on-surface">Moderation Queue</h2>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <ClipboardCheck className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-bold text-on-surface">Moderation Queue</h2>
+        </div>
+        <p className="text-xs text-on-surface-variant">Review public and Owner-submitted changes, corrections, reports, products, services and offers here. New Business Registration is handled separately in Business Field Approval.</p>
       </div>
 
       {newBusinessSubs.length > 0 && (

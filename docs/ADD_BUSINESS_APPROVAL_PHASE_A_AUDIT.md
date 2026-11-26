@@ -110,3 +110,19 @@ Phase A exit criteria are satisfied. No production state was changed.
 2. Coordinate the UI contract with Phase C before production release: bulk atomic field decision RPC; checked = approve; unchecked = remain pending; rejection only by explicit action with reason; unpublish only for previously public fields; minimum five-field gate; invitation task state and retry; media decision/promotion retry.
 3. Keep linked Add Business Owner requests out of the standalone Owner Registration Requests page.
 4. Preserve existing Admin routes, legacy moderation types, direct business management, Owner Portal access and all production records.
+
+
+## Post-audit implementation checkpoint — 26 November 2026
+
+Phase A remained read-only. After the owner approved the active implementation plan, the first Phase B/C implementation was delivered to production on main commit `84d72a4746d69a08eeb87238856a3b92a687b7ca`.
+
+- Business Field Approval now has one card per active Add Business request, one grouped review popup, individual field decisions, global/section selection, private Owner details, optional invitation, public preview and one Save Approval action.
+- Applied migrations: `20261125232726_business_approval_bulk_review_invitation_media`, `20261125233525_business_review_defer_plan_gated_decisions`, and `20261125233716_business_review_api_privilege_and_policy_tuning`.
+- Deployed Edge Functions: `send-business-owner-invitation` v1 (JWT required), `review-business-media` v4 (JWT required), and `manage-owner-registration` v6 (JWT required). Linked Add Business Owner requests are rejected by the standalone management function.
+- The public bulk RPC is SECURITY INVOKER; a private SECURITY DEFINER helper performs the permission check and plan-gated filtering. Anonymous execution is denied. Linked Owner request reads are permission-scoped through one combined RLS policy.
+- Transactional DB tests created a synthetic registration, approved the public fields, verified the business publication gate and private Owner-name exclusion, recorded a pending invitation task without sending email, and rolled back. A second transaction verified the media `approved_pending_promotion` state and rolled back. No test rows remain.
+- Production CI run `45722802681` passed; Cloudflare Pages deployment `a77f3156-deed-4d69-a208-d98e4d5ec468` succeeded for the current main commit.
+- Current live baseline: 2 new and 2 in-review Add Business submissions; 36 pending and 100 approved field-review rows; 2 pending media assets; 1 linked Owner request pending with invitation not requested; 3 standalone Owner requests pending; 0 Owner requests processing.
+- No Owner invitation email, new Auth user, or real business/media row was created by the tests.
+
+The current feature branch `feature/admin-business-workflow-phase-e` adds UI/navigation/Owners improvements and a before/after Admin business audit migration. It is not merged. The audit migration `20261125235000_business_admin_field_change_audit.sql` must only be applied after PR approval/merge. Authenticated browser and Storage acceptance remain open.

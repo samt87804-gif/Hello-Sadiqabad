@@ -12,7 +12,6 @@ import {
   Plus,
   Sparkles,
   Upload,
-  UserPlus,
 } from 'lucide-react';
 import type {
   AdPlacement,
@@ -44,9 +43,7 @@ import {
   type CsvTargetField,
 } from '../../lib/csvImport';
 import {
-  adminCreateUser,
   adminManageOwnerListings,
-  adminResetUserPassword,
   adminSetUserActive,
   convertLeadToBusiness,
   recordImportBatch,
@@ -192,9 +189,7 @@ export function OwnersManager({
   onReload: () => Promise<void>;
 }) {
   const { showToast } = useToast();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [resetUserId, setResetUserId] = useState<string | null>(null);
-  const [newPassword, setNewPassword] = useState('');
+  const [resetOwner, setResetOwner] = useState<{ id: string; name: string; email: string } | null>(null);
   const [confirmDeactivateOwner, setConfirmDeactivateOwner] = useState<{
     id: string;
     name: string;
@@ -218,14 +213,7 @@ export function OwnersManager({
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [listingsSaving, setListingsSaving] = useState(false);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [assignBizId, setAssignBizId] = useState('');
-
   const owners = useMemo(() => profiles.filter((p) => p.role === 'owner'), [profiles]);
-  const unassignedBusinesses = useMemo(() => businesses.filter((business) => !business.owner_id), [businesses]);
 
   useEffect(() => {
     const client = getSupabaseClient();
@@ -336,56 +324,29 @@ export function OwnersManager({
     }
   };
 
-  const createOwner = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await adminCreateUser(
-      {
-        email,
-        password,
-        full_name: fullName,
-        phone,
-        role: 'owner',
-        assign_business_id: assignBizId || undefined,
-      },
-      actorId
-    );
-    if (!res.ok) {
-      showToast(res.error ?? 'Failed to create owner.', 'error');
-      return;
+  const sendPasswordResetLink = async () => {
+    if (!resetOwner?.email) return;
+    const client = getSupabaseClient();
+    if (!client) return;
+    try {
+      const { error } = await client.auth.resetPasswordForEmail(resetOwner.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      showToast(`Password reset link sent to ${resetOwner.email}. The owner sets their own password.`, 'success');
+      setResetOwner(null);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not send password reset link.', 'error');
     }
-    showToast('Owner account created! Must change password on first login.', 'success');
-    setModalOpen(false);
-    setEmail('');
-    setFullName('');
-    setPhone('');
-    setPassword('');
-    setAssignBizId('');
-    await onReload();
-  };
-
-  const handleReset = async () => {
-    if (!resetUserId) return;
-    if (newPassword.length < 12) {
-      showToast('Password must be at least 12 characters.', 'error');
-      return;
-    }
-    const result = await adminResetUserPassword(resetUserId, newPassword, actorId);
-    if (!result.ok) {
-      showToast(result.error ?? 'Could not reset password.', 'error');
-      return;
-    }
-    showToast('Temporary password set. User must change it at next login.', 'success');
-    setNewPassword('');
-    setResetUserId(null);
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="space-y-1">
         <h2 className="text-lg font-bold text-on-surface">Business Owners ({owners.length})</h2>
-        <Button onClick={() => { setAssignBizId(""); setModalOpen(true); }} leftIcon={<UserPlus className="w-4 h-4" />}>
-          Create Owner Account
-        </Button>
+        <p className="text-xs text-on-surface-variant">
+          Manage existing Owner accounts and their business assignments. New standalone access requests are handled in Owner Registration Requests; Add Business-linked invitations are sent from Business Field Approval.
+        </p>
       </div>
 
       <div className="space-y-2.5">
@@ -427,10 +388,11 @@ export function OwnersManager({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setResetUserId(owner.id)}
+                  disabled={!owner.email}
+                  onClick={() => setResetOwner({ id: owner.id, name: owner.full_name || 'Owner', email: owner.email || '' })}
                   leftIcon={<KeyRound className="w-3.5 h-3.5" />}
                 >
-                  Reset Password
+                  Send Password Reset Link
                 </Button>
                 <Button
                   size="sm"
@@ -472,25 +434,6 @@ export function OwnersManager({
           await onReload();
         }}
       />
-
-      <Modal open={modalOpen} onClose={() => { setModalOpen(false); setAssignBizId(""); }} title="Create Owner Account">
-        <form onSubmit={createOwner} className="space-y-3">
-          <Input label="Full Name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          <Input label="Email" type="email" required dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input label="Mobile Phone" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          <Input label="Temporary Password" type="password" autoComplete="new-password" minLength={12} required dir="ltr" hint="Use a unique password with at least 12 characters. No preset password is provided." value={password} onChange={(e) => setPassword(e.target.value)} />
-          <Select label="Assign Unassigned Listing (optional)" hint="Only listings that are not already linked to another owner are shown." value={assignBizId} onChange={(e) => setAssignBizId(e.target.value)}>
-            <option value="">None</option>
-            {unassignedBusinesses.map((b) => (
-              <option key={b.id} value={b.id}>{b.name_en}</option>
-            ))}
-          </Select>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Create Owner</Button>
-          </div>
-        </form>
-      </Modal>
 
       <Modal
         open={Boolean(listingsOwner)}
@@ -576,24 +519,14 @@ export function OwnersManager({
         </div>
       </Modal>
 
-      <Modal open={Boolean(resetUserId)} onClose={() => setResetUserId(null)} title="Set Temporary Password">
-        <div className="space-y-4">
-          <Input
-            label="New Temporary Password"
-            type="password"
-            autoComplete="new-password"
-            minLength={12}
-            hint="Use at least 12 characters. The user must change it at next login."
-            dir="ltr"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setResetUserId(null)}>Cancel</Button>
-            <Button onClick={handleReset}>Update Password</Button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmDialog
+        open={Boolean(resetOwner)}
+        onClose={() => setResetOwner(null)}
+        title="Send Owner Password Reset Link?"
+        message={resetOwner ? `Send a secure password-reset email to ${resetOwner.name} at ${resetOwner.email}? The Owner will choose their own new password.` : ''}
+        confirmLabel="Send Reset Link"
+        onConfirm={sendPasswordResetLink}
+      />
     </div>
   );
 }
