@@ -17,6 +17,7 @@ import {
   fetchOwnerReviews,
   fetchOwnerReviewsPage,
   fetchOwnerSubmissionsPage,
+  fetchUnreadNotificationCount,
   loadDemoDb,
   replyToReview,
   updateInquiryStatus,
@@ -94,6 +95,28 @@ test('Notification links are restricted to internal Owner Portal routes', () => 
   assert.equal(getSafeOwnerNotificationPath('https://example.com'), null);
   assert.equal(getSafeOwnerNotificationPath('//example.com'), null);
   assert.equal(getSafeOwnerNotificationPath('/admin'), null);
+});
+
+test('Owner unread notification count stays accurate without loading notification bodies', async () => {
+  const db = loadDemoDb();
+  const notification = {
+    id: 'notification-count-test',
+    user_id: 'user-owner-1',
+    type: 'general' as const,
+    title_en: 'Count test',
+    title_ur: 'گنتی کا ٹیسٹ',
+    body_en: 'Count test body',
+    body_ur: 'گنتی کا ٹیسٹ متن',
+    link_path: '/owner',
+    is_read: false,
+    created_at: new Date().toISOString(),
+  };
+  const before = await fetchUnreadNotificationCount('user-owner-1');
+  db.notifications.push(notification);
+  assert.equal(await fetchUnreadNotificationCount('user-owner-1'), before + 1);
+  await setNotificationRead('user-owner-1', notification.id, true);
+  assert.equal(await fetchUnreadNotificationCount('user-owner-1'), before);
+  db.notifications = db.notifications.filter((item) => item.id !== notification.id);
 });
 
 test('Owner can mark one notification read and unread in demo mode', async () => {
