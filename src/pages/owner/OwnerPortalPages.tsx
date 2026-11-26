@@ -57,6 +57,7 @@ import { evaluatePasswordStrength } from '../../lib/password';
 import { normalizePkPhone } from '../../lib/phone';
 import { effectivePlanCode } from '../../lib/searchFilter';
 import { countEffectiveActiveOffers } from '../../lib/offers';
+import { countOwnerRequestsAwaitingReview } from '../../lib/ownerPortal';
 import type {
   AreaRow,
   CategoryRow,
@@ -364,7 +365,7 @@ export function OwnerBusinesses() {
           </Card>
           <Card className="p-4">
             <p className="text-xs text-on-surface-variant">Requests awaiting review</p>
-            <p className="text-2xl font-extrabold text-on-surface tabular-nums">{requests.filter((item) => item.status === 'new').length}</p>
+            <p className="text-2xl font-extrabold text-on-surface tabular-nums">{countOwnerRequestsAwaitingReview(requests)}</p>
           </Card>
         </div>
 

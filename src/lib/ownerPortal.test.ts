@@ -22,7 +22,17 @@ import {
 } from './api';
 import { parseStepParam, STEPS } from './listingWizard';
 import { buildTelUrl } from './phone';
+import { countOwnerRequestsAwaitingReview } from './ownerPortal';
 import type { ReviewRow } from '../types/database';
+
+test('Owner request count includes both new and in-review submissions', () => {
+  assert.equal(countOwnerRequestsAwaitingReview([
+    { status: 'new' },
+    { status: 'in_review' },
+    { status: 'done' },
+    { status: 'rejected' },
+  ]), 2);
+});
 
 test('1. Creating a new offer defaults to active', async () => {
   const newOffer = await upsertOffer({
@@ -270,11 +280,13 @@ test('9. Inquiries workflow: filtered by business, mark read and mark handled up
   await updateInquiryStatus('inq-test-123', 'read');
   const afterRead = await fetchOwnerInquiries([testBizId]);
   assert.equal(afterRead[0].status, 'read');
+  assert.equal(afterRead[0].handled_by, null, 'marking an inquiry read must not assign a handler');
 
   // Mark Handled
-  await updateInquiryStatus('inq-test-123', 'handled');
+  await updateInquiryStatus('inq-test-123', 'handled', 'user-owner-1');
   const afterHandled = await fetchOwnerInquiries([testBizId]);
   assert.equal(afterHandled[0].status, 'handled');
+  assert.equal(afterHandled[0].handled_by, 'user-owner-1');
 
   // Clean up
   db.inquiries = db.inquiries.filter((i) => i.id !== 'inq-test-123');

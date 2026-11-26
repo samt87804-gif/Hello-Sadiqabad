@@ -1,6 +1,6 @@
 # Owner Portal — Audit & Improvement Implementation Plan
 
-**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 technical implementation is deployed; Owner manual acceptance is pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
+**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 technical implementation is deployed; Owner manual acceptance is pending. Phase 1 data-correctness fixes are implemented and awaiting CI/deployment verification. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
 
 ## Working agreement
 
@@ -30,9 +30,10 @@
 
 ## Phase 1 — Data correctness
 
-- [ ] Count both `new` and `in_review` Owner business requests in the pending-review summary.
-- [ ] Do not set `handled_by` when an inquiry is merely marked `read`; preserve the handler unless the inquiry is actually handled.
-- [ ] Add regression tests for both cases and verify the existing Admin/Owner flows.
+- [x] Count both `new` and `in_review` Owner business requests in the pending-review summary; added a regression test.
+- [x] Set `handled_by` only when an inquiry is marked `handled`; marking it `read` no longer assigns the current user as handler. Demo and live API paths match; added regression assertions.
+- [x] Added regression tests for pending-review counting and inquiry handler tracking.
+- [ ] Verify CI, production deployment, and the Owner/Admin inquiry flows.
 
 ## Phase 2 — Owner experience
 

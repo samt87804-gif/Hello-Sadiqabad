@@ -1206,5 +1206,6 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Phase 0 discovery: private `submissions.admin_note` exposure confirmed against live authenticated grants and Owner RLS.
 - [x] Added live Admin-only note-reader RPC (migration `20261126202451`); Owner request query no longer needs private notes; Business Field Review will read prior notes through the protected RPC.
 - [ ] Phase 0 remaining: release app changes, revoke direct authenticated SELECT on private note column, verify Admin/Owner access and manual acceptance.
-- [ ] Phases 1–6: data correctness, notifications/mobile UX, race/scaling safeguards, listing gallery management, optional profile improvements and final acceptance. Follow the active plan in order.
+- [x] Phase 1 data correctness implemented: pending review count includes `new` + `in_review`; inquiry `handled_by` is set only on `handled`, not on `read`; regression tests added. CI/deployment verification pending.
+- [ ] Phases 2–6: notifications/mobile UX, race/scaling safeguards, listing gallery management, optional profile improvements and final acceptance. Follow the active plan in order.
 - Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.

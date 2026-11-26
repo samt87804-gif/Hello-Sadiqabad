@@ -2003,9 +2003,14 @@ export async function updateInquiryStatus(
 ): Promise<void> {
   const client = getSupabaseClient();
   if (client) {
+    const patch: { status: InquiryStatus; updated_at: string; handled_by?: string } = {
+      status,
+      updated_at: nowIso(),
+    };
+    if (status === 'handled' && handledBy) patch.handled_by = handledBy;
     const { error } = await client
       .from('inquiries')
-      .update({ status, handled_by: handledBy ?? null, updated_at: nowIso() })
+      .update(patch)
       .eq('id', inquiryId);
     if (error) throw error;
     return;
@@ -2014,7 +2019,7 @@ export async function updateInquiryStatus(
   const inq = db.inquiries.find((i) => i.id === inquiryId);
   if (inq) {
     inq.status = status;
-    inq.handled_by = handledBy ?? inq.handled_by;
+    if (status === 'handled' && handledBy) inq.handled_by = handledBy;
     inq.updated_at = nowIso();
     saveDemoDb(db);
   }

@@ -84,3 +84,11 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 4. Report any error text or screenshot. Do not include passwords, payment secrets or private account details.
 
 - Phase 0 technical implementation is deployed; Owner manual acceptance is not yet confirmed. Continue to Phase 1 only after this manual check or record the Owner's decision to proceed with acceptance pending.
+
+
+### Phase 1 — data correctness (implementation awaiting CI)
+
+- Owner's pending-review counter now counts both `new` and `in_review` submissions.
+- `updateInquiryStatus` now assigns `handled_by` only when status becomes `handled`; a simple `read` action changes only status/time and preserves the handler field. Demo mode follows the same behavior.
+- Added tests for both states in `src/lib/ownerPortal.test.ts`.
+- Owner authorized continuing the full roadmap while Phase 0 manual acceptance remains pending; do not mark Phase 0 accepted until the Owner completes the practical checks above.
