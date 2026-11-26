@@ -125,8 +125,18 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 7. Report any issue or screenshot. Do not share passwords or payment secrets.
 
 
-### Phase 3A — Owner data-load reliability (implementation awaiting CI)
+### Phase 3A — Owner data-load reliability (implemented, CI-passed and deployed)
 
 - `useOwnerPortalData` now uses a monotonically increasing request sequence; effect cleanup invalidates in-flight work. Only the newest request may update data, show an error or clear loading.
 - Switching selected business immediately clears business-scoped analytics, offers and products. A failed load cannot leave the previous business's results visible under the new listing.
 - This is a narrow reliability fix. Cross-page overfetch and server-side pagination/filtering remain unchecked Phase 3 tasks.
+
+
+### Phase 3B — page-specific loading and Owner list pagination (implementation awaiting CI)
+
+- The common Owner data hook now accepts page needs. Dashboard loads engagement aggregates; Listing loads categories/areas/plans/requests; Products loads products/requests; Offers loads plans/offers/requests; Reviews and Inquiries load their own list pages; Analytics loads stats; Plan loads plans/requests; public profile settings load profile selection. All screens still load the signed-in Owner's businesses and unread notification count for navigation.
+- Reviews and Inquiries now request 20 rows for the selected business, ordered newest first, and show a Load more control only when another page exists.
+- Existing full review/inquiry loaders remain in place for Dashboard so its unanswered/new counts remain accurate.
+- Demo tests create 23 sample rows, verify first page 20 + next page 3, hasMore state and no overlap, then clean up test rows.
+- Request history remains capped at latest 50 and needs its own paginated history workflow.
+- Admin Business Field Approval database check on 27 Nov 2026: live DB has 4 active new-business submissions (2 new, 2 in_review) and 26 pending_review field rows. No new_business submission currently has a non-null legacy admin_note (count 0), so an old Previous note is not available to display. The queue should nevertheless contain four submission cards; Owner reports seeing no cards, so Admin screen visibility remains an unresolved manual issue. No records were changed.

@@ -663,10 +663,12 @@ export function OffersManager({
 }
 
 export function ReviewsReply({
-  reviews,
-  onReply,
+  reviews, hasMore = false, loadingMore = false, onLoadMore, onReply,
 }: {
   reviews: ReviewRow[];
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => Promise<void>;
   onReply: (reviewId: string, reply: string) => Promise<void>;
 }) {
   const { showToast } = useToast();
@@ -782,6 +784,13 @@ export function ReviewsReply({
               </Card>
             );
           })}
+          {hasMore && onLoadMore && (
+            <div className="flex justify-center pt-2">
+              <Button variant="outline" loading={loadingMore} disabled={loadingMore} onClick={() => void onLoadMore()}>
+                Load more reviews
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -789,10 +798,12 @@ export function ReviewsReply({
 }
 
 export function InquiriesInbox({
-  inquiries,
-  onStatusChange,
+  inquiries, hasMore = false, loadingMore = false, onLoadMore, onStatusChange,
 }: {
   inquiries: InquiryRow[];
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => Promise<void>;
   onStatusChange: (id: string, status: InquiryStatus) => Promise<void>;
 }) {
   const { showToast } = useToast();
@@ -947,6 +958,13 @@ export function InquiriesInbox({
               </div>
             </Card>
           ))}
+        </div>
+      )}
+      {hasMore && onLoadMore && (
+        <div className="flex justify-center pt-2">
+          <Button variant="outline" loading={loadingMore} disabled={loadingMore} onClick={() => void onLoadMore()}>
+            Load more inquiries
+          </Button>
         </div>
       )}
 

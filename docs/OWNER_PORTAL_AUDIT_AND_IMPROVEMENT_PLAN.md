@@ -113,3 +113,17 @@
 - Updated `useOwnerPortalData` with a request sequence guard and cleanup invalidation. Older requests cannot overwrite newer selected-business data or show stale errors.
 - Business-specific analytics, offers and products clear immediately when the selected listing changes or a reload starts; they remain empty if the new listing's data fails to load.
 - Remaining Phase 3 work: reduce unnecessary cross-page fetching and add server-side pagination/filtering for reviews, inquiries and request history.
+
+
+### Phase 3A release evidence
+
+- Commit: c2902820e052e9df1cefc34568ce153a1f5f2843.
+- GitHub Actions CI run 45892395019 passed.
+- Cloudflare Pages deployment d85a8d11-4fe5-4908-98c1-534a175091f6 succeeded for the same commit.
+
+### Phase 3B — implementation pending CI
+
+- Owner pages now fetch only the datasets used by that screen; shared business list and unread notifications remain available for navigation.
+- Reviews and Inquiries screens fetch 20 records at a time for the selected business and offer a Load more control. Dashboard full engagement data remains unchanged so its counts are not silently under-reported.
+- Added demo-mode regression coverage for page boundaries, has-more state and duplicate-free concatenation.
+- Request history still shows the most recent 50 records; pagination for that history remains a separate follow-up.

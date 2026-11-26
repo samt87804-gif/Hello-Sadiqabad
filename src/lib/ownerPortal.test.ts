@@ -13,7 +13,9 @@ import {
   fetchActiveOffers,
   fetchBusinessOffers,
   fetchOwnerInquiries,
+  fetchOwnerInquiriesPage,
   fetchOwnerReviews,
+  fetchOwnerReviewsPage,
   loadDemoDb,
   replyToReview,
   updateInquiryStatus,
@@ -26,6 +28,50 @@ import { buildTelUrl } from './phone';
 import { countOwnerRequestsAwaitingReview } from './ownerPortal';
 import { getSafeOwnerNotificationPath } from './notifications';
 import type { ReviewRow } from '../types/database';
+
+test('Owner review and inquiry pages are bounded and do not overlap', async () => {
+  const db = loadDemoDb();
+  const businessId = 'owner-pagination-test-business';
+  const reviewIds: string[] = [];
+  const inquiryIds: string[] = [];
+  const stamp = Date.now();
+  for (let index = 0; index < 23; index += 1) {
+    const reviewId = `review-page-${stamp}-${index}`;
+    const inquiryId = `inquiry-page-${stamp}-${index}`;
+    reviewIds.push(reviewId); inquiryIds.push(inquiryId);
+    db.reviews.push({
+      id: reviewId, business_id: businessId, author_name: `Reviewer ${index}`,
+      rating: 5, comment: 'Pagination test', status: 'approved',
+      owner_reply: null, owner_reply_at: null,
+      created_at: new Date(stamp + index).toISOString(),
+      updated_at: new Date(stamp + index).toISOString(),
+    });
+    db.inquiries.push({
+      id: inquiryId, business_id: businessId, name: `Customer ${index}`,
+      phone: '03001234567', message: 'Pagination test', status: 'new',
+      handled_by: null, created_at: new Date(stamp + index).toISOString(),
+      updated_at: new Date(stamp + index).toISOString(),
+    });
+  }
+  const firstReviews = await fetchOwnerReviewsPage(businessId, 0, 20);
+  const nextReviews = await fetchOwnerReviewsPage(businessId, 20, 20);
+  assert.equal(firstReviews.items.length, 20);
+  assert.equal(firstReviews.hasMore, true);
+  assert.equal(nextReviews.items.length, 3);
+  assert.equal(nextReviews.hasMore, false);
+  assert.equal(new Set([...firstReviews.items, ...nextReviews.items].map((row) => row.id)).size, 23);
+
+  const firstInquiries = await fetchOwnerInquiriesPage(businessId, 0, 20);
+  const nextInquiries = await fetchOwnerInquiriesPage(businessId, 20, 20);
+  assert.equal(firstInquiries.items.length, 20);
+  assert.equal(firstInquiries.hasMore, true);
+  assert.equal(nextInquiries.items.length, 3);
+  assert.equal(nextInquiries.hasMore, false);
+  assert.equal(new Set([...firstInquiries.items, ...nextInquiries.items].map((row) => row.id)).size, 23);
+
+  db.reviews = db.reviews.filter((row) => !reviewIds.includes(row.id));
+  db.inquiries = db.inquiries.filter((row) => !inquiryIds.includes(row.id));
+});
 
 test('Owner request count includes both new and in-review submissions', () => {
   assert.equal(countOwnerRequestsAwaitingReview([

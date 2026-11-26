@@ -1955,6 +1955,37 @@ export async function fetchOwnerReviews(businessIds: string[]): Promise<ReviewRo
   );
 }
 
+export interface OwnerListPage<T> {
+  items: T[];
+  hasMore: boolean;
+}
+
+export async function fetchOwnerReviewsPage(
+  businessId: string,
+  offset = 0,
+  pageSize = 20
+): Promise<OwnerListPage<ReviewRow>> {
+  if (!businessId) return { items: [], hasMore: false };
+  const client = getSupabaseClient();
+  if (client) {
+    const { data, error } = await client
+      .from('reviews')
+      .select('*')
+      .eq('business_id', businessId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize);
+    if (error) throw error;
+    const rows = (data ?? []) as ReviewRow[];
+    return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
+  }
+  const rows = loadDemoDb().reviews
+    .filter((review) => review.business_id === businessId && review.status === 'approved')
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(offset, offset + pageSize + 1);
+  return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
+}
+
 export async function replyToReview(reviewId: string, replyText: string): Promise<void> {
   const trimmed = replyText.trim();
   if (!trimmed) {
@@ -1994,6 +2025,31 @@ export async function fetchOwnerInquiries(businessIds: string[]): Promise<Inquir
     return (data ?? []) as InquiryRow[];
   }
   return loadDemoDb().inquiries.filter((i) => businessIds.includes(i.business_id));
+}
+
+export async function fetchOwnerInquiriesPage(
+  businessId: string,
+  offset = 0,
+  pageSize = 20
+): Promise<OwnerListPage<InquiryRow>> {
+  if (!businessId) return { items: [], hasMore: false };
+  const client = getSupabaseClient();
+  if (client) {
+    const { data, error } = await client
+      .from('inquiries')
+      .select('*')
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize);
+    if (error) throw error;
+    const rows = (data ?? []) as InquiryRow[];
+    return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
+  }
+  const rows = loadDemoDb().inquiries
+    .filter((inquiry) => inquiry.business_id === businessId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(offset, offset + pageSize + 1);
+  return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
 }
 
 export async function updateInquiryStatus(

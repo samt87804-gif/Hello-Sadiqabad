@@ -37,11 +37,13 @@ import {
   submitOwnerProfileChangeRequest,
   type OwnerPaymentHistory,
   fetchOwnerInquiries,
+  fetchOwnerInquiriesPage,
   fetchOwnerSubmissions,
   fetchOwnerPublicProfileBusinessIds,
   setOwnerPublicProfileBusinessIds,
   fetchOwnerListings,
   fetchOwnerReviews,
+  fetchOwnerReviewsPage,
   fetchPlans,
   fetchPublicSiteSettings,
   markNotificationsRead,
@@ -94,9 +96,37 @@ import { Skeleton } from '../../components/ui/Feedback';
 import { useToast } from '../../components/ui/Toast';
 import { DemoModeNotice } from '../../components/ui/DemoModeNotice';
 
-function useOwnerPortalData(days = 30, routeListingId?: string) {
+interface OwnerPortalDataOptions {
+  categories?: boolean; areas?: boolean; plans?: boolean; stats?: boolean;
+  offers?: boolean; products?: boolean; reviews?: boolean; inquiries?: boolean;
+  paginatedReviews?: boolean; paginatedInquiries?: boolean; submissions?: boolean;
+  profileBusinessIds?: boolean;
+}
+const OWNER_DASHBOARD_DATA: OwnerPortalDataOptions = { stats: true, offers: true, reviews: true, inquiries: true };
+const OWNER_LISTING_DATA: OwnerPortalDataOptions = { categories: true, areas: true, plans: true, submissions: true };
+const OWNER_PRODUCTS_DATA: OwnerPortalDataOptions = { products: true, submissions: true };
+const OWNER_OFFERS_DATA: OwnerPortalDataOptions = { plans: true, offers: true, submissions: true };
+const OWNER_REVIEWS_DATA: OwnerPortalDataOptions = { paginatedReviews: true };
+const OWNER_INQUIRIES_DATA: OwnerPortalDataOptions = { paginatedInquiries: true };
+const OWNER_ANALYTICS_DATA: OwnerPortalDataOptions = { stats: true };
+const OWNER_PLAN_DATA: OwnerPortalDataOptions = { plans: true, submissions: true };
+const OWNER_PUBLIC_PROFILE_DATA: OwnerPortalDataOptions = { profileBusinessIds: true };
+
+function useOwnerPortalData(days = 30, routeListingId?: string, options: OwnerPortalDataOptions = {}) {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const includeCategories = options.categories === true;
+  const includeAreas = options.areas === true;
+  const includePlans = options.plans === true;
+  const includeStats = options.stats === true;
+  const includeOffers = options.offers === true;
+  const includeProducts = options.products === true;
+  const includeReviews = options.reviews === true;
+  const includeInquiries = options.inquiries === true;
+  const includePaginatedReviews = options.paginatedReviews === true;
+  const includePaginatedInquiries = options.paginatedInquiries === true;
+  const includeSubmissions = options.submissions === true;
+  const includeProfileBusinessIds = options.profileBusinessIds === true;
   const [listings, setListings] = useState<BusinessPublicView[]>([]);
   const [selectedId, setSelectedId] = useState<string>(routeListingId ?? '');
   const [categories, setCategories] = useState<CategoryRow[]>([]);
@@ -107,168 +137,154 @@ function useOwnerPortalData(days = 30, routeListingId?: string) {
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
+  const [reviewHasMore, setReviewHasMore] = useState(false);
+  const [inquiryHasMore, setInquiryHasMore] = useState(false);
+  const [reviewLoadingMore, setReviewLoadingMore] = useState(false);
+  const [inquiryLoadingMore, setInquiryLoadingMore] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [profileBusinessIds, setProfileBusinessIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const reviewOffsetRef = useRef(0);
+  const inquiryOffsetRef = useRef(0);
 
   useEffect(() => {
     if (routeListingId && routeListingId !== selectedId) {
-      setStats(null);
-      setOffers([]);
-      setProducts([]);
+      setStats(null); setOffers([]); setProducts([]); setReviews([]); setInquiries([]);
       setSelectedId(routeListingId);
     }
   }, [routeListingId, selectedId]);
 
   const reloadSequenceRef = useRef(0);
-
   const reload = useCallback(async () => {
     const requestId = ++reloadSequenceRef.current;
+    reviewOffsetRef.current = 0;
+    inquiryOffsetRef.current = 0;
+    setReviewLoadingMore(false); setInquiryLoadingMore(false);
+    setReviewHasMore(false); setInquiryHasMore(false);
+    setReviews([]); setInquiries([]);
+
     if (!user) {
-      setListings([]);
-      setSelectedId('');
-      setCategories([]);
-      setAreas([]);
-      setPlans([]);
-      setStats(null);
-      setOffers([]);
-      setProducts([]);
-      setReviews([]);
-      setInquiries([]);
-      setNotifications([]);
-      setSubmissions([]);
-      setProfileBusinessIds([]);
-      setLoading(false);
+      setListings([]); setSelectedId(''); setCategories([]); setAreas([]); setPlans([]);
+      setStats(null); setOffers([]); setProducts([]); setNotifications([]);
+      setSubmissions([]); setProfileBusinessIds([]); setLoading(false);
       return;
     }
 
-    setLoading(true);
-    // Clear business-scoped results immediately so a failed or slow switch
-    // can never leave the previous business's data on screen.
-    setStats(null);
-    setOffers([]);
-    setProducts([]);
-
+    setLoading(true); setStats(null); setOffers([]); setProducts([]);
     try {
-      const [owned, cats, ar, pls, notifs, ownerRequests, profileSelection] = await Promise.all([
-        fetchOwnerListings(user.id),
-        fetchAllCategories(),
-        fetchAllAreas(),
-        fetchPlans(),
-        fetchNotifications(user.id),
-        fetchOwnerSubmissions(user.id),
-        fetchOwnerPublicProfileBusinessIds(user.id),
+      const [owned, notifs, cats, ar, pls, ownerRequests, profileSelection] = await Promise.all([
+        fetchOwnerListings(user.id), fetchNotifications(user.id),
+        includeCategories ? fetchAllCategories() : Promise.resolve([]),
+        includeAreas ? fetchAllAreas() : Promise.resolve([]),
+        includePlans ? fetchPlans() : Promise.resolve([]),
+        includeSubmissions ? fetchOwnerSubmissions(user.id) : Promise.resolve([]),
+        includeProfileBusinessIds ? fetchOwnerPublicProfileBusinessIds(user.id) : Promise.resolve([]),
       ]);
       if (requestId !== reloadSequenceRef.current) return;
-
-      setListings(owned);
-      setCategories(cats);
-      setAreas(ar);
-      setPlans(pls);
-      setNotifications(notifs);
-      setSubmissions(ownerRequests);
-      setProfileBusinessIds(profileSelection);
+      setListings(owned); setNotifications(notifs); setCategories(cats); setAreas(ar);
+      setPlans(pls); setSubmissions(ownerRequests); setProfileBusinessIds(profileSelection);
 
       let persistedId = '';
-      try {
-        persistedId = window.localStorage.getItem(`hs_owner_active_business_${user.id}`) ?? '';
-      } catch {
-        // Continue with the first owned listing when browser storage is unavailable.
-      }
+      try { persistedId = window.localStorage.getItem(`hs_owner_active_business_${user.id}`) ?? ''; } catch {}
       const preferredId =
         (routeListingId && owned.some((b) => b.id === routeListingId) ? routeListingId : '') ||
         (selectedId && owned.some((b) => b.id === selectedId) ? selectedId : '') ||
-        (persistedId && owned.some((business) => business.id === persistedId) ? persistedId : '') ||
-        owned[0]?.id ||
-        '';
-      if (preferredId !== selectedId) {
-        setSelectedId(preferredId);
-      }
+        (persistedId && owned.some((b) => b.id === persistedId) ? persistedId : '') ||
+        owned[0]?.id || '';
+      if (preferredId !== selectedId) setSelectedId(preferredId);
+      if (!preferredId) { setReviews([]); setInquiries([]); setLoading(false); return; }
 
-      const ids = owned.map((b) => b.id);
-      const [revs, inqs] = await Promise.all([
-        fetchOwnerReviews(ids),
-        fetchOwnerInquiries(ids),
+      const [st, offs, prods, revs, inqs, reviewPage, inquiryPage] = await Promise.all([
+        includeStats ? fetchOwnerDashboardStats(preferredId, days) : Promise.resolve(null),
+        includeOffers ? fetchBusinessOffers(preferredId) : Promise.resolve([]),
+        includeProducts ? fetchBusinessProducts(preferredId) : Promise.resolve([]),
+        includeReviews ? fetchOwnerReviews([preferredId]) : Promise.resolve([]),
+        includeInquiries ? fetchOwnerInquiries([preferredId]) : Promise.resolve([]),
+        includePaginatedReviews ? fetchOwnerReviewsPage(preferredId, 0, 20) : Promise.resolve({ items: [], hasMore: false }),
+        includePaginatedInquiries ? fetchOwnerInquiriesPage(preferredId, 0, 20) : Promise.resolve({ items: [], hasMore: false }),
       ]);
       if (requestId !== reloadSequenceRef.current) return;
-      setReviews(revs);
-      setInquiries(inqs);
-
-      if (preferredId) {
-        const [st, offs, prods] = await Promise.all([
-          fetchOwnerDashboardStats(preferredId, days),
-          fetchBusinessOffers(preferredId),
-          fetchBusinessProducts(preferredId),
-        ]);
-        if (requestId !== reloadSequenceRef.current) return;
-        setStats(st);
-        setOffers(offs);
-        setProducts(prods);
-      }
+      setStats(st); setOffers(offs); setProducts(prods);
+      setReviews(includePaginatedReviews ? reviewPage.items : revs);
+      setInquiries(includePaginatedInquiries ? inquiryPage.items : inqs);
+      setReviewHasMore(includePaginatedReviews && reviewPage.hasMore);
+      setInquiryHasMore(includePaginatedInquiries && inquiryPage.hasMore);
+      reviewOffsetRef.current = reviewPage.items.length;
+      inquiryOffsetRef.current = inquiryPage.items.length;
     } catch (error) {
       if (requestId === reloadSequenceRef.current) {
-        showToast(
-          error instanceof Error ? error.message : 'Owner portal data could not be loaded.',
-          'error'
-        );
+        showToast(error instanceof Error ? error.message : 'Owner portal data could not be loaded.', 'error');
       }
     } finally {
       if (requestId === reloadSequenceRef.current) setLoading(false);
     }
-  }, [user, selectedId, routeListingId, days, showToast]);
+  }, [
+    user, selectedId, routeListingId, days, showToast, includeCategories, includeAreas,
+    includePlans, includeStats, includeOffers, includeProducts, includeReviews, includeInquiries,
+    includePaginatedReviews, includePaginatedInquiries, includeSubmissions, includeProfileBusinessIds,
+  ]);
 
   useEffect(() => {
     void reload();
-    return () => {
-      // Invalidate in-flight requests when the business, user, or page range changes.
-      reloadSequenceRef.current += 1;
-    };
+    return () => { reloadSequenceRef.current += 1; };
   }, [reload]);
 
   useEffect(() => {
     if (!user || !selectedId || !listings.some((business) => business.id === selectedId)) return;
-    try {
-      window.localStorage.setItem(`hs_owner_active_business_${user.id}`, selectedId);
-    } catch {
-      // The active listing still works for this page if browser storage is unavailable.
-    }
+    try { window.localStorage.setItem(`hs_owner_active_business_${user.id}`, selectedId); } catch {}
   }, [user, selectedId, listings]);
 
   const selectBusiness = useCallback((nextId: string) => {
     if (nextId !== selectedId) {
-      setStats(null);
-      setOffers([]);
-      setProducts([]);
+      setStats(null); setOffers([]); setProducts([]); setReviews([]); setInquiries([]);
+      setReviewHasMore(false); setInquiryHasMore(false);
+      reviewOffsetRef.current = 0; inquiryOffsetRef.current = 0;
     }
     setSelectedId(nextId);
   }, [selectedId]);
 
+  const loadMoreReviews = useCallback(async () => {
+    if (!includePaginatedReviews || !selectedId || !reviewHasMore || reviewLoadingMore) return;
+    const requestId = reloadSequenceRef.current;
+    setReviewLoadingMore(true);
+    try {
+      const page = await fetchOwnerReviewsPage(selectedId, reviewOffsetRef.current, 20);
+      if (requestId !== reloadSequenceRef.current) return;
+      setReviews((current) => [...current, ...page.items]);
+      reviewOffsetRef.current += page.items.length; setReviewHasMore(page.hasMore);
+    } catch (error) {
+      if (requestId === reloadSequenceRef.current) showToast(error instanceof Error ? error.message : 'More reviews could not be loaded.', 'error');
+    } finally {
+      if (requestId === reloadSequenceRef.current) setReviewLoadingMore(false);
+    }
+  }, [includePaginatedReviews, selectedId, reviewHasMore, reviewLoadingMore, showToast]);
+
+  const loadMoreInquiries = useCallback(async () => {
+    if (!includePaginatedInquiries || !selectedId || !inquiryHasMore || inquiryLoadingMore) return;
+    const requestId = reloadSequenceRef.current;
+    setInquiryLoadingMore(true);
+    try {
+      const page = await fetchOwnerInquiriesPage(selectedId, inquiryOffsetRef.current, 20);
+      if (requestId !== reloadSequenceRef.current) return;
+      setInquiries((current) => [...current, ...page.items]);
+      inquiryOffsetRef.current += page.items.length; setInquiryHasMore(page.hasMore);
+    } catch (error) {
+      if (requestId === reloadSequenceRef.current) showToast(error instanceof Error ? error.message : 'More inquiries could not be loaded.', 'error');
+    } finally {
+      if (requestId === reloadSequenceRef.current) setInquiryLoadingMore(false);
+    }
+  }, [includePaginatedInquiries, selectedId, inquiryHasMore, inquiryLoadingMore, showToast]);
+
   const activeBusiness = listings.find((b) => b.id === selectedId) ?? listings[0] ?? null;
   const unreadCount = notifications.filter((n) => !n.is_read).length;
-
   return {
-    listings,
-    activeBusiness,
-    selectedId,
-    setSelectedId: selectBusiness,
-    categories,
-    areas,
-    plans,
-    stats,
-    offers,
-    products,
-    reviews,
-    inquiries,
-    notifications,
-    submissions,
-    profileBusinessIds,
-    unreadCount,
-    loading,
-    reload,
+    listings, activeBusiness, selectedId, setSelectedId: selectBusiness, categories, areas, plans,
+    stats, offers, products, reviews, inquiries, reviewHasMore, inquiryHasMore,
+    reviewLoadingMore, inquiryLoadingMore, loadMoreReviews, loadMoreInquiries,
+    notifications, submissions, profileBusinessIds, unreadCount, loading, reload,
   };
 }
-
 function OwnerShell({
   unreadCount,
   listings,
@@ -492,7 +508,7 @@ export function OwnerBusinesses() {
 
 export function OwnerDashboard() {
   const { profile } = useAuth();
-  const data = useOwnerPortalData();
+  const data = useOwnerPortalData(30, undefined, OWNER_DASHBOARD_DATA);
   const biz = data.activeBusiness;
   const [siteSettings, setSiteSettings] = useState<SiteSettingsMap>(DEFAULT_SITE_SETTINGS);
 
@@ -940,7 +956,7 @@ export function OwnerListing() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const data = useOwnerPortalData(30, id);
+  const data = useOwnerPortalData(30, id, OWNER_LISTING_DATA);
   const biz = data.activeBusiness;
 
   const handleSelect = (nextId: string) => {
@@ -982,7 +998,7 @@ export function OwnerListing() {
 }
 
 export function OwnerProducts() {
-  const data = useOwnerPortalData();
+  const data = useOwnerPortalData(30, undefined, OWNER_PRODUCTS_DATA);
   const business = data.activeBusiness;
 
   return (
@@ -1017,7 +1033,7 @@ export function OwnerProducts() {
 }
 
 export function OwnerOffers() {
-  const data = useOwnerPortalData();
+  const data = useOwnerPortalData(30, undefined, OWNER_OFFERS_DATA);
   const biz = data.activeBusiness;
   const effCode = biz ? effectivePlanCode(biz.plan_code, biz.plan_expires_at) : 'free';
   const plan = data.plans.find((p) => p.code === effCode) ?? null;
@@ -1051,7 +1067,7 @@ export function OwnerOffers() {
 }
 
 export function OwnerReviews() {
-  const data = useOwnerPortalData();
+  const data = useOwnerPortalData(30, undefined, OWNER_REVIEWS_DATA);
   const displayedReviews = data.activeBusiness
     ? data.reviews.filter((r) => r.business_id === data.activeBusiness?.id)
     : data.reviews;
@@ -1066,6 +1082,9 @@ export function OwnerReviews() {
     >
       <ReviewsReply
         reviews={displayedReviews}
+        hasMore={data.reviewHasMore}
+        loadingMore={data.reviewLoadingMore}
+        onLoadMore={data.loadMoreReviews}
         onReply={async (id, text) => {
           await replyToReview(id, text);
           await data.reload();
@@ -1077,7 +1096,7 @@ export function OwnerReviews() {
 
 export function OwnerInquiries() {
   const { user } = useAuth();
-  const data = useOwnerPortalData();
+  const data = useOwnerPortalData(30, undefined, OWNER_INQUIRIES_DATA);
   const displayedInquiries = data.activeBusiness
     ? data.inquiries.filter((i) => i.business_id === data.activeBusiness?.id)
     : data.inquiries;
@@ -1092,6 +1111,9 @@ export function OwnerInquiries() {
     >
       <InquiriesInbox
         inquiries={displayedInquiries}
+        hasMore={data.inquiryHasMore}
+        loadingMore={data.inquiryLoadingMore}
+        onLoadMore={data.loadMoreInquiries}
         onStatusChange={async (id, status: InquiryStatus) => {
           await updateInquiryStatus(id, status, user?.id);
           await data.reload();
@@ -1103,7 +1125,7 @@ export function OwnerInquiries() {
 
 export function OwnerAnalyticsPage() {
   const [days, setDays] = useState<7 | 30 | 90>(30);
-  const data = useOwnerPortalData(days);
+  const data = useOwnerPortalData(days, undefined, OWNER_ANALYTICS_DATA);
   const biz = data.activeBusiness;
   return (
     <OwnerShell
@@ -1127,7 +1149,7 @@ export function OwnerAnalyticsPage() {
 
 export function OwnerPlan() {
   const { profile } = useAuth();
-  const data = useOwnerPortalData();
+  const data = useOwnerPortalData(30, undefined, OWNER_PLAN_DATA);
   const biz = data.activeBusiness;
   return (
     <OwnerShell
@@ -1375,7 +1397,7 @@ export function OwnerProfile() {
 }
 
 export function OwnerPublicProfileSettings() {
-  const data = useOwnerPortalData(); const { user } = useAuth(); const { showToast } = useToast();
+  const data = useOwnerPortalData(30, undefined, OWNER_PUBLIC_PROFILE_DATA); const { user } = useAuth(); const { showToast } = useToast();
   const [selectedIds, setSelectedIds] = useState<string[]>([]); const [saving, setSaving] = useState(false);
   useEffect(() => { setSelectedIds(data.profileBusinessIds); }, [data.profileBusinessIds]);
   const publishedListings = data.listings.filter((business) => business.status === 'published');
