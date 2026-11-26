@@ -21,8 +21,9 @@
 - [x] Inspect live Hello Sadiqabad migration ledger, schema constraints, RLS policies, plan entitlements and media workflow before changes.
 - [x] Additive migration `20261127110000_owner_gallery_moderation`: permit `gallery` media assets, add Owner-only read policy for their own uploaded assets, and enforce plan gallery limits plus ownership, published status, signed-object metadata and private path in the existing request RPC.
 - [x] Additive migration `20261127120000_owner_gallery_removal_requests`: add Owner-authorized removal request RPC and `removal_requested` media state; Admin finalization remains service-role-only.
+- [x] Additive migration `20261127130000_serialize_gallery_publication`: serialize publication/removal under the business row lock so simultaneous Admin approvals cannot exceed the active plan gallery limit.
 - [x] Extend the existing signed upload function to authorize plan-limited gallery uploads; deployed to the existing Supabase project (function version 4).
-- [x] Extend the existing media review function to promote approved gallery photos, defer when plan capacity is unavailable, remove approved gallery photos after Admin approval, and roll back a failed publication; deployed to the existing Supabase project (function version 7).
+- [x] Extend the existing media review function to promote approved gallery photos, defer when plan capacity is unavailable, remove approved gallery photos after Admin approval, and roll back a failed publication; deployed to the existing Supabase project (function version 8).
 - [x] Add Owner gallery upload, status history and managed-photo removal request controls to Listing Editor.
 - [x] Add gallery media and Owner removal requests to the existing Admin business-media review cards; no parallel approval queue.
 - [ ] Fix all CI failures and confirm the latest main commit passes TypeScript, tests, production build and Edge Function checks.
@@ -33,8 +34,8 @@
 ## Release evidence
 
 - Live Supabase project: existing Hello Sadiqabad project only; no new project created.
-- Applied live migrations: `20261127110000_owner_gallery_moderation`, `20261127120000_owner_gallery_removal_requests`.
-- Edge Functions deployed: `create-business-media-upload` version 4; `review-business-media` version 7.
+- Applied live migrations: `20261127110000_owner_gallery_moderation`, `20261127120000_owner_gallery_removal_requests`, `20261127130000_serialize_gallery_publication`.
+- Edge Functions deployed: `create-business-media-upload` version 4; `review-business-media` version 8.
 - Main commits during implementation: `ef766d4753495bce19a49644549660f376bf9e59`, `3c0b451b2ee702e709a4edd9b59c63aa4d183bd1`, `5f9c1b0a561209a176f2f80739cc6666fcde64d9`, `bd35cbd0c7a21d88ad437b4b91c7d52656a8f3c8`, `fe660c8460a6a94b621f09c74e9419080d24985c`, `8f115d7abc8ba7f9470a2be309b6c1ab70c63269`, `63e60f7dc9c121e414df651baa19742d9e9bcd42`, `2a44794f5e0c266f4541805e04d781b05e7001d3`, `29b05bdaadfffbc733900565fdd7c6ea69527a4f`, `4aa304959a399db8280ee158f7346a8bdfd1dcf7`, `634c484168e28cb076c337b97a0e2f2c81090340`, `93485a011db2a7571a9793f244e8636d3dab8e77`, `7ce52bbb8c14392affe0c41f6cb7a4a148ae6663`, `0b510799652d5b5e810682c89011d74be6f5acc1`.
 - An intermediate CI run `45897237220` failed on the Admin media status TypeScript union; the type was corrected in commit `0b510799652d5b5e810682c89011d74be6f5acc1`. The corrected commit's CI/deployment are still pending at this checkpoint.
 - No existing business gallery URL, Owner account, business record or uploaded media object was modified during implementation. The two schema migrations add constraints/policies/functions only.
