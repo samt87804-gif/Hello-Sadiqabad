@@ -261,3 +261,19 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Owner confirmed the Phase 5 manual tests passed on 27 November 2026, including My Payments/Profile loading, retry and in-flight controls. Owner also confirmed the deployed gallery close button works. These are Owner-reported acceptance results, not assistant-performed authenticated browser tests.
 - Next approved task: audit Phase 3D for safe reductions in cross-page Owner data fetching. Keep Dashboard aggregate accuracy and existing pagination intact.
 - Keep Phase 0 partially accepted until Admin Business Field Review visibility is resolved. Do not claim authenticated browser/device testing has been performed by the assistant.
+
+
+## Latest continuation — Owner acceptance and Phase 3D notification optimization (27 November 2026)
+
+- Owner explicitly reported "Test pass" after the requested Phase 5 Profile/My Payments checks and the deployed public gallery Close / بند کریں control. Updated the active Owner Portal plan, roadmap and handoff to record those manual acceptance results. This is Owner-reported acceptance; the assistant did not perform an authenticated browser/device session.
+- Continued the already-approved Owner Portal Phase 3D scope. Audit confirmed that the shared Owner data hook downloaded every notification row on all Owner pages solely to calculate the navigation unread badge; My Payments repeated the same full-row fetch. Only the Notifications page needs full notification bodies.
+- Added `fetchUnreadNotificationCount(userId)`: live mode uses a count-only Supabase query scoped to the signed-in Owner and `is_read=false`; demo mode counts the same Owner's unread rows locally.
+- Shared Owner pages now load only the unread count for the navigation badge. Owner Portal → Notifications still loads full notification rows for the list and derives the same count. My Payments now uses the count-only query too.
+- Added a regression test for count changes when a notification becomes read. Existing notification read/unread behavior, internal-link safety and content are unchanged.
+- Preserved Dashboard's full reviews and inquiries datasets because its aggregate counts rely on complete data. Existing 20-at-a-time Reviews/Inquiries and My Businesses request-history pagination remain unchanged.
+- No schema migration, RLS/grant change, notification mutation or existing user data change was made.
+- Commits: API `4bde7385f1b0936e40543125963c9f5cd8d5df6c`; Owner UI `08e6a06d277e224a656d1cb25692f63d1f675313`; regression test `fad60e254f66c8b8783245b1e132bf42a6fd6cdb`.
+- Cloudflare Pages production deployment `f4095c61-159d-4489-b4d7-02b2b0d46a9b` succeeded for the test commit; build and deploy stages passed and canonical alias `https://hellosadiqabad.com` is attached.
+- The connected GitHub commit-status check returned no statuses, so do not claim the GitHub Actions automated test run passed. The regression test is added but CI execution remains unverified.
+- Next Owner acceptance: sign in, note the unread badge in Owner Portal navigation, open Notifications and mark one test notification read (badge should decrease by one), then mark it unread (badge should increase by one). Visit Dashboard and My Payments and confirm the same unread count appears. If no test notification exists, do not alter real notifications just to manufacture one.
+- Remaining: confirm the automated test/CI status through GitHub Actions when accessible; Owner manual unread-badge acceptance; Phase 3D remaining search/filter audit. Phase 0 Admin Business Field Approval visibility issue remains unresolved.
