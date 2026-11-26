@@ -1,5 +1,5 @@
-// v4 is the active shell cache namespace. Older shell caches are retained so
-// an already-open tab or a rollback can still use its fingerprinted assets.
+// v4 is the active shell cache namespace. Older shell caches are pruned only
+// after the previous worker has no controlled tabs left during activation.
 const CACHE_NAME = 'hs-sadiqabad-shell-v4';
 const MEDIA_CACHE_NAME = 'hs-sadiqabad-public-media-v1';
 const SUPABASE_MEDIA_HOST = 'efwohfzqitevkuybnyif.supabase.co';
