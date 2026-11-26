@@ -1,3 +1,5 @@
+> **Owner acceptance audit — 26 November 2026:** This roadmap contains legacy unchecked entries. An unchecked box is not, by itself, proof that a feature is still incomplete. Do not bulk-close or bulk-reopen items. Verify old work with the owner using practical manual steps and record only the owner's explicit confirmation. The Business Registration & Admin Approval module has already been manually tested and accepted by the owner. The new monthly Owner Plan & Payment workflow is deployed but awaits owner acceptance; see `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md`. Historical plans and audits are retained under `docs/archive/`.
+
 # Hello Sadiqabad — Project Roadmap
 
 This is the live application project checklist. Update it on `main` whenever a task is verified complete. A phase is checked only after implementation and verification.

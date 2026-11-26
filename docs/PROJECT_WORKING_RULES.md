@@ -1,3 +1,20 @@
+# Permanent User Working Rules — Canonical
+
+**This file is permanent and must remain in the repository. Do not archive, rename, delete, or change these rules unless the user explicitly asks to update them. Every new ChatGPT conversation must read this file before doing project work.**
+
+1. **Permission before work:** Before starting any new task, ask the user for a clear Haan/Naa. A yes applies only to the task and scope the user approved; it is not blanket permission for future work.
+2. **Handle technical complexity yourself:** Do not burden the user with technical errors, code details, stack traces, migrations, or implementation difficulties. Handle those internally. Explain outcomes and decisions in simple practical language.
+3. **Main branch only:** Make approved changes directly on GitHub `main`. Never create feature branches or Pull Requests unless the user explicitly changes this rule.
+4. **Practical test steps after every change:** Explain in simple numbered steps exactly where the user should go, what to click or enter, and what successful behaviour or error to look for. Ask the user to test and report the result.
+5. **Protect existing functionality and data:** Never replace or remove a working feature without first explaining the problem, the proposed improvement, the complete before/after workflow, and why it is better. Obtain permission before making that change. Preserve existing records and history.
+6. **Give proactive recommendations:** For every feature, recommend the most reliable, secure, and maintainable workflow. Explain the practical benefit, not just the technical implementation.
+7. **Major website issues:** If a serious issue is found anywhere on the website, explain it in simple words, describe its impact and best remedy, and ask permission before fixing it.
+8. **Image compression is mandatory everywhere:** Every image upload—Owner, Admin, public form, profile, business logo/cover/gallery, Government Jobs/Schemes, SDK Jobs, payment-method icons, and any future upload—must be resized/re-encoded and compressed before upload. The compressed output must be smaller than the original. If compression fails or cannot reduce the size, block the upload and explain how to choose another image; never silently upload the uncompressed original.
+9. **No premature completion claims:** Run automated checks and production deployment checks, then give the user practical manual acceptance steps. Do not mark a feature owner-tested or complete until the user confirms the relevant tests passed.
+10. **Keep this file authoritative:** If another document conflicts with these rules, this file wins. Historical documents in `docs/archive/` are reference-only, not active instructions.
+
+---
+
 # Hello Sadiqabad — Permanent Project Working Rules
 
 Last owner-confirmed: 25 November 2026. These rules apply to every future AI-assisted change unless the owner explicitly changes them.
@@ -8,7 +25,7 @@ Last owner-confirmed: 25 November 2026. These rules apply to every future AI-ass
 2. `PROJECT_ROADMAP.md` is the live application feature checklist.
 3. `docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md` is the source of truth for domain, security and SEO work.
 4. Feature-specific plans under `docs/` define their own scope, acceptance criteria and verified status.
-5. The original six planning documents under `public/assets/aistudio/` explain initial product intent but do not override current code, migrations or later owner-confirmed decisions.
+5. The original six planning documents under `archive/aistudio/` explain initial product intent but do not override current code, migrations or later owner-confirmed decisions.
 
 ## Mandatory working rules
 
