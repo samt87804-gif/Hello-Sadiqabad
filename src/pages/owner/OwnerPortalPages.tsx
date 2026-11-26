@@ -1217,27 +1217,43 @@ export function OwnerPayments() {
   }, [user]);
   const [history, setHistory] = useState<OwnerPaymentHistory | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeReceipt, setActiveReceipt] = useState<string | null>(null);
   const [requestedAmount, setRequestedAmount] = useState('');
   const [reason, setReason] = useState('');
   const [evidenceReference, setEvidenceReference] = useState('');
   const [saving, setSaving] = useState(false);
+  const historyRequestSequence = useRef(0);
+  const correctionInFlight = useRef(false);
   const reload = useCallback(async () => {
+    const requestId = ++historyRequestSequence.current;
     setLoading(true);
-    try { setHistory(await fetchOwnerPaymentHistory()); }
-    catch (error) { showToast(error instanceof Error ? error.message : 'Payment history could not be loaded.', 'error'); }
-    finally { setLoading(false); }
-  }, [showToast]);
-  useEffect(() => { void reload(); }, [reload]);
+    setLoadError(null);
+    try {
+      const nextHistory = await fetchOwnerPaymentHistory();
+      if (requestId === historyRequestSequence.current) setHistory(nextHistory);
+    } catch (error) {
+      if (requestId === historyRequestSequence.current) {
+        setLoadError(error instanceof Error ? error.message : 'Payment history could not be loaded.');
+      }
+    } finally {
+      if (requestId === historyRequestSequence.current) setLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    void reload();
+    return () => { historyRequestSequence.current += 1; };
+  }, [reload]);
   const money = (value: number) => 'Rs. ' + Number(value || 0).toLocaleString('en-PK');
   const submitCorrection = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!activeReceipt || saving) return;
+    if (!activeReceipt || correctionInFlight.current) return;
     const amount = Number(requestedAmount);
     if (!Number.isFinite(amount) || amount < 0 || reason.trim().length < 10) {
       showToast('Corrected amount aur kam az kam 10 characters ki reason darj karein.', 'error');
       return;
     }
+    correctionInFlight.current = true;
     setSaving(true);
     try {
       await submitOwnerPaymentCorrectionRequest({ receiptId: activeReceipt, requestedAmountPkr: amount, reason, evidenceReference });
@@ -1245,12 +1261,13 @@ export function OwnerPayments() {
       setActiveReceipt(null);
       await reload();
     } catch (error) { showToast(error instanceof Error ? error.message : 'Correction request submit nahi ho saki.', 'error'); }
-    finally { setSaving(false); }
+    finally { correctionInFlight.current = false; setSaving(false); }
   };
   return (
-    <OwnerShell unreadCount={unreadCount} listings={[]} selectedId="" onSelect={() => {}} loading={loading} showSwitcher={false}>
+    <OwnerShell unreadCount={unreadCount} listings={[]} selectedId="" onSelect={() => {}} loading={loading && !history} showSwitcher={false}>
       <div className="space-y-5">
         <div><h1 className="text-xl sm:text-2xl font-extrabold text-on-surface">My Payments</h1><p className="text-sm text-on-surface-variant">Your read-only payment history across all linked businesses. Only Admin can change financial records.</p></div>
+        {loadError && <Card className="p-4 border border-error/40 space-y-2"><p className="text-sm text-error">{loadError}</p><Button size="sm" variant="outline" disabled={loading} onClick={() => void reload()}>{loading ? 'Retrying…' : 'Retry loading payment history'}</Button></Card>}
         {history && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             ['Businesses', String(history.business_count)],
@@ -1261,28 +1278,28 @@ export function OwnerPayments() {
         </div>}
         <section className="space-y-3">
           <h2 className="font-bold text-on-surface">Receipts</h2>
-          {!history?.receipts.length ? <Card className="p-5 text-sm text-on-surface-variant">No payment receipts are recorded for your account yet.</Card> : history.receipts.map((receipt) => {
+          {!history ? (loadError ? null : <Card className="p-5 text-sm text-on-surface-variant">Loading payment history…</Card>) : !history.receipts.length ? <Card className="p-5 text-sm text-on-surface-variant">No payment receipts are recorded for your account yet.</Card> : history.receipts.map((receipt) => {
             const pending = history.payment_correction_requests.some((item) => item.receipt_id === receipt.receipt_id && item.status === 'pending');
             return <Card key={receipt.receipt_id} className="p-4 space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div><p className="font-bold text-sm text-on-surface">{receipt.business_name}</p><p className="text-xs text-on-surface-variant">{receipt.plan_code.toUpperCase()} · {formatDateShort(receipt.received_at)} · {receipt.payment_method.replaceAll('_', ' ')}</p>{receipt.transaction_reference && <p className="text-xs text-on-surface-variant">Reference: {receipt.transaction_reference}</p>}</div>
                 <div className="text-right"><p className="font-extrabold text-on-surface tabular-nums">{money(receipt.amount_pkr)}</p>{receipt.adjustment_total_pkr !== 0 && <p className="text-[11px] text-on-surface-variant">Original {money(receipt.original_amount_pkr)} · adjustment {money(receipt.adjustment_total_pkr)}</p>}</div>
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[11px] text-on-surface-variant">Period: {receipt.period_start ? formatDateShort(receipt.period_start) : '—'} to {receipt.period_end ? formatDateShort(receipt.period_end) : '—'}</span><Button size="sm" variant="outline" disabled={pending} onClick={() => { setActiveReceipt(receipt.receipt_id); setRequestedAmount(String(receipt.amount_pkr)); setReason(''); setEvidenceReference(''); }}>{pending ? 'Correction pending' : 'Request correction'}</Button></div>
+              <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[11px] text-on-surface-variant">Period: {receipt.period_start ? formatDateShort(receipt.period_start) : '—'} to {receipt.period_end ? formatDateShort(receipt.period_end) : '—'}</span><Button size="sm" variant="outline" disabled={pending || saving} onClick={() => { setActiveReceipt(receipt.receipt_id); setRequestedAmount(String(receipt.amount_pkr)); setReason(''); setEvidenceReference(''); }}>{pending ? 'Correction pending' : 'Request correction'}</Button></div>
               {activeReceipt === receipt.receipt_id && <form onSubmit={submitCorrection} className="border-t border-outline-variant/40 pt-3 space-y-3">
                 <p className="text-xs text-on-surface-variant">Receipt will remain unchanged unless Admin approves. Enter 0 only if you believe the receipt should be reversed.</p>
                 <Input label="Correct amount (PKR)" type="number" min="0" step="0.01" value={requestedAmount} onChange={(event) => setRequestedAmount(event.target.value)} required />
                 <Textarea label="Reason for correction" value={reason} onChange={(event) => setReason(event.target.value)} rows={3} required />
                 <Input label="Evidence / transaction reference (optional)" value={evidenceReference} onChange={(event) => setEvidenceReference(event.target.value)} />
-                <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setActiveReceipt(null)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? 'Submitting…' : 'Submit request'}</Button></div>
+                <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={saving} onClick={() => setActiveReceipt(null)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? 'Submitting…' : 'Submit request'}</Button></div>
               </form>}
             </Card>;
           })}
         </section>
         <section className="space-y-3"><h2 className="font-bold text-on-surface">Correction request history</h2>
-          {!history?.payment_correction_requests.length ? <Card className="p-4 text-sm text-on-surface-variant">No correction requests submitted.</Card> : history.payment_correction_requests.map((request) => <Card key={request.id} className="p-4 space-y-1"><div className="flex items-center justify-between gap-2"><p className="text-sm font-bold text-on-surface">Requested amount: {money(request.requested_amount_pkr)}</p><Badge variant={request.status === 'approved' ? 'success' : request.status === 'rejected' ? 'danger' : 'warning'}>{request.status}</Badge></div><p className="text-xs text-on-surface-variant">{request.reason}</p>{request.admin_response && <p className="text-xs text-on-surface-variant">Admin: {request.admin_response}</p>}</Card>)}
+          {!history ? null : !history.payment_correction_requests.length ? <Card className="p-4 text-sm text-on-surface-variant">No correction requests submitted.</Card> : history.payment_correction_requests.map((request) => <Card key={request.id} className="p-4 space-y-1"><div className="flex items-center justify-between gap-2"><p className="text-sm font-bold text-on-surface">Requested amount: {money(request.requested_amount_pkr)}</p><Badge variant={request.status === 'approved' ? 'success' : request.status === 'rejected' ? 'danger' : 'warning'}>{request.status}</Badge></div><p className="text-xs text-on-surface-variant">{request.reason}</p>{request.admin_response && <p className="text-xs text-on-surface-variant">Admin: {request.admin_response}</p>}</Card>)}
         </section>
-        <div className="flex justify-end"><Button size="sm" variant="ghost" onClick={() => void reload()}>Refresh history</Button></div>
+        <div className="flex justify-end"><Button size="sm" variant="ghost" disabled={loading || saving} onClick={() => void reload()}>{loading ? 'Refreshing…' : 'Refresh history'}</Button></div>
       </div>
     </OwnerShell>
   );
@@ -1299,6 +1316,13 @@ export function OwnerProfile() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profileReason, setProfileReason] = useState('');
   const [profileHistory, setProfileHistory] = useState<OwnerPaymentHistory | null>(null);
+  const [profileHistoryLoading, setProfileHistoryLoading] = useState(true);
+  const [profileHistoryError, setProfileHistoryError] = useState<string | null>(null);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const profileHistorySequence = useRef(0);
+  const profileSaveInFlight = useRef(false);
+  const passwordChangeInFlight = useRef(false);
   const pendingProfileRequest = profileHistory?.profile_change_requests.find((request) => request.status === 'pending');
 
   useEffect(() => {
@@ -1306,19 +1330,43 @@ export function OwnerProfile() {
     setPhone(profile?.phone ?? '');
   }, [profile?.full_name, profile?.phone]);
 
-  useEffect(() => { fetchOwnerPaymentHistory().then(setProfileHistory).catch(() => {}); }, []);
+  const reloadProfileHistory = useCallback(async () => {
+    const requestId = ++profileHistorySequence.current;
+    setProfileHistoryLoading(true);
+    setProfileHistoryError(null);
+    try {
+      const nextHistory = await fetchOwnerPaymentHistory();
+      if (requestId === profileHistorySequence.current) setProfileHistory(nextHistory);
+    } catch (error) {
+      if (requestId === profileHistorySequence.current) {
+        setProfileHistoryError(error instanceof Error ? error.message : 'Profile request history could not be loaded.');
+      }
+    } finally {
+      if (requestId === profileHistorySequence.current) setProfileHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void reloadProfileHistory();
+    return () => { profileHistorySequence.current += 1; };
+  }, [reloadProfileHistory]);
 
   const strength = evaluatePasswordStrength(newPassword);
 
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (profileSaveInFlight.current || profileHistoryLoading || profileHistoryError || !profileHistory) return;
     if (pendingProfileRequest) { showToast('A profile change request is already awaiting Admin review.', 'error'); return; }
+    if (profileReason.trim().length < 10) { showToast('Please explain the reason in at least 10 characters.', 'error'); return; }
+    profileSaveInFlight.current = true;
+    setProfileSaving(true);
     try {
       await submitOwnerProfileChangeRequest({ fullName, phone, reason: profileReason });
       setProfileReason('');
-      setProfileHistory(await fetchOwnerPaymentHistory());
+      await reloadProfileHistory();
       showToast('Profile change request Admin ko bhej di gayi hai. Approval ke baad details update hongi.', 'success');
     } catch (error) { showToast(error instanceof Error ? error.message : 'Profile change request submit nahi ho saki.', 'error'); }
+    finally { profileSaveInFlight.current = false; setProfileSaving(false); }
   };
 
   const changePass = async (e: React.FormEvent) => {
@@ -1331,19 +1379,27 @@ export function OwnerProfile() {
       showToast('New passwords do not match.', 'error');
       return;
     }
-    const res = await updatePassword(newPassword);
-    if (!res.ok) {
-      showToast(res.error ?? 'Failed to update password.', 'error');
-      return;
+    if (passwordChangeInFlight.current) return;
+    passwordChangeInFlight.current = true;
+    setPasswordSaving(true);
+    try {
+      const res = await updatePassword(newPassword);
+      if (!res.ok) {
+        showToast(res.error ?? 'Failed to update password.', 'error');
+        return;
+      }
+      setNewPassword('');
+      setConfirmPassword('');
+      showToast(
+        res.simulated || isDemoMode
+          ? 'Preview Mode: local demo password check updated (no remote auth server).'
+          : 'Password changed successfully!',
+        'success'
+      );
+    } finally {
+      passwordChangeInFlight.current = false;
+      setPasswordSaving(false);
     }
-    setNewPassword('');
-    setConfirmPassword('');
-    showToast(
-      res.simulated || isDemoMode
-        ? 'Preview Mode: local demo password check updated (no remote auth server).'
-        : 'Password changed successfully!',
-      'success'
-    );
   };
 
   return (
@@ -1352,7 +1408,7 @@ export function OwnerProfile() {
       listings={data.listings}
       selectedId={data.selectedId}
       onSelect={data.setSelectedId}
-      loading={false}
+      loading={data.loading}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Card className="p-5">
@@ -1362,7 +1418,9 @@ export function OwnerProfile() {
             <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
             <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
             <Textarea label="Reason for change" value={profileReason} onChange={(e) => setProfileReason(e.target.value)} rows={2} required />
-            <Button type="submit" disabled={Boolean(pendingProfileRequest)}>Request Admin Approval</Button>
+            {profileHistoryLoading && <p className="text-xs text-on-surface-variant">Loading profile request history…</p>}
+            {profileHistoryError && <div className="rounded-xl border border-error/40 p-3 space-y-2"><p className="text-xs text-error">{profileHistoryError}</p><Button type="button" size="sm" variant="outline" disabled={profileHistoryLoading} onClick={() => void reloadProfileHistory()}>Retry request history</Button></div>}
+            <Button type="submit" disabled={Boolean(pendingProfileRequest) || profileSaving || profileHistoryLoading || Boolean(profileHistoryError) || !profileHistory}>{profileSaving ? 'Submitting…' : 'Request Admin Approval'}</Button>
             {pendingProfileRequest && <p className="text-xs text-amber-700">A profile change request is pending Admin review.</p>}
             {profileHistory?.profile_change_requests.slice(0, 3).map((request) => <p key={request.id} className="text-xs text-on-surface-variant">{request.status.toUpperCase()}: {request.admin_response || request.reason}</p>)}
           </form>
@@ -1419,8 +1477,8 @@ export function OwnerProfile() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-            <Button type="submit" variant="outline">
-              Update Password
+            <Button type="submit" variant="outline" disabled={passwordSaving}>
+              {passwordSaving ? 'Updating…' : 'Update Password'}
             </Button>
           </form>
         </Card>
