@@ -112,6 +112,8 @@ export interface VCardBusinessInput {
   whatsapp?: string | null;
   email?: string | null;
   website_url?: string | null;
+  plan_code?: 'free' | 'basic' | 'premium' | null;
+  plan_expires_at?: string | null;
   address_en?: string | null;
   slug: string;
 }
@@ -139,7 +141,9 @@ export function buildBusinessVCard(b: VCardBusinessInput, origin = 'https://hell
   if (b.email?.trim()) {
     lines.push(`EMAIL;TYPE=WORK:${b.email.trim()}`);
   }
-  if (b.website_url?.trim()) {
+  const planExpiry = b.plan_expires_at ? Date.parse(b.plan_expires_at) : null;
+  const hasPaidWebsite = (b.plan_code === 'basic' || b.plan_code === 'premium') && (!planExpiry || planExpiry >= Date.now());
+  if (hasPaidWebsite && b.website_url?.trim()) {
     lines.push(`URL:${b.website_url.trim()}`);
   }
   lines.push(`URL:${cleanOrigin}/business/${b.slug}`);

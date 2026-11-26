@@ -436,7 +436,6 @@ export function OwnerBusinesses() {
 }
 
 export function OwnerDashboard() {
-  const { profile } = useAuth();
   const data = useOwnerPortalData();
   const biz = data.activeBusiness;
   const [siteSettings, setSiteSettings] = useState<SiteSettingsMap>(DEFAULT_SITE_SETTINGS);
@@ -1083,12 +1082,7 @@ export function OwnerPlan() {
       loading={data.loading}
     >
       {biz && (
-        <PlanCard
-          business={biz}
-          plans={data.plans}
-          ownerName={profile?.full_name}
-          ownerPhone={profile?.phone}
-        />
+        <PlanCard business={biz} plans={data.plans} requests={data.submissions} onReload={data.reload} />
       )}
     </OwnerShell>
   );

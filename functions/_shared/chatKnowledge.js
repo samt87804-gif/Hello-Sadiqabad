@@ -130,7 +130,7 @@ export function mapPublicBusinessSearchResult(row, siteUrl = DEFAULT_SITE_URL, q
     phone: row.phone_primary,
     alternate_phone: row.phone_secondary,
     whatsapp: hasPaidFeatures ? row.whatsapp : null,
-    website: row.website_url,
+    website: hasPaidFeatures ? row.website_url : null,
     social_links: hasPaidFeatures && wantsSocial ? {
       facebook: row.facebook_url,
       instagram: row.instagram_url,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -48,7 +48,8 @@ import { Input, Textarea } from '../ui/FormFields';
 import { ConfirmDialog, Modal } from '../ui/Modal';
 import { LineChartSvg } from '../ui/Charts';
 import { useToast } from '../ui/Toast';
-import { submitPublicSuggestion } from '../../lib/api';
+import { fetchPublicSiteSettings, submitPlanUpgradeRequest } from '../../lib/api';
+import { DEFAULT_PLAN_PAYMENT_SETTINGS, type PlanPaymentMethodKey, type PlanPaymentSettings } from '../../lib/siteSettings';
 
 export function ProductCatalogueManager({
   business,
@@ -1106,122 +1107,44 @@ export function OwnerAnalytics({
   );
 }
 
-export function PlanCard({
-  business,
-  plans,
-  ownerName,
-  ownerPhone,
-}: {
-  business: BusinessPublicView;
-  plans: PlanRow[];
-  ownerName?: string | null;
-  ownerPhone?: string | null;
-}) {
+export function PlanCard({ business, plans, requests, onReload }: { business: BusinessPublicView; plans: PlanRow[]; requests: SubmissionRow[]; onReload: () => Promise<void> }) {
   const { showToast } = useToast();
+  const [paymentSettings, setPaymentSettings] = useState<PlanPaymentSettings>(DEFAULT_PLAN_PAYMENT_SETTINGS);
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PlanPaymentMethodKey>('jazzcash');
+  const [transactionReference, setTransactionReference] = useState('');
+  const [ownerConfirmedPaid, setOwnerConfirmedPaid] = useState(false);
   const [requestNote, setRequestNote] = useState('');
   const [sending, setSending] = useState(false);
-
   const effCode = effectivePlanCode(business.plan_code, business.plan_expires_at);
-
-  const requestUpgrade = async (targetPlan: string) => {
-    setSending(true);
-    try {
-      const result = await submitPublicSuggestion({
-        type: 'plan_upgrade',
-        business_id: business.id,
-        payload: {
-          requested_plan: targetPlan,
-          note: requestNote.trim() || `Upgrade request for ${business.name_en}`,
-        },
-        contact_name: ownerName ?? business.owner_name ?? business.name_en,
-        contact_phone: ownerPhone ?? business.phone_primary,
-      });
-      if (!result.ok) {
-        throw new Error(result.error ?? 'Your upgrade request could not be submitted.');
-      }
-      showToast('Upgrade inquiry submitted! Our local sales team will contact you.', 'success');
-      setRequestNote('');
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Your upgrade request could not be submitted.', 'error');
-    } finally {
-      setSending(false);
-    }
+  const planRequests = requests.filter((request) => request.type === 'plan_upgrade' && request.business_id === business.id).sort((a,b) => Date.parse(b.created_at)-Date.parse(a.created_at));
+  const pendingRequest = planRequests.find((request) => request.status === 'new' || request.status === 'in_review');
+  useEffect(() => { let active=true; void fetchPublicSiteSettings().then((settings)=>{if(active)setPaymentSettings(settings.plan_payment_methods);}).catch(()=>{if(active)showToast('Payment account details could not be loaded. Please refresh the page.','error');}); return ()=>{active=false;}; },[showToast]);
+  const submitRequest = async (event: React.FormEvent) => {
+    event.preventDefault(); if(!selectedPlan||!ownerConfirmedPaid||transactionReference.trim().length<4)return; setSending(true);
+    try { await submitPlanUpgradeRequest({businessId:business.id,requestedPlan:selectedPlan,paymentMethod,transactionReference:transactionReference.trim(),ownerConfirmedPaid,note:requestNote}); showToast('Payment request Admin ko bhej di gayi hai. Plan payment verification ke baad activate hoga.','success'); setSelectedPlan(null);setTransactionReference('');setOwnerConfirmedPaid(false);setRequestNote('');await onReload(); }
+    catch(error){showToast(error instanceof Error?error.message:'Plan payment request send nahi ho saki.','error');} finally{setSending(false);}
   };
-
-  return (
-    <div className="space-y-5">
-      <Card className="p-5 bg-primary text-on-primary">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <span className="text-xs uppercase tracking-wider opacity-85 font-bold">Current Plan</span>
-            <h2 className="text-2xl font-extrabold flex items-center gap-2 mt-0.5">
-              <Crown className="w-6 h-6 text-secondary-container" />
-              <span className="uppercase">{effCode}</span>
-            </h2>
-            {business.plan_expires_at && effCode !== 'free' && (
-              <p className="text-xs opacity-90 mt-1">
-                Active until {formatDateShort(business.plan_expires_at)}
-              </p>
-            )}
-          </div>
-          <Badge variant="gold">{business.is_verified ? 'Verified Badge Active' : 'Unverified'}</Badge>
-        </div>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {plans.map((p) => {
-          const isCurrent = p.code === effCode;
-          return (
-            <Card
-              key={p.id}
-              className={`p-5 flex flex-col justify-between gap-4 ${
-                isCurrent ? 'ring-2 ring-primary' : ''
-              }`}
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-on-surface">{p.name_en}</h3>
-                  {isCurrent && <Badge variant="primary">Active</Badge>}
-                </div>
-                <p className="font-urdu text-xs text-primary" dir="rtl">
-                  {p.name_ur}
-                </p>
-                <p className="text-xs text-on-surface-variant">{p.price_note}</p>
-                <ul className="space-y-1 text-xs text-on-surface-variant pt-2 border-t border-outline-variant/25">
-                  <li>• Photos: {p.limits.max_photos}</li>
-                  <li>• Videos: {p.limits.max_videos}</li>
-                  <li>• Active Offers: {p.limits.offers}</li>
-                  <li>• Social Links: {p.limits.social_links}</li>
-                  <li>• WhatsApp Direct: {p.features.whatsapp ? 'Yes' : 'No'}</li>
-                  <li>• Verified Tick: {p.features.verified_badge ? 'Yes' : 'No'}</li>
-                  <li>• Search Priority: Tier {p.limits.search_priority}</li>
-                </ul>
-              </div>
-              {!isCurrent && p.code !== 'free' && (
-                <Button
-                  variant="secondary"
-                  loading={sending}
-                  onClick={() => requestUpgrade(p.code)}
-                  leftIcon={<Send className="w-3.5 h-3.5" />}
-                >
-                  Request {p.name_en}
-                </Button>
-              )}
-            </Card>
-          );
-        })}
-      </div>
-
-      <Card className="p-4 space-y-2">
-        <Input
-          label="Optional Note for Sales Team"
-          value={requestNote}
-          onChange={(e) => setRequestNote(e.target.value)}
-          placeholder="Preferred time for callback or questions about Premium Plan spotlight..."
-        />
-      </Card>
-    </div>
-  );
+  const selectedMethod=paymentSettings.methods[paymentMethod];
+  const methodKeys:PlanPaymentMethodKey[]=['jazzcash','easypaisa','ubl'];
+  return <div className="space-y-5">
+    <Card className="p-5 bg-primary text-on-primary"><div className="flex items-center justify-between gap-4 flex-wrap"><div><span className="text-xs uppercase tracking-wider opacity-85 font-bold">Current Plan</span><h2 className="text-2xl font-extrabold flex items-center gap-2 mt-0.5"><Crown className="w-6 h-6 text-secondary-container"/><span className="uppercase">{effCode}</span></h2>{business.plan_expires_at&&effCode!=='free'&&<div className="text-xs opacity-90 mt-1 space-y-0.5"><p>Valid until {formatDateShort(business.plan_expires_at)}</p><p>{Math.max(0,Math.ceil((Date.parse(business.plan_expires_at)-Date.now())/86400000))} days remaining</p></div>}</div><Badge variant="gold">{business.is_verified?'Verified Badge Active':'Unverified'}</Badge></div></Card>
+    {pendingRequest&&<Card className="p-4 border border-secondary/40 bg-secondary/5 space-y-1"><div className="flex items-center gap-2"><Clock className="w-4 h-4 text-secondary"/><strong className="text-sm">Plan payment request under Admin review</strong></div><p className="text-xs text-on-surface-variant">Aap ki {String((pendingRequest.payload as Record<string,unknown>).requested_plan??'').toUpperCase()} request pending hai. Admin verification se pehle dobara request na bhejein.</p><p className="text-[11px] text-on-surface-variant">Request ID: {pendingRequest.id} · Sent: {formatDateShort(pendingRequest.created_at)}</p></Card>}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{plans.map((p)=>{const isCurrent=p.code===effCode;const isDowngrade=effCode==='premium'&&p.code==='basic';return <Card key={p.id} className={'p-5 flex flex-col justify-between gap-4 '+(isCurrent?'ring-2 ring-primary':'')}><div className="space-y-2"><div className="flex items-center justify-between"><h3 className="text-base font-bold text-on-surface">{p.name_en}</h3>{isCurrent&&<Badge variant="primary">Current plan</Badge>}</div><p className="font-urdu text-xs text-primary" dir="rtl">{p.name_ur}</p><p className="text-sm font-bold text-on-surface">{p.price_note}</p>
+      <ul className="space-y-1 text-xs text-on-surface-variant pt-2 border-t border-outline-variant/25"><li>• Photos: {p.limits.max_photos}</li><li>• Videos: {p.limits.max_videos}</li><li>• Active Offers: {p.limits.offers}</li><li>• Social Links: {p.limits.social_links>=999?'Unlimited':p.limits.social_links}</li><li>• WhatsApp Button: {p.features.whatsapp?'Included':'Not included'}</li><li>• Website URL: {(p.features.website_url??p.code!=='free')?'Included':'Not included'}</li><li>• Cover Image: {p.features.cover?'Included':'Not included'}</li><li>• Photo Gallery: {p.features.gallery?'Included':'Not included'}</li><li>• Verified Badge: {p.features.verified_badge?'Included':'Not included'}</li><li>• QR Code: {p.features.qr?'Included':'Not included'}</li><li>• Inquiry Button: {p.features.inquiry?'Included':'Not included'}</li><li>• Full Analytics: {p.features.analytics_full?'Included':'Not included'}</li><li>• Search Priority: Tier {p.limits.search_priority}</li></ul></div>
+      {p.code!=='free'&&!isDowngrade&&<Button variant="secondary" disabled={Boolean(pendingRequest)} onClick={()=>{setSelectedPlan(p.code as 'basic'|'premium');setPaymentMethod('jazzcash');}} leftIcon={<Send className="w-3.5 h-3.5"/>}>{isCurrent?'Renew '+p.name_en:'Choose '+p.name_en}</Button>}</Card>;})}</div>
+    {planRequests.length>0&&<Card className="p-4 space-y-3"><h3 className="text-sm font-bold">Plan Request History</h3>{planRequests.slice(0,5).map((request)=>{const payload=request.payload as Record<string,unknown>;const statusLabel=request.status==='done'?'Approved & Active':request.status==='rejected'?'Rejected':'Waiting for Admin';return <div key={request.id} className="rounded-xl bg-surface-container-low p-3 text-xs space-y-1"><div className="flex items-center justify-between gap-2 flex-wrap"><strong>{String(payload.requested_plan??'').toUpperCase()} · Rs. {Number(payload.monthly_amount_pkr??0).toLocaleString('en-PK')}</strong><Badge variant={request.status==='done'?'success':request.status==='rejected'?'danger':'warning'}>{statusLabel}</Badge></div><p className="text-on-surface-variant">Submitted {formatDateShort(request.created_at)} · Reference: {String(payload.transaction_reference??'—')}</p>{typeof payload.plan_expires_at==='string'&&<p className="font-semibold text-primary">Valid until {formatDateShort(payload.plan_expires_at)}</p>}{request.admin_note&&<p className="text-error">Admin note: {request.admin_note}</p>}</div>;})}</Card>}
+    <Modal open={Boolean(selectedPlan)} onClose={()=>{if(!sending)setSelectedPlan(null);}} title="Plan Payment & Confirmation" maxWidthClass="max-w-2xl">{selectedPlan&&<form onSubmit={submitRequest} className="space-y-4">
+      <div className="rounded-xl bg-primary/5 border border-primary/20 p-3"><p className="text-sm font-bold">{selectedPlan.toUpperCase()} Plan</p><p className="text-xl font-extrabold text-primary">Rs. {selectedPlan==='basic'?'700':'1,500'} / month</p><p className="text-xs text-on-surface-variant">Transfer the exact amount. Your plan will start only after Admin verifies the payment.</p></div>
+      <p className="text-xs text-on-surface-variant">{paymentSettings.instructions_en}</p><p className="font-urdu text-xs text-on-surface-variant" dir="rtl">{paymentSettings.instructions_ur}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">{methodKeys.map((key)=>{const method=paymentSettings.methods[key];const active=paymentMethod===key;return <button key={key} type="button" onClick={()=>setPaymentMethod(key)} className={'rounded-xl border p-3 text-left space-y-2 '+(active?'border-primary bg-primary/5 ring-1 ring-primary':'border-outline-variant hover:border-primary/50')}><div className="flex items-center gap-2">{method.icon_url?<img src={method.icon_url} alt="" className="w-8 h-8 rounded-lg object-contain"/>:<span className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-xs font-bold">{key==='ubl'?'UBL':key==='jazzcash'?'JC':'EP'}</span>}<strong className="text-xs">{method.label}</strong></div><span className="text-[10px] text-on-surface-variant">{active?'Selected payment method':'Select this method'}</span></button>;})}</div>
+      <div className="rounded-xl border border-outline-variant/50 p-3 space-y-1"><div className="flex items-center gap-2">{selectedMethod.icon_url&&<img src={selectedMethod.icon_url} alt="" className="w-7 h-7 rounded object-contain"/>}<strong className="text-sm">{selectedMethod.label}</strong></div><p className="text-xs">Account Title: <strong>{selectedMethod.account_title}</strong></p><p className="text-xs">Account Number: <strong dir="ltr">{selectedMethod.account_number}</strong></p>{selectedMethod.iban&&<p className="text-xs">IBAN: <strong dir="ltr">{selectedMethod.iban}</strong></p>}</div>
+      <Input label="Transaction / Payment Reference Number" required minLength={4} maxLength={120} value={transactionReference} onChange={(event)=>setTransactionReference(event.target.value)} placeholder="Enter the receipt / transaction reference"/>
+      <Textarea label="Optional payment note" rows={2} value={requestNote} onChange={(event)=>setRequestNote(event.target.value)} placeholder="Any extra detail for Admin"/>
+      <label className="flex items-start gap-2 rounded-xl border border-outline-variant/50 p-3 text-xs"><input type="checkbox" checked={ownerConfirmedPaid} onChange={(event)=>setOwnerConfirmedPaid(event.target.checked)} className="mt-0.5 accent-primary"/><span><strong>I confirm that I have paid the full amount.</strong><br/>Admin will independently verify the payment before activating this plan.</span></label>
+      <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={sending} onClick={()=>setSelectedPlan(null)}>Cancel</Button><Button type="submit" loading={sending} disabled={!ownerConfirmedPaid||transactionReference.trim().length<4}>Send Payment Request</Button></div>
+    </form>}</Modal>
+  </div>;
 }
 
 export function NotificationsList({

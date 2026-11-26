@@ -11,6 +11,8 @@ test('buildBusinessVCard outputs valid vCard 3.0 with escaped special characters
       whatsapp: '+923008679999',
       email: 'info@almadina.pk',
       website_url: 'https://almadina.pk',
+      plan_code: 'basic',
+      plan_expires_at: '2027-12-31T23:59:59Z',
       address_en: 'Shop 12, Rail Bazaar, Sadiqabad',
       slug: 'al-madina-mart',
     },

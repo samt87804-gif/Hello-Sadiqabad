@@ -189,6 +189,7 @@ export function ListingEditor({
   const maxSocialLinks = activePlan?.limits.social_links ?? 0;
   const canWhatsApp = activePlan?.features.whatsapp ?? false;
   const canSocial = maxSocialLinks > 0;
+  const canWebsite = activePlan?.features.website_url ?? effPlanCode !== 'free';
 
   const update = (patch: Partial<BusinessRow>) => {
     setForm((prev) => ({ ...prev, ...patch }));
@@ -343,7 +344,7 @@ export function ListingEditor({
         phone_secondary: form.phone_secondary?.trim() || null,
         whatsapp: canWhatsApp ? form.whatsapp?.trim() || null : null,
         email: form.email?.trim() || null,
-        website_url: form.website_url?.trim() || null,
+        website_url: canWebsite ? form.website_url?.trim() || null : business.website_url ?? null,
         address_en: form.address_en?.trim() || null,
         address_ur: form.address_ur?.trim() || null,
         landmark_en: form.landmark_en?.trim() || null,
@@ -772,13 +773,10 @@ export function ListingEditor({
                 onChange={(e) => update({ email: e.target.value })}
                 placeholder="shop@example.com"
               />
-              <Input
-                label="Website URL (HTTPS)"
-                dir="ltr"
-                value={form.website_url ?? ''}
-                onChange={(e) => update({ website_url: e.target.value })}
-                placeholder="https://..."
-              />
+              <div className="space-y-1.5">
+                <Input label="Website URL (HTTPS)" dir="ltr" disabled={!canWebsite} value={form.website_url ?? ''} onChange={(e) => update({ website_url: e.target.value })} placeholder="https://..." />
+                {!canWebsite && <p className="text-xs text-secondary flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> Website URL Basic aur Premium plans mein available hai. Existing saved link ko preserve kiya gaya hai.</p>}
+              </div>
             </div>
           </Card>
 
