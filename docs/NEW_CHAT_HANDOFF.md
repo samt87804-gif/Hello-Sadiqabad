@@ -49,11 +49,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 
 ## Current workstream — Owner Financial Profiles, Payment History & Approval Workflows (27 November 2026)
 
-- Owner explicitly approved this scope. Active plan: [docs/OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md](OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md).
-- Admin → Owners should open an Owner Financial Profile with businesses, plan/expiry history, actual receipts, net adjustments, outstanding/waived amounts, correction requests and audit trail.
-- Owner Portal gets read-only My Payments; correction requests are requests only, never direct ledger edits.
-- Admin receipt correction/reversal uses append-only adjustment rows. Original receipts must never be hard-deleted or overwritten; corrected amount zero means reversal.
-- Owner Full Name/Phone changes require Admin approval; password self-service remains. Preserve live `owner_edits_require_approval=true` and the existing business listing moderation flow.
-- Read the current live schema, profile triggers, finance RPC definitions, Super Admin helpers and migration ledger. Latest live migration version at audit: `20261126184410`.
-- Permanent documentation-cycle rule added to `docs/PROJECT_WORKING_RULES.md` (commit `a74df37eb8dcc45887ac05b897cf91756b0a39e6`): read required docs and relevant source every task/phase, then update feature plan, roadmap and handoff; tick only verified work.
-- No production database or UI changes have yet been applied for this workstream. Continue from Phase B; do not re-request a source ZIP.
+- Owner-approved scope is implemented on `main`. Active plan: [docs/OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md](OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md); manual checklist: [docs/OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md](OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md).
+- Admin → Owners: Super Admin can click an Owner name / Financial Profile and view account, linked businesses, plan assignment history, original/net receipts, adjustments, balances, correction requests, profile requests and audit events.
+- Owner Portal → My Payments: read-only Owner-scoped history and aggregate totals; Owners can submit correction requests only. No direct payment-ledger edit/delete UI.
+- Admin direct correction/reversal and Owner-request review both create append-only adjustment rows. Original receipts remain intact; corrected amount zero means reversal. Finance dashboard, ledger, assignments, balances, installment validation and CSV use net adjusted amounts.
+- Owner Full Name/Phone updates require approval; password change remains self-service. Live `owner_edits_require_approval=true` and existing business listing moderation remain unchanged.
+- Live migrations applied to the existing Supabase project: `20261126193259` (`owner_financial_profiles_and_payment_corrections`) and `20261126193516` (`admin_direct_receipt_correction`).
+- SQL rollback/adversarial checks passed: Owner scope isolation, Super Admin restriction, direct profile edit guard, approved profile update, corrected receipt delta, unchanged original receipt, Finance totals/ledger/balances, adjustment immutability and installment overpayment rejection.
+- Feature commit: `c5ea0e23118be7785ff7b1e60b63104938fbb0b6`. Cloudflare Pages production deployment `9d78a58f-1157-4211-bd02-0cbce0a8b24f` succeeded (build and deploy stages).
+- Documentation-cycle rule added to `docs/PROJECT_WORKING_RULES.md` (commit `a74df37eb8dcc45887ac05b897cf91756b0a39e6`): read canonical docs and directly relevant source at each task/phase, update plan/roadmap/handoff, and tick only verified work.
+- Remaining: run repository `npm run check` and authenticated browser smoke tests; Owner manual acceptance is pending. Do not claim acceptance until Owner confirms.
+- Continue from Phase F2/Phase G. Do not re-request a source ZIP.
