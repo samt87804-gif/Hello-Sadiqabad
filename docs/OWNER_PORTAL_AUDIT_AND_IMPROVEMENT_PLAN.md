@@ -1,6 +1,6 @@
 # Owner Portal — Audit & Improvement Implementation Plan
 
-**Status:** Owner approved the full roadmap on 27 November 2026. Phases 0–5 technical work is implemented/deployed as recorded below; Phase 4B gallery, Phase 5 Profile/My Payments, gallery close button and Phase 3D unread-badge manual acceptance are Owner-confirmed. Phase 0 remains partially accepted pending Admin Business Field Review visibility. Phase 3E Reviews/Inquiries filters are implemented on `main` and Cloudflare Pages build/deployment is verified on the canonical production domain; GitHub Actions status is unverified and Owner acceptance is pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`.
+**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 manual acceptance is now complete after Owner confirmed the Business Field Approval queue displays the four active requests. Phase 1 technical implementation is deployed and awaits its specific Owner manual acceptance. Phase 3E Reviews/Inquiries filters are implemented on `main` and Cloudflare Pages build/deployment is verified on the canonical production domain; GitHub Actions status is unverified and Owner acceptance is pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`.
 
 ## Working agreement
 
@@ -23,8 +23,10 @@
 - [x] Apply additive privilege migrations `20261126202642` and `20261126202723`: removed table-wide SELECT, granted only required non-private columns, and removed `assigned_to` SELECT.
 - [x] Verify live grants: authenticated table-wide SELECT is false; `admin_note` and `assigned_to` SELECT are false; required safe columns remain selectable.
 - [x] Rollback/auth simulation: non-Admin private-note RPC call is denied; simulated Super Admin can retrieve the note result through the protected RPC without exposing note text in the test output.
-- [ ] Manually verify the Admin Business Field Review screen, Owner request history and existing plan-payment screen in a signed-in browser.
-- [ ] Owner manual acceptance; do not mark Phase 0 accepted until the Owner confirms the practical tests.
+- [x] Owner manually confirmed My Businesses request history/statuses load and private Admin notes are not exposed in Owner Portal.
+- [x] Owner manually confirmed My Payments history and Plan details still load.
+- [x] Owner confirmed Admin → Business Field Approval displays the four active request cards after Refresh (27 November 2026). This closes the previously reported empty-queue visibility acceptance.
+- [x] Owner manual acceptance for Phase 0 recorded on 27 November 2026. Previous-note content itself could not be demonstrated because live records contain no non-null legacy `admin_note`; private-note access remains protected by the Admin-only RPC and column grants.
 
 **Important migration note:** The repository contains a later-timestamped financial-profile migration file while the live ledger already records that feature under earlier versions. That file must not be replayed. The notes RPC and access restrictions are recorded as live migrations `20261126202451` (`owner_submission_private_notes_rpc`), `20261126202642` (`restrict_owner_submission_private_note_select`) and `20261126202723` (`restrict_submission_assignment_column_select`). Keep each repository migration file aligned to the exact live version; do not replay the unmatched financial migration.
 
@@ -221,3 +223,11 @@
 - Owner manual acceptance is still pending. Next: Super Admin (or staff with `moderation.review`) → Admin → Business Field Approval → Refresh. Expected: four active request cards. If an optional warning appears, cards should still display. If the page remains empty or a required error appears, send a screenshot showing the page heading, all warning/error text and the Refresh result. No dummy submissions should be created.
 - Existing records contain no non-null legacy `submissions.admin_note` among the 17 new-business submissions, so a prior-note preview cannot be confirmed from current legacy data. Phase 0 remains partially accepted until the queue is visible and Owner confirms the manual check.
 - Other Owner Portal acceptance remains open: Phase 3E Reviews/Inquiries filters and Load more; Phase 1 pending count/inquiry handled workflow; Phase 2 notifications/mobile navigation/analytics empty state; Phase 3B Reviews/Inquiries pagination; Phase 3C My Businesses request-history pagination; Phase 4A offer date behavior. Do not mark these owner-tested without explicit confirmation.
+
+
+## Owner confirmation — Phase 0 complete (27 November 2026)
+
+- Owner explicitly reported **test pass** after signing in as Super Admin, opening Admin → Business Field Approval and refreshing; the four active request cards were visible.
+- This resolves the prior queue-visibility blocker. Combined with the previously confirmed Owner request history/statuses, private Admin-note non-disclosure, My Payments history and Plan details, Phase 0 manual acceptance is complete.
+- Existing production data has no non-null legacy `submissions.admin_note` among the 17 new-business submissions, so actual Previous note text could not be demonstrated; no note was created or changed just for testing. Admin-only note access remains protected.
+- Next in documented order: Phase 1 manual acceptance — pending-review count and inquiry Read/Handled behavior. Do not change real customer inquiry state solely for testing; use an appropriate test inquiry or an existing inquiry that is genuinely ready to be handled.
