@@ -49,8 +49,9 @@
 
 - [x] Prevent stale business-scoped data from appearing after switching selected businesses: clear stats/offers/products immediately and discard results from superseded requests.
 - [x] Sequence overlapping Owner data loads; invalidate in-flight requests on dependency changes/unmount, ignore stale responses/errors, and clear business-scoped state before/at selection changes.
-- [ ] Reduce unnecessary cross-page fetching where safe.
-- [ ] Add server-side pagination/filtering for reviews, inquiries and request history without hiding older records.
+- [x] Reduce unnecessary cross-page notification fetching: Owner pages now request only the unread count for the navigation badge; the full notification rows load only on Owner Portal → Notifications. Dashboard's full reviews/inquiries data remains intact for accurate aggregate counts.
+- [x] Reviews and Inquiries use server-side pages of 20; My Businesses request history uses pages of 20 with Load older requests. Existing records and order are preserved.
+- [ ] Complete Phase 3D automated regression/CI verification and Owner manual badge acceptance.
 
 ## Phase 4 — Business listing management
 
@@ -67,6 +68,16 @@
 - [x] Profile approval and password update buttons show busy states and block repeat submissions while their requests are in flight.
 - [x] Owner confirmed Profile and My Payments manual tests passed on 27 November 2026 (loading/retry and busy/duplicate-submit behavior).
 - [ ] If Owner wants profile photos or saved notification preferences later, request separate scope approval before design/implementation.
+
+### Phase 3D — notification overfetch reduction (implemented and Pages-deployed; CI/manual verification pending)
+
+- Added `fetchUnreadNotificationCount`: live Supabase requests return only an exact count of the signed-in Owner's unread notifications; demo mode calculates the same count locally.
+- Shared Owner Portal pages now fetch only that count for the navigation badge instead of downloading every notification row. The Notifications page alone fetches full notification content. My Payments also uses the lightweight count.
+- Added a regression test for unread count changes when a notification is marked read. Existing per-notification read/unread, safe internal links and Owner notification list remain unchanged.
+- Dashboard full reviews/inquiries datasets were deliberately preserved because Dashboard totals depend on them. No migration, RLS/grant change, notification mutation or user-data change was made.
+- API commit `4bde7385f1b0936e40543125963c9f5cd8d5df6c`; Owner UI commit `08e6a06d277e224a656d1cb25692f63d1f675313`; regression test commit `fad60e254f66c8b8783245b1e132bf42a6fd6cdb`.
+- Cloudflare Pages production deployment `f4095c61-159d-4489-b4d7-02b2b0d46a9b` succeeded for the test commit and includes the canonical `https://hellosadiqabad.com` alias. Pages build and deploy stages both succeeded.
+- GitHub Actions status was not returned by the connected commit-status check; automated test execution is therefore not claimed. Owner manual badge acceptance remains pending.
 
 ## Phase 6 — Final verification and release
 
