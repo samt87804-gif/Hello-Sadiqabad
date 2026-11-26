@@ -94,6 +94,7 @@ export function AdminChatbotKnowledge() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ mode: 'full' }),
+        signal: AbortSignal.timeout(45000),
       });
       const body = await response.json();
       await loadRuns();
