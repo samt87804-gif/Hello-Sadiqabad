@@ -58,5 +58,6 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - SQL rollback/adversarial checks passed: Owner scope isolation, Super Admin restriction, direct profile edit guard, approved profile update, corrected receipt delta, unchanged original receipt, Finance totals/ledger/balances, adjustment immutability and installment overpayment rejection.
 - Feature commit: `c5ea0e23118be7785ff7b1e60b63104938fbb0b6`. Cloudflare Pages production deployment `9d78a58f-1157-4211-bd02-0cbce0a8b24f` succeeded (build and deploy stages).
 - Documentation-cycle rule added to `docs/PROJECT_WORKING_RULES.md` (commit `a74df37eb8dcc45887ac05b897cf91756b0a39e6`): read canonical docs and directly relevant source at each task/phase, update plan/roadmap/handoff, and tick only verified work.
-- Remaining: run repository `npm run check` and authenticated browser smoke tests; Owner manual acceptance is pending. Do not claim acceptance until Owner confirms.
-- Continue from Phase F2/Phase G. Do not re-request a source ZIP.
+- GitHub Actions CI run `45885425664` passed: `build` and `edge-functions` jobs; npm audit high/critical gate, TypeScript typecheck, automated tests, production build and Edge Function typecheck all succeeded.
+- Remaining: authenticated browser/device smoke tests and Owner manual acceptance. Do not claim acceptance until Owner confirms.
+- Continue from Phase F3/Phase G. Do not re-request a source ZIP.
