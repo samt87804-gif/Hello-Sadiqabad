@@ -41,6 +41,7 @@ Last owner-confirmed: 26 November 2026. These rules apply to every future AI-ass
 10. **Phase discipline.** Work in the documented order. Do not silently skip blockers or mark a phase accepted before its acceptance criteria pass. If a phase is blocked, record the reason and the next safe action.
 11. **Owner-only actions.** Perform all technical work available through connected tools. Ask the owner only for actions that genuinely require their dashboard/private account, factual local verification, real-world participation or explicit approval. Never ask for passwords or private keys.
 12. **Communication.** Give concise Roman Urdu updates. Clearly report what changed, what was tested, what is live, what remains unverified and any required owner action.
+13. **Mandatory documentation cycle (owner-confirmed 27 November 2026).** Before every task and before each material implementation phase, read this canonical rules file, `PROJECT_ROADMAP.md`, `docs/NEW_CHAT_HANDOFF.md`, the active feature plan, and every directly relevant source file, migration, test, RLS/permission rule and deployment configuration. Do not rely on an earlier summary when the current source can be reopened. As work progresses, update the active feature plan, roadmap and handoff with verified evidence. Tick `[x]` only for work actually implemented and checked; leave owner/device acceptance unchecked until the Owner confirms. Record blockers and the next safe action instead of marking incomplete work done.
 
 ## Database and deployment safeguards
 
