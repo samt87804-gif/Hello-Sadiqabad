@@ -1291,3 +1291,5 @@ For new work, read `docs/FINAL_PRODUCT_EXPANSION_MASTER_PLAN.md` first, then `do
 - No real invitation was sent, no Auth account created, and no production business/submission/media data was changed or deleted by the audit test.
 - Remaining: authenticated Admin popup walkthrough; anonymous Storage denial + approved promotion/public read; invite unchecked/success/failure/retry and Owner password setup using owner-authorized test account; Owner Portal isolation; Owner change → Moderation Queue → approval with old public value preserved; six-page permission/mobile/legacy regression.
 - Do not request passwords, OTPs, cookies or tokens. Do not send invitations or use a real Owner account for tests without explicit authorization.
+
+- Additional Storage test: switched the DB transaction to role `anon` and confirmed `storage.objects` returned 0 rows for the private pending-media bucket; transaction rolled back. This is DB RLS evidence only, not an HTTP URL fetch test. Post-approval media promotion/public read remains open.
