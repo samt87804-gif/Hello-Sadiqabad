@@ -135,3 +135,9 @@
 - GitHub Actions CI run 45893377773 passed: TypeScript type check, automated tests, production build and Edge Function type check.
 - Cloudflare Pages deployment 3d9864f2-ae0c-4238-8b23-64614921e1c4 succeeded for the same commit.
 - Owner manual acceptance remains pending.
+
+
+### Phase 3C — Owner request history pagination (implementation pending CI)
+
+- My Businesses request history now fetches 20 newest Owner submissions per request and offers Load older requests when another page exists.
+- Existing request rows and status meanings are preserved; records are appended without duplicate IDs. No submissions are modified.

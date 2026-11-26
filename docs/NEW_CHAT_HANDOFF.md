@@ -162,3 +162,10 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 3. Switch between two businesses (if the account has two) and confirm reviews/inquiries belong only to the selected business.
 4. Open My Businesses, Listing, Products, Offers, Analytics, Plan, Profile, Public Profile and Notifications. Confirm each page still shows its required information and no missing sections/errors.
 5. If a selected business has fewer than 20 records, no Load more button is expected. Report any mismatch; do not mark manual acceptance complete until the Owner confirms.
+
+
+### Phase 3C — My Businesses request-history pagination (implementation awaiting CI)
+
+- My Businesses now loads the latest 20 Owner-submitted requests initially and provides “Load older requests” if another page exists.
+- Older requests append without duplicate IDs; existing statuses, messages and ordering are preserved.
+- No request records were edited or deleted.

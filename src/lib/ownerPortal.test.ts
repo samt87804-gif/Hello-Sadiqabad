@@ -29,6 +29,11 @@ import { countOwnerRequestsAwaitingReview } from './ownerPortal';
 import { getSafeOwnerNotificationPath } from './notifications';
 import type { ReviewRow } from '../types/database';
 
+test('Owner request history page safely returns an empty page without a live session', async () => {
+  const page = await fetchOwnerSubmissionsPage('demo-owner', 0, 20);
+  assert.deepEqual(page, { items: [], hasMore: false });
+});
+
 test('Owner review and inquiry pages are bounded and do not overlap', async () => {
   const db = loadDemoDb();
   const businessId = 'owner-pagination-test-business';

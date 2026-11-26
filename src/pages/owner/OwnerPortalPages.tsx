@@ -39,6 +39,7 @@ import {
   fetchOwnerInquiries,
   fetchOwnerInquiriesPage,
   fetchOwnerSubmissions,
+  fetchOwnerSubmissionsPage,
   fetchOwnerPublicProfileBusinessIds,
   setOwnerPublicProfileBusinessIds,
   fetchOwnerListings,
@@ -341,6 +342,9 @@ export function OwnerBusinesses() {
   const { showToast } = useToast();
   const [listings, setListings] = useState<BusinessPublicView[]>([]);
   const [requests, setRequests] = useState<SubmissionRow[]>([]);
+  const [requestsHasMore, setRequestsHasMore] = useState(false);
+  const [requestsLoadingMore, setRequestsLoadingMore] = useState(false);
+  const requestOffsetRef = useRef(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [retry, setRetry] = useState(0);
@@ -352,14 +356,18 @@ export function OwnerBusinesses() {
       return () => { active = false; };
     }
     setLoading(true);
+    requestOffsetRef.current = 0;
+    setRequestsHasMore(false);
     Promise.all([
       fetchOwnerListings(user.id),
-      fetchOwnerSubmissions(user.id),
+      fetchOwnerSubmissionsPage(user.id, 0, 20),
       fetchNotifications(user.id),
-    ]).then(([owned, ownRequests, notifications]) => {
+    ]).then(([owned, requestPage, notifications]) => {
       if (!active) return;
       setListings(owned);
-      setRequests(ownRequests);
+      setRequests(requestPage.items);
+      setRequestsHasMore(requestPage.hasMore);
+      requestOffsetRef.current = requestPage.items.length;
       setUnreadCount(notifications.filter((item) => !item.is_read).length);
     }).catch((error) => {
       if (active) {
@@ -370,6 +378,24 @@ export function OwnerBusinesses() {
     });
     return () => { active = false; };
   }, [user?.id, retry, showToast]);
+
+  const loadMoreRequests = useCallback(async () => {
+    if (!user || !requestsHasMore || requestsLoadingMore) return;
+    setRequestsLoadingMore(true);
+    try {
+      const page = await fetchOwnerSubmissionsPage(user.id, requestOffsetRef.current, 20);
+      setRequests((current) => {
+        const existing = new Set(current.map((item) => item.id));
+        return [...current, ...page.items.filter((item) => !existing.has(item.id))];
+      });
+      requestOffsetRef.current += page.items.length;
+      setRequestsHasMore(page.hasMore);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Older request history could not be loaded.', 'error');
+    } finally {
+      setRequestsLoadingMore(false);
+    }
+  }, [user, requestsHasMore, requestsLoadingMore, showToast]);
 
   const businessStatusVariant = (status: string): 'success' | 'warning' | 'danger' | 'neutral' => {
     if (status === 'published') return 'success';
@@ -477,7 +503,7 @@ export function OwnerBusinesses() {
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-base font-bold text-on-surface">My Requests & Approval History</h2>
-            <span className="text-xs text-on-surface-variant">{requests.length} recent requests</span>
+            <span className="text-xs text-on-surface-variant">Showing {requests.length} requests</span>
           </div>
           {requests.length === 0 ? (
             <Card className="p-5 text-sm text-on-surface-variant">You have not submitted any business, claim, or plan requests yet.</Card>
@@ -495,6 +521,13 @@ export function OwnerBusinesses() {
                   <Badge variant={requestStatusVariant(request.status)}>{request.status === 'new' ? 'Pending review' : request.status === 'done' ? 'Approved' : request.status.replaceAll('_', ' ')}</Badge>
                 </Card>
               ))}
+            </div>
+          )}
+          {requestsHasMore && (
+            <div className="flex justify-center pt-2">
+              <Button size="sm" variant="outline" loading={requestsLoadingMore} disabled={requestsLoadingMore} onClick={() => void loadMoreRequests()}>
+                Load older requests
+              </Button>
             </div>
           )}
         </section>

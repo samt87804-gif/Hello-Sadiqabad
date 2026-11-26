@@ -1625,6 +1625,26 @@ export async function fetchOwnerSubmissions(ownerId: string): Promise<Submission
   return (data ?? []) as SubmissionRow[];
 }
 
+export async function fetchOwnerSubmissionsPage(
+  ownerId: string,
+  offset = 0,
+  pageSize = 20
+): Promise<OwnerListPage<SubmissionRow>> {
+  if (!ownerId) return { items: [], hasMore: false };
+  const client = getSupabaseClient();
+  if (!client) return { items: [], hasMore: false };
+  const { data, error } = await client
+    .from('submissions')
+    .select('id,type,business_id,payload,contact_name,contact_phone,submitted_by,status,created_at,updated_at')
+    .eq('submitted_by', ownerId)
+    .in('type', ['new_business', 'claim', 'plan_upgrade', 'owner_product', 'owner_service', 'owner_offer'])
+    .order('created_at', { ascending: false })
+    .range(offset, offset + pageSize);
+  if (error) throw error;
+  const rows = (data ?? []) as SubmissionRow[];
+  return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
+}
+
 export async function fetchOwnerDashboardStats(
   businessId: string,
   days = 30

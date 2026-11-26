@@ -1211,5 +1211,6 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Phase 2 Owner experience implemented: individual read/unread actions, safe internal notification links, Urdu notification content, action feedback, My Payments unread badge, collapsible mobile navigation and honest analytics empty state. Live notification UPDATE is restricted to `is_read` by migration `20261126203248`; CI run `45892045086` passed and Pages deployment `d788df3a-58a0-489f-9f47-e535c83601d9` succeeded.
 - [x] Phase 3A reliability safeguard implemented and deployed: overlapping Owner loads are sequenced; stale responses are ignored; business-scoped stats/offers/products clear on selection change. CI 45892395019 and Pages deployment d85a8d11-4fe5-4908-98c1-534a175091f6 passed.
 - [x] Phase 3B implemented and deployed: page-specific Owner data loading and 20-at-a-time server-side pagination for Reviews/Inquiries with Load more. CI 45893377773 and Pages deployment 3d9864f2-ae0c-4238-8b23-64614921e1c4 passed.
-- [ ] Phase 3C: request-history pagination and authenticated browser/device checks. Then continue Phases 4–6.
+- [x] Phase 3C implementation: My Businesses request history loads 20 records at a time with Load older requests. CI/deployment verification pending.
+- [ ] Phase 3D: authenticated browser/device checks and remaining search/filter improvements. Then continue Phases 4–6.
 - Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.
