@@ -1214,8 +1214,9 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [x] Phase 3C implemented and deployed: My Businesses request history loads 20 records at a time with Load older requests. CI 45893853551 and Pages deployment 984fd83b-5b23-4aed-a659-942c50480be2 passed.
 - [x] Phase 3D implementation: reduce cross-page notification payloads by fetching only the unread count for the shared navigation badge; full notification rows load only on the Notifications page. Dashboard full reviews/inquiries data remains unchanged for accurate totals.
 - [x] Owner confirmed all Phase 3D unread-badge manual tests passed on 27 November 2026 (Read/Unread count changes and consistency across Dashboard/My Payments).
-- [ ] Phase 3D remaining: complete search/filter audit and safe improvements; preserve Dashboard aggregates and pagination.
-- Owner manual acceptance remains pending. Do not treat the Owner Portal as fully browser-tested.
+- [x] Phase 3D follow-on search/filter audit completed as Phase 3E: Reviews (All / Replied / Not replied) and Inquiries (All / New / Read / Handled) filters are deployed with server-side pagination; Dashboard aggregates and existing workflows are preserved.
+- [x] Phase 3D notification-badge manual acceptance confirmed by Owner on 27 November 2026.
+- [ ] Phase 3E manual acceptance: Owner must still verify each filter and Load more pagination. Do not treat the entire Owner Portal as fully browser-tested.
 
 
 ## Phase 4B — Owner Gallery Management (owner approved 27 November 2026)
