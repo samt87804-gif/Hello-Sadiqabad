@@ -28,3 +28,14 @@ The old roadmap contains legacy unchecked items. Do not assume every unchecked i
 
 ## First manual acceptance document
 See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment and paid website URL tests.
+
+
+## Current workstream — Admin Finance & Direct Plan Assignment (26 November 2026)
+
+- Active scope: [docs/ADMIN_FINANCE_AND_PLAN_ASSIGNMENT_IMPLEMENTATION_PLAN.md](ADMIN_FINANCE_AND_PLAN_ASSIGNMENT_IMPLEMENTATION_PLAN.md).
+- Owner explicitly requested this work in the current conversation; no new chat is needed.
+- Add Admin ability to assign Free, Basic or Premium to any business without an Owner request, including partial-payment and zero-fee/waived assignments. Admin records agreed fee, actual amount received and outstanding balance.
+- A dedicated Super Admin Finance page/immutable receipt ledger is required. Only actual receipts count as income; waived and outstanding amounts remain separate.
+- Read-only audit found the existing raw Plan Tier dropdown in Admin Business Editor can change plans without financial accounting. Replace it with the audited assignment flow, preserving the ability to change plans.
+- Existing Owner-request payment submission/verification and one-month activation/renewal remain unchanged; approved Owner requests must create ledger records atomically.
+- Phase A audit and design plan are documented. No production schema or data was changed. Implementation and owner acceptance remain pending.
