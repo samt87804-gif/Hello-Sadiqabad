@@ -1,4 +1,5 @@
 import { getSupabaseClient, supabaseConfig } from './supabase';
+import { compressImageFile } from './imageCompression';
 import { isSafeGovernmentJobUrl } from './governmentJobs';
 import { getGovernmentPublicationErrors } from './governmentPublication';
 import {
@@ -968,15 +969,10 @@ export async function upsertAuthorityProfile(
 export async function uploadAuthorityProfilePhoto(file: File): Promise<string> {
   const client = getSupabaseClient();
   if (!client) throw new Error('Photo upload requires the live database.');
-  const allowedTypes: Record<string, string> = {
-    'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif',
-  };
-  const extension = allowedTypes[file.type];
-  if (!extension) throw new Error('Please upload a JPG, PNG, WebP or AVIF image.');
-  if (file.size > 5 * 1024 * 1024) throw new Error('Profile photo must be 5 MB or smaller.');
-  const path = `authority-profiles/${crypto.randomUUID()}.${extension}`;
-  const { data, error } = await client.storage.from('Hello Sadiqabad').upload(path, file, {
-    cacheControl: '3600', contentType: file.type, upsert: false,
+  const compressed = await compressImageFile(file, { maxDimension: 900, quality: 0.84, maxInputBytes: 5 * 1024 * 1024, maxOutputBytes: 4 * 1024 * 1024 });
+  const path = `authority-profiles/${crypto.randomUUID()}.webp`;
+  const { data, error } = await client.storage.from('Hello Sadiqabad').upload(path, compressed.file, {
+    cacheControl: '3600', contentType: 'image/webp', upsert: false,
   });
   if (error) throw error;
   const { data: publicUrl } = client.storage.from('Hello Sadiqabad').getPublicUrl(data.path);
@@ -1405,6 +1401,34 @@ export async function fetchOwnerListings(ownerId: string): Promise<BusinessPubli
   return db.businesses
     .filter((b) => b.owner_id === ownerId)
     .map((b) => enrichBusiness(b, db));
+}
+
+export async function submitPlanUpgradeRequest(input: {
+  businessId: string;
+  requestedPlan: 'basic' | 'premium';
+  paymentMethod: 'jazzcash' | 'easypaisa' | 'ubl';
+  transactionReference: string;
+  ownerConfirmedPaid: boolean;
+  note?: string;
+}): Promise<{ submission_id: string; status: string; requested_plan: string; monthly_amount_pkr: number }> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Plan payment requests require your live Owner account.');
+  const { data, error } = await client.rpc('submit_plan_upgrade_request', {
+    p_business_id: input.businessId, p_requested_plan: input.requestedPlan,
+    p_payment_method: input.paymentMethod, p_transaction_reference: input.transactionReference,
+    p_owner_confirmed_paid: input.ownerConfirmedPaid, p_note: input.note?.trim() || null,
+  });
+  if (error) throw error;
+  return data as { submission_id: string; status: string; requested_plan: string; monthly_amount_pkr: number };
+}
+
+export async function reviewPlanUpgradeRequest(submissionId: string, action: 'approve' | 'reject', adminNote: string): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Plan payment review requires the live Admin account.');
+  const { error } = await client.rpc('review_plan_upgrade_request', {
+    p_submission_id: submissionId, p_action: action, p_admin_note: adminNote.trim() || null,
+  });
+  if (error) throw error;
 }
 
 export async function fetchOwnerSubmissions(ownerId: string): Promise<SubmissionRow[]> {

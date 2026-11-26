@@ -16,6 +16,18 @@ export const EMPTY_DIRECTORY_IMAGE_URLS: DirectoryImageUrls = {
   categories: {}, areas: {}, helplines: {}, businesses: {}, offers: {}, ads: {},
 };
 
+export type PlanPaymentMethodKey = 'jazzcash' | 'easypaisa' | 'ubl';
+export interface PlanPaymentMethod { label: string; account_title: string; account_number: string; iban?: string; icon_url: string | null; }
+export interface PlanPaymentSettings { instructions_en: string; instructions_ur: string; methods: Record<PlanPaymentMethodKey, PlanPaymentMethod>; }
+export const DEFAULT_PLAN_PAYMENT_SETTINGS: PlanPaymentSettings = {
+  instructions_en: 'Select your plan, transfer the exact monthly amount to one of the accounts below, then enter the transaction/reference number and confirm that payment has been made. Your plan changes only after Admin verifies the payment.',
+  instructions_ur: 'اپنا پلان منتخب کریں، نیچے دیے گئے اکاؤنٹ میں مکمل ماہانہ رقم جمع کروائیں، پھر ٹرانزیکشن/حوالہ نمبر درج کریں اور ادائیگی کی تصدیق کریں۔ ایڈمن کی تصدیق کے بعد ہی پلان تبدیل ہوگا۔',
+  methods: {
+    jazzcash: { label: 'JazzCash', account_title: 'Adeel Khalid', account_number: '03283212342', icon_url: null },
+    easypaisa: { label: 'Easypaisa', account_title: 'Adeel Khalid', account_number: '03283212342', icon_url: null },
+    ubl: { label: 'UBL Bank Transfer', account_title: 'Adil Khalid', account_number: '2318422716936', iban: 'PK57UNIL0109000422716936', icon_url: null },
+  },
+};
 export interface SiteSettingsMap {
   hero_banner_url: string;
   directory_image_urls: DirectoryImageUrls;
@@ -29,6 +41,7 @@ export interface SiteSettingsMap {
   reviews_require_approval: boolean;
   ads_enabled: boolean;
   maintenance_mode: boolean;
+  plan_payment_methods: PlanPaymentSettings;
 }
 
 export function parseSiteSettings(rows: SiteSettingRow[] = SEED_SITE_SETTINGS): SiteSettingsMap {
@@ -58,6 +71,21 @@ export function parseSiteSettings(rows: SiteSettingRow[] = SEED_SITE_SETTINGS): 
     reviews_require_approval: Boolean(map.get('reviews_require_approval') ?? true),
     ads_enabled: Boolean(map.get('ads_enabled') ?? true),
     maintenance_mode: Boolean(map.get('maintenance_mode') ?? false),
+    plan_payment_methods: (() => {
+      const value = map.get('plan_payment_methods');
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return DEFAULT_PLAN_PAYMENT_SETTINGS;
+      const record = value as Partial<PlanPaymentSettings>;
+      const methods = record.methods && typeof record.methods === 'object' ? record.methods : {};
+      return {
+        instructions_en: typeof record.instructions_en === 'string' ? record.instructions_en : DEFAULT_PLAN_PAYMENT_SETTINGS.instructions_en,
+        instructions_ur: typeof record.instructions_ur === 'string' ? record.instructions_ur : DEFAULT_PLAN_PAYMENT_SETTINGS.instructions_ur,
+        methods: {
+          jazzcash: { ...DEFAULT_PLAN_PAYMENT_SETTINGS.methods.jazzcash, ...(methods.jazzcash ?? {}) },
+          easypaisa: { ...DEFAULT_PLAN_PAYMENT_SETTINGS.methods.easypaisa, ...(methods.easypaisa ?? {}) },
+          ubl: { ...DEFAULT_PLAN_PAYMENT_SETTINGS.methods.ubl, ...(methods.ubl ?? {}) },
+        },
+      };
+    })(),
   };
 }
 

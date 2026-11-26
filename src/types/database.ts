@@ -201,6 +201,7 @@ export interface PlanFeatures {
   verified_badge: boolean;
   qr: boolean;
   analytics_full: boolean;
+  website_url?: boolean;
 }
 
 export interface PlanRow {

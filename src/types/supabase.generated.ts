@@ -1318,6 +1318,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      submit_plan_upgrade_request: {
+        Args: { p_business_id: string; p_requested_plan: string; p_payment_method: string; p_transaction_reference: string; p_owner_confirmed_paid: boolean; p_note?: string | null }
+        Returns: Json
+      }
+      review_plan_upgrade_request: {
+        Args: { p_submission_id: string; p_action: string; p_admin_note?: string | null }
+        Returns: Json
+      }
       admin_analytics: { Args: { p_days?: number }; Returns: Json }
       admin_dashboard_counts: { Args: never; Returns: Json }
       approve_submission: {
