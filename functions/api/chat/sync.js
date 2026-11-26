@@ -1,4 +1,5 @@
 import { fetchPublicContext } from '../chat.js';
+import { fetchWithTimeout } from '../../_shared/fetchWithTimeout.js';
 
 const SOURCE_KEYS = [
   'business_directory',
@@ -51,7 +52,7 @@ async function authorizeSuperAdmin(request, env) {
 
   const { baseUrl, key } = getConfig(env);
   const headers = { apikey: key, Authorization: `Bearer ${token}`, Accept: 'application/json' };
-  const userResponse = await fetch(`${baseUrl}/auth/v1/user`, { headers });
+  const userResponse = await fetchWithTimeout(`${baseUrl}/auth/v1/user`, { headers }, 8000);
   if (!userResponse.ok) return { ok: false, status: 401, error: 'Admin session is invalid or expired.' };
   const user = await userResponse.json();
   if (!user?.id) return { ok: false, status: 401, error: 'Admin session could not be verified.' };
