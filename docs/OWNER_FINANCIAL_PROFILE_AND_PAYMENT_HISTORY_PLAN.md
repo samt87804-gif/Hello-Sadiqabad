@@ -1,6 +1,6 @@
 # Owner Financial Profiles, Payment History & Approval Workflows
 
-**Status:** Approved scope; implementation in progress (27 November 2026). Production schema/UI are not yet changed for this feature.
+**Status:** Implemented and deployed; Owner manual acceptance pending (27 November 2026).
 
 ## Owner-approved scope
 
@@ -29,12 +29,13 @@ The Owner explicitly approved:
 
 - [x] Phase A: Read permanent rules, roadmap, handoff, active Finance plan, current Owner/Admin source, Finance RPC definitions, profile triggers, live schema/RLS and migration ledger.
 - [x] Phase A2: Add the permanent mandatory documentation-cycle rule to `docs/PROJECT_WORKING_RULES.md` (commit `a74df37eb8dcc45887ac05b897cf91756b0a39e6`).
-- [ ] Phase B: Additive private schema, RLS, append-only adjustments, Owner-scoped read/request RPCs, Super Admin profile/review RPCs, profile self-edit database guard, and net-receipt Finance RPC updates.
-- [ ] Phase C: Owner Portal My Payments read-only page, correction request submission/status, and profile-change request UX while retaining password self-service.
-- [ ] Phase D: Admin Owners clickable Owner Financial Profile, businesses/assignments/receipts/audit history, correction/reversal approvals and Owner profile-change approval queue.
-- [ ] Phase E: Update all finance totals, ledger, assignment history, balances and CSV exports to net adjusted receipts.
-- [ ] Phase F: SQL rollback/adversarial checks, TypeScript/tests/build/CI, Cloudflare deployment and production endpoint checks.
-- [ ] Phase G: Owner manual acceptance. Do not tick until the Owner confirms.
+- [x] Phase B: Applied additive private schema, RLS, append-only adjustments, Owner-scoped read/request RPCs, Super Admin profile/review/direct-correction RPCs, profile self-edit database guard, and net-receipt Finance RPC updates. Live migration records: `20261126193259` and `20261126193516`.
+- [x] Phase C: Owner Portal My Payments read-only page, correction request submission/status, and profile-change request UX; password self-service retained.
+- [x] Phase D: Admin Owners clickable Owner Financial Profile, businesses/assignments/receipts/audit history, correction/reversal approvals and Owner profile-change approval queue.
+- [x] Phase E: Finance dashboard, ledger, assignment history, balances, installment validation and receipt CSV now use net adjusted amounts; CSV also exports original amount and adjustment total.
+- [x] Phase F1: SQL rollback/adversarial checks passed; Cloudflare Pages `npm run build` and production deployment passed for feature commit `c5ea0e23118be7785ff7b1e60b63104938fbb0b6` (deployment `9d78a58f-1157-4211-bd02-0cbce0a8b24f`).
+- [ ] Phase F2: Run repository `npm run check` (TypeScript + automated tests) and complete authenticated browser smoke tests. Cloudflare Pages build runs `npm run build`; separate check/CI status was not available in the connector verification.
+- [ ] Phase G: Owner manual acceptance. See `docs/OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md`; do not tick until the Owner confirms.
 
 ## Required verification
 
@@ -52,7 +53,9 @@ The Owner explicitly approved:
 ## Release and acceptance status
 
 - Production Supabase project: existing Hello Sadiqabad project only.
-- Live migration ledger was checked on 27 November 2026; latest recorded migration version at audit time: `20261126184410`.
-- No production schema change has been applied for this feature yet.
-- No UI change has been committed for this feature yet.
-- Owner manual acceptance is pending.
+- Live Supabase project only; new live migration versions are `20261126193259` (`owner_financial_profiles_and_payment_corrections`) and `20261126193516` (`admin_direct_receipt_correction`).
+- `owner_edits_require_approval` remains `true`; existing business listing moderation was not changed.
+- New private tables have RLS enabled and no direct `authenticated` table SELECT grant; Owner/Admin RPCs enforce role and identity in the database.
+- SQL rollback checks verified Owner isolation, Super Admin-only financial profile access, Owner direct profile-edit rejection, approved profile-change flow, correction adjustment arithmetic, immutable original receipt, append-only adjustment behavior, Finance dashboard/ledger/assignment/balance propagation and installment overpayment rejection.
+- Feature code is committed on `main`; Cloudflare Pages build and deployment succeeded for feature commit `c5ea0e23118be7785ff7b1e60b63104938fbb0b6`.
+- Separate `npm run check` and authenticated browser smoke test remain pending; Owner manual acceptance is pending.
