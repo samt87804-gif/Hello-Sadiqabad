@@ -1487,6 +1487,27 @@ export interface AdminFinanceBalance {
   internal_note: string | null;
 }
 
+export interface AdminFinanceAssignment {
+  assignment_id: string;
+  business_id: string | null;
+  business_name: string;
+  owner_id: string | null;
+  owner_name: string;
+  plan_code: 'free' | 'basic' | 'premium';
+  standard_price_pkr: number;
+  agreed_fee_pkr: number;
+  waived_amount_pkr: number;
+  received_pkr: number;
+  outstanding_pkr: number;
+  period_start: string | null;
+  period_end: string | null;
+  source: string;
+  assignment_kind: string;
+  assigned_at: string;
+  assigned_by_name: string;
+  internal_note: string | null;
+}
+
 export async function assignBusinessPlan(input: {
   businessId: string;
   planCode: 'free' | 'basic' | 'premium';
@@ -1550,6 +1571,22 @@ export async function fetchAdminFinanceBalances(search = ''): Promise<AdminFinan
   });
   if (error) throw error;
   return (data ?? []) as AdminFinanceBalance[];
+}
+
+export async function fetchAdminFinanceAssignments(filters: {
+  search?: string;
+  plan?: string;
+  source?: string;
+}): Promise<AdminFinanceAssignment[]> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Plan assignment history requires the live Super Admin account.');
+  const { data, error } = await client.rpc('admin_finance_assignments', {
+    p_search: filters.search?.trim() || null,
+    p_plan: filters.plan || null,
+    p_source: filters.source || null,
+  });
+  if (error) throw error;
+  return (data ?? []) as AdminFinanceAssignment[];
 }
 
 export async function recordPlanInstallment(input: {
