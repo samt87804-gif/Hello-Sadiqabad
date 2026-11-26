@@ -360,7 +360,13 @@ export function OwnersManager({
             <Card key={owner.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-on-surface">{owner.full_name || 'Owner'}</span>
+                  {isSuperAdmin ? (
+                    <button type="button" onClick={() => setFinancialOwner(owner)} className="font-bold text-sm text-primary hover:underline text-left">
+                      {owner.full_name || 'Owner'}
+                    </button>
+                  ) : (
+                    <span className="font-bold text-sm text-on-surface">{owner.full_name || 'Owner'}</span>
+                  )}
                   <Badge variant={owner.is_active === false ? 'danger' : 'success'}>
                     {owner.is_active === false ? 'Suspended' : 'Active'}
                   </Badge>
