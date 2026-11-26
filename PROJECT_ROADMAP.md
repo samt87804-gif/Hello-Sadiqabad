@@ -1229,3 +1229,11 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Owner manual acceptance: private-before-approval, public-after-approval, rejection, removal request/approval and plan limits.
 - Existing legacy gallery URLs are preserved. Owner removal request button applies to photos managed through the new asset workflow; legacy URLs without a media-asset record remain Admin-managed.
 - No existing business gallery URL, Owner account or business record was modified during implementation.
+
+
+## Owner confirmation — Phase 4B Gallery Management (27 November 2026)
+
+- [x] Owner confirmed all manual gallery tests passed: Owner upload stays private pending review; Admin approval publishes; public profile shows approved image; rejected upload stays private; Owner removal request leaves image public until Admin approves removal; approved removal hides the image.
+- [x] Phase 4B Owner manual acceptance is complete. Existing Free/Basic/Premium limits and logo/cover quota were included in the Owner's reported all-pass checklist.
+- [x] Owner reported a public gallery usability issue: the photo viewer's icon-only close control was not apparent. Improved the shared Lightbox close action to a high-contrast, bilingual labelled button with a larger touch target and focus styling.
+- [ ] Verify the revised close button on a public business profile on mobile and desktop after deployment. No gallery data, image URLs, approval state or media storage was changed for this UI fix.
