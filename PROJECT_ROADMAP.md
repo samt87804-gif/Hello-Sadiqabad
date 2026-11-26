@@ -1155,3 +1155,18 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Permanent owner rule: commit directly to `main`; do not create branches or Pull Requests unless the owner explicitly changes this instruction.
 
 - [x] Database RLS simulation under PostgreSQL `anon` role returned 0 rows from `storage.objects` for `hs-pending-business-media`; transaction rolled back. HTTP-level denial and approved-media promotion/public read still require browser/API acceptance.
+
+## Admin Finance & Direct Plan Assignment — 26 November 2026
+
+- [x] Owner requested Admin financial accounting and direct plan assignment for any business without an Owner payment request; partial payment and zero-fee activation are explicitly included.
+- [x] Read-only audit of permanent rules, Owner plan/payment acceptance checklist, handoff, current plan/payment migrations, relevant Admin/API/type code and live Hello Sadiqabad Supabase schema/RLS/migration ledger.
+- [x] Added [Admin Finance & Direct Plan Assignment — Active Implementation Plan](docs/ADMIN_FINANCE_AND_PLAN_ASSIGNMENT_IMPLEMENTATION_PLAN.md) with accounting definitions, security direction, implementation phases and manual acceptance criteria.
+- [x] Identified existing untracked Plan Tier dropdown in Admin Business Editor; it must be replaced by a financial assignment flow so future plan changes cannot bypass payment accounting.
+- [x] Confirmed no dedicated plan-payment ledger tables exist in the live schema at this audit checkpoint. Existing Owner-request approval RPC remains the source workflow and must be extended atomically without changing its user-facing rules.
+- [ ] Phase B: finalize additive schema, RLS, immutable receipt ledger and atomic RPCs after rechecking live triggers/privileges.
+- [ ] Phase C: direct Admin Free/Basic/Premium assignment with agreed fee, received amount, outstanding balance, discounts/waivers and reason.
+- [ ] Phase D: integrate verified Owner-request approvals into the same financial records.
+- [ ] Phase E: Super Admin Finance dashboard, ledger, outstanding balances, later instalments and CSV export.
+- [ ] Phase F: automated/security tests, CI, production deployment and smoke checks.
+- [ ] Phase G: Owner manual acceptance.
+- No production schema or business/payment records were changed during Phase A.
