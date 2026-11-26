@@ -1205,7 +1205,7 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - Active checklist and source of truth: [Owner Portal Audit & Improvement Plan](docs/OWNER_PORTAL_AUDIT_AND_IMPROVEMENT_PLAN.md).
 - [x] Phase 0 discovery: private `submissions.admin_note` exposure confirmed against live authenticated grants and Owner RLS.
 - [x] Added live Admin-only note-reader RPC (migration `20261126202451`); Owner request query no longer needs private notes; Business Field Review will read prior notes through the protected RPC.
-- [ ] Phase 0 remaining: release app changes, revoke direct authenticated SELECT on private note column, verify Admin/Owner access and manual acceptance.
+- [x] Phase 0 complete: app/RPC release, private-column grant restrictions, live permission checks, Owner request-history/privacy and My Payments/Plan checks, plus Owner-confirmed Business Field Approval queue visibility (four active request cards after Refresh, 27 November 2026). Previous-note display text could not be demonstrated because no existing new-business submission has a non-null legacy `admin_note`; no test note was inserted.
 - [x] Phase 1 data correctness implemented: pending review count includes `new` + `in_review`; inquiry `handled_by` is set only on `handled`, not on `read`; regression tests added. CI run `45891440166` passed and Pages deployment `54bea682-bd88-4285-8daf-c9b60d59ae8b` succeeded.
 - [ ] Phase 1 Owner manual test of the pending-review count and inquiry read/handled workflow.
 - [x] Phase 2 Owner experience implemented: individual read/unread actions, safe internal notification links, Urdu notification content, action feedback, My Payments unread badge, collapsible mobile navigation and honest analytics empty state. Live notification UPDATE is restricted to `is_read` by migration `20261126203248`; CI run `45892045086` passed and Pages deployment `d788df3a-58a0-489f-9f47-e535c83601d9` succeeded.
@@ -1277,4 +1277,12 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] Cloudflare Pages production deployment `4a8d53e3-5550-43c6-93b0-1b55343a5a75` succeeded for the same commit; canonical alias `https://hellosadiqabad.com` is attached.
 - [ ] GitHub Actions CI status for this diagnostic commit is unverified; do not claim automated tests passed.
 - [ ] Owner must verify Admin → Business Field Approval → Refresh shows the 4 active requests. If still empty, provide a screenshot including page heading and any error/warning. Root cause is not confirmed until this browser check.
-- [ ] Phase 0 remains partially accepted. No legacy non-null Admin note exists on the current 17 new-business submissions, so there is no prior-note text to display from existing records.
+- [x] Phase 0 Owner manual acceptance complete on 27 November 2026: Owner confirmed four active cards appear on Admin → Business Field Approval after Refresh. No existing legacy Admin note is available to display; none was manufactured.
+
+
+### Owner Portal — Phase 0 acceptance and next step (27 November 2026)
+
+- [x] Owner confirmed Super Admin → Admin → Business Field Approval → Refresh displays all 4 active request cards. Queue-visibility blocker is closed.
+- [x] Combined with prior Owner confirmations of request history/statuses, Admin-note privacy, My Payments history and Plan details, Phase 0 is manually accepted.
+- [x] No non-null legacy `admin_note` exists on the 17 current new-business submissions; Previous note text cannot be demonstrated without a real historical note. No production note or test row was created.
+- [ ] Phase 1 Owner manual acceptance: verify pending-review count includes `new` + `in_review` only; verify marking an inquiry Read does not assign a handler, while marking it Handled records the current signed-in Owner as handler. Use an appropriate test inquiry; do not alter a real customer inquiry just to test.
