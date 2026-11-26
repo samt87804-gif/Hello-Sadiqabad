@@ -94,12 +94,12 @@ export function AdminFinance() {
 
   const exportCsv = () => {
     const columns = [
-      'Business', 'Owner', 'Plan', 'Amount received (PKR)', 'Payment method',
+      'Business', 'Owner', 'Plan', 'Net amount received (PKR)', 'Original receipt amount (PKR)', 'Adjustment total (PKR)', 'Payment method',
       'Transaction reference', 'Received at', 'Recorded at', 'Recorded by', 'Receipt source',
       'Period start', 'Period end',
     ];
     const rows = receipts.map((row) => [
-      row.business_name, row.owner_name, row.plan_code, row.amount_pkr, row.payment_method,
+      row.business_name, row.owner_name, row.plan_code, row.amount_pkr, row.original_amount_pkr ?? row.amount_pkr, row.adjustment_total_pkr ?? 0, row.payment_method,
       row.transaction_reference, row.received_at, row.recorded_at, row.recorded_by_name,
       row.receipt_source, row.period_start, row.period_end,
     ]);
