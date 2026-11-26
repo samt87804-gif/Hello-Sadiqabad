@@ -78,7 +78,8 @@ export async function cacheOfflineImages(
         if (existing) {
           alreadyCached += 1;
         } else {
-          const response = await fetch(request, { signal });
+          const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(8000)]);
+          const response = await fetch(request, { signal: requestSignal });
           const contentType = (response.headers.get('content-type') ?? '').toLowerCase();
           if (!response.ok || !contentType.startsWith('image/')) {
             skipped += 1;
