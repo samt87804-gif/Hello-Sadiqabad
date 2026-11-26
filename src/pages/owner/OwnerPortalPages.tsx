@@ -32,6 +32,10 @@ import {
   fetchBusinessProducts,
   fetchNotifications,
   fetchOwnerDashboardStats,
+  fetchOwnerPaymentHistory,
+  submitOwnerPaymentCorrectionRequest,
+  submitOwnerProfileChangeRequest,
+  type OwnerPaymentHistory,
   fetchOwnerInquiries,
   fetchOwnerSubmissions,
   fetchOwnerPublicProfileBusinessIds,
@@ -83,7 +87,7 @@ import { SparklineSvg } from '../../components/ui/Charts';
 import { ImageWithFallback } from '../../components/ui/ImageWithFallback';
 import { Badge, Card } from '../../components/ui/Surface';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/FormFields';
+import { Input, Textarea } from '../../components/ui/FormFields';
 import { Skeleton } from '../../components/ui/Feedback';
 import { useToast } from '../../components/ui/Toast';
 import { DemoModeNotice } from '../../components/ui/DemoModeNotice';
@@ -1089,8 +1093,84 @@ export function OwnerPlan() {
   );
 }
 
+
+export function OwnerPayments() {
+  const { showToast } = useToast();
+  const [history, setHistory] = useState<OwnerPaymentHistory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeReceipt, setActiveReceipt] = useState<string | null>(null);
+  const [requestedAmount, setRequestedAmount] = useState('');
+  const [reason, setReason] = useState('');
+  const [evidenceReference, setEvidenceReference] = useState('');
+  const [saving, setSaving] = useState(false);
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try { setHistory(await fetchOwnerPaymentHistory()); }
+    catch (error) { showToast(error instanceof Error ? error.message : 'Payment history could not be loaded.', 'error'); }
+    finally { setLoading(false); }
+  }, [showToast]);
+  useEffect(() => { void reload(); }, [reload]);
+  const money = (value: number) => 'Rs. ' + Number(value || 0).toLocaleString('en-PK');
+  const submitCorrection = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!activeReceipt || saving) return;
+    const amount = Number(requestedAmount);
+    if (!Number.isFinite(amount) || amount < 0 || reason.trim().length < 10) {
+      showToast('Corrected amount aur kam az kam 10 characters ki reason darj karein.', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      await submitOwnerPaymentCorrectionRequest({ receiptId: activeReceipt, requestedAmountPkr: amount, reason, evidenceReference });
+      showToast('Correction request Admin ko bhej di gayi. Receipt abhi change nahi hui.', 'success');
+      setActiveReceipt(null);
+      await reload();
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Correction request submit nahi ho saki.', 'error'); }
+    finally { setSaving(false); }
+  };
+  return (
+    <OwnerShell unreadCount={0} listings={[]} selectedId="" onSelect={() => {}} loading={loading} showSwitcher={false}>
+      <div className="space-y-5">
+        <div><h1 className="text-xl sm:text-2xl font-extrabold text-on-surface">My Payments</h1><p className="text-sm text-on-surface-variant">Your read-only payment history across all linked businesses. Only Admin can change financial records.</p></div>
+        {history && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            ['Businesses', String(history.business_count)],
+            ['Paid', money(history.paid_pkr)],
+            ['Outstanding', money(history.outstanding_pkr)],
+            ['Active paid plans', String(history.active_paid_plans)],
+          ].map(([label, value]) => <Card key={label} className="p-4"><p className="text-xs text-on-surface-variant">{label}</p><p className="text-lg font-extrabold text-on-surface tabular-nums">{value}</p></Card>)}
+        </div>}
+        <section className="space-y-3">
+          <h2 className="font-bold text-on-surface">Receipts</h2>
+          {!history?.receipts.length ? <Card className="p-5 text-sm text-on-surface-variant">No payment receipts are recorded for your account yet.</Card> : history.receipts.map((receipt) => {
+            const pending = history.payment_correction_requests.some((item) => item.receipt_id === receipt.receipt_id && item.status === 'pending');
+            return <Card key={receipt.receipt_id} className="p-4 space-y-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div><p className="font-bold text-sm text-on-surface">{receipt.business_name}</p><p className="text-xs text-on-surface-variant">{receipt.plan_code.toUpperCase()} · {formatDateShort(receipt.received_at)} · {receipt.payment_method.replaceAll('_', ' ')}</p>{receipt.transaction_reference && <p className="text-xs text-on-surface-variant">Reference: {receipt.transaction_reference}</p>}</div>
+                <div className="text-right"><p className="font-extrabold text-on-surface tabular-nums">{money(receipt.amount_pkr)}</p>{receipt.adjustment_total_pkr !== 0 && <p className="text-[11px] text-on-surface-variant">Original {money(receipt.original_amount_pkr)} · adjustment {money(receipt.adjustment_total_pkr)}</p>}</div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[11px] text-on-surface-variant">Period: {receipt.period_start ? formatDateShort(receipt.period_start) : '—'} to {receipt.period_end ? formatDateShort(receipt.period_end) : '—'}</span><Button size="sm" variant="outline" disabled={pending} onClick={() => { setActiveReceipt(receipt.receipt_id); setRequestedAmount(String(receipt.amount_pkr)); setReason(''); setEvidenceReference(''); }}>{pending ? 'Correction pending' : 'Request correction'}</Button></div>
+              {activeReceipt === receipt.receipt_id && <form onSubmit={submitCorrection} className="border-t border-outline-variant/40 pt-3 space-y-3">
+                <p className="text-xs text-on-surface-variant">Receipt will remain unchanged unless Admin approves. Enter 0 only if you believe the receipt should be reversed.</p>
+                <Input label="Correct amount (PKR)" type="number" min="0" step="0.01" value={requestedAmount} onChange={(event) => setRequestedAmount(event.target.value)} required />
+                <Textarea label="Reason for correction" value={reason} onChange={(event) => setReason(event.target.value)} rows={3} required />
+                <Input label="Evidence / transaction reference (optional)" value={evidenceReference} onChange={(event) => setEvidenceReference(event.target.value)} />
+                <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setActiveReceipt(null)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? 'Submitting…' : 'Submit request'}</Button></div>
+              </form>}
+            </Card>;
+          })}
+        </section>
+        <section className="space-y-3"><h2 className="font-bold text-on-surface">Correction request history</h2>
+          {!history?.payment_correction_requests.length ? <Card className="p-4 text-sm text-on-surface-variant">No correction requests submitted.</Card> : history.payment_correction_requests.map((request) => <Card key={request.id} className="p-4 space-y-1"><div className="flex items-center justify-between gap-2"><p className="text-sm font-bold text-on-surface">Requested amount: {money(request.requested_amount_pkr)}</p><Badge variant={request.status === 'approved' ? 'success' : request.status === 'rejected' ? 'danger' : 'warning'}>{request.status}</Badge></div><p className="text-xs text-on-surface-variant">{request.reason}</p>{request.admin_response && <p className="text-xs text-on-surface-variant">Admin: {request.admin_response}</p>}</Card>)}
+        </section>
+        <div className="flex justify-end"><Button size="sm" variant="ghost" onClick={() => void reload()}>Refresh history</Button></div>
+      </div>
+    </OwnerShell>
+  );
+}
+
 export function OwnerProfile() {
-  const { user, profile, isDemoMode, updateOwnProfile, updatePassword } = useAuth();
+  const { user, profile, isDemoMode, updatePassword } = useAuth();
   const { showToast } = useToast();
   const data = useOwnerPortalData();
 
@@ -1098,18 +1178,28 @@ export function OwnerProfile() {
   const [phone, setPhone] = useState(profile?.phone ?? '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [profileReason, setProfileReason] = useState('');
+  const [profileHistory, setProfileHistory] = useState<OwnerPaymentHistory | null>(null);
+  const pendingProfileRequest = profileHistory?.profile_change_requests.find((request) => request.status === 'pending');
 
   useEffect(() => {
     setFullName(profile?.full_name ?? '');
     setPhone(profile?.phone ?? '');
   }, [profile?.full_name, profile?.phone]);
 
+  useEffect(() => { fetchOwnerPaymentHistory().then(setProfileHistory).catch(() => {}); }, []);
+
   const strength = evaluatePasswordStrength(newPassword);
 
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateOwnProfile({ full_name: fullName, phone });
-    showToast('Profile details updated!', 'success');
+    if (pendingProfileRequest) { showToast('A profile change request is already awaiting Admin review.', 'error'); return; }
+    try {
+      await submitOwnerProfileChangeRequest({ fullName, phone, reason: profileReason });
+      setProfileReason('');
+      setProfileHistory(await fetchOwnerPaymentHistory());
+      showToast('Profile change request Admin ko bhej di gayi hai. Approval ke baad details update hongi.', 'success');
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Profile change request submit nahi ho saki.', 'error'); }
   };
 
   const changePass = async (e: React.FormEvent) => {
@@ -1152,7 +1242,10 @@ export function OwnerProfile() {
             <Input label="Email" value={user?.email ?? ''} disabled dir="ltr" />
             <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
             <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" />
-            <Button type="submit">Save Profile</Button>
+            <Textarea label="Reason for change" value={profileReason} onChange={(e) => setProfileReason(e.target.value)} rows={2} required />
+            <Button type="submit" disabled={Boolean(pendingProfileRequest)}>Request Admin Approval</Button>
+            {pendingProfileRequest && <p className="text-xs text-amber-700">A profile change request is pending Admin review.</p>}
+            {profileHistory?.profile_change_requests.slice(0, 3).map((request) => <p key={request.id} className="text-xs text-on-surface-variant">{request.status.toUpperCase()}: {request.admin_response || request.reason}</p>)}
           </form>
         </Card>
 
