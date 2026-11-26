@@ -277,3 +277,12 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - The connected GitHub commit-status check returned no statuses, so do not claim the GitHub Actions automated test run passed. The regression test is added but CI execution remains unverified.
 - Next Owner acceptance: sign in, note the unread badge in Owner Portal navigation, open Notifications and mark one test notification read (badge should decrease by one), then mark it unread (badge should increase by one). Visit Dashboard and My Payments and confirm the same unread count appears. If no test notification exists, do not alter real notifications just to manufacture one.
 - Remaining: confirm the automated test/CI status through GitHub Actions when accessible; Owner manual unread-badge acceptance; Phase 3D remaining search/filter audit. Phase 0 Admin Business Field Approval visibility issue remains unresolved.
+
+
+## Owner confirmation — Phase 3D unread notification badge (27 November 2026)
+
+- Owner explicitly reported "all test pass" after checking the unread badge decreases when a notification is marked Read, increases when marked Unread, and remains consistent across Owner Dashboard and My Payments.
+- Updated the active Owner Portal feature plan and roadmap to mark the manual notification badge acceptance complete.
+- The lightweight unread-count implementation remains deployed at `f4095c61-159d-4489-b4d7-02b2b0d46a9b` (canonical production alias `https://hellosadiqabad.com`). GitHub Actions automated test execution for the added regression test remains unverified because the connected commit-status check returned no statuses; do not state CI passed.
+- Continue the already-approved Phase 3D remaining search/filter audit. Inspect current Owner Reviews, Inquiries, My Businesses request history, listings and API query implementations before making any changes. Preserve all current pagination, dashboard aggregate accuracy, owner scoping, RLS and records. Ask before any change that replaces an existing working workflow or broadens scope.
+- Phase 0 Admin Business Field Approval visibility acceptance remains unresolved.
