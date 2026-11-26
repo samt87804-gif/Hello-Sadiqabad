@@ -286,3 +286,20 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - The lightweight unread-count implementation remains deployed at `f4095c61-159d-4489-b4d7-02b2b0d46a9b` (canonical production alias `https://hellosadiqabad.com`). GitHub Actions automated test execution for the added regression test remains unverified because the connected commit-status check returned no statuses; do not state CI passed.
 - Continue the already-approved Phase 3D remaining search/filter audit. Inspect current Owner Reviews, Inquiries, My Businesses request history, listings and API query implementations before making any changes. Preserve all current pagination, dashboard aggregate accuracy, owner scoping, RLS and records. Ask before any change that replaces an existing working workflow or broadens scope.
 - Phase 0 Admin Business Field Approval visibility acceptance remains unresolved.
+
+## Latest continuation — Owner Portal Phase 3D acceptance and Phase 3E filters (27 November 2026)
+
+- Owner explicitly confirmed **all Phase 3D unread-notification badge tests passed**: Read decreases the unread count, Unread increases it, and Dashboard/My Payments remain consistent. Record as Owner-reported manual acceptance; do not claim assistant-authenticated browser testing.
+- Reconciled the active Owner Portal plan's stale Phase 3D pending wording with the Owner's confirmation. The detailed plan and roadmap now record Phase 3D manual acceptance as complete. Automated CI for its regression test remains unverified because the connected GitHub commit-status check returned no statuses.
+- Owner approved implementing Reviews and Inquiries filters with a clear **Haan**. Existing implementation already had server-side 20-row pagination; new filters are applied before pagination in both Supabase and demo mode.
+- Phase 3E changes on `main`:
+  - `src/lib/api.ts`: `fetchOwnerReviewsPage` supports All / Replied / Not replied; `fetchOwnerInquiriesPage` supports All / New / Read / Handled.
+  - `src/pages/owner/OwnerPortalPages.tsx`: filter state is included in the data-load and Load more requests, resetting pagination when a filter changes.
+  - `src/components/owner/OwnerModules.tsx`: visible filter selectors added to Reviews and Inquiries.
+  - `src/lib/ownerPortal.test.ts`: demo-mode regression coverage verifies replied/unreplied counts and all inquiry statuses.
+- Commits: API `dc68cdd464c3523b38d351c5763a4679ddf1e323`; page wiring `41781e579de653626105c3974c74d3046aad96a1`; UI controls `36408b907bdfa10244dbb0ad72922ad20e89abd4`; tests `f4869d72cffd5c995d73d33f545644b37747eaac`.
+- No schema migration, RLS/grant change, new data field, existing review/inquiry mutation or production record change was made. Dashboard full review/inquiry loaders remain unchanged.
+- Cloudflare Pages deployment for test commit `f4869d72` was in progress at the last check (deployment `97eb47d4-c6a9-4046-b916-c9c0a695df6c`, build stage active). A later documentation commit may have queued a newer deployment; verify the newest deployment's commit and build/deploy stages before calling the feature live.
+- GitHub combined commit status returned no statuses; do not claim GitHub Actions CI passed. Verify again if the connected tooling exposes the run.
+- Next Owner test after deployment: Owner Portal → Reviews: test All, Replied, Not replied and Load more; Owner Portal → Inquiries: test All, New, Read, Handled and Load more. Confirm only matching records appear and older matching rows append without duplicates. Phase 3E manual acceptance remains pending.
+- Phase 0 Admin Business Field Approval visibility acceptance remains unresolved. Continue to preserve existing pagination, dashboard aggregate accuracy, owner scoping, RLS and all existing records.
