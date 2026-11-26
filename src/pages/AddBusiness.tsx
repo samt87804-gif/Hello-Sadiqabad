@@ -97,7 +97,6 @@ async function compressBusinessImage(file: File, mediaField: 'logo' | 'cover'): 
   });
   return compressed.file;
 }
-}
 
 export function AddBusiness() {
   const uploadSessionId = useRef(crypto.randomUUID());

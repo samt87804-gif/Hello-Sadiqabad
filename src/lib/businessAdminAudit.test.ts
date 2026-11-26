@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 test('business Admin audit migration records before/after values without private owner profile fields', async () => {
   const sql = await readFile(
-    new URL('../../supabase/migrations/20261125235000_business_admin_field_change_audit.sql', import.meta.url),
+    new URL('../../supabase/migrations/20261126075257_business_admin_field_change_audit.sql', import.meta.url),
     'utf8'
   );
   assert.match(sql, /jsonb_build_object\(\s*'old',\s*old_fields\.value,\s*'new',\s*new_fields\.value\s*\)/);

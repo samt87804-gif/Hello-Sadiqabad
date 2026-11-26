@@ -105,7 +105,7 @@ test('business context respects plan-gated public fields and never invents coord
   assert.equal(free.longitude, null);
   assert.equal(free.directions_url, null);
   assert.equal(free.phone, '03001112222');
-  assert.equal(free.website, 'https://example.com');
+  assert.equal(free.website, null);
 
   const premium = mapPublicBusinessSearchResult({
     slug: 'premium-shop',
@@ -116,6 +116,7 @@ test('business context respects plan-gated public fields and never invents coord
     facebook_url: 'https://facebook.com/sample',
     gallery_urls: ['https://hellosadiqabad.com/gallery.jpg'],
     video_urls: ['https://youtube.com/watch?v=sample'],
+    website_url: 'https://premium-example.com',
     lat: 28.3,
     lng: 69.7,
   }, 'https://hellosadiqabad.com', 'show social links, photos, videos and map directions');
@@ -123,6 +124,7 @@ test('business context respects plan-gated public fields and never invents coord
   assert.equal(premium.social_links!.facebook, 'https://facebook.com/sample');
   assert.equal(premium.gallery_urls.length, 1);
   assert.equal(premium.video_urls.length, 1);
+  assert.equal(premium.website, 'https://premium-example.com');
   assert.match(premium.directions_url!, /28.3,69.7/);
 });
 
