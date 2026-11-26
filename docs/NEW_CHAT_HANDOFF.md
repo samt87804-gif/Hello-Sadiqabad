@@ -296,10 +296,11 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
   - `src/lib/api.ts`: `fetchOwnerReviewsPage` supports All / Replied / Not replied; `fetchOwnerInquiriesPage` supports All / New / Read / Handled.
   - `src/pages/owner/OwnerPortalPages.tsx`: filter state is included in the data-load and Load more requests, resetting pagination when a filter changes.
   - `src/components/owner/OwnerModules.tsx`: visible filter selectors added to Reviews and Inquiries.
-  - `src/lib/ownerPortal.test.ts`: demo-mode regression coverage verifies replied/unreplied counts and all inquiry statuses.
-- Commits: API `dc68cdd464c3523b38d351c5763a4679ddf1e323`; page wiring `41781e579de653626105c3974c74d3046aad96a1`; UI controls `36408b907bdfa10244dbb0ad72922ad20e89abd4`; tests `f4869d72cffd5c995d73d33f545644b37747eaac`.
+  - `src/lib/ownerPortal.test.ts`: demo-mode regression coverage verifies replied/unreplied counts and all inquiry statuses; expanded fixture to 63 rows to verify multi-page filtered results and correct hasMore boundaries.
+- Commits: API `dc68cdd464c3523b38d351c5763a4679ddf1e323`; page wiring `41781e579de653626105c3974c74d3046aad96a1`; UI controls `36408b907bdfa10244dbb0ad72922ad20e89abd4`; initial tests `f4869d72cffd5c995d73d33f545644b37747eaac`; expanded pagination tests `4590ce4ee79ffd0d534ce76ccfe6c669993b0ef5`.
 - No schema migration, RLS/grant change, new data field, existing review/inquiry mutation or production record change was made. Dashboard full review/inquiry loaders remain unchanged.
-- Cloudflare Pages deployment for test commit `f4869d72` was in progress at the last check (deployment `97eb47d4-c6a9-4046-b916-c9c0a695df6c`, build stage active). A later documentation commit may have queued a newer deployment; verify the newest deployment's commit and build/deploy stages before calling the feature live.
-- GitHub combined commit status returned no statuses; do not claim GitHub Actions CI passed. Verify again if the connected tooling exposes the run.
+- Cloudflare Pages production deployment `a9db5c36-39db-47f4-a73c-6ef67a69d5e5` succeeded for commit `4590ce4`; all stages passed and canonical alias `https://hellosadiqabad.com` is attached. The deployment includes the filter UI, server-side filtering and latest test-source commit.
+- GitHub combined commit status returned no statuses for `4590ce4`; do not claim GitHub Actions automated tests passed. Cloudflare Pages build passed, which verifies the production build only.
+- Owner manual filter acceptance remains pending.
 - Next Owner test after deployment: Owner Portal → Reviews: test All, Replied, Not replied and Load more; Owner Portal → Inquiries: test All, New, Read, Handled and Load more. Confirm only matching records appear and older matching rows append without duplicates. Phase 3E manual acceptance remains pending.
 - Phase 0 Admin Business Field Approval visibility acceptance remains unresolved. Continue to preserve existing pagination, dashboard aggregate accuracy, owner scoping, RLS and all existing records.
