@@ -1,6 +1,6 @@
 # Owner Portal — Audit & Improvement Implementation Plan
 
-**Status:** Owner approved the full roadmap on 27 November 2026. Phase 0 technical implementation is deployed; Owner manual acceptance is pending. Phase 1 data-correctness changes are implemented, CI-verified and deployed. Owner manual acceptance for both phases remains pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
+**Status:** Owner approved the full roadmap on 27 November 2026. Phases 0–4B technical work is deployed; Phase 4B gallery manual acceptance is confirmed. Phase 5 reliability improvements for Profile and My Payments are implemented, CI-verified and deployed; Owner manual acceptance is pending. Phase 0 remains partially accepted pending the Admin Business Field Review visibility check. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
 
 ## Working agreement
 
@@ -55,19 +55,23 @@
 ## Phase 4 — Business listing management
 
 - [x] Replace the hard-coded offer expiry default with a date 30 calendar days after today's Pakistan-local date; existing start/end-date validation remains enforced.
-- [ ] Design Owner gallery management with mandatory WebP compression, smaller-than-original enforcement, plan limits, private upload and Admin approval.
-- [ ] Implement gallery changes only after the full upload/review/promotion lifecycle is verified; preserve existing media.
+- [x] Phase 4B Owner gallery management designed and implemented with mandatory smaller WebP compression, plan limits, private upload, Admin approval, Owner removal requests and serialized publication; see `docs/OWNER_GALLERY_MANAGEMENT_PLAN.md`.
+- [x] Owner confirmed all gallery upload/approval/rejection/removal manual tests passed on 27 November 2026.
 
 ## Phase 5 — Optional Owner profile improvements
 
-- [ ] Evaluate Owner profile photo and notification preference controls.
-- [ ] Improve payment/profile request loading and error states without allowing duplicate submissions.
-- [ ] Confirm whether any optional profile additions need a separate approval before expanding scope.
+- [x] Evaluated Owner profile photo and notification preference controls. Neither is added in this phase: there is no existing persisted preference model, and profile-photo support would need a separately approved upload, mandatory compression, private review and publication lifecycle. No new personal data fields or upload routes were introduced.
+- [x] My Payments now shows an actionable load error with Retry, retains already-loaded history if a refresh fails, ignores stale overlapping reload responses and disables refresh/correction actions while busy.
+- [x] Payment correction submission has an immediate in-flight guard to prevent rapid duplicate submissions; receipt data remains read-only until Admin approval.
+- [x] Owner Profile now shows request-history loading/error states and a Retry action; profile approval submission stays disabled until existing request history is loaded successfully, preventing an unnoticed duplicate pending request.
+- [x] Profile approval and password update buttons show busy states and block repeat submissions while their requests are in flight.
+- [ ] Owner manual acceptance of Profile and My Payments loading, retry and submission behavior.
+- [ ] If Owner wants profile photos or saved notification preferences later, request separate scope approval before design/implementation.
 
 ## Phase 6 — Final verification and release
 
-- [ ] Run `npm run check` (typecheck, automated tests and production build).
-- [ ] Verify GitHub Actions CI and matching Cloudflare Pages deployment for each release commit.
+- [x] GitHub CI run `45902085685` passed TypeScript typecheck, automated tests, production build and Supabase Edge Function typecheck for Phase 5 commit `f4a211284354ec4d02f1894e0ff9bc8049235a11`.
+- [x] Verified GitHub Actions CI run `45902085685` and matching Cloudflare Pages production deployment `cb4d87a5-9254-44b7-9761-c0dfaf5cebc3` for Phase 5 commit `f4a211284354ec4d02f1894e0ff9bc8049235a11`.
 - [ ] Verify relevant live routes and database permissions; do not claim authenticated browser coverage unless performed.
 - [ ] Give the Owner concise, numbered manual acceptance steps.
 - [ ] Record the Owner's reported result; leave acceptance unchecked until explicitly confirmed.
@@ -170,3 +174,12 @@
 - Admin Business Field Approval / Previous note check is blocked: Owner reports no cards visible. Live read-only checks show 2 new + 2 in_review new-business submissions and 26 pending field rows. Authenticated Super Admin simulation can read these rows. There are 13 completed new-business submissions, which are not shown in the active queue unless media/invitation work remains. None of the 17 new-business submissions currently has a non-null legacy admin_note, so there is no existing Previous note content to display.
 - Correct menu destination is Admin → Business Field Approval, not Admin → Moderation Queue. If the correct page still appears empty after Refresh, collect a screenshot including heading and any toast/error. Do not alter data to manufacture a test record.
 - Phase 0 remains partially accepted, not fully accepted, until the Admin queue visibility check is resolved.
+
+
+## Phase 5 release evidence — Profile and My Payments reliability
+
+- Commit: `f4a211284354ec4d02f1894e0ff9bc8049235a11` (`Improve Owner profile and payment request feedback`).
+- GitHub Actions CI: run `45902085685` passed TypeScript typecheck, automated tests, production build and Supabase Edge Function typecheck.
+- Cloudflare Pages production deployment: `cb4d87a5-9254-44b7-9761-c0dfaf5cebc3` succeeded for the same commit; canonical alias `https://hellosadiqabad.com` is attached.
+- No database migration, payment receipt, profile record, approval request or existing user data was changed.
+- Owner/device manual acceptance remains pending. Test steps: Owner Portal → My Payments: refresh history; if a load error is shown, Retry should work and existing data should remain visible. Open a receipt correction form, submit once and verify the button stays disabled until completion; pending correction should prevent another request. Owner Portal → Profile: request history should show loading/error and Retry; approval request should remain unavailable until history is loaded; submit a valid profile change request and verify one pending request appears; password update should show an in-progress state and prevent repeat clicks. Do not submit a real financial correction or change account details solely for testing unless using an appropriate test account.
