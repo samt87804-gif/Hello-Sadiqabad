@@ -323,7 +323,7 @@ export function OfflineData() {
 
       let manifestResponse = await cache.match(new URL('/offline-precache.json', window.location.origin).href);
       if (!manifestResponse) {
-        const networkManifest = await fetch('/offline-precache.json', { cache: 'no-store' });
+        const networkManifest = await fetch('/offline-precache.json', { cache: 'no-store', signal: AbortSignal.timeout(8000) });
         if (!networkManifest.ok) throw new Error('The app asset manifest is not available in this browser.');
         manifestResponse = networkManifest;
       }
