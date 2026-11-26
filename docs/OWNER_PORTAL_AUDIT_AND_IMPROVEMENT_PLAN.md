@@ -1,6 +1,6 @@
 # Owner Portal — Audit & Improvement Implementation Plan
 
-**Status:** Owner approved the full roadmap on 27 November 2026. Phases 0–4B technical work is deployed; Phase 4B gallery manual acceptance is confirmed. Phase 5 reliability improvements for Profile and My Payments are implemented, CI-verified and deployed; Owner manual acceptance is pending. Phase 0 remains partially accepted pending the Admin Business Field Review visibility check. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`. Do not mark Owner/device acceptance complete until the Owner confirms it.
+**Status:** Owner approved the full roadmap on 27 November 2026. Phases 0–5 technical work is implemented/deployed as recorded below; Phase 4B gallery, Phase 5 Profile/My Payments, gallery close button and Phase 3D unread-badge manual acceptance are Owner-confirmed. Phase 0 remains partially accepted pending Admin Business Field Review visibility. Phase 3E Reviews/Inquiries filters are implemented on `main`; final test/deployment verification and Owner acceptance are pending. Work is performed directly on `main` under `docs/PROJECT_WORKING_RULES.md`.
 
 ## Working agreement
 
@@ -69,15 +69,28 @@
 - [x] Owner confirmed Profile and My Payments manual tests passed on 27 November 2026 (loading/retry and busy/duplicate-submit behavior).
 - [ ] If Owner wants profile photos or saved notification preferences later, request separate scope approval before design/implementation.
 
-### Phase 3D — notification overfetch reduction (implemented and Pages-deployed; CI/manual verification pending)
+### Phase 3D — notification overfetch reduction (implemented, deployed and Owner-manually accepted)
 
 - Added `fetchUnreadNotificationCount`: live Supabase requests return only an exact count of the signed-in Owner's unread notifications; demo mode calculates the same count locally.
 - Shared Owner Portal pages now fetch only that count for the navigation badge instead of downloading every notification row. The Notifications page alone fetches full notification content. My Payments also uses the lightweight count.
 - Added a regression test for unread count changes when a notification is marked read. Existing per-notification read/unread, safe internal links and Owner notification list remain unchanged.
 - Dashboard full reviews/inquiries datasets were deliberately preserved because Dashboard totals depend on them. No migration, RLS/grant change, notification mutation or user-data change was made.
 - API commit `4bde7385f1b0936e40543125963c9f5cd8d5df6c`; Owner UI commit `08e6a06d277e224a656d1cb25692f63d1f675313`; regression test commit `fad60e254f66c8b8783245b1e132bf42a6fd6cdb`.
-- Cloudflare Pages production deployment `f4095c61-159d-4489-b4d7-02b2b0d46a9b` succeeded for the test commit and includes the canonical `https://hellosadiqabad.com` alias. Pages build and deploy stages both succeeded.
-- GitHub Actions status was not returned by the connected commit-status check; automated test execution is therefore not claimed. Owner manual badge acceptance remains pending.
+- Cloudflare Pages production deployment `f4095c61-159d-4489-b4d7-02b2b0d46a9b` succeeded; canonical alias `https://hellosadiqabad.com` is attached.
+- Owner explicitly confirmed all unread-badge tests passed on 27 November 2026: marking Read decreases the badge, marking Unread increases it, and Dashboard/My Payments remain consistent. This is Owner-reported acceptance.
+- GitHub Actions status for the added regression test remains unverified because the connected commit-status check returned no statuses; do not claim CI passed.
+
+
+### Phase 3E — Reviews and Inquiries status filters (implemented; verification pending)
+
+- Owner Reviews now has All / Replied / Not replied filters. Replied state is based on a non-empty `owner_reply`; only approved public reviews remain eligible, as before.
+- Owner Inquiries now has All / New / Read / Handled filters using the existing inquiry status values.
+- Filters are applied in the Supabase query before the existing 20-row pagination, so matching older records are not missed. Demo mode applies the same filter before pagination.
+- Changing a filter resets the list to its first page; Load more continues within that filter. Existing sort order, owner-selected business scope, reply editing, inquiry actions and Dashboard aggregate loaders remain unchanged.
+- No schema migration, RLS/grant change, new data field or existing-record mutation was introduced.
+- Commits: API `dc68cdd464c3523b38d351c5763a4679ddf1e323`; Owner page wiring `41781e579de653626105c3974c74d3046aad96a1`; filter controls `36408b907bdfa10244dbb0ad72922ad20e89abd4`; regression tests `f4869d72cffd5c995d73d33f545644b37747eaac`.
+- Cloudflare Pages build for test commit `f4869d72` was still running at the time of this documentation update. GitHub Actions automated test status is not available through the connected commit-status check. Do not claim release verification until the matching deployment completes successfully.
+- [ ] Owner manual acceptance of all four filter choices, correct results and Load more pagination.
 
 ## Phase 6 — Final verification and release
 
