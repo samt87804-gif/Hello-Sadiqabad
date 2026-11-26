@@ -1,6 +1,6 @@
 # Admin Finance & Direct Plan Assignment — Active Implementation Plan
 
-**Status:** Phase A read-only audit complete; implementation not yet started. Owner explicitly requested this work on 26 November 2026. This document is the active scope and acceptance source for the Admin finance and manual plan-assignment work.
+**Status:** Original Admin Finance & Direct Plan Assignment Phases A–F are implemented, tested and deployed; Owner manual acceptance remains pending. Follow-on Owner Financial Profile, Payment History and audited receipt correction work is tracked separately in [docs/OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md](OWNER_FINANCIAL_PROFILE_AND_PAYMENT_HISTORY_PLAN.md), with its manual checklist at [docs/OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md](OWNER_FINANCIAL_PROFILE_ACCEPTANCE_CHECKLIST.md). This document remains the acceptance source for the original direct plan-assignment workflow.
 
 ## 1. Owner-approved goals
 
