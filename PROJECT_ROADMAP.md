@@ -1151,3 +1151,5 @@ Owner confirmed that no new Supabase project is to be created. All Phase 2 datab
 - [ ] Remaining authenticated acceptance: Admin popup, anonymous Storage denial and approved-media public promotion, owner-authorized invitation/password setup, Owner Portal isolation, Owner change moderation journey and full Admin-route permission regression.
 - Live snapshot: 4 active new-business submissions, 36 pending field reviews, 100 approved/published field reviews and 2 pending-review media assets. No invitation or Auth account was created.
 - Permanent owner rule: commit directly to `main`; do not create branches or Pull Requests unless the owner explicitly changes this instruction.
+
+- [x] Database RLS simulation under PostgreSQL `anon` role returned 0 rows from `storage.objects` for `hs-pending-business-media`; transaction rolled back. HTTP-level denial and approved-media promotion/public read still require browser/API acceptance.
