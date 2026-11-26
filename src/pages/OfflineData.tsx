@@ -496,7 +496,7 @@ export function OfflineData() {
       }
 
       const directoryImages = siteSettings.directory_image_urls;
-      const manifestResponse = await raceWithAbort(fetch('/offline-precache.json', { cache: 'no-store' }), signal);
+      const manifestResponse = await raceWithAbort(fetch('/offline-precache.json', { cache: 'no-store', signal: AbortSignal.timeout(8000) }), signal);
       if (!manifestResponse.ok) throw new Error('The public image manifest could not be verified. The previous offline package was kept.');
       const manifestValue: unknown = await raceWithAbort(manifestResponse.json(), signal);
       const staticImagePaths = Array.isArray(manifestValue)
