@@ -1310,3 +1310,12 @@ No database migration, RLS/grant change or existing production data mutation was
 - Existing 20-row history pagination and Load older requests behavior remain unchanged. Demo mode counts the full matching in-memory set.
 - Added regression coverage for 28 matching Owner submissions with pending requests beyond row 20, plus other-owner, wrong-type and rejected exclusions.
 - No schema/RLS/permission/data changes or migration are included. Follow-up commit `251ca5b8c15d285daef86696b9b8b37b5cde1b67` passed GitHub Actions CI run `45911463787` (TypeScript, automated tests, production build, Edge Function check) and Cloudflare Pages deployment `06180522-7bd2-4592-ab49-3471600c9017` (build/deploy successful). Owner manual acceptance remains pending.
+
+
+### Release evidence — public Add Business opening-hours controls (27 November 2026)
+
+- Application commit: `3095edb45d94394c187f9f009a8caeb8a895da80`.
+- GitHub Actions CI run `45998652407` passed TypeScript typecheck, automated tests, production build, dependency high/critical audit gate and Supabase Edge Function typecheck.
+- Cloudflare Pages production deployment `5cd6ad7d-70ca-4f8f-a2ed-db9ed2872c66` succeeded for the same application commit; canonical alias `https://hellosadiqabad.com` is attached.
+- Public mobile/desktop browser smoke workflow `45998652504` is still running; its result is not claimed yet.
+- Owner manual acceptance remains pending. No database migration, RLS/grant change or existing production data mutation was made.

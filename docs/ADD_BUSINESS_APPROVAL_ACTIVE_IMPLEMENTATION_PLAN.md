@@ -212,3 +212,12 @@ Owner-approved enhancement to the existing public Add Business form; it does not
 - [x] Add pure-function regression tests and mobile/desktop public-form browser smoke assertions.
 - [ ] Owner manual acceptance of Apply to All, per-day edits, Off/On behavior and form submission/review compatibility.
 - No database migration, RLS, permission, existing submission, business record or media change is required.
+
+
+### Release evidence — public Add Business opening-hours controls (27 November 2026)
+
+- Application commit: `3095edb45d94394c187f9f009a8caeb8a895da80`.
+- GitHub Actions CI run `45998652407` passed TypeScript typecheck, automated tests, production build, dependency high/critical audit gate and Supabase Edge Function typecheck.
+- Cloudflare Pages production deployment `5cd6ad7d-70ca-4f8f-a2ed-db9ed2872c66` succeeded for the same application commit; canonical alias `https://hellosadiqabad.com` is attached.
+- Public mobile/desktop browser smoke workflow `45998652504` is still running; its result is not claimed yet.
+- Owner manual acceptance remains pending. No database migration, RLS/grant change or existing production data mutation was made.
