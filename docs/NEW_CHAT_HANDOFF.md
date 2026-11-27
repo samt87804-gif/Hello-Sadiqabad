@@ -409,3 +409,12 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Cloudflare Pages `npm run build` and deploy stages succeeded. GitHub Actions TypeScript/unit-test status is not verified in this session; do not state full CI passed.
 - No test Owner account or real production registration/password-change request was created.
 - Next: verify latest Pages deployment after docs updates, obtain automated typecheck/test evidence if available, then give Owner the full manual acceptance checklist. Owner deletion is separate and deferred from this release.
+
+
+## Direct Owner registration & password-change approval — final audit (27 November 2026)
+
+- Canonical permanent rules and active implementation plan were re-read. Current implementation is already on `main`; no further application/schema change was needed for this checkpoint.
+- Live Supabase read-only audit confirms feature migrations `20261127164058`, `20261127164621`, `20261127165305`, `20261127165456`; ACTIVE JWT-verified Edge Functions: `submit-suggestion` v13, `activate-direct-owner` v5, `review-owner-password-change` v4, `complete-owner-password-change` v1. Legacy invitation remains v3.
+- Data audit: 7 legacy Owner registration rows retained; 0 direct registrations and 0 password-change requests exist currently. No password columns exist in the registration/password-request tables, and no existing submission payload contains password keys. No test users or production submissions were created.
+- Production Pages build/deploy evidence remains commit `63945f99bf1d918297475186fe9c8cbc39c40b9c`, deployment `cacbedcb-7e5b-4278-8fb3-aa1555cff2d2`. Fresh GitHub Actions run status was not accessible through the available connector actions; don't claim a fresh CI pass.
+- Owner manual acceptance remains pending. Detailed 12-step test sequence is in the active plan. Wait for Owner's results before ticking acceptance.
