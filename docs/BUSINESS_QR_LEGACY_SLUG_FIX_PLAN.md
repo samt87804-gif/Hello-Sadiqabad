@@ -67,6 +67,15 @@ Owner manual acceptance must remain pending until the Owner confirms the device 
 - Added the exact historical slug + stable business ID to the verified alias registry. Existing browser and crawler resolution paths now resolve it only when the matching live row remains published; crawler requests are designed to 301 to the current canonical slug.
 - Added regression coverage for the exact Bakhtawar alias and for the alias not resolving when no published row is present.
 - No business data, slug, sitemap, schema, RLS, ownership, plan entitlement or database records were changed.
-- [ ] GitHub CI, production build and Pages deployment for the alias change.
-- [ ] Production browser and crawler checks: old URL 301s to `/business/bakhtawar-memorial-hospital-gn7`, final page returns HTTP 200 and canonical metadata.
+- [ ] GitHub Actions CI status for the alias/test commits could not be retrieved through the connected GitHub checks interface; Cloudflare Pages build/deploy passed separately.
+- [x] Production Googlebot Browser Rendering verified the old URL returns HTTP 301 with Location `/business/bakhtawar-memorial-hospital-gn7`; final URL returns HTTP 200 with the correct hospital title, canonical URL, indexable robots metadata and LocalBusiness JSON-LD.
 - [ ] Owner manually opens the old URL in a normal browser/phone and confirms the profile loads and address bar changes to the canonical `-gn7` URL.
+
+### Bakhtawar release verification
+
+- Alias commit: `1af5ecfd10508cf0a3912f853aab1a0e031239c3`.
+- Regression-test commit: `c84f3e248ee1f652cd4934c236882846ab8f881c`.
+- Documentation checkpoint: `da60de46e4b3eeda63ef432d26097f0988f6d6d3`.
+- Cloudflare Pages deployments succeeded for the alias commit (`4d841d15-bbcc-48fa-b2bb-117dfb5ade7f`), test commit (`98905f55-7023-4fa7-9f10-3d1177e1129e`) and latest documentation commit (`09b0ed21-4697-46a2-82c9-cfba649afd78`). The latest deployment is aliased to `https://hellosadiqabad.com`.
+- Production Googlebot rendering confirms the 301 and canonical destination. No Google indexing/ranking result is claimed.
+- GitHub CI remains unverified because the connected GitHub status endpoint returned no check/status entries; this is not represented as a pass.
