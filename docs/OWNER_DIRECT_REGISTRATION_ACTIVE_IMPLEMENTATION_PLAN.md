@@ -1,6 +1,6 @@
 # Owner Direct Registration, Password Approval & Account Deletion — ACTIVE Implementation Plan
 
-**Status:** PHASES 1–4 IMPLEMENTED AND DEPLOYED / INTEGRATED BUSINESS + OWNER APPROVAL IMPLEMENTED / AUTOMATED ACCEPTANCE INCOMPLETE / OWNER MANUAL ACCEPTANCE PENDING  
+**Status:** PHASES 1–4 IMPLEMENTED AND DEPLOYED / INTEGRATED BUSINESS + OWNER APPROVAL DEPLOYED / AUTOMATED CI PASSED / PUBLIC BROWSER SMOKE IN PROGRESS / OWNER MANUAL ACCEPTANCE PENDING  
 **Owner authorization:** 27 November 2026  
 **Production:** https://hellosadiqabad.com  
 **Repository workflow:** direct commits to `main`; existing Supabase project only.
@@ -150,8 +150,9 @@ After completing tests, report pass/fail by step and any exact error text (never
 - [x] Added safe reconciliation for an existing pending direct registration where the exact same direct Auth Owner is already linked to the published business (for example, after an earlier manual listing assignment). It approves that matching request instead of attempting to assign an already-owned listing again. It never overwrites a different Owner.
 - [x] No schema migration, RLS/grant change, password handling change, bulk data update, or existing record mutation was required.
 - [x] Deployed `activate-direct-owner` Edge Function version 6 with JWT verification enabled.
-- [ ] GitHub Actions typecheck, automated tests, production build and Edge Function CI for the latest source commit are pending verification.
-- [ ] Matching Cloudflare Pages production deployment is pending verification.
+- [x] GitHub Actions CI run `46054385777` passed for source commit `3fe32b61d7629292347ccf61084b9b053f2ec947`: TypeScript typecheck, automated tests, production build and Supabase Edge Function typecheck all succeeded. [Run details](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/46054385777).
+- [x] Cloudflare Pages production deployment `5e40bd82-5f5b-4fc5-bb5e-dfedac611402` succeeded for the same source commit; build and deploy stages succeeded and `https://hellosadiqabad.com` is the production alias.
+- [ ] Public Add Business mobile/desktop browser smoke run `46054385900` is still in progress; its result is not yet claimed.
 - [ ] Owner manual acceptance is pending. Test a fresh direct registration through one combined Business Field Review approval, then verify the same email/password logs in and the approved business appears in Owner Portal → My Businesses.
 - [ ] Existing inconsistent requests are not bulk modified. A matching pending request can be reconciled only when an Admin explicitly performs the verified final approval action.
 
@@ -169,3 +170,13 @@ After completing tests, report pass/fail by step and any exact error text (never
 10. Re-test a legacy standalone Owner request separately to confirm its invitation workflow remains unchanged.
 
 Do not mark the Owner acceptance items complete until the Owner reports the results. Never share the password or OTP.
+
+
+### Integrated workflow release verification — 28 November 2026
+
+- Application source commit: `3fe32b61d7629292347ccf61084b9b053f2ec947`.
+- GitHub Actions CI run `46054385777`: **success** — TypeScript typecheck, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment `5e40bd82-5f5b-4fc5-bb5e-dfedac611402`: **success** — build and deploy stages passed; canonical production alias `https://hellosadiqabad.com` attached.
+- Supabase `activate-direct-owner` v6: ACTIVE; JWT verification enabled.
+- Public Add Business mobile/desktop browser smoke run `46054385900` was still in progress at this checkpoint; do not mark it passed until its result is available.
+- Owner end-to-end manual acceptance remains pending.
