@@ -56,5 +56,5 @@ Owner manual acceptance must remain pending until the Owner confirms the device 
 - The historical URL was not present in the active crawl-only snapshot, so the snapshot-only resolver could not map it.
 - Added a narrowly scoped explicit alias keyed by the old slug and stable business ID. Browser resolution and crawler 301 redirect both require the matching business to remain currently published; no name/phone matching, DB mutation, slug rewrite, RLS change or new sitemap entry is used.
 - Regression tests cover redirect to the canonical URL and 404 behavior if the business is unpublished.
-- [ ] Production endpoint and Googlebot redirect verified after deployment.
-- [ ] Owner manually opens the supplied old URL and confirms the profile loads and the address bar changes to the canonical `-1h0` URL.
+- [x] Production Googlebot Browser Rendering of the supplied old URL returned the business-specific profile HTML, canonical `-1h0` URL, indexable robots metadata and LocalBusiness JSON-LD after the legacy redirect.
+- [ ] Owner manually opens the supplied old URL in a normal browser/phone and confirms the profile loads and the address bar changes to the canonical `-1h0` URL.
