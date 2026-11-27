@@ -429,3 +429,18 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Deployed `submit-suggestion` Edge Function version 14; status ACTIVE and JWT verification remains enabled. No schema/RLS/grant change and no production test account or business submission were created.
 - Owner must now manually submit one genuine, authorized business request with a fresh email to verify the success message and Admin queue appearance. Manual acceptance remains pending; do not mark the full workflow accepted until the Owner confirms.
 - Automated GitHub CI and the live end-to-end submit were not independently executed in this fix checkpoint. The function deployment itself succeeded; this is not evidence that the public submission journey has passed.
+
+
+## Integrated Business + Direct Owner approval — implementation checkpoint (28 November 2026)
+
+- Owner explicitly authorized integrating Business Field Review final approval with direct Owner activation and automatic business assignment.
+- Re-read `docs/PROJECT_WORKING_RULES.md`, `PROJECT_ROADMAP.md`, this handoff, the active direct-registration plan, current Business Field Review UI, standalone Owner Registration Requests page, Owner Portal `fetchOwnerListings`, `activate-direct-owner`, `finalize_owner_registration`, live schema and Supabase Edge Function auth documentation.
+- Root cause of the split workflow: the review save RPC publishes the listing, while a separate Admin button calls `activate-direct-owner`; the Owner activation path was not part of the final Save Approval action.
+- The Owner Portal reads listings by `businesses.owner_id = auth.uid()`. The server-side owner finalizer sets this link, so the integrated action must verify the exact link before reporting success.
+- UI now invokes `activate-direct-owner` after field/media decisions only when the Admin explicitly confirms independent identity/authority verification, all five required fields are approved, the business is published, and no submitted image remains pending. The direct activation button was removed from the review popup; the main action becomes **Approve Business & Activate Owner** when the verification checkbox is selected.
+- `activate-direct-owner` now safely reconciles a pending registration when its published business is already linked to that exact direct Auth user, then verifies request approval, Owner profile activation and business ownership before returning success. It refuses any business linked to a different Owner.
+- Automated helper tests were added for the activation gate. No schema migration, RLS/grant changes, password persistence changes, or bulk production data updates were made.
+- Supabase Edge Function `activate-direct-owner` deployed version 6, ACTIVE, `verify_jwt=true`.
+- Read-only live audit found one direct registration whose request status was still pending while the matching Owner profile was active and its business was already linked/published. No data was changed; the new verified approval action can reconcile that exact same-user linkage if the Admin chooses to review it.
+- Latest application source commits are on `main`; GitHub CI and matching Cloudflare Pages deployment remain to be verified before calling the website release live.
+- Owner manual acceptance remains pending. Next: confirm CI/Pages deployment, then have the Owner run the integrated workflow using a fresh legitimate request and verify Owner Portal → My Businesses. Do not use passwords/OTPs in chat. Legacy standalone Owner invitation flow must remain unchanged.
