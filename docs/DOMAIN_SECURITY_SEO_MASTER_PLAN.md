@@ -294,3 +294,12 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - Read-only source comparison identified 93 historical business slugs in the sanitized public snapshot that map by stable database ID to current published rows with different canonical slugs. Exact-slug-only browser and crawler lookups caused older QR URLs to fail.
 - Active fix plan: `docs/BUSINESS_QR_LEGACY_SLUG_FIX_PLAN.md`. Verified legacy aliases must resolve only through a matching currently published database row and redirect to its current canonical URL. Do not add historical aliases as duplicate sitemap URLs; retain only current canonical slugs in the sitemap.
 - Do not claim Google indexing or ranking from a redirect implementation. Recheck old URL HTTP/browser behavior, canonical metadata, crawler redirect and sitemap uniqueness after deployment.
+
+
+### Legacy QR URL release verification — 28 November 2026
+
+- [x] Browser alias resolution is restricted to stable IDs present in the currently published public dataset; exact current slugs win and ambiguous aliases are ignored.
+- [x] Old crawler URLs are redirected to the current canonical business URL. Sitemap remains canonical-only.
+- [x] CI run `46063096322` and Cloudflare Pages production deployment `4acf9c22-299f-4c23-9b19-ae86b8067863` passed for commit `c3de360440e6f29c3e826f0f384fece6d120170a`.
+- [x] Live Browser Rendering confirmed the legacy URL loads the correct business and the crawler redirect resolves to the current canonical URL.
+- [ ] Actual owner-device QR scan and Google Search Console recrawl/indexing observations remain separate and pending.

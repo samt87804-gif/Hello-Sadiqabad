@@ -1,6 +1,6 @@
 # Legacy Business QR URL Compatibility — Active Fix Plan
 
-**Status:** Owner-authorized implementation in progress — 28 November 2026  
+**Status:** Implemented and deployed; owner manual QR acceptance pending — 28 November 2026  
 **Scope:** Preserve existing printed/downloaded Basic and Premium business QR codes when their URLs contain historical business slugs. No business data, plan, QR entitlement, ownership, or security policy changes.
 
 ## Verified root cause
@@ -28,12 +28,22 @@
 
 ## Verification and owner acceptance
 
-- [ ] TypeScript, automated tests and production build pass.
-- [ ] GitHub Actions CI passes for the exact commit.
-- [ ] Cloudflare Pages deployment succeeds for the exact commit.
-- [ ] Production old-slug browser URL redirects to the current canonical profile.
-- [ ] Crawler request for an old slug receives a permanent redirect to the current canonical URL.
-- [ ] Unknown aliases and aliases for unpublished listings remain unavailable.
+- [x] TypeScript, automated tests and production build passed.
+- [x] GitHub Actions CI run `46063096322` passed for commit `c3de360440e6f29c3e826f0f384fece6d120170a`.
+- [x] Cloudflare Pages production deployment `4acf9c22-299f-4c23-9b19-ae86b8067863` succeeded for the same commit.
+- [x] Live Browser Rendering confirmed the old browser URL renders the correct business profile and current canonical metadata.
+- [x] Googlebot request for an old slug received a 301 redirect and followed to the current canonical URL.
+- [x] Regression tests cover unknown/ambiguous aliases and unpublished rows; these do not expose listings.
 - [ ] Owner manually scans an existing QR code and confirms the correct profile opens; then confirms a newly generated QR code opens the same profile.
 
 Owner manual acceptance must remain pending until the Owner confirms the device tests.
+
+
+## Verified release details
+
+- GitHub main commit: `c3de360440e6f29c3e826f0f384fece6d120170a`.
+- GitHub Actions CI run: `46063096322` — passed TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages production deployment: `4acf9c22-299f-4c23-9b19-ae86b8067863` — all stages succeeded for the exact commit.
+- Live old-slug browser check: correct business page rendered with the current canonical URL and business-specific metadata.
+- Live crawler check: Googlebot old-slug request returned through a 301 to the current canonical slug; final URL and metadata were verified.
+- Manual phone/QR acceptance remains pending with the Owner.

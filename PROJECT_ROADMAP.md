@@ -1420,8 +1420,10 @@ No database migration, RLS/grant change or existing production data mutation was
 
 - Active plan: [Legacy Business QR URL Compatibility Fix](docs/BUSINESS_QR_LEGACY_SLUG_FIX_PLAN.md).
 - [x] Read-only comparison confirmed 93 sanitized public-snapshot records retain historical slugs whose `databaseId` maps to a current live business with a different canonical slug.
-- [ ] Resolve historical QR slugs through stable database IDs, only for currently published listings; exact canonical slugs take precedence and ambiguous aliases are ignored.
-- [ ] Replace old browser URLs with the current canonical profile URL and 301-redirect crawler requests for verified legacy aliases.
-- [ ] Add regression tests for alias mapping, unpublished rows, collisions and crawler redirects.
-- [ ] TypeScript/tests/build, CI and production deployment verification.
+- [x] Resolve historical QR slugs through stable database IDs, only for currently published listings; exact canonical slugs take precedence and ambiguous aliases are ignored.
+- [x] Old browser URLs now load the same profile and update canonical metadata/URL; crawler requests 301-redirect verified legacy aliases to the current canonical profile.
+- [x] Added regression tests for alias mapping, unpublished rows, collisions, canonical-slug precedence and crawler redirects.
+- [x] TypeScript, automated tests and production build passed; GitHub Actions CI run `46063096322` passed for commit `c3de360440e6f29c3e826f0f384fece6d120170a`.
+- [x] Cloudflare Pages production deployment `4acf9c22-299f-4c23-9b19-ae86b8067863` succeeded for the same commit.
+- [x] Live Browser Rendering verified the old slug renders the correct business profile; Googlebot request followed the 301 to the current canonical URL and returned business-specific SEO metadata.
 - [ ] Owner manual QR scan acceptance: existing QR and newly generated QR both open the correct business profile.
