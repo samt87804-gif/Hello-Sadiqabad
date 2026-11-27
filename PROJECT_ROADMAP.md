@@ -1469,3 +1469,11 @@ No database migration, RLS/grant change or existing production data mutation was
 - Final code commit at checkpoint: `165459c66a944c3edeb59dd3c9f71860112e9ee4`. CI and Cloudflare Pages deployment were still in progress at the time of this update; production verification is pending.
 - No business rows, owner descriptions, phone numbers, fees, URLs, plans, schema, RLS or permissions were changed.
 - Next: verify final CI and deployment; Googlebot-render representative profiles; then provide owner manual steps and wait for confirmation.
+
+## Business profile SEO fallback metadata — release verification (28 November 2026)
+
+- Final code commit `7247f0cbe175b1dc60c8ecedc6bd74ed7cbfca36` is deployed to production; Cloudflare deployment `50f8d212-39da-49db-9075-155b69a264e3` succeeded for that exact commit.
+- GitHub CI run `46072480221` passed TypeScript, 182 automated tests, production build and 23 Edge Function checks.
+- Googlebot production rendering verified a no-description profile (Sakhawat Traders), a short-description profile (Doctor Commission Shop), and preservation of THE INSPIRE's owner-entered custom title/description. HTTP 200 and canonical URLs were confirmed.
+- Category/area duplicates and malformed area punctuation are normalized; no listing records or custom metadata were overwritten.
+- Owner manual acceptance and Google's subsequent recrawl/indexing remain pending. Do not claim ranking improvement from deployment alone.
