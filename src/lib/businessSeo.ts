@@ -56,12 +56,10 @@ export function buildBusinessSeoMetadata(
   const category = cleanBusinessSeoText(business.category?.name_en, '', 48);
   const area = cleanBusinessSeoText(business.area?.name_en, '', 48);
   const customTitle = cleanBusinessSeoText(business.meta_title_en, '', 120);
-  const fallbackTitle = [
-    name,
-    category ? '— ' + category : '— Business',
-    area ? 'in ' + area : 'Sadiqabad',
-    'Sadiqabad | Hello Sadiqabad',
-  ].join(' ').replace(/\\s+/g, ' ').replace(/— Business Sadiqabad/, '— Sadiqabad');
+  const descriptor = category
+    ? category + (area ? ' in ' + area : '')
+    : area ? 'Business in ' + area : 'Sadiqabad';
+  const fallbackTitle = name + ' — ' + descriptor + (descriptor === 'Sadiqabad' ? '' : ', Sadiqabad') + ' | Hello Sadiqabad';
   const title = customTitle
     ? (/hello sadiqabad/i.test(customTitle) ? customTitle : customTitle + ' | Hello Sadiqabad')
     : cleanBusinessSeoText(fallbackTitle, name + ' — Sadiqabad | Hello Sadiqabad', 120);
