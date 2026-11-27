@@ -66,7 +66,7 @@ export function buildBusinessSeoMetadata(
     : fallbackTitle.length > 120 ? fallbackTitle.slice(0, 119).trimEnd() + '…' : fallbackTitle;
   const sourceDescription = business.description_en || business.description_ur;
   const fallbackDescription = category
-    ? 'Find ' + name + ', listed under ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. View its available contact details and location on Hello Sadiqabad.'
+    ? 'Find ' + name + ', listed under ' + category + (distinctArea ? ' in ' + distinctArea : '') + ', Sadiqabad. View its available contact details and location on Hello Sadiqabad.'
     : name + ', Sadiqabad. View available contact details, location and business information on Hello Sadiqabad.';
   const enrichedShortDescription = sourceDescription && sourceDescription.trim().length < 80 && category
     ? 'Find ' + name + ', listed under ' + category + (distinctArea ? ' in ' + distinctArea : '') + ', Sadiqabad. ' + sourceDescription.trim()
