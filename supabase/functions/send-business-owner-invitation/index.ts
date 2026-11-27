@@ -86,10 +86,11 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data: request, error: readError } = await db.from("owner_registration_requests")
-      .select("id,full_name,email,phone,business_id,submission_id,status,invitation_requested,invitation_status,invitation_processing_started_at,invitation_attempts,invitation_user_id")
+      .select("id,full_name,email,phone,business_id,submission_id,status,direct_auth_user_id,invitation_requested,invitation_status,invitation_processing_started_at,invitation_attempts,invitation_user_id")
       .eq("id", requestId).maybeSingle();
     if (readError || !request) return response(req, { ok: false, error: "Linked Owner contact record not found" }, 404);
     if (!request.submission_id) return response(req, { ok: false, error: "Only Add Business-linked Owner invitations are handled here" }, 400);
+    if (request.direct_auth_user_id) return response(req, { ok: false, error: "This Owner already created a direct account. Use the identity-verification and activation workflow; do not send an invitation." }, 409);
     if (!request.invitation_requested) return response(req, { ok: false, error: "The Admin has not requested this Owner invitation" }, 409);
     if (request.status === "rejected") return response(req, { ok: false, error: "This Owner request was rejected" }, 409);
     if (request.status === "approved" && request.invitation_status === "sent") {
