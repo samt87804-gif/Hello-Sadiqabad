@@ -303,3 +303,18 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] CI run `46063096322` and Cloudflare Pages production deployment `4acf9c22-299f-4c23-9b19-ae86b8067863` passed for commit `c3de360440e6f29c3e826f0f384fece6d120170a`.
 - [x] Live Browser Rendering confirmed the legacy URL loads the correct business and the crawler redirect resolves to the current canonical URL.
 - [ ] Actual owner-device QR scan and Google Search Console recrawl/indexing observations remain separate and pending.
+
+
+## Website SEO improvement workstream — 28 November 2026
+
+- [x] Confirmed THE INSPIRE BUSINESS ACADEMY's current published record and Google Maps listing both point to canonical slug `the-inspire-business-academy-sadiqabad-1h0`; the owner-supplied `-4x0` URL is a historical alias requiring explicit stable-ID resolution.
+- [x] Ran an initial OpenSEO crawl (50-page budget). It reported 46 findings in the sampled pages: 3 thin-content warnings, 20 short meta descriptions, 12 long titles, 9 heading-order skips, and a 50-page crawl cap with 909 discovered URLs not crawled. This is a sample, not a complete crawl of every URL.
+- [x] Read-only live Supabase aggregate: 588 published businesses; 587 lack custom meta title and description fields. The application currently generates fallback metadata; this count does not mean 587 pages have missing rendered metadata. 568 business descriptions are shorter than 80 characters, so profile-content quality needs a separate evidence-based review rather than fabricated copy.
+- [x] Local Maps sample for THE INSPIRE BUSINESS ACADEMY: Google Business Profile record is returned as unclaimed by the data provider; the business appeared at position 8 for “computer training institute” at the academy coordinate and was found at 1 of 9 points in a 2 km grid (average position 16.22). These are a one-time third-party snapshot, not a permanent rank.
+- [x] Created a Pakistan-market OpenSEO project to avoid the previous project's United States default market.
+- [ ] OpenSEO Google Search Console connection is not yet linked (no connected Google accounts returned). First-party impressions, clicks and index inspection remain pending until the owner connects the verified Search Console account in OpenSEO.
+- [ ] Complete Phase 1 sitewide metadata/content improvements and re-crawl.
+- [ ] Review business-profile copy and structured data at scale without inventing facts.
+- [ ] Review category/area page content and heading hierarchy.
+- [ ] Review crawl coverage, sitemap, robots, canonicals, indexability and mobile performance.
+- [ ] Owner to verify the legacy THE INSPIRE URL after production deployment.

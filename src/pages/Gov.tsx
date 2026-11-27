@@ -12,7 +12,7 @@ export function Gov() {
 
   useEffect(() => {
     updatePageSeo({
-      title: 'Government Services in Sadiqabad — Jobs, Schemes & Authorities',
+      title: 'Government Services in Sadiqabad',
       description: 'Find Government Jobs, Government Schemes, Local Authorities and Authority Profiles through Hello Sadiqabad.',
       canonicalPath: '/gov',
     });

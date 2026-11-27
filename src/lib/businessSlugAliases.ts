@@ -1,6 +1,11 @@
 export type LegacyBusinessSlugRecord = { slug?: string | null; databaseId?: string | null };
 export type CurrentBusinessSlugRecord = { id: string; slug: string };
 
+/** Verified legacy URLs not present in the active snapshot. Live published-row checks remain mandatory. */
+export const VERIFIED_LEGACY_BUSINESS_SLUGS: readonly LegacyBusinessSlugRecord[] = [
+  { slug: 'the-inspire-business-academy-sadiqabad-4x0', databaseId: '0d14d4af-6434-4b3c-aec3-3de0bb669a51' },
+];
+
 /** Build aliases only when a historical slug maps unambiguously to a currently published row. */
 export function buildBusinessSlugAliasMap(
   legacyRecords: readonly LegacyBusinessSlugRecord[],

@@ -1,4 +1,5 @@
 import { fetchWithTimeout } from '../_shared/fetchWithTimeout.js';
+import { VERIFIED_LEGACY_BUSINESS_SLUGS } from '../../src/lib/businessSlugAliases.ts';
 import {
   buildBusinessJsonLd,
   buildBusinessSeoMetadata,
@@ -117,7 +118,10 @@ async function fetchLegacyPublishedBusiness(env, legacySlug) {
     const match = records.find((record) => record.slug === legacySlug && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(record.databaseId || '')));
     return match?.databaseId || null;
   }));
-  const ids = [...new Set(matches.filter(Boolean))];
+  const verifiedIds = VERIFIED_LEGACY_BUSINESS_SLUGS
+    .filter((record) => record.slug === legacySlug && record.databaseId)
+    .map((record) => record.databaseId);
+  const ids = [...new Set([...matches.filter(Boolean), ...verifiedIds])];
   if (ids.length !== 1) return null;
   return fetchPublishedBusinessByColumn(env, 'id', ids[0]);
 }

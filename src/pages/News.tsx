@@ -53,8 +53,8 @@ export function News() {
       setArticle(result.article);
       setItems(result.items);
       updatePageSeo({
-        title: result.article ? result.article.title_en + ' — Hello Sadiqabad News' : 'Sadiqabad News — Hello Sadiqabad',
-        description: result.article?.excerpt_en ?? 'Latest verified local news and community updates from Sadiqabad.',
+        title: result.article ? result.article.title_en + ' — Hello Sadiqabad News' : 'Sadiqabad News',
+        description: result.article?.excerpt_en ?? 'Read local news, public notices and community updates from Sadiqabad, Punjab. Explore published stories and important information from Hello Sadiqabad.',
         canonicalPath: slug ? '/news/' + slug : '/news',
         ogType: result.article ? 'article' : 'website',
         image: result.article?.cover_image_url || result.article?.image_urls?.[0] || null,
@@ -114,6 +114,7 @@ export function News() {
         ) : (
           <SectionHeading title={title} titleUr="صادق آباد کی تازہ خبریں" subtitle="Local reporting, public-interest stories and community updates" headingLevel="h1" />
         )}
+        {!slug && <p className="max-w-3xl text-sm leading-7 text-on-surface-variant">This section brings together published local news, public notices and community updates relevant to Sadiqabad. Open a story to read its details, publication date and any available photos or video. Use the search field to find a topic or earlier update.</p>}
         {loading ? (
           <div className="space-y-3"><Skeleton className="h-64 rounded-2xl" /><Skeleton className="h-28 rounded-2xl" /></div>
         ) : failed ? (

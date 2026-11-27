@@ -98,7 +98,7 @@ export function Home() {
 
   useEffect(() => {
     updatePageSeo({
-      title: 'Sadiqabad Business Directory & Emergency Helplines — Hello Sadiqabad',
+      title: 'Sadiqabad Business Directory',
       description:
         'Find shops, doctors, hospitals, pharmacies, restaurants and local services in Sadiqabad, Punjab. Browse business listings, area guides and 24/7 emergency helplines.',
       canonicalPath: '/',

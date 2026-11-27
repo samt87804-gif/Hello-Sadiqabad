@@ -36,7 +36,7 @@ export function Emergency({ initialCategory = 'all' }: { initialCategory?: 'all'
 
   useEffect(() => {
     updatePageSeo({
-      title: initialCategory === 'government' ? 'Government Helplines Sadiqabad — District Control Room, 1139, 1787' : '24/7 Emergency Contacts Sadiqabad — Rescue 1122, Police 15, Fire 16',
+      title: initialCategory === 'government' ? 'Government Helplines in Sadiqabad' : 'Emergency Helplines in Sadiqabad',
       description: initialCategory === 'government' ? 'Verified Government of Punjab and District Rahim Yar Khan public helplines for Sadiqabad.' : 'Offline-ready 24/7 emergency helpline directory for Sadiqabad, District Rahim Yar Khan.',
       canonicalPath: initialCategory === 'government' ? '/government-helplines' : '/emergency',
     });

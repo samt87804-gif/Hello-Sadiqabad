@@ -1427,3 +1427,12 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] Cloudflare Pages production deployment `4acf9c22-299f-4c23-9b19-ae86b8067863` succeeded for the same commit.
 - [x] Live Browser Rendering verified the old slug renders the correct business profile; Googlebot request followed the 301 to the current canonical URL and returned business-specific SEO metadata.
 - [ ] Owner manual QR scan acceptance: existing QR and newly generated QR both open the correct business profile.
+
+
+## Website SEO improvement — 28 November 2026
+
+- [ ] THE INSPIRE BUSINESS ACADEMY legacy URL `...-4x0` now has an explicit stable-ID alias to canonical `...-1h0`; regression tests added. CI, deployment and production redirect verification pending.
+- [ ] First sitewide metadata/content batch: shorten sampled long titles; improve area/category descriptions; add useful explanatory copy to Categories, News and Government Jobs index pages. CI/deployment/re-crawl pending.
+- [ ] Full SEO programme remains in progress: extend crawl coverage beyond the 50-page audit budget, review business profile metadata/content quality, heading hierarchy, internal links, structured data, sitemap/indexability and Search Console performance.
+- [ ] Search Console is verified for the site but not connected to the OpenSEO project; first-party performance analysis awaits account connection.
+- [ ] Keep Google ranking/indexing status separate from implementation and deployment; no ranking guarantee.

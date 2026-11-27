@@ -486,3 +486,17 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Implemented and deployed on GitHub `main`: commit `c3de360440e6f29c3e826f0f384fece6d120170a`; CI run `46063096322` passed; Cloudflare Pages deployment `4acf9c22-299f-4c23-9b19-ae86b8067863` succeeded for that exact commit.
 - Live Browser Rendering verified an affected historical URL loads the correct business page. Googlebot verification followed the 301 to the current canonical slug and returned the expected page-specific metadata. No database/RLS/schema changes were made.
 - Owner manual acceptance is still pending: scan an existing printed/downloaded QR and a newly generated QR on a phone and confirm both open the correct business profile.
+
+
+## Current workstream — THE INSPIRE legacy URL and website SEO (28 November 2026)
+
+- Owner supplied broken Google URL `https://hellosadiqabad.com/business/the-inspire-business-academy-sadiqabad-4x0`.
+- Live published business ID: `0d14d4af-6434-4b3c-aec3-3de0bb669a51`; canonical slug: `the-inspire-business-academy-sadiqabad-1h0`. Existing Google Maps profile data also links to the canonical `-1h0` URL.
+- Root cause: this historical slug is not in the active public snapshot, so the previous snapshot-only legacy alias resolver cannot map it. An explicit verified slug-to-stable-ID alias has been added to the frontend resolver and crawler handler, both guarded by a current published-row lookup.
+- Regression tests added for crawler 301 redirect and unpublished-row 404, plus frontend alias resolution.
+- First sitewide SEO batch updates title/description templates and adds useful index-page copy for Categories, News and Government Jobs. CI/deployment/re-crawl not yet verified.
+- OpenSEO Pakistan project: `eba90eb5-b616-42ab-97c2-a6a9245c17c3`. Initial site audit uses a 50-page budget; initial audit in previous project found 46 issues across 50 pages and 909 uncrawled URLs.
+- Local Maps snapshot for the academy: category query “computer training institute” returned the academy at #8 at its coordinate; 3x3, 2 km grid average #16.22, found at 1/9 points. Provider reports the Google Business Profile unclaimed. Treat as third-party snapshot only.
+- Search Console account is not connected in OpenSEO (accounts list empty); site verification in Google Search Console was previously owner-confirmed. Ask the owner to connect Google in OpenSEO before using first-party query/click/indexing data.
+- Continue website SEO in small, evidence-based batches. Do not invent descriptions for the 568 published businesses with short text; improve structured fallback metadata first and identify where verified facts are missing.
+- Manual acceptance pending: owner opens the supplied old URL after deployment and confirms it redirects to the canonical profile.

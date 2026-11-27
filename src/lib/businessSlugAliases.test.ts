@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildBusinessSlugAliasMap, resolveBusinessBySlug } from './businessSlugAliases';
+import { buildBusinessSlugAliasMap, resolveBusinessBySlug, VERIFIED_LEGACY_BUSINESS_SLUGS } from './businessSlugAliases';
 
 const published = [
   { id: 'business-1', slug: 'old-cafe-abc' },
@@ -34,4 +34,13 @@ test('current canonical slug takes precedence over a conflicting historical alia
 
 test('does not return an alias target absent from the published collection', () => {
   assert.equal(resolveBusinessBySlug(published, 'old-slug', new Map([['old-slug', 'removed-slug']])), null);
+});
+
+
+test('resolves the verified Inspire legacy URL only to its currently published business ID', () => {
+  const liveBusiness = [{ id: '0d14d4af-6434-4b3c-aec3-3de0bb669a51', slug: 'the-inspire-business-academy-sadiqabad-1h0' }];
+  const aliases = buildBusinessSlugAliasMap(VERIFIED_LEGACY_BUSINESS_SLUGS, liveBusiness);
+  assert.equal(aliases.get('the-inspire-business-academy-sadiqabad-4x0'), 'the-inspire-business-academy-sadiqabad-1h0');
+  assert.equal(resolveBusinessBySlug(liveBusiness, 'the-inspire-business-academy-sadiqabad-4x0', aliases)?.id, liveBusiness[0].id);
+  assert.equal(buildBusinessSlugAliasMap(VERIFIED_LEGACY_BUSINESS_SLUGS, []).has('the-inspire-business-academy-sadiqabad-4x0'), false);
 });

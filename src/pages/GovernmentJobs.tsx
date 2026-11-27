@@ -75,7 +75,7 @@ export function GovernmentJobs() {
      }:null,
     });
    } else {
-    updatePageSeo({title:'Government Jobs in Sadiqabad — Punjab & Federal',description:'Find official Punjab and Federal Government job advertisements relevant to Sadiqabad and Rahim Yar Khan.',canonicalPath:'/government-jobs',robots:result.jobs.length?'index,follow,max-image-preview:large':'noindex,follow'});
+    updatePageSeo({title:'Government Jobs in Sadiqabad',description:'Find official Punjab and Federal Government job advertisements relevant to Sadiqabad and Rahim Yar Khan.',canonicalPath:'/government-jobs',robots:result.jobs.length?'index,follow,max-image-preview:large':'noindex,follow'});
    }
   }).catch(()=>{if(active)setFailed(true);}).finally(()=>{if(active)setLoading(false);});
   return ()=>{active=false;};
@@ -99,6 +99,7 @@ export function GovernmentJobs() {
  return <AppShell><Container size="lg" className="py-6 space-y-5">
   {slug?<Link to="/government-jobs" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"><ArrowLeft className="w-4 h-4"/>{lang==='ur'?'تمام نوکریاں':'All Government Jobs'}</Link>
    :<SectionHeading title={title} titleUr="پنجاب اور وفاقی سرکاری نوکریاں" subtitle="Official advertisements and application links. Hello Sadiqabad does not accept job applications." headingLevel="h1"/>}
+  {!slug&&<p className="max-w-3xl text-sm leading-7 text-on-surface-variant">Use the filters to narrow vacancies by department, job type and application status. Open a listing to review its eligibility, deadline and official application source. Details can change after publication, so confirm the latest advertisement and closing date with the relevant government department before applying. Hello Sadiqabad does not submit applications on behalf of visitors.</p>}
   {loading?<div className="space-y-3"><Skeleton className="h-48 rounded-2xl"/><Skeleton className="h-28 rounded-2xl"/></div>
    :failed?<EmptyState icon={<BriefcaseBusiness className="w-6 h-6"/>} title="Government jobs could not be loaded" description="Please check your connection and try again." action={<Button onClick={()=>setRetry(v=>v+1)}>Retry</Button>}/>
    :slug&&!job?<EmptyState icon={<BriefcaseBusiness className="w-6 h-6"/>} title="Government job not found" description="This listing may have been removed or the link may be incorrect." action={<Link to="/government-jobs"><Button>Browse Government Jobs</Button></Link>}/>

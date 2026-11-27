@@ -54,7 +54,7 @@ export function GovernmentSchemes(){
    if(!active)return;setScheme(result.scheme);setSchemes(result.schemes);
    if(slug&&!result.scheme)updatePageSeo({title:'Government Scheme Not Found',description:'This government scheme is not currently available.',canonicalPath:'/government-schemes/'+slug,robots:'noindex,follow'});
    else if(result.scheme)updatePageSeo({title:result.scheme.title_en+' — Government Scheme',description:[result.scheme.summary_en,result.scheme.summary_ur].filter(Boolean).join(' · '),canonicalPath:'/government-schemes/'+result.scheme.slug,image:result.scheme.image_url,ogType:'article'});
-   else updatePageSeo({title:'Government Schemes in Sadiqabad — Punjab & Federal',description:'Official-source information about Punjab and Federal government schemes, eligibility, benefits and application links.',canonicalPath:'/government-schemes',robots:result.schemes.length?'index,follow,max-image-preview:large':'noindex,follow'});
+   else updatePageSeo({title:'Government Schemes in Sadiqabad',description:'Official-source information about Punjab and Federal government schemes, eligibility, benefits and application links.',canonicalPath:'/government-schemes',robots:result.schemes.length?'index,follow,max-image-preview:large':'noindex,follow'});
   }).catch(()=>{if(active)setFailed(true);}).finally(()=>{if(active)setLoading(false);});
   return ()=>{active=false;};
  },[slug,retry]);

@@ -30,7 +30,7 @@ export function LocalAuthorities() {
 
   useEffect(() => {
     updatePageSeo({
-      title: 'Local Authorities Sadiqabad — Municipal Committee & Police Contacts',
+      title: 'Public Offices & Contacts in Sadiqabad',
       description: 'Officially sourced public contact directory for local authorities serving Sadiqabad, Punjab, Pakistan.',
       canonicalPath: '/local-authorities',
     });

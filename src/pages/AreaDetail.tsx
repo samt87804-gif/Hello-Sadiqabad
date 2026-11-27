@@ -44,9 +44,13 @@ export function AreaDetail() {
       setCategories(cats);
       setDirectoryImageUrls(settings.directory_image_urls || EMPTY_DIRECTORY_IMAGE_URLS);
       if (found) {
+        const areaName = found.name_en
+          .replace(/(?:,\s*)?sadiqabad(?:,\s*pakistan)?/gi, '')
+          .replace(/\s+/g, ' ')
+          .replace(/^[,\s]+|[,\s]+$/g, '') || 'Sadiqabad';
         updatePageSeo({
-          title: `Businesses in ${found.name_en}, Sadiqabad — Hello Sadiqabad`,
-          description: `Discover shops, doctors, and services located in ${found.name_en}, Sadiqabad.`,
+          title: `Businesses in ${areaName}`,
+          description: `Discover local shops, doctors and services in ${areaName}, Sadiqabad. Browse business profiles, contact details and available locations on Hello Sadiqabad.`,
           canonicalPath: `/area/${found.slug}`,
           jsonLd: {
             '@context': 'https://schema.org',

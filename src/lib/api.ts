@@ -43,7 +43,7 @@ import {
   getOrCreateSessionId,
 } from './offlineStorage';
 import { effectivePlanCode, filterAndRankBusinesses, matchesDirectoryBusinessQuery, normalizeDirectorySearchText } from './searchFilter';
-import { buildBusinessSlugAliasMap, resolveBusinessBySlug } from './businessSlugAliases';
+import { buildBusinessSlugAliasMap, resolveBusinessBySlug, VERIFIED_LEGACY_BUSINESS_SLUGS } from './businessSlugAliases';
 import { normalizePkPhone } from './phone';
 import { trackSiteAnalyticsEvent } from './siteAnalytics';
 import { daysUntil, slugify } from './format';
@@ -649,7 +649,7 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
   });
 
   // Preserve historical public slugs only as aliases to currently published rows.
-  githubBusinessSlugAliases = buildBusinessSlugAliasMap(records, databaseBusinessViews);
+  githubBusinessSlugAliases = buildBusinessSlugAliasMap([...records, ...VERIFIED_LEGACY_BUSINESS_SLUGS], databaseBusinessViews);
 
   const databaseIds = new Set(rows.map((business) => business.id));
   const crawlOnlyBusinesses = staticBusinesses.filter((business) =>

@@ -63,9 +63,12 @@ export function CategoryDetail() {
       setAds(catAds);
       setMetaLoaded(true);
       if (found) {
+        const categoryTitle = found.slug === 'computer-it-training-institute'
+          ? 'Computer & IT Training'
+          : found.name_en;
         updatePageSeo({
-          title: `${found.name_en} in Sadiqabad — Hello Sadiqabad`,
-          description: `Verified ${found.name_en} (${found.name_ur}) businesses in Sadiqabad, Punjab.`,
+          title: `${categoryTitle} in Sadiqabad`,
+          description: `Explore ${found.name_en} businesses in Sadiqabad, Punjab. Browse local profiles, locations, contact details and available services on Hello Sadiqabad.`,
           canonicalPath: `/category/${found.slug}`,
           jsonLd: {
             '@context': 'https://schema.org',
