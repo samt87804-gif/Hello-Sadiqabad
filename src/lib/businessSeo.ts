@@ -53,8 +53,11 @@ export function buildBusinessSeoMetadata(
   siteOrigin = SITE_ORIGIN
 ): BusinessSeoMetadata {
   const name = cleanBusinessSeoText(business.name_en || business.name_ur, 'Sadiqabad Business', 100);
-  const category = cleanBusinessSeoText(business.category?.name_en, '', 48);
-  const area = cleanBusinessSeoText(business.area?.name_en, '', 48);
+  const category = cleanBusinessSeoText(business.category?.name_en, '', 48).replace(/^[,\\s]+|[,\\s]+$/g, '');
+  const area = cleanBusinessSeoText(business.area?.name_en, '', 48)
+    .replace(/^[,\\s]+|[,\\s]+$/g, '')
+    .replace(/(?:,\\s*|\\s+)Sadiqabad$/i, '')
+    .trim();
   const distinctArea = area && area.toLocaleLowerCase() !== category.toLocaleLowerCase() ? area : '';
   const customTitle = cleanBusinessSeoText(business.meta_title_en, '', 120);
   const descriptor = category
