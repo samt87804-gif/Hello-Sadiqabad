@@ -1,6 +1,6 @@
 # Owner Direct Registration, Password Approval & Account Deletion — ACTIVE Implementation Plan
 
-**Status:** PHASES 1–4 IMPLEMENTED AND DEPLOYED / AUTOMATED ACCEPTANCE INCOMPLETE / OWNER MANUAL ACCEPTANCE PENDING  
+**Status:** PHASES 1–4 IMPLEMENTED AND DEPLOYED / INTEGRATED BUSINESS + OWNER APPROVAL IMPLEMENTED / AUTOMATED ACCEPTANCE INCOMPLETE / OWNER MANUAL ACCEPTANCE PENDING  
 **Owner authorization:** 27 November 2026  
 **Production:** https://hellosadiqabad.com  
 **Repository workflow:** direct commits to `main`; existing Supabase project only.
@@ -134,3 +134,38 @@ After completing tests, report pass/fail by step and any exact error text (never
 - Deployed `submit-suggestion` Edge Function version 14; status ACTIVE and JWT verification remains enabled. No schema/RLS/grant change and no production test account or business submission were created.
 - Owner must now manually submit one genuine, authorized business request with a fresh email to verify the success message and Admin queue appearance. Manual acceptance remains pending; do not mark the full workflow accepted until the Owner confirms.
 - Automated GitHub CI and the live end-to-end submit were not independently executed in this fix checkpoint. The function deployment itself succeeded; this is not evidence that the public submission journey has passed.
+
+
+## Integrated Business + Direct Owner approval — 28 November 2026
+
+**Owner authorization:** 28 November 2026.  
+**Scope:** Make Business Field Review's final approval action activate the direct-registration Owner and link the approved business automatically, while preserving independent identity/authority verification and the legacy invitation flow.
+
+- [x] Audited the canonical working rules, active plan, roadmap, handoff, Business Field Review UI, Owner Registration Requests page, direct Owner activation Edge Function, Owner Portal business query, live schema, live migration ledger and relevant Supabase function documentation.
+- [x] Confirmed the normal Owner Portal ownership relation is `businesses.owner_id = auth.uid()`; the direct activation finalizer sets this relation and approves the linked registration request.
+- [x] Added a single Business Field Review save path: after selected business fields and media decisions save successfully, the same final action invokes direct Owner activation when the Admin has explicitly checked independent identity/authority verification, all five required fields are approved, the business is published, and no pending media decisions remain.
+- [x] Removed the separate manual "Verify & Activate Owner Account" button from the direct-registration review path. The final action label now communicates that it will also activate the Owner when verification is checked.
+- [x] Added automated unit coverage for the direct activation gate: exact linked Auth user, independent identity verification, all five core fields, published business reference and zero pending media decisions are required.
+- [x] Hardened `activate-direct-owner` to verify the final published business-owner link, approved registration status and active Owner profile before returning success.
+- [x] Added safe reconciliation for an existing pending direct registration where the exact same direct Auth Owner is already linked to the published business (for example, after an earlier manual listing assignment). It approves that matching request instead of attempting to assign an already-owned listing again. It never overwrites a different Owner.
+- [x] No schema migration, RLS/grant change, password handling change, bulk data update, or existing record mutation was required.
+- [x] Deployed `activate-direct-owner` Edge Function version 6 with JWT verification enabled.
+- [ ] GitHub Actions typecheck, automated tests, production build and Edge Function CI for the latest source commit are pending verification.
+- [ ] Matching Cloudflare Pages production deployment is pending verification.
+- [ ] Owner manual acceptance is pending. Test a fresh direct registration through one combined Business Field Review approval, then verify the same email/password logs in and the approved business appears in Owner Portal → My Businesses.
+- [ ] Existing inconsistent requests are not bulk modified. A matching pending request can be reconciled only when an Admin explicitly performs the verified final approval action.
+
+### Updated Owner acceptance for the integrated flow
+
+1. Submit a legitimate new Add Business request with a fresh email/password.
+2. Before approval, confirm the Owner account cannot access Owner Portal.
+3. In Admin → Business Field Approval → View Details, review the fields and all images.
+4. Tick Select All for eligible fields/images; independently verify the applicant's identity and business authority, then tick the verification confirmation.
+5. Click **Approve Business & Activate Owner** once. Expect one success message confirming the business is published, the Owner account is active, and the business is linked.
+6. Open Admin → Owner Registration Requests and confirm this Add Business-linked request is not treated as a standalone invitation request.
+7. Sign in using the exact email/password selected on Add Business. Owner Portal → My Businesses must show the newly approved listing without any manual assignment.
+8. Refresh the Owner Portal and verify the same listing remains linked; confirm no unrelated business is visible.
+9. Confirm no invitation/password setup email was sent for this direct-registration flow.
+10. Re-test a legacy standalone Owner request separately to confirm its invitation workflow remains unchanged.
+
+Do not mark the Owner acceptance items complete until the Owner reports the results. Never share the password or OTP.
