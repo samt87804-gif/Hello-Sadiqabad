@@ -1397,5 +1397,8 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] GitHub Actions CI run `46054385777` passed on application commit `3fe32b61d7629292347ccf61084b9b053f2ec947`: TypeScript, automated tests, production build and Edge Function typecheck.
 - [x] Cloudflare Pages deployment `5e40bd82-5f5b-4fc5-bb5e-dfedac611402` succeeded for the same application commit; canonical alias `https://hellosadiqabad.com` is attached.
 - [x] Supabase `activate-direct-owner` v6 is ACTIVE with JWT verification.
-- [ ] Public Add Business mobile/desktop browser smoke run `46054385900` pending at checkpoint.
+- [x] Public Add Business mobile/desktop browser smoke run `46054385900` passed (production deployment wait and mobile/desktop form smoke).
 - [ ] Owner manual integrated workflow acceptance pending.
+
+
+- [x] Public Add Business browser smoke run `46054385900` passed on the deployed production build for the integrated workflow release. Admin combined approval and Owner Portal listing still require Owner manual acceptance.
