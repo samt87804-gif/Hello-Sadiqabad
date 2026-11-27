@@ -525,3 +525,13 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - OpenSEO balance was 52 credits; no paid keyword or ranking research was purchased.
 - Daily SEO maintenance automation is enabled for an approximate 8:00 AM Asia/Karachi run, using free GSC checks first and requiring fresh approval for code, database, URL/redirect, shared-template or publishing changes.
 - Next priorities: verify public-form smoke CI; obtain approval for the Bakhtawar legacy 301 and shared metadata template; later re-inspect `/add-business`, THE INSPIRE and `/emergency` in GSC after recrawl. Manual acceptance of the previous THE INSPIRE URL fix remains pending.
+
+## Current SEO workstream — business profile metadata (28 November 2026)
+
+- Owner approved the shared business-profile SEO fallback improvement.
+- Code committed directly to `main`; final code commit at checkpoint is `165459c66a944c3edeb59dd3c9f71860112e9ee4`.
+- Shared fallback title/description generation now uses existing verified business name, category, area and available short description. Explicit custom owner SEO title/description retain priority.
+- Crawler metadata lookup now includes category and area through the existing foreign keys; no DB/schema/RLS/business-row changes were made.
+- Regression tests cover local fallback generation and custom SEO description precedence.
+- CI/Pages deployment were still running at handoff time. Recheck exact commit before claiming CI/deployment complete.
+- Remaining: production Googlebot checks across representative profiles; manual browser acceptance. Do not bulk-write generated copy into business records.
