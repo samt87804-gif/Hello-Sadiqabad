@@ -100,7 +100,7 @@ export function Home() {
     updatePageSeo({
       title: 'Sadiqabad Business Directory',
       description:
-        'Find shops, doctors, hospitals, pharmacies, restaurants and local services in Sadiqabad, Punjab. Browse business listings, area guides and 24/7 emergency helplines.',
+        'Find local shops, clinics, restaurants and services in Sadiqabad, Punjab. Browse business profiles, area guides and emergency contacts on Hello Sadiqabad.',
       canonicalPath: '/',
       jsonLd: {
         '@context': 'https://schema.org',

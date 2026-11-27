@@ -50,7 +50,7 @@ export function AreaDetail() {
           .replace(/^[,\s]+|[,\s]+$/g, '') || 'Sadiqabad';
         updatePageSeo({
           title: `Businesses in ${areaName}`,
-          description: `Discover local shops, doctors and services in ${areaName}, Sadiqabad. Browse business profiles, contact details and available locations on Hello Sadiqabad.`,
+          description: `Find shops, clinics and services in ${areaName}, Sadiqabad. Browse local business profiles and contact details on Hello Sadiqabad.`,
           canonicalPath: `/area/${found.slug}`,
           jsonLd: {
             '@context': 'https://schema.org',

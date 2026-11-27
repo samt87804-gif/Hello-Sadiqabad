@@ -68,7 +68,7 @@ export function CategoryDetail() {
           : found.name_en;
         updatePageSeo({
           title: `${categoryTitle} in Sadiqabad`,
-          description: `Explore ${found.name_en} businesses in Sadiqabad, Punjab. Browse local profiles, locations, contact details and available services on Hello Sadiqabad.`,
+          description: `Find ${found.name_en} in Sadiqabad. Browse local business profiles, locations and contact details on Hello Sadiqabad.`,
           canonicalPath: `/category/${found.slug}`,
           jsonLd: {
             '@context': 'https://schema.org',
