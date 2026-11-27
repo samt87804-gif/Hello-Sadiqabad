@@ -519,12 +519,12 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - First-party Search Console review completed. Query dimension: 102 visible rows (102 clicks / 428 impressions). Date dimension: only 10 rows from 15–24 Nov 2026 (214 clicks / 1,734 impressions). Page dimension: 273 rows; homepage 177 clicks / 303 impressions, `/map` 20 / 645, Main Street area 5 / 213. Do not treat these dimension totals as one reconciled total or claim a full three-month daily baseline.
 - Search Console URL inspection covered 10 priority URLs. Homepage, map, Main Street area, categories and government helplines are indexed with matching canonicals. THE INSPIRE old `-4x0` URL still has historical indexed status from its 22 Nov crawl; canonical `-1h0` is discovered/not indexed. Production 301 is already verified; request canonical indexing after Google recrawls.
 - `/add-business` was accidentally indexable despite the master SEO plan requiring noindex. Fixed with `robots: noindex,follow` in commit `7132ac0ce36b71fa8f45f940266ac3d3df36e920`. Pages deployment succeeded, build and Edge Function CI passed, and production Googlebot rendering verified noindex + canonical + title + H1. Public-form browser smoke CI was still running at handoff time.
-- High-priority discovered legacy URL: Bakhtawar Memorial Hospital old slug `bakhtawar-memorial-hospital-hkl` returns 404, while the live published record uses `bakhtawar-memorial-hospital-gn7`. Old URL had 50 impressions in GSC. Do not add a 301 alias until the owner explicitly approves this URL behavior change.
+- Bakhtawar Memorial Hospital old slug `bakhtawar-memorial-hospital-hkl` was approved for a 301 alias. The exact stable-ID alias and regression test are now committed on `main`; live published row ID is `b880b4ec-8196-4c96-81a0-ddd9f61efd9d`, canonical slug `bakhtawar-memorial-hospital-gn7`. CI/deployment/live redirect verification and owner manual acceptance are pending.
 - Global business-profile SEO fallback template remains approval-gated. Live aggregate: 588 published listings; 587 lack custom SEO title and description; 568 English descriptions are shorter than 80 characters. Existing generated fallback metadata means these are not necessarily blank rendered tags. Preserve owner-entered SEO and listing facts.
 - OpenSEO shared project context remains empty. Ask the owner to confirm the concise business overview before writing it to project context and completing the saved SEO audit report.
 - OpenSEO balance was 52 credits; no paid keyword or ranking research was purchased.
 - Daily SEO maintenance automation is enabled for an approximate 8:00 AM Asia/Karachi run, using free GSC checks first and requiring fresh approval for code, database, URL/redirect, shared-template or publishing changes.
-- Next priorities: verify public-form smoke CI; obtain approval for the Bakhtawar legacy 301 and shared metadata template; later re-inspect `/add-business`, THE INSPIRE and `/emergency` in GSC after recrawl. Manual acceptance of the previous THE INSPIRE URL fix remains pending.
+- Next priorities: verify Bakhtawar alias CI/deployment/live redirect and obtain owner manual acceptance; later re-inspect `/add-business`, THE INSPIRE and `/emergency` in GSC after recrawl. Manual acceptance of previous legacy URL fixes remains pending.
 
 ## Current SEO workstream — business profile metadata (28 November 2026)
 
@@ -542,3 +542,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Cloudflare Pages deployment `50f8d212-39da-49db-9075-155b69a264e3` succeeded for the exact code commit.
 - Production Googlebot checks passed for Sakhawat Traders (no description), Doctor Commission Shop (short description), and THE INSPIRE custom SEO metadata preservation.
 - No business data or custom SEO fields were bulk-updated. Google recrawl/indexing and owner manual acceptance remain pending.
+
+
+## Bakhtawar Memorial Hospital legacy URL — implementation checkpoint (28 November 2026)
+
+- Owner explicitly approved the single old-to-current URL redirect.
+- Live read-only database verified the published row ID `b880b4ec-8196-4c96-81a0-ddd9f61efd9d` and canonical slug `bakhtawar-memorial-hospital-gn7`.
+- Added the old slug `bakhtawar-memorial-hospital-hkl` to `VERIFIED_LEGACY_BUSINESS_SLUGS`, keyed only by that stable ID. Existing browser/crawler alias code requires a matching currently published row; crawler requests are redirected to the canonical slug.
+- Added a regression test for correct mapping and absence of resolution without the published row.
+- Code commits: alias `1af5ecfd10508cf0a3912f853aab1a0e031239c3`; test `c84f3e248ee1f652cd4934c236882846ab8f881c`.
+- No business data, database schema, RLS, ownership, plan or sitemap changes.
+- CI, Pages deployment and production redirect verification remain pending at this checkpoint. Owner normal-browser acceptance remains pending.
