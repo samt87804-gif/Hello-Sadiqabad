@@ -45,6 +45,13 @@ interface BusinessSubmission {
   business_id: string | null;
 }
 
+interface PasswordChangeRequest {
+  id: string;
+  user_id: string;
+  status: 'pending' | 'approved' | 'rejected' | 'consumed' | 'expired';
+  requested_at: string;
+}
+
 interface LinkedOwnerRequest {
   id: string;
   full_name: string;
@@ -115,6 +122,7 @@ export function BusinessFieldReviewQueue({
   const [fields, setFields] = useState<FieldReview[]>([]);
   const [media, setMedia] = useState<BusinessMedia[]>([]);
   const [ownerRequests, setOwnerRequests] = useState<LinkedOwnerRequest[]>([]);
+  const [passwordChangeRequests, setPasswordChangeRequests] = useState<PasswordChangeRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [loadWarning, setLoadWarning] = useState('');
@@ -204,7 +212,7 @@ export function BusinessFieldReviewQueue({
       if (submissionError) throw submissionError;
       const ids = (rows ?? []).map((row) => row.id);
 
-      const [reviewResult, mediaResult, ownerResult, privateNotesResult] = await Promise.all([
+      const [reviewResult, mediaResult, ownerResult, privateNotesResult, passwordRequestResult] = await Promise.all([
         ids.length
           ? client.from('business_field_reviews')
             .select('id,submission_id,field_key,field_value,status,admin_note')
@@ -224,6 +232,11 @@ export function BusinessFieldReviewQueue({
         ids.length
           ? client.rpc('admin_submission_private_notes', { p_submission_ids: ids })
           : Promise.resolve({ data: [], error: null }),
+        client.from('owner_password_change_requests')
+          .select('id,user_id,status,requested_at')
+          .eq('status', 'pending')
+          .order('requested_at', { ascending: true })
+          .limit(50),
       ]);
       if (reviewResult.error) throw reviewResult.error;
 
@@ -231,6 +244,7 @@ export function BusinessFieldReviewQueue({
       if (mediaResult.error) optionalWarnings.push('Business image records could not be loaded; request cards are still available.');
       if (ownerResult.error) optionalWarnings.push('Linked Owner invitation details could not be loaded; invitation actions may be unavailable.');
       if (privateNotesResult.error) optionalWarnings.push('Private Admin notes could not be loaded; no note content is being displayed.');
+      if (passwordRequestResult.error) optionalWarnings.push('Owner password-change requests could not be loaded.');
 
       const mediaAssets = mediaResult.error ? [] : (mediaResult.data ?? []) as BusinessMedia[];
       const mediaPaths = mediaAssets.map((asset) => asset.storage_path);
@@ -277,6 +291,7 @@ export function BusinessFieldReviewQueue({
         preview_url: signedUrlByPath.get(asset.storage_path) ?? undefined,
       })));
       setOwnerRequests(linkedOwnerRows.filter((item) => activeIds.has(item.submission_id)));
+      setPasswordChangeRequests((passwordRequestResult.error ? [] : passwordRequestResult.data ?? []) as PasswordChangeRequest[]);
       setLoadWarning(optionalWarnings.join(' '));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Could not load business field reviews.';
@@ -378,6 +393,28 @@ export function BusinessFieldReviewQueue({
     setRejectedMediaIds((current) => current.includes(assetId)
       ? current.filter((id) => id !== assetId)
       : [...current, assetId]);
+  };
+
+  const reviewPasswordChangeRequest = async (requestId: string, decision: 'approve' | 'reject') => {
+    const client = getSupabaseClient();
+    if (!client) return;
+    setBusy(true);
+    try {
+      const { data, error } = await client.functions.invoke('review-owner-password-change', {
+        body: { request_id: requestId, decision },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Password-change request could not be reviewed.');
+      showToast(decision === 'approve'
+        ? 'Password change approved. Owner has 30 minutes to set the new password.'
+        : 'Password change request rejected.', 'success');
+      await reload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Password-change review failed.', 'error');
+      await reload();
+    } finally {
+      setBusy(false);
+    }
   };
 
   const activateDirectOwner = async () => {
@@ -597,6 +634,29 @@ export function BusinessFieldReviewQueue({
       {loadWarning && (
         <Card className="p-3 border border-warning/30 bg-warning/5 text-xs text-on-surface-variant" role="status">{loadWarning}</Card>
       )}
+      <Card className="p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h3 className="text-sm font-bold text-on-surface">Owner Password-Change Approvals</h3>
+            <p className="text-[11px] text-on-surface-variant">Approve or reject Owner requests. New passwords are never visible to Admin.</p>
+          </div>
+          <span className="text-xs font-semibold text-on-surface-variant">{passwordChangeRequests.length} pending</span>
+        </div>
+        {passwordChangeRequests.length === 0 ? (
+          <p className="text-xs text-on-surface-variant">No Owner password-change requests are waiting.</p>
+        ) : passwordChangeRequests.map((request) => (
+          <div key={request.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg bg-surface-container-low p-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-on-surface break-all">Owner account: {request.user_id}</p>
+              <p className="text-[11px] text-on-surface-variant">Requested {new Date(request.requested_at).toLocaleString()}</p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button size="sm" disabled={busy} loading={busy} onClick={() => void reviewPasswordChangeRequest(request.id, 'approve')}>Approve</Button>
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => void reviewPasswordChangeRequest(request.id, 'reject')}>Reject</Button>
+            </div>
+          </div>
+        ))}
+      </Card>
       {loading ? (
         <Card className="p-6 text-sm text-on-surface-variant">Loading business requests…</Card>
       ) : loadError && submissions.length === 0 ? null : submissions.length === 0 ? (
