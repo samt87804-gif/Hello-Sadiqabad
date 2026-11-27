@@ -58,3 +58,15 @@ Owner manual acceptance must remain pending until the Owner confirms the device 
 - Regression tests cover redirect to the canonical URL and 404 behavior if the business is unpublished.
 - [x] Production Googlebot Browser Rendering confirmed an HTTP 301 from the supplied `-4x0` URL to canonical `-1h0`; after redirect, the page rendered the academy H1, business-specific title, indexable robots metadata and LocalBusiness JSON-LD.
 - [ ] Owner manually opens the supplied old URL in a normal browser/phone and confirms the profile loads and the address bar changes to the canonical `-1h0` URL.
+
+
+## Additional verified legacy URL — Bakhtawar Memorial Hospital (28 November 2026)
+
+- Owner explicitly approved the 301 behavior change for the old URL `/business/bakhtawar-memorial-hospital-hkl`.
+- Read-only live Supabase lookup confirmed the unique published business ID `b880b4ec-8196-4c96-81a0-ddd9f61efd9d`, current slug `bakhtawar-memorial-hospital-gn7`, and status `published`.
+- Added the exact historical slug + stable business ID to the verified alias registry. Existing browser and crawler resolution paths now resolve it only when the matching live row remains published; crawler requests are designed to 301 to the current canonical slug.
+- Added regression coverage for the exact Bakhtawar alias and for the alias not resolving when no published row is present.
+- No business data, slug, sitemap, schema, RLS, ownership, plan entitlement or database records were changed.
+- [ ] GitHub CI, production build and Pages deployment for the alias change.
+- [ ] Production browser and crawler checks: old URL 301s to `/business/bakhtawar-memorial-hospital-gn7`, final page returns HTTP 200 and canonical metadata.
+- [ ] Owner manually opens the old URL in a normal browser/phone and confirms the profile loads and address bar changes to the canonical `-gn7` URL.
