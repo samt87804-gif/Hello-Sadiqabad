@@ -16,7 +16,7 @@ try{
  if(actor.role==="staff"){
    const {data:staff,error:staffError}=await db.from("staff_members").select("staff_types,permissions,is_active").eq("user_id",user.user.id).maybeSingle();
    const permissions=staff?.permissions&&typeof staff.permissions==="object"?staff.permissions as Record<string,unknown>:{};
-   allowed=!staffError&&staff?.is_active===true&&(permissions["moderation.review"]===true||(permissions["moderation.review"]!==false&&(staff.staff_types??[]).includes("moderation")));
+   allowed=!staffError&&staff?.is_active===true&&(permissions["moderation.review"]===true||(permissions["moderation.review"]!==false&&["moderator","support"].some((type)=>(staff.staff_types??[]).includes(type))));
  }
  if(!allowed)return reply(req,{ok:false,error:"Moderation permission required"},403);
  const body=await req.json().catch(()=>null) as Record<string,unknown>|null;
