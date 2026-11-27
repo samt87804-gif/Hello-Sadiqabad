@@ -186,3 +186,19 @@ Do not mark the Owner acceptance items complete until the Owner reports the resu
 
 - GitHub Actions Public Add Business Browser Smoke run `46054385900` completed **success**. Chromium installation, production deployment wait and the mobile/desktop Add Business form smoke all passed.
 - This browser smoke validates the public Add Business form, not the new Admin combined-approval-to-Owner-Portal end-to-end path. That final workflow still requires Owner manual acceptance.
+
+
+## Admin delete invalid pending Add Business request — 28 November 2026
+
+- Owner explicitly approved a narrowly scoped Delete Request action on Admin → Business Field Approval.
+- Added a per-card **Delete Request** action with an explicit permanent-deletion confirmation.
+- Deletion is available only for `new` / `in_review` Add Business submissions with no created business listing and no Owner/invitation workflow already processing, approved or sent.
+- Server-side authorization is restricted to an active Super Admin. A transactional database function rechecks the exact submission status, absence of a business listing, pending Owner state, inactive direct Owner profile and absence of any business owned by that account before deleting.
+- The database transaction writes an audit log, deletes the linked Owner registration request and submission, and cascades only its field-review and submission-media rows. Published listings, active Owner accounts and unrelated records are protected.
+- For direct registration, the Edge Function verifies trusted `pending_admin_approval` Auth metadata, then best-effort removes the inactive Auth user and the private submitted image objects after the database deletion. Any cleanup failure is surfaced as a warning; no active account is eligible.
+- Migration `20261127194100` (`admin_delete_pending_business_submission`) applied to the existing Supabase project. No existing production submissions were deleted during implementation.
+- Edge Function `delete-business-submission` v1 deployed ACTIVE with JWT verification enabled.
+- Added unit coverage for the deletion eligibility gate.
+- Application commit `6df1494c6a676a55a2e1a85c9da9768b9f552def`; CI run `46058553922` passed TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment `9c84cde3-e487-4d74-877e-95d144327f43` succeeded for the application commit and is attached to `https://hellosadiqabad.com`.
+- [ ] Owner manual acceptance pending: use a deliberately invalid, unapproved Add Business request; delete it from Business Field Review; confirm it disappears after Refresh; confirm its pending direct Owner account cannot log in and no unrelated listing/account is affected. Do not delete a real applicant's valid request as a test.
