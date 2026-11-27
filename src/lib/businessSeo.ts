@@ -62,13 +62,13 @@ export function buildBusinessSeoMetadata(
   const fallbackTitle = name + ' — ' + descriptor + (descriptor === 'Sadiqabad' ? '' : ', Sadiqabad') + ' | Hello Sadiqabad';
   const title = customTitle
     ? (/hello sadiqabad/i.test(customTitle) ? customTitle : customTitle + ' | Hello Sadiqabad')
-    : cleanBusinessSeoText(fallbackTitle, name + ' — Sadiqabad | Hello Sadiqabad', 120);
+    : fallbackTitle.length > 120 ? fallbackTitle.slice(0, 119).trimEnd() + '…' : fallbackTitle;
   const sourceDescription = business.description_en || business.description_ur;
   const fallbackDescription = category
     ? 'Find ' + name + ', listed under ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. View its available contact details and location on Hello Sadiqabad.'
     : name + ', Sadiqabad. View available contact details, location and business information on Hello Sadiqabad.';
   const enrichedShortDescription = sourceDescription && sourceDescription.trim().length < 80 && category
-    ? 'Find ' + name + ', a ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. ' + sourceDescription.trim()
+    ? 'Find ' + name + ', listed under ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. ' + sourceDescription.trim()
     : sourceDescription;
   const description = cleanBusinessSeoText(
     business.meta_description_en || enrichedShortDescription,
