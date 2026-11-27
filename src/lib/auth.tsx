@@ -249,8 +249,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await hydrateUser({ id: data.user.id, email: data.user.email ?? cleanEmail }, true);
       const [perms, profRes] = await Promise.all([
         fetchMyPermissions(data.user.id),
-        client.from('profiles').select('must_change_password').eq('id', data.user.id).single(),
+        client.from('profiles').select('must_change_password,is_active,role').eq('id', data.user.id).single(),
       ]);
+      if (!profRes.error && profRes.data?.role === 'owner' && profRes.data.is_active === false) {
+        await client.auth.signOut();
+        await hydrateUser(null);
+        return { ok: false, error: 'Your Owner account is waiting for Admin approval. You can sign in after your business is approved and the account is activated.' };
+      }
       if (profRes.error || !profRes.data || !perms.role || perms.is_active !== true) {
         await client.auth.signOut();
         await hydrateUser(null);
