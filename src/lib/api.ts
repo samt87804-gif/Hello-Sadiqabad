@@ -3838,6 +3838,34 @@ export async function upsertGovernmentJob(
 }
 
 
+export interface OwnerPasswordChangeRequest {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected' | 'consumed' | 'expired';
+  requested_at: string;
+  reviewed_at: string | null;
+  expires_at: string | null;
+  admin_note: string | null;
+}
+
+export async function fetchOwnerPasswordChangeRequests(): Promise<OwnerPasswordChangeRequest[]> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Password-change requests require your signed-in Owner account.');
+  const { data, error } = await client.from('owner_password_change_requests')
+    .select('id,status,requested_at,reviewed_at,expires_at,admin_note')
+    .order('requested_at', { ascending: false }).limit(10);
+  if (error) throw error;
+  return (data ?? []) as OwnerPasswordChangeRequest[];
+}
+
+export async function submitOwnerPasswordChangeRequest(): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Password-change requests require your signed-in Owner account.');
+  const { data: authData, error: authError } = await client.auth.getUser();
+  if (authError || !authData.user) throw new Error('Sign in again before requesting a password change.');
+  const { error } = await client.from('owner_password_change_requests').insert({ user_id: authData.user.id, status: 'pending' });
+  if (error) throw error;
+}
+
 export interface OwnerPaymentReceipt {
   receipt_id: string;
   assignment_id: string;
