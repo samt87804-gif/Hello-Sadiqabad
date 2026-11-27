@@ -75,6 +75,18 @@ test('fallback SEO metadata avoids repeating identical category and area labels'
   assert.doesNotMatch(metadata.description, /Ghalla Mandi in Ghalla Mandi/);
 });
 
+test('fallback SEO metadata normalizes punctuation and city suffix in area labels', () => {
+  const metadata = buildBusinessSeoMetadata({
+    name_en: 'Example Academy',
+    slug: 'example-academy',
+    category: { name_en: 'Academy' },
+    area: { name_en: ', Hussainabad, Sadiqabad' },
+  });
+  assert.match(metadata.title, /Academy in Hussainabad, Sadiqabad/);
+  assert.doesNotMatch(metadata.title, /in ,/);
+  assert.doesNotMatch(metadata.title, /Sadiqabad, Sadiqabad/);
+});
+
 test('custom SEO description remains authoritative over generated fallback copy', () => {
   const metadata = buildBusinessSeoMetadata({
     ...business,
