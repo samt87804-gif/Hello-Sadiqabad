@@ -1378,3 +1378,15 @@ No database migration, RLS/grant change or existing production data mutation was
 - Deployed `submit-suggestion` Edge Function version 14; status ACTIVE and JWT verification remains enabled. No schema/RLS/grant change and no production test account or business submission were created.
 - Owner must now manually submit one genuine, authorized business request with a fresh email to verify the success message and Admin queue appearance. Manual acceptance remains pending; do not mark the full workflow accepted until the Owner confirms.
 - Automated GitHub CI and the live end-to-end submit were not independently executed in this fix checkpoint. The function deployment itself succeeded; this is not evidence that the public submission journey has passed.
+
+
+## Integrated Business + Direct Owner approval (28 November 2026)
+
+- [x] Audited Business Field Review, direct Owner activation, Owner Requests separation, Owner Portal ownership query and live schema. The canonical listing relation is `businesses.owner_id = auth.uid()`.
+- [x] Business Field Review now uses one final approval action to save selected fields/media and then activate/link a direct Owner when Admin independently verifies identity and authority, all five core fields are approved, the business is published, and all pending media decisions are resolved.
+- [x] Removed the separate manual direct-Owner activation button from the review popup. Legacy standalone invitation requests remain on their existing path.
+- [x] Direct activation now verifies the active profile, approved registration and exact business-owner link before returning success. A pending request with an already-existing matching Owner/business link can be safely reconciled on verified Admin approval; a different Owner is never overwritten.
+- [x] Added unit coverage for the direct Owner activation eligibility gate. No migration, RLS/grant change or bulk data mutation.
+- [x] Supabase `activate-direct-owner` v6 deployed ACTIVE with JWT verification.
+- [ ] Latest GitHub Actions CI and Cloudflare Pages production deployment evidence pending.
+- [ ] Owner manual acceptance pending: one combined approval, same-credentials Owner login, automatic My Businesses listing, no manual assignment, and legacy invitation regression.
