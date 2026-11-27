@@ -93,3 +93,33 @@ Do not ship an incomplete or incompatible combination to production. Do not clai
 - Owner password request RLS now uses one combined read policy for Owner/self and authorized Admin/moderation, plus a reviewer index. Re-running advisors shows the new table no longer triggers multiple-permissive-policy or unindexed-FK warnings. Existing project-wide advisor findings remain.
 - Production Pages build/deploy passed on commit `63945f99bf1d918297475186fe9c8cbc39c40b9c` (deployment `cacbedcb-7e5b-4278-8fb3-aa1555cff2d2`). GitHub Actions test/typecheck status is not verified.
 - No test Owner account, real business submission or password-change request was created. Owner must perform manual acceptance after the remaining automated verification is completed.
+
+
+## Final production audit checkpoint — 27 November 2026
+
+- Re-read the canonical permanent rules, current roadmap, handoff, this plan and affected source files before final verification.
+- Live Supabase migration ledger confirms all four feature migrations are applied: `20261127164058`, `20261127164621`, `20261127165305`, `20261127165456`.
+- Live Edge Function inventory confirms ACTIVE, JWT-verified versions: `submit-suggestion` v13, `activate-direct-owner` v5, `review-owner-password-change` v4 and `complete-owner-password-change` v1. Legacy invitation function remains ACTIVE v3 for historical compatibility.
+- Read-only live data audit: 7 existing Owner registration rows remain intact (7 legacy, 0 direct registrations so far); 0 password-change requests exist; password-change table has RLS enabled and no password-named column; Owner registration table has no password-named column; 0 existing submission payloads contain owner_password/password/confirm_password keys. No production test account, business submission or password-change request was created.
+- Source review confirms public Add Business sends the password separately to the server function, confirm password stays client-only, Owner password completion calls the dedicated approval-consuming Edge Function, and Admin UI does not receive the new password.
+- The feature's Cloudflare Pages application deployment is recorded as successful for commit `63945f99bf1d918297475186fe9c8cbc39c40b9c` (deployment `cacbedcb-7e5b-4278-8fb3-aa1555cff2d2`). Current GitHub connector does not expose a workflow-run listing/dispatch action, so a fresh Actions `npm run check` result could not be independently retrieved or started in this checkpoint. Do not mark CI/typecheck/unit tests as passed on the basis of Pages build alone.
+- Remaining before Owner manual acceptance: obtain CI evidence when Actions run access is available, then run the practical browser scenarios below. The production feature code is deployed; manual owner acceptance is not yet recorded.
+
+### Owner practical acceptance checklist
+
+Use a fresh email address that has never registered on the site. Do not use a real existing Owner account for the new-registration test.
+
+1. **Public registration:** open `https://hellosadiqabad.com` → Add Business. Enter a test business listing and Owner name/email/password/confirm password. Submit. Expect a successful submission confirmation. Keep the test email/password safe; never send the password to Admin or in chat.
+2. **Password validation:** on a separate unsent attempt, enter a password shorter than 8 characters and confirm the form blocks submission. Then enter two different password values and confirm the mismatch is blocked. Do not create duplicate real requests.
+3. **Inactive account:** before Admin activation, sign out and try signing in using the new test email/password. The account must not enter Owner Portal or gain Owner permissions. A denied/inactive result is expected; it must not be treated as an incorrect-password diagnosis without checking the Admin request.
+4. **Admin business review:** Super Admin → Admin → Business Field Approval → Refresh. Open the new test submission. Review all required fields and each submitted image; approve/reject fields/media using the normal moderation workflow. Do not activate until the required five core fields are approved/published and all pending media decisions are resolved.
+5. **Identity verification and activation:** Admin verifies the applicant's identity and authority using the site's normal independent checks (email is not verified by this no-email workflow). Tick the explicit identity verification confirmation and activate the direct Owner account. Expect a success message and a linked, published business. No invitation or password-reset email should be sent.
+6. **Owner login:** sign out of Admin. Sign in with exactly the email/password entered on Add Business. Expect access to Owner Portal and the linked business under My Businesses. Confirm no other business is linked.
+7. **Password-change request:** Owner Portal → Profile → Change Password → Request Admin Approval. Expect a pending status. Before approval, try submitting a new password only if the UI permits typing; saving must be blocked and the current password must remain valid.
+8. **Admin decision:** Super Admin → Admin → Business Field Approval → Owner Password-Change Approvals. Confirm the request appears. Test Reject on a separate request if practical; a rejected request must not permit password change. For the main flow, click Approve. Admin must never see or enter the new password.
+9. **Owner changes password:** within 30 minutes, return to Owner Portal → Profile. Enter a new password and confirmation and save. Expect success. Sign out; verify the old password no longer works and the new password signs in successfully.
+10. **One-time approval:** after successful change, try using the same approval again (for example, submit a second password update without a new request). It must be denied. A new password change requires a new Owner request and Admin approval.
+11. **Other account isolation:** if a second Owner test account is available, verify it cannot see the first Owner's password request or use the first Owner's approval. Do not test with another real user's credentials.
+12. **Regression:** confirm existing Owner login, existing Owner Portal pages, and legacy invitation requests still work as before. Do not resend legacy invitations unless genuinely required.
+
+After completing tests, report pass/fail by step and any exact error text (never include passwords, OTPs, access tokens or private customer details). Only then may the manual acceptance checkboxes be marked complete.
