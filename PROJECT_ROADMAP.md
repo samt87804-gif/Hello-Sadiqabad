@@ -1439,3 +1439,8 @@ No database migration, RLS/grant change or existing production data mutation was
 - [ ] Full SEO programme remains in progress: targeted business-profile crawl is running; extend crawl coverage beyond the 50-page audit budget; review business-profile metadata/content quality, heading hierarchy, internal links, structured data, sitemap/indexability and Search Console performance.
 - [ ] Search Console is verified for the site but not connected to the OpenSEO project; first-party performance analysis awaits account connection.
 - [ ] Keep Google ranking/indexing status separate from implementation and deployment; no ranking guarantee.
+
+
+- [x] Post-deployment 10-page audit completed after metadata cleanup: only crawl-page-limit and one heading-order skip on `/map`; no title-length or meta-description warnings in the sample. All 10 pages had one H1.
+- [x] Googlebot Browser Rendering directly verified the computer/IT category page (title 53 chars, description 137 chars) and a long area page (title 56 chars, description 143 chars).
+- [ ] Next broad change: improve the shared SEO metadata fallback for 588 published business profiles. Await explicit approval because this changes a sitewide template; preserve custom owner metadata, public listing facts and canonical URLs.

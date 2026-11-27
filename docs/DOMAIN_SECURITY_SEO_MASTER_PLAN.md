@@ -324,3 +324,13 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] Googlebot live browser test verified the exact 301 chain and rendered academy H1 after redirect.
 - [ ] Owner to verify the legacy THE INSPIRE URL in a normal browser/phone; manual acceptance remains pending.
 - [ ] Connect the verified Google Search Console property to OpenSEO before relying on first-party query, click, CTR, position or indexing data.
+
+
+## Post-deployment verification — 28 November 2026
+
+- [x] A 10-page root re-audit after the second metadata cleanup completed: 10 pages, 2 issue instances only — crawl-page-limit and one heading-order skip on `/map`. No title-length or meta-description warnings in this 10-page sample. All 10 sampled pages had one H1; titles ranged from 32 to 56 characters and word counts from 152 to 1,215. The crawl stopped at the 10-page cap; this is not a full-site clearance.
+- [x] Direct Googlebot Browser Rendering verified the computer/IT category page: title 53 characters, meta description 137 characters, one H1.
+- [x] Direct Googlebot Browser Rendering verified the longest sampled area page: title 56 characters, meta description 143 characters, one H1.
+- [x] Direct Googlebot Browser Rendering for THE INSPIRE old URL verified redirectChain HTTP 301 to canonical `-1h0`, final URL, academy H1, business title and LocalBusiness JSON-LD.
+- [ ] The business-profile metadata still needs a controlled global improvement. THE INSPIRE custom title renders at 78 characters and its custom description is clipped at 160 characters. Across 588 published businesses, 587 lack custom meta title/description fields and 568 descriptions are shorter than 80 characters; generated fallback metadata is used. Do not invent listing facts. Proposed next phase: use existing verified business name/category/area/services to create concise, unique fallback titles and descriptions while preserving owner-entered metadata and public listing content. Await owner approval before changing the shared business SEO template.
+- [ ] OpenSEO GSC integration is not connected; first-party Search Console analysis is pending owner connection.

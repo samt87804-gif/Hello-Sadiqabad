@@ -502,3 +502,12 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Read-only database aggregate: 588 published businesses; 587 have no custom SEO title or description fields, while 568 have descriptions under 80 characters. The app generates fallback metadata; this is not a count of pages with blank rendered meta tags. The next recommended change is a global business-profile SEO fallback template that builds unique snippets from existing verified name/category/area/services while preserving custom metadata and public listing copy; this is a broad template change and must wait for owner approval.
 - SERP snapshot: Hello Sadiqabad appeared at best organic position 3 for “THE INSPIRE BUSINESS ACADEMY” in 1/3 observations, and the Knowledge Graph used canonical `-1h0` in 3/3. For “Sadiqabad business directory”, the domain did not appear in the 7 organic listings returned. Search Console is not connected to OpenSEO, so first-party performance/index coverage is still unavailable.
 - Googlebot Browser Rendering now confirms the exact HTTP 301 chain and renders the academy H1 after redirect. Manual acceptance pending: owner opens the supplied old URL on a normal browser/phone and confirms the profile loads and the address bar changes to canonical `-1h0`.
+
+
+## Post-deployment SEO re-check (28 November 2026)
+
+- 10-page root audit completed after the second metadata cleanup: 2 findings only (page-limit warning and one heading-order skip on `/map`); no title or meta-description warnings in the sample. Every sampled page had one H1. This is a 10-page sample, not a full crawl.
+- Cloudflare Browser Rendering with Googlebot verified the computer/IT category page metadata (53-char title, 137-char description) and a long area page (56-char title, 143-char description).
+- THE INSPIRE legacy URL has a production-confirmed 301 chain to `-1h0`; the academy H1 and LocalBusiness JSON-LD render after redirect.
+- Next broad task requires owner approval: improve the shared fallback metadata template across 588 published businesses, preserving custom owner metadata and all public listing facts/URLs. Current DB aggregate: 587 have no custom SEO title/description; 568 descriptions are under 80 chars. Do not generate facts that are not in existing structured data.
+- OpenSEO Google Search Console integration remains disconnected. Connect the verified property at https://app.openseo.so/p/eba90eb5-b616-42ab-97c2-a6a9245c17c3/settings/integrations before first-party indexing/performance analysis.
