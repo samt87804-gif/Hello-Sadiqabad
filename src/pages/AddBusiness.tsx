@@ -861,8 +861,8 @@ export function AddBusiness() {
                 />
                 <span>
                   {lang === 'ur'
-                    ? 'میں تصدیق کرتا/کرتی ہوں کہ مجھے یہ کاروباری معلومات جمع کروانے کا اختیار ہے۔ میں سمجھتا/سمجھتی ہوں کہ صرف منظور شدہ کاروباری معلومات عوامی ڈائریکٹری میں دکھائی جائیں گی، جبکہ مالک کا نام اور Gmail صرف ایڈمن کی منظوری اور دعوت کے لیے نجی رہیں گے۔'
-                    : 'I confirm I am authorized to submit these business details. I understand that only approved business information will appear in the public directory, while the owner name and Gmail remain private for Admin review and invitation.'}
+                    ? 'میں تصدیق کرتا/کرتی ہوں کہ مجھے یہ کاروباری معلومات جمع کروانے کا اختیار ہے۔ میں سمجھتا/سمجھتی ہوں کہ صرف منظور شدہ کاروباری معلومات عوامی ڈائریکٹری میں دکھائی جائیں گی، جبکہ مالک کی معلومات نجی رہیں گی۔ میرا Owner اکاؤنٹ Admin کی جانب سے شناخت اور کاروبار سے تعلق کی تصدیق اور منظوری کے بعد فعال ہوگا۔'
+                    : 'I confirm I am authorized to submit these business details. Only approved business information will appear publicly. My Owner account stays inactive until Admin independently verifies my identity and authority over this business and approves activation.'}
                 </span>
               </label>
 
