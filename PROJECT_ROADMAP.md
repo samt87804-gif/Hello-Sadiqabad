@@ -1329,3 +1329,19 @@ No database migration, RLS/grant change or existing production data mutation was
 - Cloudflare Pages production deployment `5cd6ad7d-70ca-4f8f-a2ed-db9ed2872c66` succeeded for the same application commit; canonical alias `https://hellosadiqabad.com` is attached.
 - Public mobile/desktop browser smoke workflow `45998652504` is still running; its result is not claimed yet.
 - Owner manual acceptance remains pending. No database migration, RLS/grant change or existing production data mutation was made.
+
+
+## Owner Direct Registration, Password Approval & Owner Deletion — 27 November 2026
+
+- Active implementation plan: [docs/OWNER_DIRECT_REGISTRATION_ACTIVE_IMPLEMENTATION_PLAN.md](docs/OWNER_DIRECT_REGISTRATION_ACTIVE_IMPLEMENTATION_PLAN.md).
+- Owner authorized the redesigned workflow and the additional Super Admin Owner deletion capability.
+- [x] Re-read canonical working rules, roadmap, handoff, current Add Business/auth/Admin review source, live schema and Supabase migration ledger.
+- [x] Confirmed current schema has `profiles.is_active`, linked `owner_registration_requests`, and the existing invitation lifecycle; existing records are to remain unchanged.
+- [x] Added the active implementation plan with security boundaries, phased acceptance criteria and no-email verification trade-off.
+- [ ] Direct registration backend, inactive Auth account provisioning and request linkage.
+- [ ] Public Add Business credentials UI and secure payload separation.
+- [ ] Admin activation gate replacing invitation for new registrations.
+- [ ] Owner password-change request and Admin decision flow.
+- [ ] Super Admin permanent Owner deletion with audit and historical data preservation.
+- [ ] Automated checks, CI, reviewed additive migration, Edge Function deployment and Pages verification.
+- Implementation has **not** yet been deployed. Existing invitation flow and production data remain unchanged. Existing pending requests remain historical and are not converted/deleted.
