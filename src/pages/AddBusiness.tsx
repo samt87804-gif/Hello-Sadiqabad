@@ -137,6 +137,8 @@ export function AddBusiness() {
   const [mapUrl, setMapUrl] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
+  const [ownerPassword, setOwnerPassword] = useState('');
+  const [confirmOwnerPassword, setConfirmOwnerPassword] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [openingHours, setOpeningHours] = useState<AddBusinessHoursState>(createAddBusinessHoursState);
@@ -215,6 +217,8 @@ export function AddBusiness() {
     setMapUrl('');
     setOwnerName('');
     setOwnerEmail('');
+    setOwnerPassword('');
+    setConfirmOwnerPassword('');
     setLogoFile(null);
     setCoverFile(null);
     setOpeningHours(createAddBusinessHoursState());
@@ -289,6 +293,14 @@ export function AddBusiness() {
     }
     if (!/^[^\s@]+@gmail\.com$/i.test(ownerEmail.trim())) {
       showToast(lang === 'ur' ? 'براہ کرم Gmail ایڈریس درج کریں۔' : 'Please enter a valid Gmail address.', 'error');
+      return;
+    }
+    if (!isOwner && ownerPassword.length < 8) {
+      showToast(lang === 'ur' ? 'پاس ورڈ کم از کم 8 حروف کا ہونا چاہیے۔' : 'Choose a password with at least 8 characters.', 'error');
+      return;
+    }
+    if (!isOwner && ownerPassword !== confirmOwnerPassword) {
+      showToast(lang === 'ur' ? 'دونوں پاس ورڈ ایک جیسے نہیں ہیں۔' : 'The passwords do not match.', 'error');
       return;
     }
     if (mapUrl.trim() && !isSafeGoogleMapsUrl(mapUrl.trim())) {
@@ -388,6 +400,7 @@ export function AddBusiness() {
           description_en: description.trim() || undefined,
           description_ur: descriptionUr.trim() || undefined,
         },
+        owner_password: !isOwner ? ownerPassword : undefined,
         contact_name: contactName.trim() || cleanName,
         contact_phone: contactPhone.trim() || phone.trim(),
         website_hp: hp,
@@ -780,6 +793,22 @@ export function AddBusiness() {
                 <Input label={lang === 'ur' ? 'کاروبار کے مالک کا نام' : 'Business Owner Name'} required maxLength={100} value={ownerName} onChange={(e) => setOwnerName(e.target.value)} />
                 <Input label={lang === 'ur' ? 'مالک کا Gmail' : 'Owner Gmail Address'} type="email" required maxLength={254} dir="ltr" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} placeholder="name@gmail.com" />
               </div>
+              {!isOwner && (
+                <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-on-surface">{lang === 'ur' ? 'اپنا Owner اکاؤنٹ بنائیں' : 'Create your Owner account'}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                      {lang === 'ur'
+                        ? 'یہ پاس ورڈ محفوظ طریقے سے Supabase Auth میں محفوظ ہوگا۔ اکاؤنٹ Admin کی منظوری تک بند رہے گا۔ ای میل کی ملکیت خودکار طور پر تصدیق نہیں ہوگی؛ Admin آپ کی شناخت اور کاروبار سے تعلق کی تصدیق کرے گا۔'
+                        : 'Your password is sent securely to account authentication and is never added to your business request. Your account stays inactive until Admin approval. Email ownership is not verified by email; Admin must verify your identity and authority.'}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input label={lang === 'ur' ? 'پاس ورڈ' : 'Password'} type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={ownerPassword} onChange={(e) => setOwnerPassword(e.target.value)} />
+                    <Input label={lang === 'ur' ? 'پاس ورڈ دوبارہ درج کریں' : 'Confirm Password'} type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={confirmOwnerPassword} onChange={(e) => setConfirmOwnerPassword(e.target.value)} />
+                  </div>
+                </div>
+              )}
               <section className="space-y-3 rounded-2xl border border-outline-variant/50 bg-surface-container-low/50 p-3.5 sm:p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
