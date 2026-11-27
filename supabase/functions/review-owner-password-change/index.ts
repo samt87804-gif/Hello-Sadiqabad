@@ -11,7 +11,14 @@ try{
  const {data:user,error:userError}=await db.auth.getUser(token);
  if(userError||!user.user)return reply(req,{ok:false,error:"Unauthorized"},401);
  const {data:actor,error:actorError}=await db.from("profiles").select("role,is_active").eq("id",user.user.id).maybeSingle();
- if(actorError||actor?.role!=="super_admin"||actor.is_active!==true)return reply(req,{ok:false,error:"Super Admin permission required"},403);
+ if(actorError||!actor||actor.is_active!==true)return reply(req,{ok:false,error:"Active Admin account required"},403);
+ let allowed=actor.role==="super_admin";
+ if(actor.role==="staff"){
+   const {data:staff,error:staffError}=await db.from("staff_members").select("staff_types,permissions,is_active").eq("user_id",user.user.id).maybeSingle();
+   const permissions=staff?.permissions&&typeof staff.permissions==="object"?staff.permissions as Record<string,unknown>:{};
+   allowed=!staffError&&staff?.is_active===true&&(permissions["moderation.review"]===true||(permissions["moderation.review"]!==false&&(staff.staff_types??[]).includes("moderation")));
+ }
+ if(!allowed)return reply(req,{ok:false,error:"Moderation permission required"},403);
  const body=await req.json().catch(()=>null) as Record<string,unknown>|null;
  const id=typeof body?.request_id==="string"?body.request_id:"";
  const decision=body?.decision;
