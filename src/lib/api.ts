@@ -1335,6 +1335,7 @@ export async function submitPublicSuggestion(input: {
   type: SubmissionType;
   business_id?: string | null;
   payload: Record<string, unknown>;
+  owner_password?: string;
   contact_name?: string;
   contact_phone?: string;
   website_hp?: string;
