@@ -476,3 +476,11 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Cloudflare Pages deployment `9c84cde3-e487-4d74-877e-95d144327f43` succeeded for the same application commit and has canonical alias `https://hellosadiqabad.com`.
 - Next owner test: create/use a deliberately invalid test Add Business request, delete it via the card action, refresh and confirm it is gone. Verify the associated inactive direct Owner account is removed/locked and unrelated listings remain. Never delete a real valid customer request solely for testing.
 - Owner manual acceptance remains pending.
+
+
+## Current workstream — Business QR legacy URL compatibility (28 November 2026)
+
+- Owner directly authorized investigation and correction of Basic-plan QR URLs that open `Business listing not found` while the same business opens from public search.
+- Read-only comparison confirmed 93 public-snapshot records have historical slugs that differ from current published Supabase slugs, while their stable `databaseId` still identifies the same business. The current browser and crawler resolvers were exact-slug-only.
+- Active plan: `docs/BUSINESS_QR_LEGACY_SLUG_FIX_PLAN.md`. Scope is backward-compatible legacy slug resolution and canonical redirects; no business data, plan entitlement, ownership, RLS or schema change.
+- Implementation/release verification status must be refreshed from the latest commit and CI/Pages deployment. Owner must scan an existing QR and a newly generated QR before manual acceptance is marked passed.

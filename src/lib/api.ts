@@ -43,6 +43,7 @@ import {
   getOrCreateSessionId,
 } from './offlineStorage';
 import { effectivePlanCode, filterAndRankBusinesses, matchesDirectoryBusinessQuery, normalizeDirectorySearchText } from './searchFilter';
+import { buildBusinessSlugAliasMap, resolveBusinessBySlug } from './businessSlugAliases';
 import { normalizePkPhone } from './phone';
 import { trackSiteAnalyticsEvent } from './siteAnalytics';
 import { daysUntil, slugify } from './format';
@@ -460,6 +461,7 @@ type GitHubBusinessRecord = {
 type GitHubBusinessIndex={chunks:Array<{file:string;count:number;gzipBase64?:boolean}>};
 let githubBusinessCache:BusinessPublicView[]|null=null;
 let githubBusinessRequest:Promise<BusinessPublicView[]>|null=null;
+let githubBusinessSlugAliases = new Map<string, string>();
 
 function slugifyDirectoryValue(value:string):string {
   return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -580,6 +582,7 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
 
   const client = getSupabaseClient();
   if (!client) {
+    githubBusinessSlugAliases = new Map();
     githubBusinessCache = staticBusinesses;
     return githubBusinessCache;
   }
@@ -595,6 +598,7 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
   if (databaseError || !databaseRows) {
     // Do not show stale database-backed listings when publication status cannot
     // be verified. Crawl-only supplemental records remain available.
+    githubBusinessSlugAliases = new Map();
     githubBusinessCache = staticBusinesses.filter((business) =>
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(business.id)
     );
@@ -643,6 +647,9 @@ async function loadGitHubBusinesses():Promise<BusinessPublicView[]> {
       approved_reviews: reviewsByBusiness.get(row.id) ?? [],
     } as BusinessPublicView;
   });
+
+  // Preserve historical public slugs only as aliases to currently published rows.
+  githubBusinessSlugAliases = buildBusinessSlugAliasMap(records, databaseBusinessViews);
 
   const databaseIds = new Set(rows.map((business) => business.id));
   const crawlOnlyBusinesses = staticBusinesses.filter((business) =>
@@ -790,7 +797,8 @@ export async function fetchSearchSuggestions(query:string,options:{signal?:Abort
 }
 
 export async function fetchBusinessBySlug(slug:string):Promise<BusinessPublicView|null> {
-  return (await fetchGitHubBusinesses()).find((business)=>business.slug===slug)??null;
+  const businesses = await fetchGitHubBusinesses();
+  return resolveBusinessBySlug(businesses, slug, githubBusinessSlugAliases);
 }
 
 export async function fetchRelatedBusinesses(businessId:string,categoryId:string,limit=6):Promise<BusinessPublicView[]> {

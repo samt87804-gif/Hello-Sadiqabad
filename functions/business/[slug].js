@@ -84,30 +84,42 @@ function notFoundResponse() {
   });
 }
 
-async function fetchPublishedBusiness(env, slug) {
-  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
+async function fetchPublishedBusinessByColumn(env, column, value) {
+  if (column !== 'slug' && column !== 'id') throw new Error('Unsupported public business lookup.');
+  const baseUrl = String(env.VITE_SUPABASE_URL || '').replace(/\\/+$/, '');
   const publicKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !publicKey) throw new Error('Public Supabase configuration is unavailable.');
-
   const url = new URL(baseUrl + '/rest/v1/businesses');
-  url.searchParams.set(
-    'select',
-    'name_en,name_ur,slug,description_en,description_ur,logo_url,cover_url,address_en,phone_primary,meta_title_en,meta_description_en'
-  );
-  url.searchParams.set('slug', 'eq.' + slug);
+  url.searchParams.set('select', 'name_en,name_ur,slug,description_en,description_ur,logo_url,cover_url,address_en,phone_primary,meta_title_en,meta_description_en');
+  url.searchParams.set(column, 'eq.' + value);
   url.searchParams.set('status', 'eq.published');
   url.searchParams.set('limit', '1');
-
-  const response = await fetchWithTimeout(url, {
-    headers: {
-      apikey: publicKey,
-      Authorization: 'Bearer ' + publicKey,
-      Accept: 'application/json',
-    },
-  }, 8000);
+  const response = await fetchWithTimeout(url, { headers: { apikey: publicKey, Authorization: 'Bearer ' + publicKey, Accept: 'application/json' } }, 8000);
   if (!response.ok) throw new Error('Published business metadata request failed (' + response.status + ').');
   const rows = await response.json();
   return Array.isArray(rows) ? rows[0] || null : null;
+}
+
+async function fetchPublishedBusiness(env, slug) {
+  return fetchPublishedBusinessByColumn(env, 'slug', slug);
+}
+
+async function fetchLegacyPublishedBusiness(env, legacySlug) {
+  const indexResponse = await fetchWithTimeout(new URL('/data/businesses/index.json', SITE_ORIGIN), { headers: { Accept: 'application/json' } }, 8000);
+  if (!indexResponse.ok) throw new Error('Legacy business index request failed (' + indexResponse.status + ').');
+  const index = await indexResponse.json();
+  const chunks = Array.isArray(index.chunks) ? index.chunks.filter((chunk) => chunk && chunk.file && !chunk.gzipBase64) : [];
+  const matches = await Promise.all(chunks.map(async (chunk) => {
+    const response = await fetchWithTimeout(new URL('/data/businesses/' + encodeURIComponent(chunk.file), SITE_ORIGIN), { headers: { Accept: 'application/json' } }, 8000);
+    if (!response.ok) throw new Error('Legacy business chunk request failed (' + response.status + ').');
+    const payload = await response.json();
+    const records = Array.isArray(payload.businesses) ? payload.businesses : [];
+    const match = records.find((record) => record.slug === legacySlug && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(record.databaseId || '')));
+    return match?.databaseId || null;
+  }));
+  const ids = [...new Set(matches.filter(Boolean))];
+  if (ids.length !== 1) return null;
+  return fetchPublishedBusinessByColumn(env, 'id', ids[0]);
 }
 
 export async function onRequest(context) {
@@ -120,6 +132,13 @@ export async function onRequest(context) {
   let business;
   try {
     business = await fetchPublishedBusiness(env, slug);
+    if (!business) {
+      const legacyBusiness = await fetchLegacyPublishedBusiness(env, slug);
+      if (legacyBusiness && legacyBusiness.slug !== slug) {
+        return Response.redirect(SITE_ORIGIN + '/business/' + encodeURIComponent(legacyBusiness.slug), 301);
+      }
+      business = legacyBusiness;
+    }
   } catch (error) {
     console.error('[Hello Sadiqabad business SEO] Public metadata lookup failed.', error);
     return context.next();

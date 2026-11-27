@@ -287,3 +287,10 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [x] Supabase anonymous SELECT is limited by RLS to published scheme rows with published_at <= now(); draft and report data are not public.
 - [ ] Browser fetch of production and Pages preview routes was inaccessible to the web verification tool. Do not claim rendered metadata or live sitemap output verified until a real browser check is completed.
 - [ ] Physical mobile/browser acceptance and Search Console URL Inspection remain pending; do not claim Google indexing or ranking.
+
+
+## Legacy business QR URL compatibility — 28 November 2026
+
+- Read-only source comparison identified 93 historical business slugs in the sanitized public snapshot that map by stable database ID to current published rows with different canonical slugs. Exact-slug-only browser and crawler lookups caused older QR URLs to fail.
+- Active fix plan: `docs/BUSINESS_QR_LEGACY_SLUG_FIX_PLAN.md`. Verified legacy aliases must resolve only through a matching currently published database row and redirect to its current canonical URL. Do not add historical aliases as duplicate sitemap URLs; retain only current canonical slugs in the sitemap.
+- Do not claim Google indexing or ranking from a redirect implementation. Recheck old URL HTTP/browser behavior, canonical metadata, crawler redirect and sitemap uniqueness after deployment.

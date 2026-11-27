@@ -133,6 +133,9 @@ export function BusinessProfile() {
     setLoadError(false);
     try {
       const found = await fetchBusinessBySlug(slug);
+      if (found && found.slug !== slug) {
+        navigate(`/business/${encodeURIComponent(found.slug)}`, { replace: true });
+      }
       setBusiness(found);
       setOwnerProfile(null);
       setProducts([]);
@@ -180,7 +183,7 @@ export function BusinessProfile() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [navigate, slug]);
 
   useEffect(() => {
     loadProfile();

@@ -1414,3 +1414,14 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] Unit tests added for delete eligibility.
 - [x] CI run `46058553922` passed TypeScript, tests, production build and Edge Function typecheck. Pages deployment `9c84cde3-e487-4d74-877e-95d144327f43` succeeded for app commit `6df1494c6a676a55a2e1a85c9da9768b9f552def`.
 - [ ] Owner manual acceptance pending; no production requests were deleted during implementation.
+
+
+## Public business QR legacy URL compatibility — 28 November 2026
+
+- Active plan: [Legacy Business QR URL Compatibility Fix](docs/BUSINESS_QR_LEGACY_SLUG_FIX_PLAN.md).
+- [x] Read-only comparison confirmed 93 sanitized public-snapshot records retain historical slugs whose `databaseId` maps to a current live business with a different canonical slug.
+- [ ] Resolve historical QR slugs through stable database IDs, only for currently published listings; exact canonical slugs take precedence and ambiguous aliases are ignored.
+- [ ] Replace old browser URLs with the current canonical profile URL and 301-redirect crawler requests for verified legacy aliases.
+- [ ] Add regression tests for alias mapping, unpublished rows, collisions and crawler redirects.
+- [ ] TypeScript/tests/build, CI and production deployment verification.
+- [ ] Owner manual QR scan acceptance: existing QR and newly generated QR both open the correct business profile.
