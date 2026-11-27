@@ -1,6 +1,6 @@
 # Owner Direct Registration, Password Approval & Account Deletion — ACTIVE Implementation Plan
 
-**Status:** PHASES 1–4 IMPLEMENTED AND DEPLOYED / INTEGRATED BUSINESS + OWNER APPROVAL DEPLOYED / AUTOMATED CI PASSED / PUBLIC BROWSER SMOKE IN PROGRESS / OWNER MANUAL ACCEPTANCE PENDING  
+**Status:** PHASES 1–4 IMPLEMENTED AND DEPLOYED / INTEGRATED BUSINESS + OWNER APPROVAL DEPLOYED / AUTOMATED CI PASSED / PUBLIC BROWSER SMOKE PASSED / OWNER MANUAL ACCEPTANCE PENDING  
 **Owner authorization:** 27 November 2026  
 **Production:** https://hellosadiqabad.com  
 **Repository workflow:** direct commits to `main`; existing Supabase project only.
@@ -152,7 +152,7 @@ After completing tests, report pass/fail by step and any exact error text (never
 - [x] Deployed `activate-direct-owner` Edge Function version 6 with JWT verification enabled.
 - [x] GitHub Actions CI run `46054385777` passed for source commit `3fe32b61d7629292347ccf61084b9b053f2ec947`: TypeScript typecheck, automated tests, production build and Supabase Edge Function typecheck all succeeded. [Run details](https://github.com/samt87804-gif/Hello-Sadiqabad/actions/runs/46054385777).
 - [x] Cloudflare Pages production deployment `5e40bd82-5f5b-4fc5-bb5e-dfedac611402` succeeded for the same source commit; build and deploy stages succeeded and `https://hellosadiqabad.com` is the production alias.
-- [ ] Public Add Business mobile/desktop browser smoke run `46054385900` is still in progress; its result is not yet claimed.
+- [x] Public Add Business mobile/desktop browser smoke run `46054385900` completed successfully, including the production-deployment wait and mobile/desktop form smoke.
 - [ ] Owner manual acceptance is pending. Test a fresh direct registration through one combined Business Field Review approval, then verify the same email/password logs in and the approved business appears in Owner Portal → My Businesses.
 - [ ] Existing inconsistent requests are not bulk modified. A matching pending request can be reconciled only when an Admin explicitly performs the verified final approval action.
 
@@ -180,3 +180,9 @@ Do not mark the Owner acceptance items complete until the Owner reports the resu
 - Supabase `activate-direct-owner` v6: ACTIVE; JWT verification enabled.
 - Public Add Business mobile/desktop browser smoke run `46054385900` was still in progress at this checkpoint; do not mark it passed until its result is available.
 - Owner end-to-end manual acceptance remains pending.
+
+
+### Public browser smoke result — 28 November 2026
+
+- GitHub Actions Public Add Business Browser Smoke run `46054385900` completed **success**. Chromium installation, production deployment wait and the mobile/desktop Add Business form smoke all passed.
+- This browser smoke validates the public Add Business form, not the new Admin combined-approval-to-Owner-Portal end-to-end path. That final workflow still requires Owner manual acceptance.
