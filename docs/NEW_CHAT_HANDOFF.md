@@ -360,3 +360,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Public mobile/desktop browser smoke workflow `45998652504` was still running at the documentation checkpoint; do not claim its result until completed.
 - No database migration, RLS/grant change or existing production data mutation was made.
 - [ ] Owner manual production acceptance remains pending. Test public `https://hellosadiqabad.com/add-business`: enter shared times, click Apply to All, confirm all seven days update, edit one day independently, mark a day Off and verify its inputs clear/disable, turn it back On, then submit a suitable test request and verify the Admin Business Field Approval card still displays the hours correctly. Do not create a real customer listing solely for testing; use an owner-authorized test request.
+
+
+## Current workstream — Owner invitations, password setup and Moderation Queue reliability (27 November 2026)
+
+- Owner approved investigation/fixes for three production issues: invitation password Save disabled, Business Field Approval Owner profile provisioning failure, and Moderation Queue's admin-data request warning.
+- Production logs confirmed Moderation Queue attempted direct `public.submissions` SELECT after the table-wide SELECT privilege was removed to protect private Owner/Admin fields. The correct fix is a narrowly permission-checked Admin RPC; direct table access must remain restricted.
+- Production Postgres logs also showed `permission denied for schema private` from `private.guard_owner_profile_self_edit()`. The trigger called the private Super Admin helper as an authenticated caller without private-schema USAGE. Fix must preserve the Owner profile approval guard and avoid exposing the private schema.
+- Invitation Edge Function previously upserted `full_name` and `phone` on profile conflict, needlessly invoking the Owner self-edit guard for an existing profile. Provisioning now inserts if absent and updates only safe role/activation flags when needed.
+- Password reset page now handles invite/recovery token hashes, PKCE codes and access/refresh tokens, and establishes a session before enabling Save.
+- Active feature plan: `docs/OWNER_INVITATION_AND_ADMIN_MODERATION_FIX_PLAN.md`.
+- Existing Supabase project only; no new project, no production test Owner account, no real invitation or existing record mutation during verification.

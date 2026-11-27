@@ -8,6 +8,11 @@ const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ??
   "https://hello-sadiqabad-2bs.pages.dev,https://hellosadiqabad.com,https://www.hellosadiqabad.com,http://localhost:3000,http://localhost:5173")
   .split(",").map((value) => value.trim()).filter(Boolean);
 
+function safeError(error: unknown) {
+  const message = error instanceof Error ? error.message : "Owner profile provisioning failed";
+  return message.replace(/[\\r\\n]+/g, " ").slice(0, 500);
+}
+
 function response(req: Request, data: unknown, status = 200) {
   const origin = req.headers.get("origin") ?? "";
   if (origin && !allowedOrigins.includes(origin)) return Response.json({ ok: false, error: "Origin not allowed" }, { status: 403 });

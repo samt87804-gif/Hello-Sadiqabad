@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { getSupabaseClient, supabaseConfig } from '../lib/supabase';
+import { parseAuthLink } from '../lib/authLink';
 import { evaluatePasswordStrength, validatePasswordPair } from '../lib/password';
 import { updatePageSeo } from '../lib/seo';
 import { AppShell } from '../components/layout/AppShell';
@@ -35,6 +36,7 @@ export function ResetPassword() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [linkExpired, setLinkExpired] = useState(false);
+  const [checkingLink, setCheckingLink] = useState(true);
 
   useEffect(() => {
     updatePageSeo({
@@ -42,36 +44,50 @@ export function ResetPassword() {
       description: 'Reset your Hello Sadiqabad portal password.',
       canonicalPath: '/reset-password',
     });
-
-    // Check URL query/hash for recovery errors or missing live recovery session
-    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const hasErrorParam =
-      Boolean(searchParams.get('error')) ||
-      Boolean(searchParams.get('error_code')) ||
-      Boolean(hashParams.get('error')) ||
-      Boolean(hashParams.get('error_code'));
-
-    if (hasErrorParam) {
-      setLinkExpired(true);
-      return;
-    }
-
-    if (supabaseConfig.isConfigured) {
-      const hasRecoveryToken =
-        hashParams.get('type') === 'recovery' ||
-        Boolean(hashParams.get('access_token')) ||
-        Boolean(searchParams.get('code')) ||
-        searchParams.get('type') === 'recovery';
-
+    let cancelled = false;
+    const prepareSecureSession = async () => {
+      if (!supabaseConfig.isConfigured) { setCheckingLink(false); return; }
       const client = getSupabaseClient();
-      if (client) {
-        client.auth.getSession().then(({ data }) => {
-          if (!data.session && !hasRecoveryToken) {
-            setLinkExpired(true);
-          }
-        });
+      if (!client) { setLinkExpired(true); setCheckingLink(false); return; }
+      try {
+        const authLink = parseAuthLink(window.location.href);
+        if (authLink.error) throw new Error('This invitation or password link has expired or is invalid.');
+        let session = (await client.auth.getSession()).data.session;
+        if (!session && authLink.code) {
+          const { data, error } = await client.auth.exchangeCodeForSession(authLink.code);
+          if (error) throw error;
+          session = data.session;
+        }
+        if (!session && authLink.tokenHash && authLink.tokenType) {
+          const { data, error } = await client.auth.verifyOtp({ token_hash: authLink.tokenHash, type: authLink.tokenType });
+          if (error) throw error;
+          session = data.session;
+        }
+        if (!session && authLink.accessToken && authLink.refreshToken) {
+          const { data, error } = await client.auth.setSession({
+            access_token: authLink.accessToken, refresh_token: authLink.refreshToken,
+          });
+          if (error) throw error;
+          session = data.session;
+        }
+        if (!session) session = (await client.auth.getSession()).data.session;
+        if (!session) throw new Error('No valid invitation session was found. Please request a fresh invitation link.');
+        if (!cancelled) {
+          setLinkExpired(false);
+          setError('');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (authError) {
+        if (!cancelled) {
+          setLinkExpired(true);
+          setError(authError instanceof Error ? authError.message : 'The invitation link is invalid or expired.');
+        }
+      } finally {
+        if (!cancelled) setCheckingLink(false);
       }
-    }
+    };
+    void prepareSecureSession();
+    return () => { cancelled = true; };
   }, [searchParams, lang]);
 
   const strength = evaluatePasswordStrength(password);
@@ -315,8 +331,10 @@ export function ResetPassword() {
               />
             </div>
 
-            <Button type="submit" fullWidth size="lg" loading={loading} disabled={linkExpired}>
-              {lang === 'ur' ? 'نیا پاس ورڈ محفوظ کریں' : 'Save New Password'}
+            <Button type="submit" fullWidth size="lg" loading={loading || checkingLink} disabled={checkingLink || linkExpired}>
+              {checkingLink
+                ? (lang === 'ur' ? 'دعوت نامہ چیک ہو رہا ہے...' : 'Checking secure invitation...')
+                : (lang === 'ur' ? 'نیا پاس ورڈ محفوظ کریں' : 'Save New Password')}
             </Button>
           </form>
         </Card>

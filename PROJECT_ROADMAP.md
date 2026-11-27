@@ -20,6 +20,16 @@ This is the live application project checklist. Update it on `main` whenever a t
 - [ ] Phase F: end-to-end QA and release.
 
 
+## Owner invitation, password setup and Admin moderation reliability — 27 November 2026
+
+- [x] Confirm production logs show Moderation Queue's direct `submissions` SELECT fails after private-column access hardening; add a Super Admin / `moderation.review`-checked reader RPC without restoring direct table SELECT.
+- [x] Fix the profile self-edit trigger's private-schema permission path while retaining the Owner profile approval guard.
+- [x] Make invitation provisioning insert-only for existing profiles and update only role/activation flags, preserving existing Owner names and phone numbers.
+- [x] Support Supabase invite/recovery token-hash, PKCE code and access/refresh-token URL formats before enabling password save.
+- [x] Add regression tests for authentication-link parsing.
+- [ ] Verify CI, Edge Function deployment and Pages deployment for the fix.
+- [ ] Owner manual acceptance: accept a fresh Owner invitation, set password, sign in to Owner Portal; confirm Business Field Approval invitation succeeds/retries; open Moderation Queue and confirm the red admin-data warning is absent and submissions/reviews load.
+
 ## Public Add Business opening-hours convenience — 27 November 2026
 
 - [x] Add shared opening/closing time inputs and **Apply to All** for all seven days.

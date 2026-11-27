@@ -259,3 +259,11 @@
 - Cloudflare Pages production deployment `06180522-7bd2-4592-ab49-3471600c9017` completed successfully for the follow-up commit.
 - No schema migration, RLS/grant/permission change, existing-record mutation or data migration was performed.
 - [ ] Owner manual acceptance: verify My Businesses pending count and inquiry Read/Handled behavior. The exact count is independent of the 20-row history page; loading older history must not change the summary count.
+
+
+## Owner invitation and password setup follow-up — 27 November 2026
+
+- Production logs show the Owner profile self-edit trigger can fail with `permission denied for schema private` because it calls the private Super Admin helper from an invoker-context trigger. The fix keeps the approval guard and lets the trigger check the JWT role under a tightly scoped SECURITY DEFINER trigger function; private schema usage is not granted to authenticated users.
+- The Owner invitation function no longer overwrites `full_name` / `phone` when an Auth user already has a profile. It inserts only when absent, then updates only role/activation flags if required.
+- The Reset Password page establishes a valid Supabase session from invite/recovery token hashes, PKCE codes, or access/refresh tokens before enabling password Save.
+- Verification and Owner acceptance are tracked in `docs/OWNER_INVITATION_AND_ADMIN_MODERATION_FIX_PLAN.md`; do not claim success until a fresh owner-authorized invitation is accepted and password sign-in is confirmed.

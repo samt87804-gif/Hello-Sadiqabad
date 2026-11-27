@@ -209,7 +209,7 @@ Deno.serve(async (req: Request) => {
       throw new Error("This Owner account is inactive. Reactivate it from Owners before assigning this business");
     }
 
-    const { error: profileError } = await db.from("profiles").upsert({
+    const { error: profileInsertError } = await db.from("profiles").upsert({
       id: ownerUserId,
       role: "owner",
       full_name: request.full_name,
@@ -217,8 +217,26 @@ Deno.serve(async (req: Request) => {
       must_change_password: false,
       is_active: true,
       updated_at: new Date().toISOString(),
-    }, { onConflict: "id" });
-    if (profileError) throw new Error("Owner profile could not be provisioned");
+    }, { onConflict: "id", ignoreDuplicates: true });
+    if (profileInsertError) throw new Error("Owner profile could not be created: " + safeError(profileInsertError));
+
+    const { data: provisionedProfile, error: provisionedProfileError } = await db.from("profiles")
+      .select("role,is_active").eq("id", ownerUserId).maybeSingle();
+    if (provisionedProfileError || !provisionedProfile) {
+      throw new Error("Owner profile could not be verified: " + safeError(provisionedProfileError));
+    }
+    if (["super_admin", "staff"].includes(provisionedProfile.role)) {
+      throw new Error("This email belongs to a staff or Admin account and cannot be converted to a business Owner");
+    }
+    if (provisionedProfile.role === "owner" && provisionedProfile.is_active === false) {
+      throw new Error("This Owner account is inactive. Reactivate it from Owners before assigning this business");
+    }
+    if (provisionedProfile.role !== "owner" || provisionedProfile.is_active !== true) {
+      const { error: profileUpdateError } = await db.from("profiles").update({
+        role: "owner", is_active: true, must_change_password: false, updated_at: new Date().toISOString(),
+      }).eq("id", ownerUserId);
+      if (profileUpdateError) throw new Error("Owner profile could not be activated: " + safeError(profileUpdateError));
+    }
 
     const { data: finalized, error: finalizeError } = await db.rpc("finalize_owner_registration", {
       p_request_id: requestId,

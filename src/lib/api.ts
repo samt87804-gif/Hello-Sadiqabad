@@ -2590,10 +2590,7 @@ export async function moderateReview(
 export async function fetchAllSubmissionsAdmin(): Promise<SubmissionRow[]> {
   const client = getSupabaseClient();
   if (client) {
-    const { data, error } = await client
-      .from('submissions')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await client.rpc('admin_moderation_submissions');
     if (error) throw error;
     return (data ?? []) as SubmissionRow[];
   }

@@ -221,3 +221,11 @@ Owner-approved enhancement to the existing public Add Business form; it does not
 - Cloudflare Pages production deployment `5cd6ad7d-70ca-4f8f-a2ed-db9ed2872c66` succeeded for the same application commit; canonical alias `https://hellosadiqabad.com` is attached.
 - Public mobile/desktop browser smoke workflow `45998652504` is still running; its result is not claimed yet.
 - Owner manual acceptance remains pending. No database migration, RLS/grant change or existing production data mutation was made.
+
+
+## Owner invitation reliability follow-up — 27 November 2026
+
+- Production Edge Function logs show `send-business-owner-invitation` returned HTTP 400 during Owner profile provisioning. The profile upsert included `full_name` and `phone` on conflict, which unnecessarily invoked the self-edit protection trigger for an existing profile.
+- The fix preserves existing profile name/phone, inserts the Owner profile only when missing, and updates only role/activation flags if an existing non-Owner profile needs conversion. Staff/Super Admin and inactive Owner accounts remain blocked.
+- Invitation remains idempotent, retryable, and separate from durable business field approval. Do not delete or mutate existing Auth/Owner accounts during tests.
+- Fresh invite success, password setup, business linkage and retry acceptance remain Owner manual checks.
