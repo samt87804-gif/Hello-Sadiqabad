@@ -1444,3 +1444,18 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] Post-deployment 10-page audit completed after metadata cleanup: only crawl-page-limit and one heading-order skip on `/map`; no title-length or meta-description warnings in the sample. All 10 pages had one H1.
 - [x] Googlebot Browser Rendering directly verified the computer/IT category page (title 53 chars, description 137 chars) and a long area page (title 56 chars, description 143 chars).
 - [ ] Next broad change: improve the shared SEO metadata fallback for 588 published business profiles. Await explicit approval because this changes a sitewide template; preserve custom owner metadata, public listing facts and canonical URLs.
+
+
+## Website SEO — Search Console connected and first-party audit (28 November 2026)
+
+- [x] Connected OpenSEO Pakistan project to verified Google Search Console Domain property `sc-domain:hellosadiqabad.com`; account permission is `siteOwner`.
+- [x] Read-only GSC baseline collected. Visible query report: 102 rows, 102 clicks / 428 impressions. Date dimension returned only 10 daily rows (15–24 November 2026): 214 clicks / 1,734 impressions. Page dimension: 273 URLs; homepage 177/303 (CTR 58.42%, avg position 3.1), `/map` 20/645 (3.10%, pos 6.6), Main Street area 5/213 (2.35%, pos 5.1). Dimension totals are not directly reconcilable; do not combine them.
+- [x] Pakistan mobile Search Console data: 138 clicks / 1,181 impressions; desktop 73 / 442.
+- [x] Inspected 10 priority URLs. Homepage, map, Main Street area, categories and government helplines were indexed with matching canonicals. THE INSPIRE old alias remains historically indexed from a pre-redirect crawl; canonical `-1h0` is discovered/not indexed. Recheck after Google recrawl.
+- [x] Corrected `/add-business` robots directive to `noindex,follow` as required by the SEO master plan. Commit `7132ac0ce36b71fa8f45f940266ac3d3df36e920`; Cloudflare Pages deployment succeeded; build and Edge Function CI checks passed; production Googlebot rendering confirms noindex, canonical, title and H1. Public-form mobile/desktop CI smoke was still running at documentation time.
+- [ ] Fix the historic Bakhtawar URL `...-hkl` currently returning 404; live published slug is `...-gn7`. A 301 alias is proposed and awaits explicit owner approval.
+- [ ] Confirm Google has recrawled `/add-business` and removed it from the index after the new noindex directive.
+- [ ] Request indexing for THE INSPIRE canonical `-1h0` after Google refreshes the old 301.
+- [ ] Shared fallback SEO template for 588 published business profiles remains approval-gated; 587 currently have no custom SEO title/description and 568 English descriptions are under 80 characters. Preserve custom metadata and use verified fields only.
+- [ ] OpenSEO project context needs owner confirmation of the site overview before updating shared context and saving the full SEO report.
+- [x] Daily SEO maintenance automation scheduled for approximately 8:00 AM Asia/Karachi; free GSC checks first, no credit spending or code/data/URL/template changes without fresh approval.
