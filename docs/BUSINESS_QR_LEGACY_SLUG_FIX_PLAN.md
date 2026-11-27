@@ -69,7 +69,7 @@ Owner manual acceptance must remain pending until the Owner confirms the device 
 - No business data, slug, sitemap, schema, RLS, ownership, plan entitlement or database records were changed.
 - [ ] GitHub Actions CI status for the alias/test commits could not be retrieved through the connected GitHub checks interface; Cloudflare Pages build/deploy passed separately.
 - [x] Production Googlebot Browser Rendering verified the old URL returns HTTP 301 with Location `/business/bakhtawar-memorial-hospital-gn7`; final URL returns HTTP 200 with the correct hospital title, canonical URL, indexable robots metadata and LocalBusiness JSON-LD.
-- [ ] Owner manually opens the old URL in a normal browser/phone and confirms the profile loads and address bar changes to the canonical `-gn7` URL.
+- [x] Owner manually opened the old URL in a normal browser/phone and confirmed the profile loads and address bar changes to the canonical `-gn7` URL (owner confirmation: 28 November 2026).
 
 ### Bakhtawar release verification
 
