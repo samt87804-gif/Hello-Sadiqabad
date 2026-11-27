@@ -128,3 +128,18 @@ export function shouldActivateDirectOwner(input: {
     input.pendingMediaCount === 0
   );
 }
+
+
+export function canDeleteBusinessSubmission(
+  status: string,
+  businessId: string | null | undefined,
+  ownerStatus?: string | null,
+  invitationStatus?: string | null,
+): boolean {
+  return ['new', 'in_review'].includes(status) &&
+    !businessId &&
+    ownerStatus !== 'processing' &&
+    ownerStatus !== 'approved' &&
+    invitationStatus !== 'processing' &&
+    invitationStatus !== 'sent';
+}
