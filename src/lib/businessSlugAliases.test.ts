@@ -44,3 +44,12 @@ test('resolves the verified Inspire legacy URL only to its currently published b
   assert.equal(resolveBusinessBySlug(liveBusiness, 'the-inspire-business-academy-sadiqabad-4x0', aliases)?.id, liveBusiness[0].id);
   assert.equal(buildBusinessSlugAliasMap(VERIFIED_LEGACY_BUSINESS_SLUGS, []).has('the-inspire-business-academy-sadiqabad-4x0'), false);
 });
+
+
+test('resolves the verified Bakhtawar legacy URL only to its currently published business ID', () => {
+  const liveBusiness = [{ id: 'b880b4ec-8196-4c96-81a0-ddd9f61efd9d', slug: 'bakhtawar-memorial-hospital-gn7' }];
+  const aliases = buildBusinessSlugAliasMap(VERIFIED_LEGACY_BUSINESS_SLUGS, liveBusiness);
+  assert.equal(aliases.get('bakhtawar-memorial-hospital-hkl'), 'bakhtawar-memorial-hospital-gn7');
+  assert.equal(resolveBusinessBySlug(liveBusiness, 'bakhtawar-memorial-hospital-hkl', aliases)?.id, liveBusiness[0].id);
+  assert.equal(buildBusinessSlugAliasMap(VERIFIED_LEGACY_BUSINESS_SLUGS, []).has('bakhtawar-memorial-hospital-hkl'), false);
+});
