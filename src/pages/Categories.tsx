@@ -83,7 +83,7 @@ export function Categories() {
 
         <p className="max-w-3xl text-sm leading-7 text-on-surface-variant">Browse business categories to find local shops, clinics, schools, restaurants and service providers in Sadiqabad. Open a category to view available listings, review public business details and contact a provider using the options shown on each profile. Listing information can change, so confirm important details directly with the business.</p>
 
-        {filtered.length === 0 ?
+        {filtered.length === 0 ? (
           <EmptyState
             title={lang === 'ur' ? 'کوئی متعلقہ شعبہ نہیں ملا' : 'No matching categories'}
             description={
