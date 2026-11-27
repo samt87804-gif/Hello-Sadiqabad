@@ -91,7 +91,7 @@ async function fetchPublishedBusinessByColumn(env, column, value) {
   const publicKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
   if (!baseUrl.startsWith('https://') || !publicKey) throw new Error('Public Supabase configuration is unavailable.');
   const url = new URL(baseUrl + '/rest/v1/businesses');
-  url.searchParams.set('select', 'name_en,name_ur,slug,description_en,description_ur,logo_url,cover_url,address_en,phone_primary,meta_title_en,meta_description_en');
+  url.searchParams.set('select', 'name_en,name_ur,slug,description_en,description_ur,logo_url,cover_url,address_en,phone_primary,meta_title_en,meta_description_en,category:categories!businesses_category_id_fkey(name_en),area:areas!businesses_area_id_fkey(name_en)');
   url.searchParams.set(column, 'eq.' + value);
   url.searchParams.set('status', 'eq.published');
   url.searchParams.set('limit', '1');
