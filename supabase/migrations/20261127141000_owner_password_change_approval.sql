@@ -1,6 +1,6 @@
 create table if not exists public.owner_password_change_requests (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete set null,
+  user_id uuid references auth.users(id) on delete set null,
   status text not null default 'pending'
     check (status in ('pending','approved','rejected','consumed','expired')),
   requested_at timestamptz not null default now(),
