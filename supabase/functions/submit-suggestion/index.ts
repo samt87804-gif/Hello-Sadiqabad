@@ -290,7 +290,6 @@ Deno.serve(async (req: Request) => {
               password: ownerPassword,
               email_confirm: true,
               user_metadata: { full_name: String(submittedPayload.owner_name).trim().slice(0, 120) },
-              app_metadata: { owner_registration_status: "pending_admin_approval" },
             });
             if (createError || !created.user) {
               throw new Error(createError?.message?.toLowerCase().includes("already")
@@ -298,8 +297,24 @@ Deno.serve(async (req: Request) => {
                 : "The Owner account could not be created. Check the email and try again.");
             }
             directAuthUserId = created.user.id;
+
+            // createUser does not reliably persist trusted app_metadata on every Auth API version.
+            // Lock the Auth identity first, then explicitly deactivate its trigger-created profile.
+            const { error: authLockError } = await db.auth.admin.updateUserById(directAuthUserId, {
+              app_metadata: {
+                ...(created.user.app_metadata ?? {}),
+                owner_registration_status: "pending_admin_approval",
+              },
+              ban_duration: "876000h",
+            });
+            if (authLockError) {
+              throw new Error("The new Owner account could not be safely locked pending Admin approval.");
+            }
+
             const { data: inactiveProfile, error: profileError } = await db.from("profiles")
-              .select("id,role,is_active").eq("id", directAuthUserId).maybeSingle();
+              .update({ is_active: false, updated_at: new Date().toISOString() })
+              .eq("id", directAuthUserId).eq("role", "owner")
+              .select("id,role,is_active").maybeSingle();
             if (profileError || !inactiveProfile || inactiveProfile.role !== "owner" || inactiveProfile.is_active !== false) {
               throw new Error("The new Owner account could not be safely locked pending Admin approval.");
             }
@@ -358,7 +373,10 @@ Deno.serve(async (req: Request) => {
         const createdAuthId = linkedOwnerRequest?.direct_auth_user_id ?? directAuthUserId;
         if (createdAuthId) {
           const { error: cleanupAuthError } = await db.auth.admin.deleteUser(createdAuthId);
-          if (cleanupAuthError) await db.from("profiles").update({ is_active: false }).eq("id", createdAuthId);
+          if (cleanupAuthError) {
+            await db.auth.admin.updateUserById(createdAuthId, { ban_duration: "876000h" });
+            await db.from("profiles").update({ is_active: false }).eq("id", createdAuthId);
+          }
         }
         await db.from("owner_registration_requests").delete().eq("submission_id", inserted.id);
         await db.from("submissions").delete().eq("id", inserted.id);
