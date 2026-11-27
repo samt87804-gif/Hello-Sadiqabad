@@ -111,3 +111,20 @@ export function shouldProcessOwnerInvitation(
     (invitationStatus === 'pending' || invitationStatus === 'failed' || invitationStatus === 'waiting_for_business')
   );
 }
+
+
+export function shouldActivateDirectOwner(input: {
+  directAuthUserId: string | null | undefined;
+  identityVerified: boolean;
+  coreReady: boolean;
+  businessId: string | null | undefined;
+  pendingMediaCount: number;
+}): boolean {
+  return Boolean(
+    input.directAuthUserId &&
+    input.identityVerified &&
+    input.coreReady &&
+    input.businessId &&
+    input.pendingMediaCount === 0
+  );
+}
