@@ -36,7 +36,7 @@ async function canReview(actorId: string) {
   if (staffError || !staff || staff.is_active !== true) return false;
   const permissions = staff.permissions && typeof staff.permissions === "object" ? staff.permissions as Record<string, unknown> : {};
   return permissions["moderation.review"] === true ||
-    (permissions["moderation.review"] !== false && (staff.staff_types ?? []).includes("moderation"));
+    (permissions["moderation.review"] !== false && ["moderator", "support"].some((type) => (staff.staff_types ?? []).includes(type)));
 }
 
 Deno.serve(async (req: Request) => {
