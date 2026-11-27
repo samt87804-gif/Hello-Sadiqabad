@@ -58,7 +58,7 @@ test('fallback SEO metadata uses verified category and area for concise local in
     area: { name_en: 'Mahar Abad' },
   });
   assert.match(metadata.title, /Academy in Mahar Abad, Sadiqabad/);
-  assert.match(metadata.description, /Example Academy, a Academy in Mahar Abad, Sadiqabad/);
+  assert.match(metadata.description, /Example Academy, listed under Academy in Mahar Abad, Sadiqabad/);
   assert.match(metadata.description, /Computer courses and practical training/);
 });
 
