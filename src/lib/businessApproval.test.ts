@@ -6,6 +6,7 @@ import {
   canUnpublishBusinessField,
   countApprovedCoreFields,
   shouldProcessOwnerInvitation,
+  shouldActivateDirectOwner,
 } from './businessApproval';
 
 const fields = [
@@ -60,4 +61,21 @@ test('invitation processing waits until the minimum listing gate is satisfied', 
 test('unpublishing a required core field removes it from the publication gate', () => {
   assert.equal(countApprovedCoreFields(fields, [], ['name_en']), 1);
   assert.equal(countApprovedCoreFields(fields, ['area_id', 'phone_primary', 'address_en'], ['name_en']), 4);
+});
+
+
+test('direct Owner activation requires identity verification, all core fields, a published business reference and no pending images', () => {
+  const valid = {
+    directAuthUserId: 'owner-user-1',
+    identityVerified: true,
+    coreReady: true,
+    businessId: 'business-1',
+    pendingMediaCount: 0,
+  };
+  assert.equal(shouldActivateDirectOwner(valid), true);
+  assert.equal(shouldActivateDirectOwner({ ...valid, identityVerified: false }), false);
+  assert.equal(shouldActivateDirectOwner({ ...valid, coreReady: false }), false);
+  assert.equal(shouldActivateDirectOwner({ ...valid, businessId: null }), false);
+  assert.equal(shouldActivateDirectOwner({ ...valid, pendingMediaCount: 1 }), false);
+  assert.equal(shouldActivateDirectOwner({ ...valid, directAuthUserId: null }), false);
 });
