@@ -55,10 +55,11 @@ export function buildBusinessSeoMetadata(
   const name = cleanBusinessSeoText(business.name_en || business.name_ur, 'Sadiqabad Business', 100);
   const category = cleanBusinessSeoText(business.category?.name_en, '', 48);
   const area = cleanBusinessSeoText(business.area?.name_en, '', 48);
+  const distinctArea = area && area.toLocaleLowerCase() !== category.toLocaleLowerCase() ? area : '';
   const customTitle = cleanBusinessSeoText(business.meta_title_en, '', 120);
   const descriptor = category
-    ? category + (area ? ' in ' + area : '')
-    : area ? 'Business in ' + area : 'Sadiqabad';
+    ? category + (distinctArea ? ' in ' + distinctArea : '')
+    : distinctArea ? 'Business in ' + distinctArea : 'Sadiqabad';
   const fallbackTitle = name + ' — ' + descriptor + (descriptor === 'Sadiqabad' ? '' : ', Sadiqabad') + ' | Hello Sadiqabad';
   const title = customTitle
     ? (/hello sadiqabad/i.test(customTitle) ? customTitle : customTitle + ' | Hello Sadiqabad')
@@ -68,7 +69,7 @@ export function buildBusinessSeoMetadata(
     ? 'Find ' + name + ', listed under ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. View its available contact details and location on Hello Sadiqabad.'
     : name + ', Sadiqabad. View available contact details, location and business information on Hello Sadiqabad.';
   const enrichedShortDescription = sourceDescription && sourceDescription.trim().length < 80 && category
-    ? 'Find ' + name + ', listed under ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. ' + sourceDescription.trim()
+    ? 'Find ' + name + ', listed under ' + category + (distinctArea ? ' in ' + distinctArea : '') + ', Sadiqabad. ' + sourceDescription.trim()
     : sourceDescription;
   const description = cleanBusinessSeoText(
     business.meta_description_en || enrichedShortDescription,
