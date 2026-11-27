@@ -444,3 +444,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Read-only live audit found one direct registration whose request status was still pending while the matching Owner profile was active and its business was already linked/published. No data was changed; the new verified approval action can reconcile that exact same-user linkage if the Admin chooses to review it.
 - Latest application source commits are on `main`; GitHub CI and matching Cloudflare Pages deployment remain to be verified before calling the website release live.
 - Owner manual acceptance remains pending. Next: confirm CI/Pages deployment, then have the Owner run the integrated workflow using a fresh legitimate request and verify Owner Portal → My Businesses. Do not use passwords/OTPs in chat. Legacy standalone Owner invitation flow must remain unchanged.
+
+
+## Integrated Business + Direct Owner approval — deployment verification (28 November 2026)
+
+- Application source commit `3fe32b61d7629292347ccf61084b9b053f2ec947` is deployed to production.
+- GitHub Actions CI run `46054385777` completed **success**: TypeScript typecheck, automated tests, production build and Supabase Edge Function typecheck passed.
+- Cloudflare Pages deployment `5e40bd82-5f5b-4fc5-bb5e-dfedac611402` completed **success** for the same commit; canonical production alias `https://hellosadiqabad.com` is attached.
+- Supabase `activate-direct-owner` v6 is ACTIVE with `verify_jwt=true`.
+- Public Add Business browser smoke workflow `46054385900` was still running; its result remains unverified here.
+- No production test Owner, business request or password was created by the assistant. The one existing direct-registration row observed in the read-only audit was not modified.
+- Next owner action: after the browser smoke result is checked, perform the integrated Admin approval test with a fresh legitimate registration; verify one final action activates the account, links the exact published business, and the Owner sees it under My Businesses. Manual acceptance remains pending.
