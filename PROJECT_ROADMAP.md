@@ -1367,3 +1367,14 @@ No database migration, RLS/grant change or existing production data mutation was
 - Live Supabase read-only audit confirms the four feature migrations are applied, all four new Edge Functions are ACTIVE with JWT verification, 7 legacy Owner registration rows remain unchanged, there are currently 0 direct registrations and 0 password-change requests, and no plaintext-password columns or password keys were found in existing submission payloads.
 - Owner manual acceptance remains pending. Fresh GitHub Actions `npm run check` status could not be retrieved through the available GitHub Actions connector actions; Cloudflare Pages build/deploy evidence is not a substitute for CI/typecheck/unit tests.
 - Next owner action: follow the 12-step practical acceptance checklist in the active plan. Do not use real applicant/customer credentials or share passwords in chat. Do not mark Owner acceptance passed until the Owner reports the results.
+
+
+## Production registration-lock incident fix — 27 November 2026
+
+- Owner reported that public Add Business returned: `The new Owner account could not be safely locked pending Admin approval.`; no request appeared in Business Field Review.
+- Production Edge Function logs confirmed two `submit-suggestion` POST requests returned HTTP 400 at 18:26:45Z and 18:29:11Z on 27 November 2026.
+- Root cause: the registration code relied on `auth.admin.createUser()` to persist trusted `app_metadata` before the Auth `on_auth_user_created` trigger ran. The trigger did not receive the expected pending status, so the profile could be created active and the strict inactive-profile check failed.
+- Fix committed to `main` as `2dd3264f1ef1701b8fbb9b8832af8ddb471aecb8`: after Auth user creation, explicitly set trusted pending `app_metadata` and apply a long Auth ban using `updateUserById`, then explicitly update and verify the new Owner profile as `role=owner,is_active=false`. If cleanup deletion fails, fallback also retains the Auth ban and inactive profile. The Admin activation function already changes the trusted status to approved and removes the ban after the required business/identity checks.
+- Deployed `submit-suggestion` Edge Function version 14; status ACTIVE and JWT verification remains enabled. No schema/RLS/grant change and no production test account or business submission were created.
+- Owner must now manually submit one genuine, authorized business request with a fresh email to verify the success message and Admin queue appearance. Manual acceptance remains pending; do not mark the full workflow accepted until the Owner confirms.
+- Automated GitHub CI and the live end-to-end submit were not independently executed in this fix checkpoint. The function deployment itself succeeded; this is not evidence that the public submission journey has passed.

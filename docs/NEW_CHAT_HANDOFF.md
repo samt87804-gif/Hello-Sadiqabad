@@ -418,3 +418,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Data audit: 7 legacy Owner registration rows retained; 0 direct registrations and 0 password-change requests exist currently. No password columns exist in the registration/password-request tables, and no existing submission payload contains password keys. No test users or production submissions were created.
 - Production Pages build/deploy evidence remains commit `63945f99bf1d918297475186fe9c8cbc39c40b9c`, deployment `cacbedcb-7e5b-4278-8fb3-aa1555cff2d2`. Fresh GitHub Actions run status was not accessible through the available connector actions; don't claim a fresh CI pass.
 - Owner manual acceptance remains pending. Detailed 12-step test sequence is in the active plan. Wait for Owner's results before ticking acceptance.
+
+
+## Production registration-lock incident fix — 27 November 2026
+
+- Owner reported that public Add Business returned: `The new Owner account could not be safely locked pending Admin approval.`; no request appeared in Business Field Review.
+- Production Edge Function logs confirmed two `submit-suggestion` POST requests returned HTTP 400 at 18:26:45Z and 18:29:11Z on 27 November 2026.
+- Root cause: the registration code relied on `auth.admin.createUser()` to persist trusted `app_metadata` before the Auth `on_auth_user_created` trigger ran. The trigger did not receive the expected pending status, so the profile could be created active and the strict inactive-profile check failed.
+- Fix committed to `main` as `2dd3264f1ef1701b8fbb9b8832af8ddb471aecb8`: after Auth user creation, explicitly set trusted pending `app_metadata` and apply a long Auth ban using `updateUserById`, then explicitly update and verify the new Owner profile as `role=owner,is_active=false`. If cleanup deletion fails, fallback also retains the Auth ban and inactive profile. The Admin activation function already changes the trusted status to approved and removes the ban after the required business/identity checks.
+- Deployed `submit-suggestion` Edge Function version 14; status ACTIVE and JWT verification remains enabled. No schema/RLS/grant change and no production test account or business submission were created.
+- Owner must now manually submit one genuine, authorized business request with a fresh email to verify the success message and Admin queue appearance. Manual acceptance remains pending; do not mark the full workflow accepted until the Owner confirms.
+- Automated GitHub CI and the live end-to-end submit were not independently executed in this fix checkpoint. The function deployment itself succeeded; this is not evidence that the public submission journey has passed.
