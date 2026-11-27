@@ -382,3 +382,15 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Permission tests: active Super Admin simulation read 23 moderation submissions; active Owner simulation was denied; anon cannot execute the RPC. Direct authenticated table SELECT remains restricted.
 - Profile self-edit guard test now returns the intended Admin-approval rejection, not the private-schema permission error; test transaction was rolled back.
 - No real invitation email or production test user/record was created. Owner device acceptance remains pending.
+
+
+## Current workstream — Owner direct registration, password approval and account deletion (27 November 2026)
+
+- Owner explicitly authorized this work and added the requirement that Super Admin must be able to delete any Owner account.
+- Active plan: `docs/OWNER_DIRECT_REGISTRATION_ACTIVE_IMPLEMENTATION_PLAN.md`.
+- Scope: public Add Business collects Owner email/password/confirmation; Auth account stays inactive until Admin approves the business; same credentials work after activation; no invitation/password setup emails in the new workflow; Owner requests password change and Admin approves before Owner sets it; Super Admin can permanently delete an Owner with confirmation/audit.
+- Security: never store plaintext password outside the Auth request path; do not expose passwords to Admin; email ownership is not verified in a no-email workflow and must be manually checked by Admin before activation; deletion must preserve business/financial/history records and revoke sessions.
+- Existing pending requests and historical records are preserved unchanged. The owner will ask those applicants to resubmit under the new workflow.
+- Audit completed: canonical rules, live roadmap/handoff, Add Business, auth context, `submit-suggestion`, Business Field Review Queue, live public schema and migration ledger were inspected. Existing `profiles.is_active` and invitation lifecycle fields were confirmed.
+- Current state: active implementation plan committed to `main` as `1d75315ab8c7671c132256897ba0f74118dd9b43`. This is documentation/audit only; no application code, production migration, Auth user, or Edge Function has been changed/deployed for the new workflow yet.
+- Next safe step: implement and test secure server-side registration/account linkage first, then the UI/Admin activation path, password approval, and account deletion. Do not deploy an incomplete workflow.
