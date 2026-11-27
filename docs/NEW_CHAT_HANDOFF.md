@@ -561,4 +561,4 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Production Googlebot Browser Rendering verified the old `-hkl` URL returns HTTP 301 to canonical `-gn7`; final response is HTTP 200 with matching canonical, indexable robots metadata, hospital-specific title and LocalBusiness JSON-LD.
 - GitHub combined status lookup returned no check/status entries for the regression-test commit; CI is therefore unverified, not passed.
 - No database/business-row/schema/RLS changes. Google indexing/ranking is not claimed.
-- Owner manual acceptance pending: open old URL in normal browser/phone and confirm it loads the hospital profile and address bar changes to `-gn7`.
+- [x] Owner manual acceptance passed (28 November 2026): Owner confirmed the old URL opens the hospital profile and the browser address bar changes to canonical `-gn7`.
