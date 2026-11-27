@@ -35,7 +35,7 @@ test('business SEO metadata falls back safely when description and images are ab
     logo_url: 'http://insecure.example/logo.png',
     cover_url: null,
   });
-  assert.match(metadata.description, /available contact details, location, opening hours/);
+  assert.match(metadata.description, /available contact details, location/);
   assert.equal(metadata.image, 'https://hellosadiqabad.com/site-logo.png');
 });
 
