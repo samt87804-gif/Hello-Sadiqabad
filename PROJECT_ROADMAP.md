@@ -1390,3 +1390,12 @@ No database migration, RLS/grant change or existing production data mutation was
 - [x] Supabase `activate-direct-owner` v6 deployed ACTIVE with JWT verification.
 - [ ] Latest GitHub Actions CI and Cloudflare Pages production deployment evidence pending.
 - [ ] Owner manual acceptance pending: one combined approval, same-credentials Owner login, automatic My Businesses listing, no manual assignment, and legacy invitation regression.
+
+
+### Integrated Business + Direct Owner approval — release verification (28 November 2026)
+
+- [x] GitHub Actions CI run `46054385777` passed on application commit `3fe32b61d7629292347ccf61084b9b053f2ec947`: TypeScript, automated tests, production build and Edge Function typecheck.
+- [x] Cloudflare Pages deployment `5e40bd82-5f5b-4fc5-bb5e-dfedac611402` succeeded for the same application commit; canonical alias `https://hellosadiqabad.com` is attached.
+- [x] Supabase `activate-direct-owner` v6 is ACTIVE with JWT verification.
+- [ ] Public Add Business mobile/desktop browser smoke run `46054385900` pending at checkpoint.
+- [ ] Owner manual integrated workflow acceptance pending.
