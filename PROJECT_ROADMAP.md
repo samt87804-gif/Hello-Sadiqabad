@@ -1345,3 +1345,17 @@ No database migration, RLS/grant change or existing production data mutation was
 - [ ] Super Admin permanent Owner deletion with audit and historical data preservation.
 - [ ] Automated checks, CI, reviewed additive migration, Edge Function deployment and Pages verification.
 - Implementation has **not** yet been deployed. Existing invitation flow and production data remain unchanged. Existing pending requests remain historical and are not converted/deleted.
+
+
+## Owner Direct Registration & Password Approval — implementation update (27 November 2026)
+
+- [x] Public Add Business form now captures Owner email, password and confirmation; confirmation stays client-only. Password is sent only to the HTTPS Edge Function and excluded from submission payload persistence.
+- [x] New Auth identities are created inactive; trusted Auth app metadata drives the profile trigger. Admin identity/authority verification is required before activation and business linking.
+- [x] Admin Business Field Approval now has a direct activation path; legacy invitation requests retain their old workflow. The invitation Edge Function rejects direct-registration requests.
+- [x] Owner Portal password-change request/status and Admin approve/reject queue are implemented. Owner password update requires a valid, one-use, 30-minute approval; Admin never sees the password.
+- [x] Production migrations applied: `20261127164058`, `20261127164621`, `20261127165305`, `20261127165456`. Existing 7 Owner registration rows remain unchanged.
+- [x] Supabase Edge Functions active: `submit-suggestion` v13, `activate-direct-owner` v5, `review-owner-password-change` v4, `complete-owner-password-change` v1, `send-business-owner-invitation` v3.
+- [x] Cloudflare Pages build/deploy succeeded for commit `63945f99bf1d918297475186fe9c8cbc39c40b9c`; canonical `https://hellosadiqabad.com` attached.
+- [ ] GitHub Actions TypeScript/unit-test/Edge Function CI status is not verified; Pages build alone does not cover `npm run check`.
+- [ ] Owner manual acceptance pending. Do not call this workflow manually accepted until Owner tests registration, Admin activation, login, password approval, expiry/replay and legacy compatibility.
+- [ ] Super Admin permanent Owner deletion is a separate previously discussed scope and is not part of this release.
