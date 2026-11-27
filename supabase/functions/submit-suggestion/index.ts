@@ -186,6 +186,10 @@ Deno.serve(async (req: Request) => {
 
     const submittedPayload = body.payload as Record<string, unknown>;
     const payload = { ...submittedPayload };
+    const ownerPassword = typeof body.owner_password === "string" ? body.owner_password : "";
+    delete (body as Record<string, unknown>).owner_password;
+    delete submittedPayload.owner_password;
+    delete payload.owner_password;
     const rawMediaInput = payload.media_assets;
     if (rawMediaInput !== undefined && !Array.isArray(rawMediaInput)) {
       return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
@@ -256,6 +260,9 @@ Deno.serve(async (req: Request) => {
       if (!Array.isArray(mediaInput) || mediaInput.length > 2) {
         return reply(req, { ok: false, error: "Invalid business image metadata" }, 400);
       }
+      if (!submittedBy && ownerPassword && (ownerPassword.length < 8 || ownerPassword.length > 72)) {
+        return reply(req, { ok: false, error: "Choose a password between 8 and 72 characters." }, 400);
+      }
     }
 
     const { data: inserted, error: insertError } = await db.from("submissions").insert({
@@ -270,14 +277,40 @@ Deno.serve(async (req: Request) => {
     if (insertError || !inserted?.id) return reply(req, { ok: false, error: "Could not submit request" }, 400);
 
     if (body.type === "new_business") {
+      let directAuthUserId: string | null = null;
       try {
         if (!submittedBy) {
+          if (ownerPassword) {
+            const emailRateKey = await hashRateKey(ownerEmail);
+            if (!await limited(`suggestion:owner-email:${emailRateKey}`, 3, 86_400)) {
+              throw new Error("This email has reached the daily registration limit. Try again tomorrow.");
+            }
+            const { data: created, error: createError } = await db.auth.admin.createUser({
+              email: ownerEmail,
+              password: ownerPassword,
+              email_confirm: true,
+              user_metadata: { full_name: String(submittedPayload.owner_name).trim().slice(0, 120) },
+              app_metadata: { owner_registration_status: "pending_admin_approval" },
+            });
+            if (createError || !created.user) {
+              throw new Error(createError?.message?.toLowerCase().includes("already")
+                ? "This email is already registered. Use another email or sign in to your existing account."
+                : "The Owner account could not be created. Check the email and try again.");
+            }
+            directAuthUserId = created.user.id;
+            const { data: inactiveProfile, error: profileError } = await db.from("profiles")
+              .select("id,role,is_active").eq("id", directAuthUserId).maybeSingle();
+            if (profileError || !inactiveProfile || inactiveProfile.role !== "owner" || inactiveProfile.is_active !== false) {
+              throw new Error("The new Owner account could not be safely locked pending Admin approval.");
+            }
+          }
           const { error: ownerRequestError } = await db.from("owner_registration_requests").insert({
             full_name: String(submittedPayload.owner_name).trim().slice(0, 120),
             email: ownerEmail,
             phone: String(body.contact_phone ?? submittedPayload.phone_primary).trim().slice(0, 30),
             business_name: String(submittedPayload.name_en).trim().slice(0, 160),
             submission_id: inserted.id,
+            direct_auth_user_id: directAuthUserId,
             status: "pending",
           });
           if (ownerRequestError) throw ownerRequestError;
@@ -320,6 +353,13 @@ Deno.serve(async (req: Request) => {
           if (mediaError) throw mediaError;
         }
       } catch (workflowError) {
+        const { data: linkedOwnerRequest } = await db.from("owner_registration_requests")
+          .select("direct_auth_user_id").eq("submission_id", inserted.id).maybeSingle();
+        const createdAuthId = linkedOwnerRequest?.direct_auth_user_id ?? directAuthUserId;
+        if (createdAuthId) {
+          const { error: cleanupAuthError } = await db.auth.admin.deleteUser(createdAuthId);
+          if (cleanupAuthError) await db.from("profiles").update({ is_active: false }).eq("id", createdAuthId);
+        }
         await db.from("owner_registration_requests").delete().eq("submission_id", inserted.id);
         await db.from("submissions").delete().eq("id", inserted.id);
         const pathPattern = new RegExp("^pending/" + mediaSessionHash + "/[0-9a-f-]{36}/(logo|cover)[.](jpg|png|webp)$", "i");
