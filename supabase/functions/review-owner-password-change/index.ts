@@ -30,6 +30,11 @@ try{
  const {data:owner,error:ownerError}=await db.from("profiles").select("role,is_active").eq("id",request.user_id).maybeSingle();
  if(ownerError||owner?.role!=="owner"||owner.is_active!==true)return reply(req,{ok:false,error:"The requesting account is not an active Owner"},409);
  const now=new Date().toISOString();
+ if(decision==="approve"){
+   await db.from("owner_password_change_requests")
+    .update({status:"expired",updated_at:now})
+    .eq("user_id",request.user_id).eq("status","approved").gt("expires_at",now);
+ }
  const patch=decision==="approve"
   ?{status:"approved",reviewed_by:user.user.id,reviewed_at:now,expires_at:new Date(Date.now()+30*60*1000).toISOString(),admin_note:note,updated_at:now}
   :{status:"rejected",reviewed_by:user.user.id,reviewed_at:now,admin_note:note,updated_at:now};
