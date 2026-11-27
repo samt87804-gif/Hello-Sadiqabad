@@ -1,6 +1,6 @@
 # Owner Direct Registration, Password Approval & Account Deletion — ACTIVE Implementation Plan
 
-**Status:** AUDIT COMPLETE / IMPLEMENTATION NOT YET DEPLOYED  
+**Status:** PHASES 1–4 IMPLEMENTED AND DEPLOYED / AUTOMATED ACCEPTANCE INCOMPLETE / OWNER MANUAL ACCEPTANCE PENDING  
 **Owner authorization:** 27 November 2026  
 **Production:** https://hellosadiqabad.com  
 **Repository workflow:** direct commits to `main`; existing Supabase project only.
@@ -38,48 +38,58 @@ Add a Super Admin-only ability to permanently delete an Owner account. Require a
 ## Implementation phases and acceptance evidence
 
 ### Phase 1 — secure registration foundation
-- [ ] Add a server-only direct-registration path with strict validation, duplicate-email handling, request rate limiting, and cleanup/rollback on partial failure.
-- [ ] Provision the Auth identity and profile as inactive; store only the Auth user ID on the new request.
-- [ ] Ensure credentials are excluded from every submission payload, audit detail, error, and log.
-- [ ] Add database linkage and narrowly scoped RLS/service-only access where required; additive migration only.
-- [ ] Test duplicate email, invalid password, honeypot, oversized payload, partial failures, and inactive-user login/portal denial.
+- [x] Added a server-only direct-registration branch to `submit-suggestion` with password length validation, duplicate-email fail-safe behavior, per-email rate limiting, and rollback of newly created Auth identity on partial failure.
+- [x] Provisioned the Auth identity with `app_metadata.owner_registration_status=pending_admin_approval`; `handle_new_user()` creates its Owner profile inactive. The request stores only `direct_auth_user_id`.
+- [x] Credentials are separated from `payload`, removed before submission persistence, and are never written to request/audit/log fields. Confirm password remains client-only.
+- [x] Applied additive migration `20261127164058_owner_direct_registration_foundation`; preserved the legacy request records and split active-email indexes in `20261127165305_owner_registration_legacy_email_compatibility` so old non-invited requests do not block resubmission.
+- [ ] Duplicate-email, invalid-password, honeypot, oversized-body, partial-failure and inactive-login scenarios still need automated/integration verification.
 
 ### Phase 2 — public Add Business UX
-- [ ] Add Owner name/email/password/confirm-password fields for public applicants only.
-- [ ] Keep the existing authenticated Owner submission flow compatible.
-- [ ] Explain that account access starts only after Admin approval and that email ownership is not verified by email.
-- [ ] Preserve mandatory image compression and existing media upload validation.
-- [ ] Add automated form and submission tests.
+- [x] Added Owner name/email/password/confirm-password fields for public applicants; authenticated Owners do not see or send new credentials.
+- [x] Existing authenticated Owner submission flow remains on the same `submit-suggestion` endpoint without a new password.
+- [x] Public form explains inactive-until-approval and manual identity/authority verification because no email verification is sent.
+- [x] Existing image compression and media upload validation remain intact.
+- [ ] Automated form/submission regression coverage and browser acceptance remain pending.
 
 ### Phase 3 — Admin approval and account activation
-- [ ] Replace invitation controls for new direct-registration requests with a clear pending/activate status.
-- [ ] Activate the linked Auth user/profile only after all required core business fields and required media decisions satisfy the existing approval gate.
-- [ ] Reject/defer paths must leave account inactive.
-- [ ] Preserve existing requests and invitation history; no email sent from the new path.
-- [ ] Test repeated approval, partial approval, rejection, retry and cross-account isolation.
+- [x] Added a direct-registration Admin state in Business Field Approval; it replaces the invitation action for direct-auth requests while retaining the legacy invitation path for historical requests.
+- [x] Added `activate-direct-owner` (JWT required): Admin identity/authority confirmation, all five required field approvals, published business, no pending media decisions, safe owner linking, profile activation and audit event.
+- [x] Inactive account remains blocked until activation; stale processing locks can be recovered. Rejected or incomplete requests cannot activate.
+- [x] Legacy invitation function now explicitly refuses direct-auth requests; existing legacy requests/history remain unchanged and no invitation is sent for new direct registrations.
+- [ ] Repeated approval, partial approval, rejection, stale retry and cross-account isolation still need automated/integration verification.
 
 ### Phase 4 — Owner password-change approval
-- [ ] Add an Owner request record and Owner Portal request/status UI.
-- [ ] Add Admin approve/reject UI and server-side authorization.
-- [ ] On approval, allow only the requesting authenticated Owner to set a new password in-session; do not collect or display passwords to Admin.
-- [ ] Expire/consume approvals and prevent replay; audit decisions without recording password material.
-- [ ] Test owner isolation, staff restrictions, approval expiry, replay and password update.
+- [x] Added `owner_password_change_requests` with Owner-only insert/read and Admin/moderation read policies; applied migration `20261127164621_owner_password_change_approval`.
+- [x] Added Owner Portal request/status UI and Admin approve/reject queue. Review is permission-checked server-side.
+- [x] `complete-owner-password-change` verifies the Owner's own JWT, consumes an unexpired approval and updates the Auth password; Admin never receives the new password.
+- [x] Approvals expire after 30 minutes, are consumed once, prior active approvals are invalidated on a new approval, and audit records contain no password.
+- [ ] Owner isolation, staff restrictions, expiry, replay and actual password-change scenarios still need automated/integration verification.
 
 ### Phase 5 — Super Admin Owner deletion
-- [ ] Add a Super Admin-only account deletion action with strong confirmation and self/Super Admin protections.
-- [ ] Revoke/b​​an sessions before permanent Auth deletion.
-- [ ] Preserve business, financial and historical records by explicitly handling foreign keys/references; no blanket cascades.
-- [ ] Write an audit record containing actor, target and outcome but no secrets.
-- [ ] Test that a deleted Owner cannot sign in and that unrelated business/history records remain intact.
+- [ ] Deferred from the latest confirmed workflow. Owner deletion remains a separate previously discussed scope and has not been implemented in this release.
 
 ### Phase 6 — validation and release
-- [ ] Review migrations, RLS, grants, RPCs, Edge Function JWT settings and all call sites.
-- [ ] Run unit tests, Deno checks/tests, TypeScript, production build and GitHub CI.
-- [ ] Apply only reviewed additive migrations to the existing Supabase project; verify live schema, RLS and advisors.
-- [ ] Deploy Edge Functions and verify their active versions.
-- [ ] Verify GitHub main CI and matching Cloudflare Pages production deployment.
+- [x] Reviewed additive migrations, request RLS, service-role-only Edge Function actions and JWT verification. Supabase security/performance advisors were re-run; no new security lint was introduced and the password-request multiple-permissive-policy warning was removed.
+- [ ] GitHub Actions `npm run check` (TypeScript + tests + build) is not verified in this session. Cloudflare Pages ran `npm run build` successfully; this is not a substitute for typecheck/unit tests.
+- [x] Applied reviewed additive migrations to the existing Supabase project and verified live columns, trigger definition and RLS policies. Existing 7 Owner registration records remain unchanged.
+- [x] Deployed and verified active Edge Functions: `submit-suggestion` v13, `activate-direct-owner` v5, `review-owner-password-change` v4, `complete-owner-password-change` v1, `send-business-owner-invitation` v3.
+- [x] Cloudflare Pages production deployment for commit `63945f99bf1d918297475186fe9c8cbc39c40b9c` succeeded; `npm run build` stage and deploy stage both succeeded; canonical alias `https://hellosadiqabad.com` is attached. Later commits in this workstream only changed deployed Edge Function source or docs/migration filename alignment.
 - [ ] Owner manual acceptance remains unchecked until the Owner reports each test passed.
 
 ## Release rule
 
 Do not ship an incomplete or incompatible combination to production. Do not claim this workflow is implemented, deployed, or owner-tested until the corresponding evidence is recorded here and in the roadmap/handoff.
+
+
+## Implementation evidence — 27 November 2026
+
+- Direct registration and Owner password-approval source committed directly to `main`; production migrations:
+  - `20261127164058_owner_direct_registration_foundation`
+  - `20261127164621_owner_password_change_approval`
+  - `20261127165305_owner_registration_legacy_email_compatibility`
+  - `20261127165456_owner_password_change_policy_tuning`
+- The 7 existing Owner registration rows were retained. Their old pending statuses were not converted or deleted. Legacy-only email uniqueness remains separate from direct Auth registrations.
+- Production Auth trigger was verified to set `profiles.is_active=false` only when trusted `raw_app_meta_data.owner_registration_status` is `pending_admin_approval`; ordinary and legacy Auth creation retains the previous Owner-profile behavior.
+- Owner password request RLS now uses one combined read policy for Owner/self and authorized Admin/moderation, plus a reviewer index. Re-running advisors shows the new table no longer triggers multiple-permissive-policy or unindexed-FK warnings. Existing project-wide advisor findings remain.
+- Production Pages build/deploy passed on commit `63945f99bf1d918297475186fe9c8cbc39c40b9c` (deployment `cacbedcb-7e5b-4278-8fb3-aa1555cff2d2`). GitHub Actions test/typecheck status is not verified.
+- No test Owner account, real business submission or password-change request was created. Owner must perform manual acceptance after the remaining automated verification is completed.
