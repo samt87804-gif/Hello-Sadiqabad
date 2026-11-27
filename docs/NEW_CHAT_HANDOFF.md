@@ -553,3 +553,12 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Code commits: alias `1af5ecfd10508cf0a3912f853aab1a0e031239c3`; test `c84f3e248ee1f652cd4934c236882846ab8f881c`.
 - No business data, database schema, RLS, ownership, plan or sitemap changes.
 - CI, Pages deployment and production redirect verification remain pending at this checkpoint. Owner normal-browser acceptance remains pending.
+
+
+### Bakhtawar legacy URL — release verification (28 November 2026)
+
+- Cloudflare Pages deployments succeeded for alias commit `1af5ecfd10508cf0a3912f853aab1a0e031239c3` (`4d841d15-bbcc-48fa-b2bb-117dfb5ade7f`), regression-test commit `c84f3e248ee1f652cd4934c236882846ab8f881c` (`98905f55-7023-4fa7-9f10-3d1177e1129e`) and latest documentation commit `da60de46e4b3eeda63ef432d26097f0988f6d6d3` (`09b0ed21-4697-46a2-82c9-cfba649afd78`). Latest deployment completed all stages and is aliased to `https://hellosadiqabad.com`.
+- Production Googlebot Browser Rendering verified the old `-hkl` URL returns HTTP 301 to canonical `-gn7`; final response is HTTP 200 with matching canonical, indexable robots metadata, hospital-specific title and LocalBusiness JSON-LD.
+- GitHub combined status lookup returned no check/status entries for the regression-test commit; CI is therefore unverified, not passed.
+- No database/business-row/schema/RLS changes. Google indexing/ranking is not claimed.
+- Owner manual acceptance pending: open old URL in normal browser/phone and confirm it loads the hospital profile and address bar changes to `-gn7`.
