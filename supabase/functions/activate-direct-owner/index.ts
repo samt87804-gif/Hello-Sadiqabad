@@ -54,7 +54,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data: request, error: requestError } = await db.from("owner_registration_requests")
-      .select("id,email,full_name,phone,business_name,submission_id,business_id,status,direct_auth_user_id")
+      .select("id,email,full_name,phone,business_name,submission_id,business_id,status,direct_auth_user_id,updated_at")
       .eq("id", requestId).maybeSingle();
     if (requestError || !request || !request.direct_auth_user_id || !request.submission_id) {
       return reply(req, { ok: false, error: "Direct Owner registration was not found." }, 404);
@@ -93,6 +93,11 @@ Deno.serve(async (req: Request) => {
     }
 
     if (request.status !== "approved") {
+      if (request.status === "processing" &&
+          Date.now() - new Date(request.updated_at).getTime() > 15 * 60 * 1000) {
+        await db.from("owner_registration_requests").update({ status: "pending", updated_at: new Date().toISOString() })
+          .eq("id", requestId).eq("status", "processing");
+      }
       const { data: locked, error: lockError } = await db.from("owner_registration_requests")
         .update({ status: "processing", updated_at: new Date().toISOString() })
         .eq("id", requestId).eq("status", "pending").select("id").maybeSingle();
