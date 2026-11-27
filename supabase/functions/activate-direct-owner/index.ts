@@ -80,7 +80,7 @@ Deno.serve(async (req: Request) => {
 
     const { count: pendingMedia, error: mediaError } = await db.from("business_media_assets")
       .select("id", { count: "exact", head: true }).eq("submission_id", request.submission_id)
-      .in("status", ["pending_review", "approved_pending_promotion"]);
+      .eq("status", "pending_review");
     if (mediaError) throw mediaError;
     if ((pendingMedia ?? 0) > 0) {
       return reply(req, { ok: false, error: "Review all submitted business images before activating this Owner." }, 409);
