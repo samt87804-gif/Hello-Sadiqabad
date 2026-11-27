@@ -53,6 +53,7 @@ interface LinkedOwnerRequest {
   business_name: string | null;
   business_id: string | null;
   submission_id: string;
+  direct_auth_user_id: string | null;
   status: 'pending' | 'processing' | 'approved' | 'rejected';
   invitation_requested: boolean;
   invitation_status: 'not_requested' | 'waiting_for_business' | 'pending' | 'processing' | 'sent' | 'failed';
@@ -128,6 +129,7 @@ export function BusinessFieldReviewQueue({
   const [unpublishMediaIds, setUnpublishMediaIds] = useState<string[]>([]);
   const [inviteChecked, setInviteChecked] = useState(false);
   const [initialInviteChecked, setInitialInviteChecked] = useState(false);
+  const [ownerIdentityVerified, setOwnerIdentityVerified] = useState(false);
   const [adminNote, setAdminNote] = useState('');
   const [initialAdminNote, setInitialAdminNote] = useState('');
   const [confirmClose, setConfirmClose] = useState(false);
@@ -216,7 +218,7 @@ export function BusinessFieldReviewQueue({
           .limit(200),
         ids.length
           ? client.from('owner_registration_requests')
-            .select('id,full_name,email,phone,business_name,business_id,submission_id,status,invitation_requested,invitation_status,invitation_attempts,invitation_last_error,invitation_sent_at')
+            .select('id,full_name,email,phone,business_name,business_id,submission_id,direct_auth_user_id,status,invitation_requested,invitation_status,invitation_attempts,invitation_last_error,invitation_sent_at')
             .in('submission_id', ids)
           : Promise.resolve({ data: [], error: null }),
         ids.length
@@ -262,7 +264,10 @@ export function BusinessFieldReviewQueue({
         const hasOutstandingInvitation = Boolean(
           invitation?.invitation_requested && invitation.invitation_status !== 'sent'
         );
-        return hasOutstandingMedia || hasOutstandingInvitation;
+        const hasOutstandingDirectActivation = Boolean(
+          invitation?.direct_auth_user_id && ['pending', 'processing'].includes(invitation.status)
+        );
+        return hasOutstandingMedia || hasOutstandingInvitation || hasOutstandingDirectActivation;
       });
       const activeIds = new Set(activeRows.map((submission) => submission.id));
       setSubmissions(activeRows);
@@ -297,6 +302,7 @@ export function BusinessFieldReviewQueue({
     setUnpublishMediaIds([]);
     setInviteChecked(Boolean(ownerRequest?.invitation_requested || ownerRequest?.invitation_status === 'sent'));
     setInitialInviteChecked(Boolean(ownerRequest?.invitation_requested || ownerRequest?.invitation_status === 'sent'));
+    setOwnerIdentityVerified(false);
     setAdminNote('');
     setInitialAdminNote('');
     setConfirmClose(false);
@@ -372,6 +378,31 @@ export function BusinessFieldReviewQueue({
     setRejectedMediaIds((current) => current.includes(assetId)
       ? current.filter((id) => id !== assetId)
       : [...current, assetId]);
+  };
+
+  const activateDirectOwner = async () => {
+    const client = getSupabaseClient();
+    if (!client || !activeOwnerRequest?.direct_auth_user_id) return;
+    if (!ownerIdentityVerified) {
+      showToast('Confirm that you have independently verified this person’s identity and authority over the business.', 'error');
+      return;
+    }
+    setBusy(true);
+    try {
+      const { data, error } = await client.functions.invoke('activate-direct-owner', {
+        body: { request_id: activeOwnerRequest.id, identity_verified: true },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Owner account could not be activated.');
+      showToast('Owner account activated and linked to the approved business. The Owner can now sign in with the password selected on Add Business.', 'success');
+      setOwnerIdentityVerified(false);
+      await reload();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Owner activation failed.', 'error');
+      await reload();
+    } finally {
+      setBusy(false);
+    }
   };
 
   const retryInvitation = async () => {
@@ -842,26 +873,41 @@ export function BusinessFieldReviewQueue({
               </div>
               {activeOwnerRequest ? (
                 <div className="space-y-2 border-t border-outline-variant/30 pt-3">
-                  <label className="flex items-start gap-2 text-sm font-semibold">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 accent-primary"
-                      checked={inviteChecked}
-                      disabled={activeOwnerRequest.invitation_status === 'sent' || activeSubmission.status === 'done'}
-                      onChange={(event) => setInviteChecked(event.target.checked)}
-                    />
-                    <span>Send Owner Invitation Link</span>
-                  </label>
-                  <p className="text-[11px] text-on-surface-variant">The Owner sets their own password through the secure email link. Invitation failure does not undo field approvals.</p>
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="font-semibold">Invitation status: {statusLabel(activeOwnerRequest.invitation_status)}</span>
-                    <span className="text-on-surface-variant">Attempts: {activeOwnerRequest.invitation_attempts}</span>
-                  </div>
-                  {activeOwnerRequest.invitation_last_error && <p className="text-xs text-error">{activeOwnerRequest.invitation_last_error}</p>}
-                  {['pending', 'failed', 'processing'].includes(activeOwnerRequest.invitation_status) && activeSubmission.business_id && activeCoreReady && (
-                    <Button size="sm" variant="outline" loading={busy} disabled={busy} onClick={() => void retryInvitation()} leftIcon={<Mail className="w-3.5 h-3.5" />}>{activeOwnerRequest.invitation_status === 'processing' ? 'Check / Retry Owner Invitation' : 'Retry Owner Invitation'}</Button>
+                  {activeOwnerRequest.direct_auth_user_id ? (
+                    <>
+                      <p className="text-xs font-semibold text-warning">Direct Owner account created — inactive until you verify the applicant and activate it</p>
+                      <p className="text-[11px] text-on-surface-variant">No invitation email is sent. The applicant chose the password on the public form. Verify their identity and authority using your normal checks; email ownership has not been verified.</p>
+                      <label className="flex items-start gap-2 text-xs font-semibold">
+                        <input type="checkbox" className="mt-0.5 h-4 w-4 accent-primary" checked={ownerIdentityVerified} onChange={(event) => setOwnerIdentityVerified(event.target.checked)} />
+                        <span>I independently verified this applicant’s identity and authority to manage this business.</span>
+                      </label>
+                      <Button size="sm" variant="outline" loading={busy} disabled={busy || !ownerIdentityVerified || !activeSubmission.business_id || activeSubmission.status !== 'done'} onClick={() => void activateDirectOwner()} leftIcon={<ShieldCheck className="w-3.5 h-3.5" />}>Verify & Activate Owner Account</Button>
+                      {activeOwnerRequest.status === 'approved' && <p className="text-xs text-success">Owner registration is approved and the business is linked to this account.</p>}
+                    </>
+                  ) : (
+                    <>
+                      <label className="flex items-start gap-2 text-sm font-semibold">
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 h-4 w-4 accent-primary"
+                          checked={inviteChecked}
+                          disabled={activeOwnerRequest.invitation_status === 'sent' || activeSubmission.status === 'done'}
+                          onChange={(event) => setInviteChecked(event.target.checked)}
+                        />
+                        <span>Send Owner Invitation Link</span>
+                      </label>
+                      <p className="text-[11px] text-on-surface-variant">Legacy registration: the Owner sets their own password through the secure email link.</p>
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="font-semibold">Invitation status: {statusLabel(activeOwnerRequest.invitation_status)}</span>
+                        <span className="text-on-surface-variant">Attempts: {activeOwnerRequest.invitation_attempts}</span>
+                      </div>
+                      {activeOwnerRequest.invitation_last_error && <p className="text-xs text-error">{activeOwnerRequest.invitation_last_error}</p>}
+                      {['pending', 'failed', 'processing'].includes(activeOwnerRequest.invitation_status) && activeSubmission.business_id && activeCoreReady && (
+                        <Button size="sm" variant="outline" loading={busy} disabled={busy} onClick={() => void retryInvitation()} leftIcon={<Mail className="w-3.5 h-3.5" />}>{activeOwnerRequest.invitation_status === 'processing' ? 'Check / Retry Owner Invitation' : 'Retry Owner Invitation'}</Button>
+                      )}
+                      {activeOwnerRequest.invitation_status === 'sent' && <p className="text-xs text-success">Invitation was processed and this Owner is linked to the reviewed business.</p>}
+                    </>
                   )}
-                  {activeOwnerRequest.invitation_status === 'sent' && <p className="text-xs text-success">Invitation was processed and this Owner is linked to the reviewed business.</p>}
                 </div>
               ) : (
                 <p className="text-xs text-on-surface-variant border-t border-outline-variant/30 pt-3">
