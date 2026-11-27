@@ -1433,6 +1433,8 @@ No database migration, RLS/grant change or existing production data mutation was
 
 - [x] THE INSPIRE BUSINESS ACADEMY legacy URL `...-4x0` has an explicit stable-ID alias to canonical `...-1h0`; regression tests cover redirect and unpublished-row 404. Googlebot profile HTML/canonical metadata verified in production.
 - [x] First sitewide metadata/content batch deployed: sampled page titles shortened; area/category descriptions improved; useful explanatory copy added to Categories, News and Government Jobs index pages. CI run `46068967500` passed and Cloudflare Pages deployment `6468e298-a774-4d77-9384-8c235079631b` succeeded for commit `ff8b8f76e5e28e48276d9e4bec12bb3be218c151`.
+- [x] Second metadata cleanup deployed: shortened homepage, area and category meta descriptions based on the post-deploy audit. CI run `46069706331` passed and Cloudflare Pages deployment `e4aa3cdc-1ec4-4efd-b1e4-5394b12986ef` succeeded for commit `da03775b4bff53b4a39d45f15cb5d7b1394cade7`.
+- [x] Googlebot Browser Rendering verified HTTP 301 from old `-4x0` to canonical `-1h0` and rendered the academy H1.
 - [ ] Manual acceptance: open the old `-4x0` URL in a normal browser/phone and confirm the profile and canonical `-1h0` URL.
 - [ ] Full SEO programme remains in progress: targeted business-profile crawl is running; extend crawl coverage beyond the 50-page audit budget; review business-profile metadata/content quality, heading hierarchy, internal links, structured data, sitemap/indexability and Search Console performance.
 - [ ] Search Console is verified for the site but not connected to the OpenSEO project; first-party performance analysis awaits account connection.

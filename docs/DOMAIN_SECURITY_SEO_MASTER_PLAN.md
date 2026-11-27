@@ -315,9 +315,12 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [ ] OpenSEO Google Search Console connection is not yet linked (no connected Google accounts returned). First-party impressions, clicks and index inspection remain pending until the owner connects the verified Search Console account in OpenSEO.
 - [x] First sitewide metadata/content batch deployed: shortened sampled long page titles; expanded category and area meta descriptions; added useful index-page copy to Categories, News and Government Jobs.
 - [x] Pakistan-market Google SERP sample: for “THE INSPIRE BUSINESS ACADEMY”, Hello Sadiqabad appeared at best organic position 3 in 1/3 observations; the Knowledge Graph linked to the current canonical `-1h0` URL in 3/3 observations. For “Sadiqabad business directory”, Hello Sadiqabad was absent from the 7 organic listings returned in the sample.
-- [ ] Complete Phase 2 business-profile metadata/content improvements and re-crawl after the owner approves the global fallback-template approach.
+- [x] Post-crawl remediation: shortened homepage, area and category meta descriptions after the targeted audit identified overlong snippets. CI run `46069706331` passed and Cloudflare Pages deployment `e4aa3cdc-1ec4-4efd-b1e4-5394b12986ef` succeeded for commit `da03775b4bff53b4a39d45f15cb5d7b1394cade7`.
+- [ ] A 10-page root re-audit after this deployment is running; read results before marking metadata cleanup complete.
+- [ ] Complete Phase 2 business-profile metadata/content improvements after owner approval of the global fallback-template approach.
 - [ ] Review business-profile copy and structured data at scale without inventing facts.
 - [ ] Review category/area page content and heading hierarchy.
 - [ ] Review crawl coverage, sitemap, robots, canonicals, indexability and mobile performance.
+- [x] Googlebot live browser test verified the exact 301 chain and rendered academy H1 after redirect.
 - [ ] Owner to verify the legacy THE INSPIRE URL in a normal browser/phone; manual acceptance remains pending.
 - [ ] Connect the verified Google Search Console property to OpenSEO before relying on first-party query, click, CTR, position or indexing data.
