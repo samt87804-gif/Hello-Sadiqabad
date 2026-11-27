@@ -181,6 +181,9 @@ export function BusinessFieldReviewQueue({
     unpublishFieldKeys
   );
   const activeCoreReady = activeApprovedCore === 5;
+  const allPendingMediaDecided = activeMedia.every((asset) =>
+    asset.status !== 'pending_review' || approvedMediaIds.includes(asset.id) || rejectedMediaIds.includes(asset.id)
+  );
 
   const hasUnsavedChanges =
     approvedFieldKeys.length > 0 ||
@@ -1026,7 +1029,7 @@ export function BusinessFieldReviewQueue({
               </div>
               <div className="flex gap-2 justify-end">
                 <Button size="md" variant="outline" disabled={busy} onClick={closeReview}>Cancel</Button>
-                <Button size="md" loading={busy} disabled={busy} onClick={() => void saveApproval()}>{activeOwnerRequest?.direct_auth_user_id && ownerIdentityVerified ? 'Approve Business & Activate Owner' : 'Save Approval'}</Button>
+                <Button size="md" loading={busy} disabled={busy} onClick={() => void saveApproval()}>{activeOwnerRequest?.direct_auth_user_id && ownerIdentityVerified && activeCoreReady && allPendingMediaDecided ? 'Approve Business & Activate Owner' : 'Save Approval'}</Button>
               </div>
             </div>
           </div>
