@@ -62,6 +62,19 @@ test('fallback SEO metadata uses verified category and area for concise local in
   assert.match(metadata.description, /Computer courses and practical training/);
 });
 
+test('fallback SEO metadata avoids repeating identical category and area labels', () => {
+  const metadata = buildBusinessSeoMetadata({
+    name_en: 'Sakhawat Traders',
+    slug: 'sakhawat-traders',
+    category: { name_en: 'Ghalla Mandi' },
+    area: { name_en: 'Ghalla Mandi' },
+  });
+  assert.match(metadata.title, /Ghalla Mandi, Sadiqabad/);
+  assert.doesNotMatch(metadata.title, /Ghalla Mandi in Ghalla Mandi/);
+  assert.match(metadata.description, /listed under Ghalla Mandi, Sadiqabad/);
+  assert.doesNotMatch(metadata.description, /Ghalla Mandi in Ghalla Mandi/);
+});
+
 test('custom SEO description remains authoritative over generated fallback copy', () => {
   const metadata = buildBusinessSeoMetadata({
     ...business,
