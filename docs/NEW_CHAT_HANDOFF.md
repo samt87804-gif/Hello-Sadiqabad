@@ -461,3 +461,18 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 
 - Public Add Business Browser Smoke run `46054385900` completed **success**. Its production-deployment wait and mobile/desktop Add Business form smoke both passed.
 - This does not replace the Owner's manual end-to-end test of Admin combined approval, direct Owner activation, exact business linking and Owner Portal → My Businesses visibility.
+
+
+## Admin delete invalid pending Add Business request — implementation checkpoint (28 November 2026)
+
+- Owner approved only the addition of a Delete Request action to Admin → Business Field Review for incorrect/invalid forms.
+- Re-read canonical `docs/PROJECT_WORKING_RULES.md`, active direct Owner plan, roadmap, handoff, Business Field Review component, direct Owner activation/registration flow, live FK relationships and migration ledger.
+- UI action is shown only for `new` / `in_review` requests with no business listing and no Owner registration or invitation already processing, approved or sent. Confirmation is mandatory.
+- Backend deletion is active-Super-Admin-only. Transactional RPC rechecks status/business/Owner guards, writes audit log, deletes the associated Owner registration request and submission, and cascades the linked field reviews and submission media rows.
+- For direct Owner registrations, server checks trusted `pending_admin_approval` metadata and only deletes an inactive pending Owner Auth user; active profiles or any account that owns a business are blocked. Private pending image objects are cleaned up after database deletion; cleanup failures return a warning.
+- Migration `20261127194100` applied to existing Supabase. No production business/request/user records were deleted as part of implementation.
+- Edge Function `delete-business-submission` v1 ACTIVE, `verify_jwt=true`.
+- Application commit `6df1494c6a676a55a2e1a85c9da9768b9f552def`; CI run `46058553922` passed TypeScript, automated tests, production build and Edge Function typecheck.
+- Cloudflare Pages deployment `9c84cde3-e487-4d74-877e-95d144327f43` succeeded for the same application commit and has canonical alias `https://hellosadiqabad.com`.
+- Next owner test: create/use a deliberately invalid test Add Business request, delete it via the card action, refresh and confirm it is gone. Verify the associated inactive direct Owner account is removed/locked and unrelated listings remain. Never delete a real valid customer request solely for testing.
+- Owner manual acceptance remains pending.
