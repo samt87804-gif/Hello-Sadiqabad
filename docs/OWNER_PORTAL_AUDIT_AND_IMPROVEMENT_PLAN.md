@@ -267,3 +267,12 @@
 - The Owner invitation function no longer overwrites `full_name` / `phone` when an Auth user already has a profile. It inserts only when absent, then updates only role/activation flags if required.
 - The Reset Password page establishes a valid Supabase session from invite/recovery token hashes, PKCE codes, or access/refresh tokens before enabling password Save.
 - Verification and Owner acceptance are tracked in `docs/OWNER_INVITATION_AND_ADMIN_MODERATION_FIX_PLAN.md`; do not claim success until a fresh owner-authorized invitation is accepted and password sign-in is confirmed.
+
+
+### Release evidence — invitation/password follow-up (27 November 2026)
+
+- Main commit `eaf7379319d21c8fefadba85a7f9e6ef001b6bea`; CI run `46001682834` passed; Pages deployment `ff61c63d-5b7d-4863-a19b-05d286953667` succeeded.
+- Live migration `20261127124555` repairs the profile trigger without granting authenticated users private-schema access.
+- Owner invitation and Owner registration Edge Functions deployed (versions 2 and 7).
+- Transaction-scoped test confirms an Owner self-edit receives the intended approval-required error and is rolled back. No Owner account or production record was changed.
+- [ ] Owner must still verify a real authorized invitation, password save and Owner Portal sign-in.

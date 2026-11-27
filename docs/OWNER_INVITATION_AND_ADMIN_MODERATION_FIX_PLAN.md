@@ -22,11 +22,22 @@
 - [x] Change invitation profile provisioning to insert only when absent and update only role/activation flags for an existing non-Owner profile; never overwrite an existing Owner's name/phone during retry.
 - [x] Parse Supabase invite/recovery token hashes, PKCE codes and access/refresh tokens; establish a session before enabling password Save.
 - [x] Add regression tests for auth invitation/recovery URL parsing.
-- [ ] Run typecheck, unit tests, production build and Edge Function typecheck.
-- [ ] Deploy Supabase migration and both affected Edge Functions.
-- [ ] Deploy Pages app and verify the exact main commit.
-- [ ] Verify RPC access is denied to anon and non-Admin authenticated users; Super Admin / moderation.review succeeds.
-- [ ] Owner manual acceptance: accept a fresh invitation, set password, sign in to Owner Portal, verify linked business; retry an invitation from Business Field Approval; open Moderation Queue and confirm submissions/reviews load without the red warning.
+- [x] GitHub Actions CI run `46001682834` passed TypeScript, unit tests, production build and Supabase Edge Function typecheck.
+- [x] Applied live migration `20261127124555` (`fix_owner_invitation_and_admin_moderation_access`). Deployed `send-business-owner-invitation` version 2 and `manage-owner-registration` version 7; both ACTIVE with JWT verification enabled.
+- [x] Cloudflare Pages production deployment `ff61c63d-5b7d-4863-a19b-05d286953667` succeeded for commit `eaf7379319d21c8fefadba85a7f9e6ef001b6bea`; canonical `https://hellosadiqabad.com` attached.
+- [x] Verified anon cannot execute the RPC; a simulated active Super Admin read 23 submission rows; a simulated active Owner was denied with `42501 Permission denied`. The authenticated Owner self-edit test now returns the intended `Owner profile changes require Admin approval` error (transaction rolled back), not a private-schema permission error.
+- [ ] Owner manual acceptance remains pending: accept a fresh invitation, set password, sign in to Owner Portal, verify linked business; retry an invitation from Business Field Approval; open Moderation Queue and confirm submissions/reviews load without the red warning.
+
+
+## Release verification evidence
+
+- Main commit: `eaf7379319d21c8fefadba85a7f9e6ef001b6bea`.
+- CI: `46001682834` — completed successfully.
+- Pages: `ff61c63d-5b7d-4863-a19b-05d286953667` — production build/deploy stages succeeded; alias `https://hellosadiqabad.com`.
+- Supabase migration ledger includes `20261127124555`; function versions `send-business-owner-invitation` v2 and `manage-owner-registration` v7 are ACTIVE with JWT verification.
+- The new Admin RPC returned 23 rows for a transaction-scoped active Super Admin simulation and denied an active Owner simulation with SQLSTATE `42501`; anon EXECUTE is false. Authenticated direct SELECT on `public.submissions` remains revoked.
+- The profile trigger was tested in a transaction as an active Owner: it correctly rejected a self-edit with the approval-required message; transaction was rolled back.
+- No production invitation email was sent and no Auth user, Owner profile, business, submission or existing business record was created or modified for testing. Owner acceptance is still required.
 
 ## Safety
 

@@ -371,3 +371,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Password reset page now handles invite/recovery token hashes, PKCE codes and access/refresh tokens, and establishes a session before enabling Save.
 - Active feature plan: `docs/OWNER_INVITATION_AND_ADMIN_MODERATION_FIX_PLAN.md`.
 - Existing Supabase project only; no new project, no production test Owner account, no real invitation or existing record mutation during verification.
+
+
+### Release evidence — Owner invitation and Admin moderation fixes
+
+- Main commit `eaf7379319d21c8fefadba85a7f9e6ef001b6bea`; CI run `46001682834` completed successfully (TypeScript, unit tests, build, Edge Function typecheck).
+- Live migration `20261127124555` (`fix_owner_invitation_and_admin_moderation_access`) is recorded in the existing Supabase ledger.
+- Deployed Edge Functions: `send-business-owner-invitation` version 2 and `manage-owner-registration` version 7; both ACTIVE and JWT verification remains enabled.
+- Cloudflare Pages deployment `ff61c63d-5b7d-4863-a19b-05d286953667` succeeded for the exact main commit and is attached to canonical `https://hellosadiqabad.com`.
+- Permission tests: active Super Admin simulation read 23 moderation submissions; active Owner simulation was denied; anon cannot execute the RPC. Direct authenticated table SELECT remains restricted.
+- Profile self-edit guard test now returns the intended Admin-approval rejection, not the private-schema permission error; test transaction was rolled back.
+- No real invitation email or production test user/record was created. Owner device acceptance remains pending.

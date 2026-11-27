@@ -27,7 +27,7 @@ This is the live application project checklist. Update it on `main` whenever a t
 - [x] Make invitation provisioning insert-only for existing profiles and update only role/activation flags, preserving existing Owner names and phone numbers.
 - [x] Support Supabase invite/recovery token-hash, PKCE code and access/refresh-token URL formats before enabling password save.
 - [x] Add regression tests for authentication-link parsing.
-- [ ] Verify CI, Edge Function deployment and Pages deployment for the fix.
+- [x] CI run `46001682834` passed; Supabase migration `20261127124555` and Edge Function versions 2/7 are deployed; Pages production deployment `ff61c63d-5b7d-4863-a19b-05d286953667` succeeded for main commit `eaf7379319d21c8fefadba85a7f9e6ef001b6bea`.
 - [ ] Owner manual acceptance: accept a fresh Owner invitation, set password, sign in to Owner Portal; confirm Business Field Approval invitation succeeds/retries; open Moderation Queue and confirm the red admin-data warning is absent and submissions/reviews load.
 
 ## Public Add Business opening-hours convenience — 27 November 2026
