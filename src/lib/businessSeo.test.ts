@@ -49,6 +49,29 @@ test('custom SEO title and description are preserved with a site brand suffix', 
   assert.equal(metadata.description, 'Custom verified description.');
 });
 
+test('fallback SEO metadata uses verified category and area for concise local intent', () => {
+  const metadata = buildBusinessSeoMetadata({
+    name_en: 'Example Academy',
+    slug: 'example-academy',
+    description_en: 'Computer courses and practical training.',
+    category: { name_en: 'Academy' },
+    area: { name_en: 'Mahar Abad' },
+  });
+  assert.match(metadata.title, /Academy in Mahar Abad, Sadiqabad/);
+  assert.match(metadata.description, /Example Academy, a Academy in Mahar Abad, Sadiqabad/);
+  assert.match(metadata.description, /Computer courses and practical training/);
+});
+
+test('custom SEO description remains authoritative over generated fallback copy', () => {
+  const metadata = buildBusinessSeoMetadata({
+    ...business,
+    meta_description_en: 'Owner-approved SEO description.',
+    category: { name_en: 'Pharmacy' },
+    area: { name_en: 'Main Bazar' },
+  });
+  assert.equal(metadata.description, 'Owner-approved SEO description.');
+});
+
 test('unsafe image URLs are rejected', () => {
   assert.equal(safeBusinessImageUrl('javascript:alert(1)'), null);
   assert.equal(safeBusinessImageUrl('http://example.test/image.png'), null);
