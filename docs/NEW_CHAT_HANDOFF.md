@@ -535,3 +535,10 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Regression tests cover local fallback generation and custom SEO description precedence.
 - CI/Pages deployment were still running at handoff time. Recheck exact commit before claiming CI/deployment complete.
 - Remaining: production Googlebot checks across representative profiles; manual browser acceptance. Do not bulk-write generated copy into business records.
+
+### Business profile SEO metadata — deployed checkpoint (28 November 2026)
+
+- Final code commit `7247f0cbe175b1dc60c8ecedc6bd74ed7cbfca36`; CI run `46072480221` passed TypeScript, 182 automated tests, production build and 23 Edge Function checks.
+- Cloudflare Pages deployment `50f8d212-39da-49db-9075-155b69a264e3` succeeded for the exact code commit.
+- Production Googlebot checks passed for Sakhawat Traders (no description), Doctor Commission Shop (short description), and THE INSPIRE custom SEO metadata preservation.
+- No business data or custom SEO fields were bulk-updated. Google recrawl/indexing and owner manual acceptance remain pending.
