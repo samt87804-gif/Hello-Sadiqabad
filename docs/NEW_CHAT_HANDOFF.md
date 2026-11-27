@@ -347,3 +347,14 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Follow-up GitHub Actions CI run `45911463787` passed TypeScript, automated tests, production build and Edge Function typecheck. Matching Cloudflare Pages production deployment `06180522-7bd2-4592-ab49-3471600c9017` passed build and deploy.
 - No schema/RLS/permission/data migration or record mutation. The exact count uses existing Owner-scoped RLS and existing allowed request types/statuses.
 - Next: Owner manual acceptance: open Owner Portal → My Businesses, check Requests awaiting review, and confirm Load older requests does not change the count; then use a safe test/resolved inquiry to confirm Read does not assign a handler and Handled assigns the current signed-in Owner. Do not mark Phase 1 manually accepted until Owner confirms.
+
+
+## Public Add Business opening-hours convenience — 27 November 2026
+
+- Owner explicitly approved the narrow public-form enhancement.
+- Added shared opening/closing time inputs and **Apply to All** for Monday–Sunday; each day remains independently editable.
+- Added a per-day **Off** checkbox. It clears/disables that day's times and preserves the explicit closed state as an empty array in the existing `opening_hours` JSON payload. Untouched days remain omitted; no schema or migration change.
+- Client validation rejects incomplete time pairs and closing times that are not later than opening times; Off days are valid.
+- Added unit regression coverage in `src/lib/hours.test.ts` and mobile/desktop production browser-smoke assertions in `scripts/public-form-smoke.mjs`.
+- Implementation commit and CI/Pages deployment evidence will be recorded after release checks.
+- [ ] Owner manual production acceptance remains pending. Test public `https://hellosadiqabad.com/add-business`: enter shared times, click Apply to All, confirm all seven days update, edit one day independently, mark a day Off and verify its inputs clear/disable, turn it back On, then submit a suitable test request and verify the Admin Business Field Approval card still displays the hours correctly. Do not create a real customer listing solely for testing; use an owner-authorized test request.

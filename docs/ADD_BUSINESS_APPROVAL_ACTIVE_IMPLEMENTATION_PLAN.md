@@ -199,3 +199,16 @@ Before each phase inspect current main, components, routes, API calls, migration
 
 
 **Additional Storage RLS check — 26 November 2026:** In a rolled-back transaction, the database session was switched to the `anon` role and queried `storage.objects` for `hs-pending-business-media`; result was 0 visible objects. This verifies the database RLS path for anonymous role access. It does not replace an HTTP/browser signed/public URL test or the post-approval promotion/public-read acceptance, which remain open.
+
+## 11. Public Add Business opening-hours shortcuts — 27 November 2026
+
+Owner-approved enhancement to the existing public Add Business form; it does not change the registration/approval workflow or database schema.
+
+- [x] Add one shared opening-time and closing-time pair with an **Apply to All** action for all seven days.
+- [x] Keep each day's opening/closing inputs independently editable after applying the shared time.
+- [x] Add a per-day **Off** option. Off clears and disables that day's time inputs and serializes the day as an empty array in the existing `opening_hours` JSON shape.
+- [x] Preserve optional hours: untouched days remain omitted, while explicitly Off days are retained as closed. If no day is configured, the field remains omitted.
+- [x] Validate complete time pairs and require closing time to be later than opening time; Off days are excluded from time validation.
+- [x] Add pure-function regression tests and mobile/desktop public-form browser smoke assertions.
+- [ ] Owner manual acceptance of Apply to All, per-day edits, Off/On behavior and form submission/review compatibility.
+- No database migration, RLS, permission, existing submission, business record or media change is required.

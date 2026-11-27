@@ -88,6 +88,23 @@ async function testViewport(browser, name, viewport, isMobile) {
   assert.ok((await areaTrigger.innerText()).includes(selectedArea.trim()), 'Area selection should survive filtering');
   await areaTrigger.click();
 
+  const sharedOpening = page.locator('#all-days-opening-time');
+  const sharedClosing = page.locator('#all-days-closing-time');
+  await sharedOpening.fill('09:00');
+  await sharedClosing.fill('18:00');
+  await page.locator('#apply-opening-hours-to-all').click();
+  for (const day of ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']) {
+    assert.equal(await page.locator(`#${day}-opening-time`).inputValue(), '09:00', `Apply to All should set ${day} opening time`);
+    assert.equal(await page.locator(`#${day}-closing-time`).inputValue(), '18:00', `Apply to All should set ${day} closing time`);
+  }
+  const sundayOff = page.locator('#day-hours-off-sun');
+  await sundayOff.check();
+  assert.equal(await page.locator('#sun-opening-time').inputValue(), '', 'Off should clear the opening time');
+  assert.equal(await page.locator('#sun-closing-time').inputValue(), '', 'Off should clear the closing time');
+  assert.equal(await page.locator('#sun-opening-time').isDisabled(), true, 'Off should disable the opening-time input');
+  await sundayOff.uncheck();
+  assert.equal(await page.locator('#sun-opening-time').isDisabled(), false, 'Turning Off off should re-enable the time input');
+
   const nameInput = page.getByLabel(/Business \/ Clinic Name \(English\)|کاروبار \/ کلینک کا نام \(انگریزی\)/);
   await nameInput.fill('QA Preview Check');
   const ownerEmail = page.getByLabel(/Owner Gmail Address|مالک کا Gmail/);

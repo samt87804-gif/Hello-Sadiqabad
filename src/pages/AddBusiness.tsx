@@ -8,6 +8,13 @@ import { updatePageSeo } from '../lib/seo';
 import { useAuth } from '../lib/auth';
 import { getSupabaseClient } from '../lib/supabase';
 import { compressImageFile } from '../lib/imageCompression';
+import {
+  applyHoursToAllBusinessDays,
+  buildAddBusinessOpeningHours,
+  createAddBusinessHoursState,
+  validateAddBusinessHours,
+  type AddBusinessHoursState,
+} from '../lib/hours';
 import type { AreaRow, CategoryRow } from '../types/database';
 import { AppShell } from '../components/layout/AppShell';
 import { Button } from '../components/ui/Button';
@@ -132,9 +139,8 @@ export function AddBusiness() {
   const [ownerEmail, setOwnerEmail] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [openingHours, setOpeningHours] = useState<Record<string, { open: string; close: string }>>(
-    Object.fromEntries(DAY_KEYS.map((day) => [day.key, { open: '', close: '' }]))
-  );
+  const [openingHours, setOpeningHours] = useState<AddBusinessHoursState>(createAddBusinessHoursState);
+  const [allOpeningHours, setAllOpeningHours] = useState({ open: '', close: '' });
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [descriptionUr, setDescriptionUr] = useState('');
@@ -167,6 +173,21 @@ export function AddBusiness() {
     }
   }, [sameAsPhone, phone]);
 
+  const applyOpeningHoursToAll = () => {
+    if (!allOpeningHours.open || !allOpeningHours.close || allOpeningHours.open >= allOpeningHours.close) {
+      showToast(
+        lang === 'ur' ? 'براہ کرم درست کھلنے اور بند ہونے کا وقت درج کریں۔' : 'Enter a valid opening and closing time first.',
+        'error'
+      );
+      return;
+    }
+    setOpeningHours(applyHoursToAllBusinessDays(allOpeningHours.open, allOpeningHours.close));
+    showToast(
+      lang === 'ur' ? 'تمام دنوں کے اوقات مقرر کر دیے گئے ہیں۔' : 'Opening hours applied to all seven days.',
+      'success'
+    );
+  };
+
   const toggleFacility = (fac: string) => {
     if (selectedFacilities.includes(fac)) {
       setSelectedFacilities((prev) => prev.filter((item) => item !== fac));
@@ -196,7 +217,8 @@ export function AddBusiness() {
     setOwnerEmail('');
     setLogoFile(null);
     setCoverFile(null);
-    setOpeningHours(Object.fromEntries(DAY_KEYS.map((day) => [day.key, { open: '', close: '' }])));
+    setOpeningHours(createAddBusinessHoursState());
+    setAllOpeningHours({ open: '', close: '' });
     setCategoryId('');
     setAreaId('');
     setCategorySearch('');
@@ -273,12 +295,14 @@ export function AddBusiness() {
       showToast(lang === 'ur' ? 'گوگل میپس کا درست HTTPS لنک درج کریں۔' : 'Enter a valid Google Maps URL from Google.', 'error');
       return;
     }
-    for (const day of DAY_KEYS) {
-      const hours = openingHours[day.key];
-      if (Boolean(hours.open) !== Boolean(hours.close)) {
-        showToast(lang === 'ur' ? 'ہر دن کے کھلنے اور بند ہونے کے دونوں اوقات درج کریں یا دونوں خالی چھوڑیں۔' : 'For each day, enter both opening and closing times or leave both blank.', 'error');
-        return;
-      }
+    const hoursError = validateAddBusinessHours(openingHours);
+    if (hoursError) {
+      const day = DAY_KEYS.find((item) => item.key === hoursError.day);
+      const message = hoursError.reason === 'incomplete'
+        ? (lang === 'ur' ? (day?.ur ?? '') + ': کھلنے اور بند ہونے دونوں اوقات درج کریں یا دن کو Off کریں۔' : (day?.en ?? 'A day') + ': enter both opening and closing times, or mark the day Off.')
+        : (lang === 'ur' ? (day?.ur ?? '') + ': بند ہونے کا وقت کھلنے کے وقت کے بعد ہونا چاہیے۔' : (day?.en ?? 'A day') + ': closing time must be later than opening time.');
+      showToast(message, 'error');
+      return;
     }
     if (description.trim().length > 500 || descriptionUr.trim().length > 500) {
       showToast(
@@ -341,7 +365,7 @@ export function AddBusiness() {
         if (uploadError) throw uploadError;
         mediaAssets.push({ media_field: mediaField, storage_path: storagePath, mime_type: uploadFile.type, file_size_bytes: uploadFile.size });
       }
-      const hoursPayload = Object.fromEntries(DAY_KEYS.filter((day) => openingHours[day.key].open && openingHours[day.key].close).map((day) => [day.key, [{ open: openingHours[day.key].open, close: openingHours[day.key].close }]]));
+      const hoursPayload = buildAddBusinessOpeningHours(openingHours);
       const res = await submitPublicSuggestion({
         type: 'new_business',
         payload: {
@@ -356,7 +380,7 @@ export function AddBusiness() {
           landmark_en: landmarkEn.trim() || undefined,
           landmark_ur: landmarkUr.trim() || undefined,
           map_url: mapUrl.trim() || undefined,
-          opening_hours: Object.keys(hoursPayload).length ? hoursPayload : undefined,
+          opening_hours: hoursPayload,
           owner_name: ownerName.trim(),
           owner_email: ownerEmail.trim().toLowerCase(),
           media_assets: mediaAssets,
@@ -681,18 +705,34 @@ export function AddBusiness() {
                 </div>
               </div>
 
-              <div className="space-y-2 rounded-xl border border-outline-variant/40 p-3">
-                <p className="text-xs font-bold text-on-surface">{lang === 'ur' ? 'روزانہ اوقاتِ کار (اختیاری)' : 'Daily Opening Hours (optional)'}</p>
+              <section className="space-y-3 rounded-xl border border-outline-variant/40 p-3">
+                <div>
+                  <p className="text-xs font-bold text-on-surface">{lang === 'ur' ? 'روزانہ اوقاتِ کار (اختیاری)' : 'Daily Opening Hours (optional)'}</p>
+                  <p className="mt-1 text-[11px] text-on-surface-variant">
+                    {lang === 'ur' ? 'ایک بار کھلنے اور بند ہونے کا وقت درج کریں، پھر تمام دنوں پر لاگو کریں۔ ہر دن الگ بھی تبدیل کر سکتے ہیں۔' : 'Enter opening and closing times once, then apply them to every day. You can still customize each day below.'}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                  <Input id="all-days-opening-time" type="time" label={lang === 'ur' ? 'کھلنے کا وقت' : 'Opening time'} value={allOpeningHours.open} onChange={(e) => setAllOpeningHours((prev) => ({ ...prev, open: e.target.value }))} />
+                  <Input id="all-days-closing-time" type="time" label={lang === 'ur' ? 'بند ہونے کا وقت' : 'Closing time'} value={allOpeningHours.close} onChange={(e) => setAllOpeningHours((prev) => ({ ...prev, close: e.target.value }))} />
+                  <button id="apply-opening-hours-to-all" type="button" onClick={applyOpeningHoursToAll} disabled={!allOpeningHours.open || !allOpeningHours.close || allOpeningHours.open >= allOpeningHours.close} className="min-h-[42px] rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary/15 focus:outline-none focus:ring-4 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50">
+                    {lang === 'ur' ? 'سب دنوں پر لاگو کریں' : 'Apply to All'}
+                  </button>
+                </div>
                 <div className="space-y-2">
                   {DAY_KEYS.map((day) => (
-                    <div key={day.key} className="grid grid-cols-[minmax(90px,1fr)_1fr_1fr] gap-2 items-center">
-                      <span className="text-xs text-on-surface-variant">{lang === 'ur' ? day.ur : day.en}</span>
-                      <Input type="time" aria-label={`${day.en} opening time`} value={openingHours[day.key].open} onChange={(e) => setOpeningHours((prev) => ({ ...prev, [day.key]: { ...prev[day.key], open: e.target.value } }))} />
-                      <Input type="time" aria-label={`${day.en} closing time`} value={openingHours[day.key].close} onChange={(e) => setOpeningHours((prev) => ({ ...prev, [day.key]: { ...prev[day.key], close: e.target.value } }))} />
+                    <div key={day.key} className="grid grid-cols-[minmax(64px,0.85fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2 rounded-lg bg-surface-container-low/60 p-2">
+                      <span className="text-xs font-semibold text-on-surface-variant">{lang === 'ur' ? day.ur : day.en}</span>
+                      <Input id={`${day.key}-opening-time`} type="time" aria-label={`${day.en} opening time`} value={openingHours[day.key].open} disabled={openingHours[day.key].off} onChange={(e) => setOpeningHours((prev) => ({ ...prev, [day.key]: { ...prev[day.key], open: e.target.value } }))} />
+                      <Input id={`${day.key}-closing-time`} type="time" aria-label={`${day.en} closing time`} value={openingHours[day.key].close} disabled={openingHours[day.key].off} onChange={(e) => setOpeningHours((prev) => ({ ...prev, [day.key]: { ...prev[day.key], close: e.target.value } }))} />
+                      <label className="inline-flex min-w-[42px] cursor-pointer items-center justify-center gap-1 text-[11px] font-semibold text-on-surface-variant">
+                        <input id={`day-hours-off-${day.key}`} type="checkbox" aria-label={`${day.en} Off`} checked={openingHours[day.key].off} onChange={(e) => setOpeningHours((prev) => ({ ...prev, [day.key]: e.target.checked ? { open: '', close: '', off: true } : { ...prev[day.key], off: false } }))} className="h-3.5 w-3.5 accent-primary" />
+                        <span>{lang === 'ur' ? 'بند' : 'Off'}</span>
+                      </label>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
 
               <div className="space-y-1">
                 <Textarea

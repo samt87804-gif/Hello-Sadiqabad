@@ -20,6 +20,14 @@ This is the live application project checklist. Update it on `main` whenever a t
 - [ ] Phase F: end-to-end QA and release.
 
 
+## Public Add Business opening-hours convenience — 27 November 2026
+
+- [x] Add shared opening/closing time inputs and **Apply to All** for all seven days.
+- [x] Allow independent daily time edits and an explicit **Off** option for each day.
+- [x] Preserve the existing `opening_hours` JSON contract; explicitly closed days are represented by empty arrays, untouched days remain omitted, and no migration is needed.
+- [x] Add validation and automated regression/browser-smoke coverage for shared-time copying and daily Off behavior.
+- [ ] Owner manual acceptance on production: Apply to All, change one day, mark a day Off and back On, and submit a test request through the existing Admin review flow.
+
 ## Domain, security and SEO implementation
 
 - Current source of truth: [Domain, Security & SEO Master Plan](docs/DOMAIN_SECURITY_SEO_MASTER_PLAN.md).
