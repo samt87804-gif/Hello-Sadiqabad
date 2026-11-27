@@ -1459,3 +1459,13 @@ No database migration, RLS/grant change or existing production data mutation was
 - [ ] Shared fallback SEO template for 588 published business profiles remains approval-gated; 587 currently have no custom SEO title/description and 568 English descriptions are under 80 characters. Preserve custom metadata and use verified fields only.
 - [ ] OpenSEO project context needs owner confirmation of the site overview before updating shared context and saving the full SEO report.
 - [x] Daily SEO maintenance automation scheduled for approximately 8:00 AM Asia/Karachi; free GSC checks first, no credit spending or code/data/URL/template changes without fresh approval.
+
+## Current workstream — Business profile SEO fallback metadata (28 November 2026)
+
+- Owner approved improving the shared business-profile fallback metadata template, preserving all custom SEO fields, listing facts, business data, URLs and canonical behavior.
+- Live schema confirms the existing category and area foreign keys; no migration or database mutation is required.
+- Implemented on `main`: shared fallback metadata now uses verified business name/category/area and existing short description where available. The crawler query now includes category/area names through those foreign keys. Owner custom SEO title and description remain authoritative.
+- Regression tests added for local category/area fallback generation and custom-description precedence.
+- Final code commit at checkpoint: `165459c66a944c3edeb59dd3c9f71860112e9ee4`. CI and Cloudflare Pages deployment were still in progress at the time of this update; production verification is pending.
+- No business rows, owner descriptions, phone numbers, fees, URLs, plans, schema, RLS or permissions were changed.
+- Next: verify final CI and deployment; Googlebot-render representative profiles; then provide owner manual steps and wait for confirmation.
