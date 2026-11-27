@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, CheckCircle2, Clock3, EyeOff, Mail, MapPin, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase';
-import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, countApprovedCoreFields, shouldActivateDirectOwner, shouldProcessOwnerInvitation } from '../../lib/businessApproval';
+import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, canDeleteBusinessSubmission, countApprovedCoreFields, shouldActivateDirectOwner, shouldProcessOwnerInvitation } from '../../lib/businessApproval';
 import type { AreaRow, CategoryRow } from '../../types/database';
 import { Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
@@ -141,6 +141,7 @@ export function BusinessFieldReviewQueue({
   const [adminNote, setAdminNote] = useState('');
   const [initialAdminNote, setInitialAdminNote] = useState('');
   const [confirmClose, setConfirmClose] = useState(false);
+  const [submissionToDelete, setSubmissionToDelete] = useState<BusinessSubmission | null>(null);
 
   const fieldsBySubmission = useMemo(() => {
     const grouped = new Map<string, FieldReview[]>();
@@ -442,6 +443,32 @@ export function BusinessFieldReviewQueue({
     }
   };
 
+  const deleteBusinessRequest = async () => {
+    const client = getSupabaseClient();
+    if (!client || !submissionToDelete) return;
+    setBusy(true);
+    try {
+      const { data, error } = await client.functions.invoke('delete-business-submission', {
+        body: { submission_id: submissionToDelete.id },
+      });
+      if (error) throw error;
+      if (!data?.ok || data.deleted !== true) {
+        throw new Error(data?.error || 'Business request could not be deleted.');
+      }
+      if (activeSubmissionId === submissionToDelete.id) setActiveSubmissionId(null);
+      const warning = typeof data.cleanup_warning === 'string' ? data.cleanup_warning : '';
+      setSubmissionToDelete(null);
+      await reload();
+      showToast(warning
+        ? `Business request deleted. ${warning}`
+        : 'Business request and its unapproved review data were deleted successfully.', warning ? 'error' : 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Business request could not be deleted.', 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const saveApproval = async () => {
     const client = getSupabaseClient();
     if (!client || !activeSubmission) return;
@@ -731,11 +758,26 @@ export function BusinessFieldReviewQueue({
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     <span className="text-[11px] font-bold rounded-full px-2.5 py-1 bg-secondary-container text-on-secondary-container inline-flex items-center gap-1">
                       <Clock3 className="w-3 h-3" /> {submission.status}
                     </span>
                     <Button size="sm" onClick={() => openReview(submission)}>View Details</Button>
+                    {canDeleteBusinessSubmission(
+                      submission.status,
+                      submission.business_id,
+                      ownerRequest?.status,
+                      ownerRequest?.invitation_status,
+                    ) && (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        disabled={busy}
+                        onClick={() => setSubmissionToDelete(submission)}
+                      >
+                        Delete Request
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -1047,6 +1089,20 @@ export function BusinessFieldReviewQueue({
         message="Your field selections, image decisions, invitation choice and Admin note have not been saved."
         confirmLabel="Discard Changes"
         destructive
+      />
+
+      <ConfirmDialog
+        open={Boolean(submissionToDelete)}
+        onClose={() => {
+          if (!busy) setSubmissionToDelete(null);
+        }}
+        onConfirm={() => void deleteBusinessRequest()}
+        title="Permanently delete this business request?"
+        message="This permanently removes the unapproved request, its field-review records and submitted private images. If it created an inactive pending direct Owner account, that account is also removed. Published businesses, active Owners and requests already being processed are protected."
+        confirmLabel="Delete Request"
+        cancelLabel="Keep Request"
+        destructive
+        loading={busy && Boolean(submissionToDelete)}
       />
     </div>
   );
