@@ -1402,3 +1402,15 @@ No database migration, RLS/grant change or existing production data mutation was
 
 
 - [x] Public Add Business browser smoke run `46054385900` passed on the deployed production build for the integrated workflow release. Admin combined approval and Owner Portal listing still require Owner manual acceptance.
+
+
+## Admin deletion of invalid pending Add Business requests — 28 November 2026
+
+- [x] Added **Delete Request** to eligible Admin → Business Field Approval cards, with a permanent deletion confirmation.
+- [x] Deletion restricted to unapproved `new` / `in_review` submissions without a business listing and without a sent/processing/approved Owner workflow.
+- [x] Server-side active Super Admin authorization and transactional rechecks. Audit event is written; linked pending Owner registration, submission, field reviews and submission-media records are removed. Published businesses and active/linked Owners are protected.
+- [x] For a linked direct registration, verify trusted pending Auth metadata and inactive Owner profile before best-effort Auth-user cleanup; remove private pending image objects and surface cleanup warnings.
+- [x] Migration `20261127194100` applied; Edge Function `delete-business-submission` v1 ACTIVE with JWT verification.
+- [x] Unit tests added for delete eligibility.
+- [x] CI run `46058553922` passed TypeScript, tests, production build and Edge Function typecheck. Pages deployment `9c84cde3-e487-4d74-877e-95d144327f43` succeeded for app commit `6df1494c6a676a55a2e1a85c9da9768b9f552def`.
+- [ ] Owner manual acceptance pending; no production requests were deleted during implementation.
