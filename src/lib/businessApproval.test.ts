@@ -7,6 +7,7 @@ import {
   countApprovedCoreFields,
   shouldProcessOwnerInvitation,
   shouldActivateDirectOwner,
+  canDeleteBusinessSubmission,
 } from './businessApproval';
 
 const fields = [
@@ -78,4 +79,15 @@ test('direct Owner activation requires identity verification, all core fields, a
   assert.equal(shouldActivateDirectOwner({ ...valid, businessId: null }), false);
   assert.equal(shouldActivateDirectOwner({ ...valid, pendingMediaCount: 1 }), false);
   assert.equal(shouldActivateDirectOwner({ ...valid, directAuthUserId: null }), false);
+});
+
+
+test('only unapproved, unlinked business requests can be deleted from the review queue', () => {
+  assert.equal(canDeleteBusinessSubmission('new', null), true);
+  assert.equal(canDeleteBusinessSubmission('in_review', null, 'pending', 'not_requested'), true);
+  assert.equal(canDeleteBusinessSubmission('done', null), false);
+  assert.equal(canDeleteBusinessSubmission('new', 'business-1'), false);
+  assert.equal(canDeleteBusinessSubmission('in_review', null, 'processing', 'pending'), false);
+  assert.equal(canDeleteBusinessSubmission('in_review', null, 'approved', 'sent'), false);
+  assert.equal(canDeleteBusinessSubmission('in_review', null, 'pending', 'sent'), false);
 });
