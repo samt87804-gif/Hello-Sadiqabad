@@ -34,8 +34,11 @@ import {
   fetchUnreadNotificationCount,
   fetchOwnerDashboardStats,
   fetchOwnerPaymentHistory,
+  fetchOwnerPasswordChangeRequests,
+  submitOwnerPasswordChangeRequest,
   submitOwnerPaymentCorrectionRequest,
   submitOwnerProfileChangeRequest,
+  type OwnerPasswordChangeRequest,
   type OwnerPaymentHistory,
   type OwnerReviewReplyFilter,
   type OwnerInquiryStatusFilter,
@@ -1347,10 +1350,17 @@ export function OwnerProfile() {
   const [profileHistoryError, setProfileHistoryError] = useState<string | null>(null);
   const [profileSaving, setProfileSaving] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordRequests, setPasswordRequests] = useState<OwnerPasswordChangeRequest[]>([]);
+  const [passwordRequestLoading, setPasswordRequestLoading] = useState(true);
+  const [passwordRequestSaving, setPasswordRequestSaving] = useState(false);
   const profileHistorySequence = useRef(0);
   const profileSaveInFlight = useRef(false);
   const passwordChangeInFlight = useRef(false);
   const pendingProfileRequest = profileHistory?.profile_change_requests.find((request) => request.status === 'pending');
+  const pendingPasswordRequest = passwordRequests.find((request) => request.status === 'pending');
+  const activePasswordApproval = passwordRequests.find((request) =>
+    request.status === 'approved' && Boolean(request.expires_at) && new Date(request.expires_at as string).getTime() > Date.now()
+  );
 
   useEffect(() => {
     setFullName(profile?.full_name ?? '');
@@ -1377,6 +1387,37 @@ export function OwnerProfile() {
     void reloadProfileHistory();
     return () => { profileHistorySequence.current += 1; };
   }, [reloadProfileHistory]);
+
+  useEffect(() => {
+    let active = true;
+    setPasswordRequestLoading(true);
+    const load = async () => {
+      try {
+        const rows = await fetchOwnerPasswordChangeRequests();
+        if (active) setPasswordRequests(rows);
+      } catch (error) {
+        if (active) showToast(error instanceof Error ? error.message : 'Password request status could not be loaded.', 'error');
+      } finally {
+        if (active) setPasswordRequestLoading(false);
+      }
+    };
+    void load();
+    return () => { active = false; };
+  }, [showToast]);
+
+  const requestPasswordApproval = async () => {
+    if (passwordRequestSaving || pendingPasswordRequest || activePasswordApproval) return;
+    setPasswordRequestSaving(true);
+    try {
+      await submitOwnerPasswordChangeRequest();
+      setPasswordRequests(await fetchOwnerPasswordChangeRequests());
+      showToast('Password change request Admin ko bhej di gayi hai.', 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Password change request submit nahi ho saki.', 'error');
+    } finally {
+      setPasswordRequestSaving(false);
+    }
+  };
 
   const strength = evaluatePasswordStrength(newPassword);
 
@@ -1410,6 +1451,10 @@ export function OwnerProfile() {
     passwordChangeInFlight.current = true;
     setPasswordSaving(true);
     try {
+      if (!isDemoMode && !activePasswordApproval) {
+        showToast('Admin approval is required before changing your password.', 'error');
+        return;
+      }
       const res = await updatePassword(newPassword);
       if (!res.ok) {
         showToast(res.error ?? 'Failed to update password.', 'error');
@@ -1455,6 +1500,21 @@ export function OwnerProfile() {
 
         <Card className="p-5">
           <h2 className="text-base font-bold text-on-surface mb-4">Change Password</h2>
+          <div className="mb-4 space-y-2 rounded-xl border border-outline-variant/40 bg-surface-container-low p-3">
+            <p className="text-xs text-on-surface-variant">Request Admin approval before changing your Owner account password. Your new password is entered only by you and is never shown to Admin.</p>
+            {passwordRequestLoading ? (
+              <p className="text-xs text-on-surface-variant">Loading password request status…</p>
+            ) : pendingPasswordRequest ? (
+              <p className="text-xs font-semibold text-warning">Your password change request is waiting for Admin review.</p>
+            ) : activePasswordApproval ? (
+              <p className="text-xs font-semibold text-success">Approved until {new Date(activePasswordApproval.expires_at as string).toLocaleString()}. Set your new password below.</p>
+            ) : (
+              <Button type="button" size="sm" variant="outline" loading={passwordRequestSaving} disabled={passwordRequestSaving} onClick={() => void requestPasswordApproval()}>Request Admin Approval</Button>
+            )}
+            {passwordRequests.slice(0, 3).map((request) => (
+              <p key={request.id} className="text-[11px] text-on-surface-variant">{request.status.toUpperCase()} · {formatDateShort(request.requested_at)}{request.admin_note ? ` · ${request.admin_note}` : ''}</p>
+            ))}
+          </div>
           <form onSubmit={changePass} className="space-y-3">
             <Input
               label="New Password (min 8 chars)"
@@ -1504,7 +1564,7 @@ export function OwnerProfile() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-            <Button type="submit" variant="outline" disabled={passwordSaving}>
+            <Button type="submit" variant="outline" disabled={passwordSaving || (!isDemoMode && !activePasswordApproval) || passwordRequestLoading}>
               {passwordSaving ? 'Updating…' : 'Update Password'}
             </Button>
           </form>
