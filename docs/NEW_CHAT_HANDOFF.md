@@ -394,3 +394,18 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Audit completed: canonical rules, live roadmap/handoff, Add Business, auth context, `submit-suggestion`, Business Field Review Queue, live public schema and migration ledger were inspected. Existing `profiles.is_active` and invitation lifecycle fields were confirmed.
 - Current state: active implementation plan committed to `main` as `1d75315ab8c7671c132256897ba0f74118dd9b43`. This is documentation/audit only; no application code, production migration, Auth user, or Edge Function has been changed/deployed for the new workflow yet.
 - Next safe step: implement and test secure server-side registration/account linkage first, then the UI/Admin activation path, password approval, and account deletion. Do not deploy an incomplete workflow.
+
+
+## Direct Owner registration & password-change approval — current state (27 November 2026)
+
+- Implementation committed directly to `main`; latest application-bearing Pages deployment was built/deployed successfully from commit `63945f99bf1d918297475186fe9c8cbc39c40b9c` (deployment `cacbedcb-7e5b-4278-8fb3-aa1555cff2d2`).
+- Public Add Business captures Owner password and confirmation for unauthenticated applicants. Confirm password is client-only; password is separated from `payload` and sent only to the server-side `submit-suggestion` Edge Function. No plaintext credential is persisted in submissions, owner requests, audit logs or Admin UI.
+- Direct Auth identity is created with trusted `app_metadata.owner_registration_status=pending_admin_approval`; profile trigger creates it inactive. Duplicate email fails without changing existing Auth users. Rate limiting and rollback are retained.
+- Admin Business Field Approval shows direct account status and requires an explicit identity/authority verification confirmation before `activate-direct-owner` can link the already-published business and activate the profile. No email invitation is sent for direct requests. Legacy invitations remain available for old requests.
+- Owner Portal password-change request/status is implemented. Admin approves/rejects. Owner's authenticated session calls `complete-owner-password-change`; approval expires after 30 minutes and is consumed once. Password is never displayed to Admin.
+- Live migrations: `20261127164058`, `20261127164621`, `20261127165305`, `20261127165456`. The 7 old Owner registration records remain untouched. Email uniqueness is separated for legacy and direct requests so old non-invited pending records do not block resubmission.
+- Active Edge Functions: `submit-suggestion` v13, `activate-direct-owner` v5, `review-owner-password-change` v4, `complete-owner-password-change` v1, `send-business-owner-invitation` v3. JWT verification is enabled on each.
+- Supabase advisors re-run: the new password-request table no longer triggers multiple permissive SELECT policies or an unindexed reviewer FK. Existing project-wide findings remain and were not broadened into this change.
+- Cloudflare Pages `npm run build` and deploy stages succeeded. GitHub Actions TypeScript/unit-test status is not verified in this session; do not state full CI passed.
+- No test Owner account or real production registration/password-change request was created.
+- Next: verify latest Pages deployment after docs updates, obtain automated typecheck/test evidence if available, then give Owner the full manual acceptance checklist. Owner deletion is separate and deferred from this release.
