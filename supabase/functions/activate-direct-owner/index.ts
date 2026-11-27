@@ -101,22 +101,45 @@ Deno.serve(async (req: Request) => {
           .eq("id", requestId).eq("status", "processing").select("id").maybeSingle();
         if (recovered) requestStatus = "pending";
       }
-      const { data: locked, error: lockError } = await db.from("owner_registration_requests")
-        .update({ status: "processing", updated_at: new Date().toISOString() })
-        .eq("id", requestId).eq("status", "pending").select("id").maybeSingle();
-      if (lockError || !locked) return reply(req, { ok: false, error: "This registration is already being reviewed." }, 409);
 
-      const { data: finalized, error: finalizeError } = await db.rpc("finalize_owner_registration", {
-        p_request_id: requestId, p_action: "approve", p_actor_id: actor.id,
-        p_owner_user_id: request.direct_auth_user_id,
-        p_admin_note: "Direct registration: identity and business authority manually verified before activation.",
-      });
-      if (finalizeError || finalized !== true) {
-        const { data: latest } = await db.from("owner_registration_requests").select("status").eq("id", requestId).maybeSingle();
-        if (latest?.status !== "approved") {
-          await db.from("owner_registration_requests").update({ status: "pending" }).eq("id", requestId).eq("status", "processing");
-          throw finalizeError ?? new Error("Owner registration could not be finalized.");
+      // A previous manual assignment may have linked this exact Owner while leaving
+      // the registration request pending. Reconcile that same-user link instead of
+      // trying to assign an already-owned business again.
+      if (requestStatus === "pending" && business.owner_id === request.direct_auth_user_id) {
+        const { data: reconciled, error: reconcileError } = await db.from("owner_registration_requests")
+          .update({
+            status: "approved",
+            reviewed_by: actor.id,
+            reviewed_at: new Date().toISOString(),
+            admin_note: "Direct registration: identity and business authority manually verified before activation.",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", requestId).eq("status", "pending")
+          .select("id").maybeSingle();
+        if (reconcileError || !reconciled) {
+          const { data: latest } = await db.from("owner_registration_requests").select("status").eq("id", requestId).maybeSingle();
+          if (latest?.status !== "approved") throw reconcileError ?? new Error("The existing Owner/business link could not be reconciled.");
         }
+        requestStatus = "approved";
+      } else {
+        const { data: locked, error: lockError } = await db.from("owner_registration_requests")
+          .update({ status: "processing", updated_at: new Date().toISOString() })
+          .eq("id", requestId).eq("status", "pending").select("id").maybeSingle();
+        if (lockError || !locked) return reply(req, { ok: false, error: "This registration is already being reviewed." }, 409);
+
+        const { data: finalized, error: finalizeError } = await db.rpc("finalize_owner_registration", {
+          p_request_id: requestId, p_action: "approve", p_actor_id: actor.id,
+          p_owner_user_id: request.direct_auth_user_id,
+          p_admin_note: "Direct registration: identity and business authority manually verified before activation.",
+        });
+        if (finalizeError || finalized !== true) {
+          const { data: latest } = await db.from("owner_registration_requests").select("status").eq("id", requestId).maybeSingle();
+          if (latest?.status !== "approved") {
+            await db.from("owner_registration_requests").update({ status: "pending" }).eq("id", requestId).eq("status", "processing");
+            throw finalizeError ?? new Error("Owner registration could not be finalized.");
+          }
+        }
+        requestStatus = "approved";
       }
     } else if (business.owner_id !== request.direct_auth_user_id) {
       return reply(req, { ok: false, error: "Approved registration does not match the linked business Owner." }, 409);
@@ -129,17 +152,33 @@ Deno.serve(async (req: Request) => {
     const appMetadata = { ...(authUser.user.app_metadata ?? {}), owner_registration_status: "approved" };
     const { error: authUpdateError } = await db.auth.admin.updateUserById(request.direct_auth_user_id, { app_metadata: appMetadata, ban_duration: "none" });
     if (authUpdateError) throw new Error("Business was linked, but Auth activation needs a retry.");
-    const { error: activateError } = await db.from("profiles").update({
+    const { data: activatedProfile, error: activateError } = await db.from("profiles").update({
       is_active: true, full_name: request.full_name, phone: request.phone, updated_at: new Date().toISOString(),
-    }).eq("id", request.direct_auth_user_id).eq("role", "owner");
-    if (activateError) throw new Error("Business was linked, but profile activation needs a retry.");
+    }).eq("id", request.direct_auth_user_id).eq("role", "owner").select("id,is_active").maybeSingle();
+    if (activateError || !activatedProfile || activatedProfile.is_active !== true) {
+      throw new Error("Business was linked, but profile activation needs a retry.");
+    }
 
-    await db.from("audit_logs").insert({
-      actor_id: actor.id, action: "owner_direct_registration.activated",
-      entity: "owner_registration_requests", entity_id: requestId,
-      details: { owner_user_id: request.direct_auth_user_id, business_id: business.id, submission_id: request.submission_id, identity_verified: true },
-    });
-    return reply(req, { ok: true, status: "approved", business_id: business.id });
+    const [{ data: verifiedBusiness, error: verifyBusinessError }, { data: verifiedRequest, error: verifyRequestError }] = await Promise.all([
+      db.from("businesses").select("id,owner_id,status").eq("id", business.id).maybeSingle(),
+      db.from("owner_registration_requests").select("status").eq("id", requestId).maybeSingle(),
+    ]);
+    if (verifyBusinessError || !verifiedBusiness || verifiedBusiness.status !== "published" || verifiedBusiness.owner_id !== request.direct_auth_user_id) {
+      throw new Error("Owner account activation could not verify the published business assignment.");
+    }
+    if (verifyRequestError || verifiedRequest?.status !== "approved") {
+      throw new Error("Owner account activation could not verify the approved registration.");
+    }
+
+    if (request.status !== "approved" || targetProfile.is_active !== true || business.owner_id !== request.direct_auth_user_id) {
+      const { error: auditError } = await db.from("audit_logs").insert({
+        actor_id: actor.id, action: "owner_direct_registration.activated",
+        entity: "owner_registration_requests", entity_id: requestId,
+        details: { owner_user_id: request.direct_auth_user_id, business_id: business.id, submission_id: request.submission_id, identity_verified: true, owner_link_verified: true, profile_active_verified: true },
+      });
+      if (auditError) throw new Error("Owner activation succeeded, but the Admin audit record needs a retry.");
+    }
+    return reply(req, { ok: true, status: "approved", business_id: business.id, owner_linked: true, account_active: true });
   } catch (error) {
     return reply(req, { ok: false, error: error instanceof Error ? error.message : "Owner activation failed." }, 400);
   }
