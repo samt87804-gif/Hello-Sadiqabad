@@ -13,6 +13,8 @@ export interface BusinessSeoRecord {
   cover_url?: string | null;
   address_en?: string | null;
   phone_primary?: string | null;
+  category?: { name_en?: string | null } | null;
+  area?: { name_en?: string | null } | null;
 }
 
 export interface BusinessSeoMetadata {
@@ -51,13 +53,27 @@ export function buildBusinessSeoMetadata(
   siteOrigin = SITE_ORIGIN
 ): BusinessSeoMetadata {
   const name = cleanBusinessSeoText(business.name_en || business.name_ur, 'Sadiqabad Business', 100);
+  const category = cleanBusinessSeoText(business.category?.name_en, '', 48);
+  const area = cleanBusinessSeoText(business.area?.name_en, '', 48);
   const customTitle = cleanBusinessSeoText(business.meta_title_en, '', 120);
+  const fallbackTitle = [
+    name,
+    category ? '— ' + category : '— Business',
+    area ? 'in ' + area : 'Sadiqabad',
+    'Sadiqabad | Hello Sadiqabad',
+  ].join(' ').replace(/\\s+/g, ' ').replace(/— Business Sadiqabad/, '— Sadiqabad');
   const title = customTitle
     ? (/hello sadiqabad/i.test(customTitle) ? customTitle : customTitle + ' | Hello Sadiqabad')
-    : name + ' — Sadiqabad | Hello Sadiqabad';
-  const fallbackDescription = name + ', Sadiqabad. View available contact details, location, opening hours and business information on Hello Sadiqabad.';
+    : cleanBusinessSeoText(fallbackTitle, name + ' — Sadiqabad | Hello Sadiqabad', 120);
+  const sourceDescription = business.description_en || business.description_ur;
+  const fallbackDescription = category
+    ? 'Find ' + name + ', a ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. View its available contact details and location on Hello Sadiqabad.'
+    : name + ', Sadiqabad. View available contact details, location and business information on Hello Sadiqabad.';
+  const enrichedShortDescription = sourceDescription && sourceDescription.trim().length < 80 && category
+    ? 'Find ' + name + ', a ' + category + (area ? ' in ' + area : '') + ', Sadiqabad. ' + sourceDescription.trim()
+    : sourceDescription;
   const description = cleanBusinessSeoText(
-    business.meta_description_en || business.description_en || business.description_ur,
+    business.meta_description_en || enrichedShortDescription,
     fallbackDescription
   );
   const image = safeBusinessImageUrl(business.cover_url)
