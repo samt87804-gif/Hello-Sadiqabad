@@ -352,3 +352,16 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [ ] Shared business-profile fallback metadata change remains pending explicit approval. Live read-only aggregate: 588 published businesses; 587 have neither custom SEO title nor description; 568 English descriptions are under 80 characters. Generated fallback metadata exists, so these are not 587 confirmed missing rendered meta tags. Preserve owner-entered metadata and all listing facts.
 - [ ] OpenSEO project context is still missing the business overview, goal, positioning and writing preferences. Confirm the concise site description with the owner before storing it and before producing the full saved SEO audit report.
 - [ ] OpenSEO balance checked at 52 credits. No paid keyword research, rank tracking or third-party keyword metrics were purchased during this pass.
+
+## Business profile fallback metadata — approved implementation (28 November 2026)
+
+- [x] Owner explicitly approved improving the shared fallback metadata template for published business profiles, using existing verified business name/category/area and available descriptions. Preserve custom owner-entered SEO fields and all public listing content/data.
+- [x] Re-read the canonical working rules, handoff, roadmap, SEO master plan, live business schema and relevant BusinessProfile/crawler implementation before editing.
+- [x] Confirmed live foreign keys: `businesses.category_id → categories.id` and `businesses.area_id → areas.id`. No database schema, RLS, business rows, URLs, or canonical rules are changed.
+- [x] Updated shared `buildBusinessSeoMetadata` to generate concise local-intent fallback titles and descriptions from the verified name/category/area plus existing short description. Explicit custom SEO title/description remain higher priority.
+- [x] Updated crawler metadata lookup to read category and area names through the existing verified foreign-key relationships, still restricted to currently published business rows and selected public fields.
+- [x] Added regression tests for category/area fallback generation and custom SEO description precedence.
+- [ ] GitHub CI, production build, Edge Function checks and Pages deployment for final code commit `165459c66a944c3edeb59dd3c9f71860112e9ee4` are still running at this checkpoint; do not mark the release verified until they finish.
+- [ ] Production Googlebot metadata checks across representative business profiles, including profiles with missing descriptions and custom metadata, remain pending deployment.
+- [ ] Owner normal-browser/manual acceptance remains pending.
+- [ ] Do not bulk-write generated text into business records. Metadata remains dynamically generated; no owner descriptions or public listing fields are overwritten.
