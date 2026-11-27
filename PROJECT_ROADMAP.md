@@ -1359,3 +1359,11 @@ No database migration, RLS/grant change or existing production data mutation was
 - [ ] GitHub Actions TypeScript/unit-test/Edge Function CI status is not verified; Pages build alone does not cover `npm run check`.
 - [ ] Owner manual acceptance pending. Do not call this workflow manually accepted until Owner tests registration, Admin activation, login, password approval, expiry/replay and legacy compatibility.
 - [ ] Super Admin permanent Owner deletion is a separate previously discussed scope and is not part of this release.
+
+
+## Direct Owner registration & password-change approval — final verification checkpoint (27 November 2026)
+
+- Feature implementation is committed to `main` and deployed to production; implementation evidence and active Edge Function versions are recorded in `docs/OWNER_DIRECT_REGISTRATION_ACTIVE_IMPLEMENTATION_PLAN.md`.
+- Live Supabase read-only audit confirms the four feature migrations are applied, all four new Edge Functions are ACTIVE with JWT verification, 7 legacy Owner registration rows remain unchanged, there are currently 0 direct registrations and 0 password-change requests, and no plaintext-password columns or password keys were found in existing submission payloads.
+- Owner manual acceptance remains pending. Fresh GitHub Actions `npm run check` status could not be retrieved through the available GitHub Actions connector actions; Cloudflare Pages build/deploy evidence is not a substitute for CI/typecheck/unit tests.
+- Next owner action: follow the 12-step practical acceptance checklist in the active plan. Do not use real applicant/customer credentials or share passwords in chat. Do not mark Owner acceptance passed until the Owner reports the results.
