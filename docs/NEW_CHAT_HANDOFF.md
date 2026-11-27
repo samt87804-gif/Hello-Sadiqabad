@@ -455,3 +455,9 @@ See `docs/OWNER_PLAN_PAYMENT_ACCEPTANCE_CHECKLIST.md` for the new plan/payment a
 - Public Add Business browser smoke workflow `46054385900` was still running; its result remains unverified here.
 - No production test Owner, business request or password was created by the assistant. The one existing direct-registration row observed in the read-only audit was not modified.
 - Next owner action: after the browser smoke result is checked, perform the integrated Admin approval test with a fresh legitimate registration; verify one final action activates the account, links the exact published business, and the Owner sees it under My Businesses. Manual acceptance remains pending.
+
+
+### Public browser smoke confirmation — 28 November 2026
+
+- Public Add Business Browser Smoke run `46054385900` completed **success**. Its production-deployment wait and mobile/desktop Add Business form smoke both passed.
+- This does not replace the Owner's manual end-to-end test of Admin combined approval, direct Owner activation, exact business linking and Owner Portal → My Businesses visibility.
