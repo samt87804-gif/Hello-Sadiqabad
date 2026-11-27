@@ -156,6 +156,7 @@ export function AddBusiness() {
       title: 'Submit Your Business — Hello Sadiqabad',
       description: 'Submit your shop, clinic, or local service for review in the Sadiqabad local business directory.',
       canonicalPath: '/add-business',
+      robots: 'noindex,follow',
     });
     setMetadataError(false);
     Promise.all([fetchAllCategories(), fetchAllAreas()]).then(([cats, ar]) => {
