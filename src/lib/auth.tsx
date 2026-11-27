@@ -377,6 +377,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const client = getSupabaseClient();
     if (client) {
+      if (role === 'owner') {
+        const { data, error } = await client.functions.invoke('complete-owner-password-change', {
+          body: { password: newPassword },
+        });
+        if (error) {
+          const context = (error as { context?: unknown }).context;
+          if (context instanceof Response) {
+            const responseBody = await context.clone().json().catch(() => null) as { error?: unknown } | null;
+            if (typeof responseBody?.error === 'string') return { ok: false, error: responseBody.error };
+          }
+          return { ok: false, error: error.message };
+        }
+        if (!data?.ok) return { ok: false, error: data?.error || 'Admin approval is required before changing your password.' };
+        await refreshProfile();
+        return { ok: true, simulated: false };
+      }
       const { error } = await client.auth.updateUser({ password: newPassword });
       if (error) return { ok: false, error: error.message };
       if (user) {
