@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, CheckCircle2, Clock3, EyeOff, Mail, MapPin, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase';
-import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, countApprovedCoreFields, shouldProcessOwnerInvitation } from '../../lib/businessApproval';
+import { BUSINESS_APPROVAL_FIELD_GROUPS, buildBusinessFieldDecisions, countApprovedCoreFields, shouldActivateDirectOwner, shouldProcessOwnerInvitation } from '../../lib/businessApproval';
 import type { AreaRow, CategoryRow } from '../../types/database';
 import { Card } from '../ui/Surface';
 import { Button } from '../ui/Button';
@@ -417,31 +417,6 @@ export function BusinessFieldReviewQueue({
     }
   };
 
-  const activateDirectOwner = async () => {
-    const client = getSupabaseClient();
-    if (!client || !activeOwnerRequest?.direct_auth_user_id) return;
-    if (!ownerIdentityVerified) {
-      showToast('Confirm that you have independently verified this person’s identity and authority over the business.', 'error');
-      return;
-    }
-    setBusy(true);
-    try {
-      const { data, error } = await client.functions.invoke('activate-direct-owner', {
-        body: { request_id: activeOwnerRequest.id, identity_verified: true },
-      });
-      if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || 'Owner account could not be activated.');
-      showToast('Owner account activated and linked to the approved business. The Owner can now sign in with the password selected on Add Business.', 'success');
-      setOwnerIdentityVerified(false);
-      await reload();
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Owner activation failed.', 'error');
-      await reload();
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const retryInvitation = async () => {
     const client = getSupabaseClient();
     if (!client || !activeOwnerRequest) return;
@@ -476,6 +451,9 @@ export function BusinessFieldReviewQueue({
     setBusy(true);
     const partialErrors: string[] = [];
     let invitationWaiting = false;
+    let ownerActivated = false;
+    let mediaReviewFailed = false;
+    const failedMediaIds = new Set<string>();
     let result: Record<string, unknown> | null = null;
     try {
       const decisions = buildBusinessFieldDecisions(
@@ -534,7 +512,43 @@ export function BusinessFieldReviewQueue({
           if (mediaError) throw mediaError;
           if (!mediaResult?.ok) throw new Error(mediaResult?.error || 'Image review failed');
         } catch (error) {
+          mediaReviewFailed = true;
+          failedMediaIds.add(mediaAction.assetId);
           partialErrors.push(error instanceof Error ? error.message : 'An image review could not be completed.');
+        }
+      }
+
+      const pendingMediaCount = activeMedia.filter((asset) =>
+        asset.status === 'pending_review' &&
+        (!mediaActions.some((action) => action.assetId === asset.id) || failedMediaIds.has(asset.id))
+      ).length;
+
+      if (activeOwnerRequest?.direct_auth_user_id && ownerIdentityVerified) {
+        const canActivate = shouldActivateDirectOwner({
+          directAuthUserId: activeOwnerRequest.direct_auth_user_id,
+          identityVerified: ownerIdentityVerified,
+          coreReady: result.core_ready === true,
+          businessId: typeof result.business_id === 'string' ? result.business_id : activeSubmission.business_id,
+          pendingMediaCount: mediaReviewFailed ? Math.max(1, pendingMediaCount) : pendingMediaCount,
+        });
+        if (canActivate) {
+          try {
+            const { data: activationResult, error: activationError } = await client.functions.invoke('activate-direct-owner', {
+              body: { request_id: activeOwnerRequest.id, identity_verified: true },
+            });
+            if (activationError) throw activationError;
+            if (!activationResult?.ok || activationResult.owner_linked !== true || activationResult.account_active !== true) {
+              throw new Error(activationResult?.error || 'Owner activation and business linking could not be verified.');
+            }
+            ownerActivated = true;
+            setOwnerIdentityVerified(false);
+          } catch (error) {
+            partialErrors.push(error instanceof Error ? error.message : 'Owner activation and business linking need a retry.');
+          }
+        } else if (result.core_ready !== true || !(typeof result.business_id === 'string' || activeSubmission.business_id)) {
+          partialErrors.push('Owner account remains inactive until all five required business fields are approved and the business is published.');
+        } else if (pendingMediaCount > 0 || mediaReviewFailed) {
+          partialErrors.push('Owner account remains inactive until every submitted image has a completed Admin decision.');
         }
       }
 
@@ -567,12 +581,14 @@ export function BusinessFieldReviewQueue({
       await reload();
 
       if (partialErrors.length) {
-        showToast(`Field decisions saved. Some follow-up actions need attention: ${partialErrors.join(' · ')}`, 'error');
+        showToast(`${ownerActivated ? 'Business published and Owner activated/linked. ' : 'Field decisions saved. '}Some follow-up actions need attention: ${partialErrors.join(' · ')}`, 'error');
       } else if (invitationWaiting || (inviteChecked && result.invitation_status === 'waiting_for_business')) {
         showToast('Field decisions saved. Owner invitation is queued until the minimum public business information is complete.', 'success');
         setActiveSubmissionId(null);
       } else {
-        showToast('Business review saved. Selected fields and follow-up actions have been processed.', 'success');
+        showToast(ownerActivated
+          ? 'Business approved and published. Owner account activated and this business linked automatically. The Owner can now sign in with the password chosen on Add Business.'
+          : 'Business review saved. Selected fields and follow-up actions have been processed.', 'success');
         setActiveSubmissionId(null);
       }
     } catch (error) {
@@ -935,14 +951,18 @@ export function BusinessFieldReviewQueue({
                 <div className="space-y-2 border-t border-outline-variant/30 pt-3">
                   {activeOwnerRequest.direct_auth_user_id ? (
                     <>
-                      <p className="text-xs font-semibold text-warning">Direct Owner account created — inactive until you verify the applicant and activate it</p>
-                      <p className="text-[11px] text-on-surface-variant">No invitation email is sent. The applicant chose the password on the public form. Verify their identity and authority using your normal checks; email ownership has not been verified.</p>
-                      <label className="flex items-start gap-2 text-xs font-semibold">
-                        <input type="checkbox" className="mt-0.5 h-4 w-4 accent-primary" checked={ownerIdentityVerified} onChange={(event) => setOwnerIdentityVerified(event.target.checked)} />
-                        <span>I independently verified this applicant’s identity and authority to manage this business.</span>
-                      </label>
-                      <Button size="sm" variant="outline" loading={busy} disabled={busy || !ownerIdentityVerified || !activeSubmission.business_id || activeSubmission.status !== 'done'} onClick={() => void activateDirectOwner()} leftIcon={<ShieldCheck className="w-3.5 h-3.5" />}>Verify & Activate Owner Account</Button>
-                      {activeOwnerRequest.status === 'approved' && <p className="text-xs text-success">Owner registration is approved and the business is linked to this account.</p>}
+                      {activeOwnerRequest.status === 'approved' ? (
+                        <p className="text-xs text-success">Owner registration is approved. The Owner account is active and this business is linked to it.</p>
+                      ) : (
+                        <>
+                          <p className="text-xs font-semibold text-warning">Direct Owner account created — inactive until identity/authority verification and final approval</p>
+                          <p className="text-[11px] text-on-surface-variant">No invitation email is sent. The applicant chose the password on the public form. Email ownership has not been verified, so independently verify the applicant before approval.</p>
+                          <label className="flex items-start gap-2 text-xs font-semibold">
+                            <input type="checkbox" className="mt-0.5 h-4 w-4 accent-primary" checked={ownerIdentityVerified} onChange={(event) => setOwnerIdentityVerified(event.target.checked)} />
+                            <span>I independently verified this applicant’s identity and authority. When checked, Save Approval will also activate the Owner account and link this business automatically once all required fields and image decisions are complete.</span>
+                          </label>
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
@@ -1006,7 +1026,7 @@ export function BusinessFieldReviewQueue({
               </div>
               <div className="flex gap-2 justify-end">
                 <Button size="md" variant="outline" disabled={busy} onClick={closeReview}>Cancel</Button>
-                <Button size="md" loading={busy} disabled={busy} onClick={() => void saveApproval()}>Save Approval</Button>
+                <Button size="md" loading={busy} disabled={busy} onClick={() => void saveApproval()}>{activeOwnerRequest?.direct_auth_user_id && ownerIdentityVerified ? 'Approve Business & Activate Owner' : 'Save Approval'}</Button>
               </div>
             </div>
           </div>
