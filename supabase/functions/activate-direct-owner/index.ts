@@ -92,11 +92,14 @@ Deno.serve(async (req: Request) => {
       return reply(req, { ok: false, error: "The linked Owner account could not be verified." }, 409);
     }
 
-    if (request.status !== "approved") {
-      if (request.status === "processing" &&
+    let requestStatus = request.status;
+    if (requestStatus !== "approved") {
+      if (requestStatus === "processing" &&
           Date.now() - new Date(request.updated_at).getTime() > 15 * 60 * 1000) {
-        await db.from("owner_registration_requests").update({ status: "pending", updated_at: new Date().toISOString() })
-          .eq("id", requestId).eq("status", "processing");
+        const { data: recovered } = await db.from("owner_registration_requests")
+          .update({ status: "pending", updated_at: new Date().toISOString() })
+          .eq("id", requestId).eq("status", "processing").select("id").maybeSingle();
+        if (recovered) requestStatus = "pending";
       }
       const { data: locked, error: lockError } = await db.from("owner_registration_requests")
         .update({ status: "processing", updated_at: new Date().toISOString() })
