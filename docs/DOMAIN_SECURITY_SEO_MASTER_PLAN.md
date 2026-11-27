@@ -365,3 +365,14 @@ Phase 0 technical work is implemented and verified, with leaked-password protect
 - [ ] Production Googlebot metadata checks across representative business profiles, including profiles with missing descriptions and custom metadata, remain pending deployment.
 - [ ] Owner normal-browser/manual acceptance remains pending.
 - [ ] Do not bulk-write generated text into business records. Metadata remains dynamically generated; no owner descriptions or public listing fields are overwritten.
+
+### Final release verification — business profile fallback metadata (28 November 2026)
+
+- [x] Final code commit: `7247f0cbe175b1dc60c8ecedc6bd74ed7cbfca36`.
+- [x] GitHub CI run `46072480221` passed: TypeScript, 182 automated tests, production build and Edge Function typecheck (23 Edge Function checks).
+- [x] Cloudflare Pages production deployment `50f8d212-39da-49db-9075-155b69a264e3` succeeded for the exact final code commit and is aliased to `https://hellosadiqabad.com`.
+- [x] Live Googlebot Browser Rendering returned HTTP 200 and new metadata for Sakhawat Traders (no description; same category/area label is not duplicated) and Doctor Commission Shop (short description; category, area and verified source description are combined).
+- [x] Live Googlebot Browser Rendering of THE INSPIRE BUSINESS ACADEMY confirms its owner-entered custom title and description remain in use; its canonical URL is unchanged.
+- [x] Area labels are normalized to remove leading punctuation and repeated city suffixes. Regression tests cover repeated category/area labels and malformed area punctuation.
+- [ ] Owner normal-browser/manual acceptance remains pending. No Google ranking or indexing change is claimed; Google must recrawl the pages.
+- [x] No business records, public listing descriptions, owner metadata fields, URLs, fees, phone numbers, schema, RLS or permissions were bulk-mutated.
